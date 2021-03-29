@@ -1,0 +1,33 @@
+name: rbi
+
+type: ruby
+
+up:
+  - ruby: 2.7.3
+  - bundler
+
+commands:
+  console:
+    desc:   'start a console'
+    run:    bin/console
+  run:
+    desc:   'start the application'
+    run:    bin/run
+  style:    bin/style
+  test:
+    syntax:
+      argument: file
+      optional: args...
+    run: bin/test
+  typecheck:
+    desc: 'run Sorbet typechecking'
+    aliases: ['tc']
+    depends-railgun: false
+    run: bundle exec srb tc
+  sanity: 'bin/typecheck; bin/test; bin/style'
+  rbi:
+    desc:   "updates Ruby interface files for Sorbet"
+    subcommands:
+      gems:
+        desc: "updates gem RBI files."
+        run: bundle exec rbi update
