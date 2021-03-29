@@ -18,3 +18,14 @@ commands:
       argument: file
       optional: args...
     run: bin/testunit
+  typecheck:
+    desc: 'run Sorbet typechecking'
+    aliases: ['tc']
+    depends-railgun: false
+    run: bundle exec srb tc
+  rbi:
+    desc:   "generate Ruby interface files for Sorbet"
+    subcommands:
+      gems:
+        desc: "updates gem RBI files. Use 'dev rbi gems <gem, ...>' to update individual gem RBI files."
+        run: bundle exec tapioca sync -c 'dev rbi gems'
