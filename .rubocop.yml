@@ -1,13 +1,18 @@
+# This file strictly follows the rules defined in the Ruby style guide:
+#   http://shopify.github.io/ruby-style-guide/
+inherit_gem:
+  rubocop-shopify: rubocop.yml
+
+require:
+ - rubocop-sorbet
+
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.7
+  Exclude:
+  - 'vendor/**/*'
 
-Style/StringLiterals:
+Sorbet:
   Enabled: true
-  EnforcedStyle: double_quotes
 
-Style/StringLiteralsInInterpolation:
+Sorbet/TrueSigil:
   Enabled: true
-  EnforcedStyle: double_quotes
-
-Layout/LineLength:
-  Max: 120

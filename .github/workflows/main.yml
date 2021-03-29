@@ -3,16 +3,33 @@ name: Ruby
 on: [push,pull_request]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        ruby: [2.6, 2.7]
+        experimental: [false]
+        include:
+          - ruby: 3.0
+            os: [ubuntu-latest]
+            experimental: true
+
+    continue-on-error: ${{ matrix.experimental }}
+    name: ${{ matrix.os }} ${{ matrix.ruby }}
+    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@v1
+      - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.6.3
-    - name: Run the default task
-      run: |
-        gem install bundler -v 2.2.10
-        bundle install
-        bundle exec rake
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+    - run: ruby -v
+    - name: Install dependencies
+      run: bin/setup
+    - name: Run typechecking
+      run: bin/typecheck
+    - run: bin/test
+      continue-on-error: ${{ matrix.experimental }}
+    - name: Run style
+      run: bin/style

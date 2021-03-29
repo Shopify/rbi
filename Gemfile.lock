@@ -11,9 +11,9 @@ GEM
     colorize (0.8.1)
     commander (4.5.2)
       highline (~> 2.0.0)
-    diff-lcs (1.4.4)
     highline (2.0.3)
     method_source (1.0.0)
+    minitest (5.14.4)
     parallel (1.20.1)
     parlour (6.0.0)
       commander (~> 4.5)
@@ -29,19 +29,6 @@ GEM
     rake (13.0.3)
     regexp_parser (2.1.1)
     rexml (3.2.4)
-    rspec (3.10.0)
-      rspec-core (~> 3.10.0)
-      rspec-expectations (~> 3.10.0)
-      rspec-mocks (~> 3.10.0)
-    rspec-core (3.10.1)
-      rspec-support (~> 3.10.0)
-    rspec-expectations (3.10.1)
-      diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.10.0)
-    rspec-mocks (3.10.2)
-      diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.10.0)
-    rspec-support (3.10.2)
     rubocop (1.12.0)
       parallel (~> 1.10)
       parser (>= 3.0.0.0)
@@ -53,6 +40,10 @@ GEM
       unicode-display_width (>= 1.4.0, < 3.0)
     rubocop-ast (1.4.1)
       parser (>= 2.7.1.5)
+    rubocop-shopify (2.0.1)
+      rubocop (~> 1.11)
+    rubocop-sorbet (0.6.1)
+      rubocop
     ruby-progressbar (1.11.0)
     sorbet (0.5.6357)
       sorbet-static (= 0.5.6357)
@@ -78,10 +69,12 @@ PLATFORMS
   x86_64-darwin-19
 
 DEPENDENCIES
+  minitest
   rake (~> 13.0)
   rbi!
-  rspec (~> 3.0)
   rubocop (~> 1.7)
+  rubocop-shopify
+  rubocop-sorbet
   sorbet
   sorbet-runtime
   tapioca
