@@ -80,6 +80,7 @@ DEPENDENCIES
   sorbet
   sorbet-runtime
   tapioca
+  thor
 
 BUNDLED WITH
    2.2.6

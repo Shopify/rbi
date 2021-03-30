@@ -8,6 +8,7 @@ gemspec
 
 gem("rake", "~> 13.0")
 gem("sorbet-runtime")
+gem("thor")
 
 group(:development, :test) do
   gem("minitest")
