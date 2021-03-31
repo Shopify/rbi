@@ -1,35 +1,28 @@
-name: Ruby
+name: CI
 
-on: [push,pull_request]
+on: [push, pull_request]
 
 jobs:
-  test:
+  build:
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        ruby: [2.6, 2.7]
-        experimental: [false]
-        include:
-          - ruby: 3.0
-            os: [ubuntu-latest]
-            experimental: true
-
-    continue-on-error: ${{ matrix.experimental }}
-    name: ${{ matrix.os }} ${{ matrix.ruby }}
-    runs-on: ${{ matrix.os }}
+        ruby: [ 2.5, 2.6, 2.7 ]
+    name: Test Ruby ${{ matrix.ruby }}
     steps:
-    - uses: actions/checkout@v2
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ matrix.ruby }}
-        bundler-cache: true
-    - run: ruby -v
-    - name: Install dependencies
-      run: bin/setup
-    - name: Run typechecking
-      run: bin/typecheck
-    - run: bin/test
-      continue-on-error: ${{ matrix.experimental }}
-    - name: Run style
-      run: bin/style
+      - uses: actions/checkout@v2
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run type check
+        run: bin/typecheck
+
+      - name: Lint Ruby files
+        run: bin/style --config .rubocop.yml
+
+      - name: Run tests
+        run: bin/test
