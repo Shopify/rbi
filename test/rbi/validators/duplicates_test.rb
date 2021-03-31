@@ -16,8 +16,9 @@ module RBI
       RB
 
       tree = parse(rb)
-      res = Validators::Duplicates.validate([tree])
+      res, errors = Validators::Duplicates.validate([tree])
       assert(res)
+      assert_empty(errors)
     end
 
     def test_duplicates_in_same_scope
@@ -29,8 +30,10 @@ module RBI
       RB
 
       tree = parse(rb)
-      res = Validators::Duplicates.validate([tree])
+      res, errors = Validators::Duplicates.validate([tree])
       refute(res)
+      assert_equal(1, errors.size)
+      assert_equal("Duplicate definitions found for `foo`: -:2:2-2:14,-:3:2-3:14", errors.first.to_s)
     end
 
     def test_duplicates_in_different_scopes
@@ -45,8 +48,10 @@ module RBI
       RB
 
       tree = parse(rb)
-      res = Validators::Duplicates.validate([tree])
+      res, errors = Validators::Duplicates.validate([tree])
       refute(res)
+      assert_equal(1, errors.size)
+      assert_equal("Duplicate definitions found for `foo`: -:2:2-2:14,-:6:2-6:14", errors.first.to_s)
     end
 
     def test_duplicates_in_root_scope
@@ -56,8 +61,10 @@ module RBI
       RB
 
       tree = parse(rb)
-      res = Validators::Duplicates.validate([tree])
+      res, errors = Validators::Duplicates.validate([tree])
       refute(res)
+      assert_equal(1, errors.size)
+      assert_equal("Duplicate definitions found for `foo`: -:1:0-1:12,-:2:0-2:12", errors.first.to_s)
     end
   end
 end
