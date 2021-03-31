@@ -24,6 +24,11 @@ module RBI
     def <<(node)
       @nodes << node
     end
+
+    sig { returns(T::Boolean) }
+    def empty?
+      nodes.empty?
+    end
   end
 
   class Scope < Tree

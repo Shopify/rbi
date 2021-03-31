@@ -17,7 +17,7 @@ commands:
     syntax:
       argument: file
       optional: args...
-    run: bin/testunit
+    run: bin/test
   typecheck:
     desc: 'run Sorbet typechecking'
     aliases: ['tc']

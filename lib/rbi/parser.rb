@@ -157,6 +157,8 @@ module RBI
       when :const
         visit(node.children[0])
         @names << node.children[1].to_s
+      when :cbase
+        names << ""
       end
     end
   end
