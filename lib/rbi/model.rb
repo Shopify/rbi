@@ -37,6 +37,7 @@ module RBI
 
     sig { params(name: String).void }
     def initialize(name)
+      super()
       @name = name
     end
 

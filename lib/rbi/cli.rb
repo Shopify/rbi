@@ -24,7 +24,7 @@ module RBI
       end
 
       trees.each do |tree|
-        puts tree.nodes.size
+        tree.print
       end
     end
 

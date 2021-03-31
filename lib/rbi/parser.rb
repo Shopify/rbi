@@ -108,7 +108,6 @@ module RBI
       when :module
         name = T.must(ConstBuilder.visit(node.children[0]))
         tree << Module.new(name)
-        puts node
       else
         raise "Unsupported node #{node.type}"
       end
