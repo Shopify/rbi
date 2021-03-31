@@ -11,28 +11,28 @@ module RBI
       tree = Tree.new
       tree1 = Tree.new
       tree2 = Tree.new
-      cA = Class.new("A")
-      cB = Class.new("B")
+      ca = Class.new("A")
+      cb = Class.new("B")
 
       tree << tree1
-      tree1 << cA
-      cA << tree2
-      tree2 << cB
+      tree1 << ca
+      ca << tree2
+      tree2 << cb
 
-      assert_nil(cA.parent_scope)
-      assert_equal(cA, cB.parent_scope)
+      assert_nil(ca.parent_scope)
+      assert_equal(ca, cb.parent_scope)
     end
 
     def test_scopes_names
       tree = Tree.new
-      cA = Class.new("A")
-      cB = Class.new("B")
+      ca = Class.new("A")
+      cb = Class.new("B")
 
-      cA << cB
-      tree << cA
+      ca << cb
+      tree << ca
 
-      assert_equal("::A", cA.qualified_name)
-      assert_equal("::A::B", cB.qualified_name)
+      assert_equal("::A", ca.qualified_name)
+      assert_equal("::A::B", cb.qualified_name)
     end
   end
 end

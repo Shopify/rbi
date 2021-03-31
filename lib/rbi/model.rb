@@ -23,7 +23,7 @@ module RBI
     sig { returns(T.nilable(Scope)) }
     def parent_scope
       parent_tree = T.let(self.parent_tree, T.nilable(Tree))
-      while parent_tree != nil
+      until parent_tree.nil?
         return parent_tree if parent_tree.is_a?(Scope)
         parent_tree = parent_tree.parent_tree
       end

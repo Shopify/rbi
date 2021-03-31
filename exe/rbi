@@ -2,6 +2,6 @@
 # typed: true
 # frozen_string_literal: true
 
-require_relative '../lib/rbi'
+require_relative "../lib/rbi"
 
 RBI::CLI.start(ARGV)

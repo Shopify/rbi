@@ -10,6 +10,7 @@ module RBI
 
     sig { params(out: T.any(IO, StringIO), show_locs: T::Boolean).void }
     def initialize(out: $stdout, show_locs: false)
+      super()
       @out = out
       @current_indent = T.let(0, Integer)
       @show_locs = show_locs

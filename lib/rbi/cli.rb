@@ -9,12 +9,12 @@ module RBI
 
     DEFAULT_PATH = "sorbet/rbi"
 
-    desc 'validate', 'Validate RBI content'
+    desc "validate", "Validate RBI content"
     def validate(*paths)
       T.unsafe(self).validate_duplicates(*paths)
     end
 
-    desc 'validate-duplicates', 'Validate RBI content'
+    desc "validate-duplicates", "Validate RBI content"
     def validate_duplicates(*paths)
       paths << DEFAULT_PATH if paths.empty?
 
@@ -33,7 +33,6 @@ module RBI
     end
 
     no_commands do
-
     end
   end
 end

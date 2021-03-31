@@ -26,7 +26,7 @@ module RBI
       def validate(trees)
         index = Index.index(trees)
 
-        index.each do |name, nodes|
+        index.each do |_name, nodes|
           if nodes.size > 1
             return false
           end

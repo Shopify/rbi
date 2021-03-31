@@ -53,7 +53,6 @@ module RBI
     sig { params(path: String).returns(RBI::Tree) }
     def parse_file(path)
       node = ::Parser::CurrentRuby.parse_file(path)
-      node = ::Parser::CurrentRuby.parse_file(path)
       builder = TreeBuilder.new(path)
       builder.visit(node)
       builder.tree
@@ -203,7 +202,8 @@ module RBI
     sig { params(node: AST::Node).returns(Loc) }
     def node_loc(node)
       loc = node.location
-      Loc.new(file: @file, begin_line: loc.line, begin_column: loc.column, end_line: loc.last_line, end_column: loc.last_column)
+      Loc.new(file: @file, begin_line: loc.line, begin_column: loc.column, end_line: loc.last_line,
+end_column: loc.last_column)
     end
   end
 
@@ -237,7 +237,7 @@ module RBI
       when :cbase
         @names << ""
       when :sym
-        @names << ":#{node.children[0].to_s}"
+        @names << ":#{node.children[0]}"
       end
     end
   end
