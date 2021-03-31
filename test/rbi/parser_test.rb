@@ -109,5 +109,20 @@ module RBI
         def self.foo(p1: _, p2: _, p3: _); end
       EXP
     end
+
+    # Sends
+
+    def test_parse_sends
+      rb = <<~RB
+        attr_accessor(:a, :b)
+        attr_reader(:a)
+        attr_writer(:a)
+        extend(B)
+        include(A)
+        prepend(C)
+        foo
+      RB
+      assert_print_same(rb)
+    end
   end
 end

@@ -106,6 +106,8 @@ module RBI
         visit_const_assign(node)
       when :def, :defs
         visit_def(node)
+      when :send
+        visit_send(node)
       else
         visit_all(node.children)
       end
@@ -180,6 +182,18 @@ module RBI
         raise "Unsupported node #{node.type}"
       end
     end
+
+    sig { params(node: AST::Node).void }
+    def visit_send(node)
+      recv = node.children[0]
+      return if recv && recv != :self
+
+      name = node.children[1]
+      args = node.children[2..-1].map do |child|
+        ConstBuilder.visit(child)
+      end
+      current_scope << Send.new(name, args: args)
+    end
   end
 
   class ConstBuilder < ASTVisitor
@@ -210,7 +224,9 @@ module RBI
         visit(node.children[0])
         @names << node.children[1].to_s
       when :cbase
-        names << ""
+        @names << ""
+      when :sym
+        @names << ":#{node.children[0].to_s}"
       end
     end
   end

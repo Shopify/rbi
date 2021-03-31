@@ -155,4 +155,19 @@ module RBI
       end
     end
   end
+
+  class Send
+    extend T::Sig
+
+    sig { override.params(v: Printer).void }
+    def accept_printer(v)
+      v.printt(method.to_s)
+      unless args.empty?
+        v.print("(")
+        v.print(args.map { |arg| arg }.join(", "))
+        v.print(")")
+      end
+      v.printn
+    end
+  end
 end

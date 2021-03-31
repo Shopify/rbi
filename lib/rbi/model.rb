@@ -160,4 +160,23 @@ module RBI
       name
     end
   end
+
+  # Sends
+
+  class Send < Node
+    extend T::Sig
+
+    sig { returns(::Symbol) }
+    attr_reader :method
+
+    sig { returns(T::Array[String]) }
+    attr_reader :args
+
+    sig { params(method: ::Symbol, args: T::Array[String]).void }
+    def initialize(method, args: [])
+      super()
+      @method = method
+      @args = args
+    end
+  end
 end
