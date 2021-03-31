@@ -91,6 +91,11 @@ module RBI
       @scopes_stack = T.let([@tree], T::Array[Tree])
     end
 
+    sig { returns(Tree) }
+    def current_scope
+      T.must(@scopes_stack.last) # Should never be nil since we create a Tree as the root
+    end
+
     sig { override.params(node: T.nilable(Object)).void }
     def visit(node)
       return unless node.is_a?(AST::Node)
@@ -107,12 +112,15 @@ module RBI
       scope = case node.type
       when :module
         name = T.must(ConstBuilder.visit(node.children[0]))
-        tree << Module.new(name)
+        Module.new(name)
       else
         raise "Unsupported node #{node.type}"
       end
+      current_scope << scope
 
+      @scopes_stack << scope
       visit_all(node.children)
+      @scopes_stack.pop
     end
   end
 
