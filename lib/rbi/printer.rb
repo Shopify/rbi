@@ -75,7 +75,7 @@ module RBI
     end
   end
 
-  class Module
+  class Scope
     extend T::Sig
 
     sig { override.params(v: Printer).void }

@@ -55,4 +55,13 @@ module RBI
       super(name)
     end
   end
+
+  class Class < Scope
+    extend T::Sig
+
+    sig { params(name: String).void }
+    def initialize(name)
+      super(name)
+    end
+  end
 end
