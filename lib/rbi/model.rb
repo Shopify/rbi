@@ -82,4 +82,17 @@ module RBI
       super("")
     end
   end
+
+  class Const < Node
+    extend T::Sig
+
+    sig { returns(String) }
+    attr_accessor :name
+
+    sig { params(name: String).void }
+    def initialize(name)
+      super()
+      @name = name
+    end
+  end
 end

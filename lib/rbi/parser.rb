@@ -102,6 +102,8 @@ module RBI
       case node.type
       when :module, :class, :sclass
         visit_scope(node)
+      when :casgn
+        visit_const_assign(node)
       else
         visit_all(node.children)
       end
@@ -127,6 +129,12 @@ module RBI
       @scopes_stack << scope
       visit_all(node.children)
       @scopes_stack.pop
+    end
+
+    sig { params(node: AST::Node).void }
+    def visit_const_assign(node)
+      name = T.must(ConstBuilder.visit(node))
+      current_scope << Const.new(name)
     end
   end
 
@@ -154,7 +162,7 @@ module RBI
     def visit(node)
       return unless node
       case node.type
-      when :const
+      when :const, :casgn
         visit(node.children[0])
         @names << node.children[1].to_s
       when :cbase

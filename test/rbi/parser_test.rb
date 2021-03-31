@@ -53,5 +53,40 @@ module RBI
       RB
       assert_print_same(rb)
     end
+
+    # Consts
+
+    def test_parse_consts
+      rb = <<~RB
+        A = nil
+        B = 42
+        C = 3.14
+        D = "foo"
+        E = :s
+        F = CONST
+        G = T.nilable(Foo)
+        H = Foo.new
+        I = T::Array[String].new
+        ::J = CONST
+        C::C::C = C::C::C
+        C::C = foo
+        ::C::C = foo
+      RB
+      assert_print_equal(<<~EXP, rb)
+        A = _
+        B = _
+        C = _
+        D = _
+        E = _
+        F = _
+        G = _
+        H = _
+        I = _
+        ::J = _
+        C::C::C = _
+        C::C = _
+        ::C::C = _
+      EXP
+    end
   end
 end

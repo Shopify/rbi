@@ -101,4 +101,13 @@ module RBI
       end
     end
   end
+
+  class Const
+    extend T::Sig
+
+    sig { override.params(v: Printer).void }
+    def accept_printer(v)
+      v.printl("#{name} = _")
+    end
+  end
 end
