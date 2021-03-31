@@ -23,9 +23,13 @@ module RBI
         T.unsafe(Parser).parse_file(file)
       end
 
-      trees.each do |tree|
-        tree.print
-      end
+      index = Index.new
+      trees.each { |tree| index.visit(tree) }
+
+      index.print_index
+      # trees.each do |tree|
+      #   tree.print
+      # end
     end
 
     no_commands do

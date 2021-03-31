@@ -1,13 +1,8 @@
+# typed: ignore
+
 module A
-  module B
-    class C
-      class D < C; end
+  <<tree>>
+    module B
     end
-  end
-end
-
-module Foo
-  class << self
-
-  end
+  <</tree>>
 end
