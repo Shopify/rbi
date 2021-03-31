@@ -8,6 +8,13 @@ module RBI
     extend T::Sig
     include T::Enumerable
 
+    sig { params(trees: T::Array[Tree]).returns(Index) }
+    def self.index(trees)
+      index = Index.new
+      trees.each { |tree| index.visit(tree) }
+      index
+    end
+
     sig { void }
     def initialize
       super()
@@ -27,17 +34,27 @@ module RBI
       end
     end
 
+    sig { returns(T::Boolean) }
+    def empty?
+      @index.empty?
+    end
+
+    sig { returns(T::Array[String]) }
+    def keys
+      @index.keys
+    end
+
+    sig { params(block: T.proc.params(pair: [String, T::Array[T.all(Node, Indexable)]]).void).void }
+    def each(&block)
+      @index.each(&block)
+    end
+
     sig { params(out: T.any(IO, StringIO)).void }
-    def print_index(out: $stdout)
+    def pretty_print(out: $stdout)
       @index.keys.sort.each do |name|
         nodes = T.must(@index[name])
         out.puts "#{name}: #{nodes.join(", ")}"
       end
-    end
-
-    sig { returns(T::Boolean) }
-    def empty?
-      @index.empty?
     end
 
     private

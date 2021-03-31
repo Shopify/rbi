@@ -96,11 +96,9 @@ module RBI
     sig { params(rb: String).returns(String) }
     def parse_and_index(rb)
       tree = parse(rb)
-      index = Index.new
-      index.visit(tree)
-
+      index = Index.index([tree])
       out = StringIO.new
-      index.print_index(out: out)
+      index.pretty_print(out: out)
       out.string
     end
   end

@@ -26,7 +26,7 @@ module RBI
       index = Index.new
       trees.each { |tree| index.visit(tree) }
 
-      index.print_index
+      index.pretty_print
       # trees.each do |tree|
       #   tree.print
       # end
