@@ -1,16 +1,35 @@
 # typed: true
 # frozen_string_literal: true
 
+require "thor"
+
 module RBI
   class CLI < ::Thor
     extend T::Sig
 
-    desc 'foo', ''
-    def foo(*paths)
-      puts "Hello!"
+    DEFAULT_PATH = "sorbet/rbi"
+
+    desc 'validate', 'Validate RBI content'
+    def validate(*paths)
+      T.unsafe(self).validate_duplicates(*paths)
+    end
+
+    desc 'validate-duplicates', 'Validate RBI content'
+    def validate_duplicates(*paths)
+      paths << DEFAULT_PATH if paths.empty?
+
+      files = T.unsafe(Parser).list_files(*paths)
+      trees = files.map do |file|
+        T.unsafe(Parser).parse_file(file)
+      end
+
+      trees.each do |tree|
+        puts tree.nodes.size
+      end
     end
 
     no_commands do
+
     end
   end
 end
