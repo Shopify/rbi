@@ -80,10 +80,25 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      v.printl(name)
-      v.indent
-      v.visit_all(nodes)
-      v.dedent
+      case self
+      when Module
+        v.printt("module #{name}")
+      when Class
+        v.printt("class #{name}")
+        superclass = superclass_name
+        v.print(" < #{superclass}") if superclass
+      when SClass
+        v.printt("class << self")
+      end
+      if nodes.empty?
+        v.printn("; end")
+      else
+        v.printn
+        v.indent
+        v.visit_all(nodes)
+        v.dedent
+        v.printl("end")
+      end
     end
   end
 end

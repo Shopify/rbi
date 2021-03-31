@@ -59,9 +59,22 @@ module RBI
   class Class < Scope
     extend T::Sig
 
-    sig { params(name: String).void }
-    def initialize(name)
+    sig { returns(T.nilable(String)) }
+    attr_reader :superclass_name
+
+    sig { params(name: String, superclass_name: T.nilable(String)).void }
+    def initialize(name, superclass_name: nil)
       super(name)
+      @superclass_name = superclass_name
+    end
+  end
+
+  class SClass < Scope
+    extend T::Sig
+
+    sig { void }
+    def initialize
+      super("")
     end
   end
 end

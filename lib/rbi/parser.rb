@@ -100,7 +100,7 @@ module RBI
     def visit(node)
       return unless node.is_a?(AST::Node)
       case node.type
-      when :module, :class
+      when :module, :class, :sclass
         visit_scope(node)
       else
         visit_all(node.children)
@@ -115,7 +115,10 @@ module RBI
         Module.new(name)
       when :class
         name = T.must(ConstBuilder.visit(node.children[0]))
-        Class.new(name)
+        superclass_name = ConstBuilder.visit(node.children[1])
+        Class.new(name, superclass_name: superclass_name)
+      when :sclass
+        SClass.new
       else
         raise "Unsupported node #{node.type}"
       end
