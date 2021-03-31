@@ -2,6 +2,6 @@
 # typed: false
 # frozen_string_literal: true
 
-module Rbi
+module RBI
   VERSION = "0.1.0"
 end

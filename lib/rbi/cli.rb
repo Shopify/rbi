@@ -1,7 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
-class RBI
+module RBI
   class CLI < ::Thor
     extend T::Sig
 

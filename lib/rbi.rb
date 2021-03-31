@@ -4,7 +4,7 @@
 
 require_relative "rbi/version"
 
-module Rbi
+module RBI
   class Error < StandardError; end
   # Your code goes here...
 end

@@ -5,7 +5,7 @@ require_relative "lib/rbi/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "rbi"
-  spec.version       = Rbi::VERSION
+  spec.version       = RBI::VERSION
   spec.authors       = ["Alexandre Terrasa, Kaan Ozkan"]
   spec.email         = ["alexandre.terrasa@shopify.com", "kaan.ozkan@shopify.com"]
 
