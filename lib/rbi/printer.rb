@@ -5,10 +5,14 @@ module RBI
   class Printer < Visitor
     extend T::Sig
 
-    sig { params(out: T.any(IO, StringIO)).void }
-    def initialize(out: $stdout)
+    sig { returns(T::Boolean) }
+    attr_reader :show_locs
+
+    sig { params(out: T.any(IO, StringIO), show_locs: T::Boolean).void }
+    def initialize(out: $stdout, show_locs: false)
       @out = out
       @current_indent = T.let(0, Integer)
+      @show_locs = show_locs
     end
 
     # Printing
@@ -59,9 +63,9 @@ module RBI
     sig { abstract.params(v: Printer).void }
     def accept_printer(v); end
 
-    sig { params(out: T.any(IO, StringIO)).void }
-    def print(out: $stdout)
-      p = Printer.new(out: out)
+    sig { params(out: T.any(IO, StringIO), show_locs: T::Boolean).void }
+    def print(out: $stdout, show_locs: false)
+      p = Printer.new(out: out, show_locs: show_locs)
       p.visit(self)
     end
   end
@@ -80,6 +84,7 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
+      v.printl("# #{loc}") if loc && v.show_locs
       case self
       when Module
         v.printt("module #{name}")
@@ -107,7 +112,9 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      v.printl("#{name} = _")
+      v.printt("#{name} = _")
+      v.print(" # #{loc}") if loc && v.show_locs
+      v.printn
     end
   end
 
@@ -127,7 +134,9 @@ module RBI
         end
         v.print(")")
       end
-      v.printn("; end")
+      v.print("; end")
+      v.print(" # #{loc}") if loc && v.show_locs
+      v.printn
     end
   end
 
@@ -167,6 +176,7 @@ module RBI
         v.print(args.map { |arg| arg }.join(", "))
         v.print(")")
       end
+      v.print(" # #{loc}") if loc && v.show_locs
       v.printn
     end
   end

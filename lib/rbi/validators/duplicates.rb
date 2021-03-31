@@ -28,7 +28,6 @@ module RBI
 
         index.each do |name, nodes|
           if nodes.size > 1
-            # TODO check if defs are incompatibles
             return false
           end
         end

@@ -10,6 +10,7 @@ module RBI
   class Error < StandardError; end
 end
 
+require_relative "rbi/loc"
 require_relative "rbi/model"
 require_relative "rbi/parser"
 require_relative "rbi/visitor"

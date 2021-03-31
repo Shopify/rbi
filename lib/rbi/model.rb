@@ -11,9 +11,13 @@ module RBI
     sig { returns(T.nilable(Tree)) }
     attr_accessor :parent_tree
 
-    sig { params(parent_tree: T.nilable(Tree)).void }
-    def initialize(parent_tree: nil)
-      @parent_tree = parent_tree
+    sig { returns(T.nilable(Loc)) }
+    attr_reader :loc
+
+    sig { params(loc: T.nilable(Loc)).void }
+    def initialize(loc: nil)
+      @parent_tree = nil
+      @loc = loc
     end
 
     sig { returns(T.nilable(Scope)) }
@@ -33,9 +37,9 @@ module RBI
     sig { returns(T::Array[Node]) }
     attr_reader :nodes
 
-    sig { void }
-    def initialize
-      super()
+    sig { params(loc: T.nilable(Loc)).void }
+    def initialize(loc: nil)
+      super
       @nodes = T.let([], T::Array[Node])
     end
 
@@ -60,9 +64,9 @@ module RBI
     sig { returns(String) }
     attr_accessor :name
 
-    sig { params(name: String).void }
-    def initialize(name)
-      super()
+    sig { params(name: String, loc: T.nilable(Loc)).void }
+    def initialize(name, loc: nil)
+      super(loc: loc)
       @name = name
     end
 
@@ -83,9 +87,9 @@ module RBI
   class Module < Scope
     extend T::Sig
 
-    sig { params(name: String).void }
-    def initialize(name)
-      super(name)
+    sig { params(name: String, loc: T.nilable(Loc)).void }
+    def initialize(name, loc: nil)
+      super
     end
   end
 
@@ -95,9 +99,9 @@ module RBI
     sig { returns(T.nilable(String)) }
     attr_reader :superclass_name
 
-    sig { params(name: String, superclass_name: T.nilable(String)).void }
-    def initialize(name, superclass_name: nil)
-      super(name)
+    sig { params(name: String, superclass_name: T.nilable(String), loc: T.nilable(Loc)).void }
+    def initialize(name, superclass_name: nil, loc: nil)
+      super(name, loc: loc)
       @superclass_name = superclass_name
     end
   end
@@ -105,9 +109,9 @@ module RBI
   class SClass < Scope
     extend T::Sig
 
-    sig { void }
-    def initialize
-      super("")
+    sig { params(loc: T.nilable(Loc)).void }
+    def initialize(loc: nil)
+      super("", loc: loc)
     end
   end
 
@@ -117,9 +121,9 @@ module RBI
     sig { returns(String) }
     attr_accessor :name
 
-    sig { params(name: String).void }
-    def initialize(name)
-      super()
+    sig { params(name: String, loc: T.nilable(Loc)).void }
+    def initialize(name, loc: nil)
+      super(loc: loc)
       @name = name
     end
 
@@ -153,11 +157,12 @@ module RBI
       params(
         name: String,
         params: T::Array[Param],
-        is_singleton: T::Boolean
+        is_singleton: T::Boolean,
+        loc: T.nilable(Loc)
       ).void
     end
-    def initialize(name, params: [], is_singleton: false)
-      super()
+    def initialize(name, params: [], is_singleton: false, loc: nil)
+      super(loc: loc)
       @name = name
       @params = params
       @is_singleton = is_singleton
@@ -193,11 +198,12 @@ module RBI
         is_optional: T::Boolean,
         is_keyword: T::Boolean,
         is_rest: T::Boolean,
-        is_block: T::Boolean
+        is_block: T::Boolean,
+        loc: T.nilable(Loc)
       ).void
     end
-    def initialize(name, is_optional: false, is_keyword: false, is_rest: false, is_block: false)
-      super()
+    def initialize(name, is_optional: false, is_keyword: false, is_rest: false, is_block: false, loc: nil)
+      super(loc: loc)
       @name = name
       @is_optional = is_optional
       @is_keyword = is_keyword
@@ -222,9 +228,9 @@ module RBI
     sig { returns(T::Array[String]) }
     attr_reader :args
 
-    sig { params(method: ::Symbol, args: T::Array[String]).void }
-    def initialize(method, args: [])
-      super()
+    sig { params(method: ::Symbol, args: T::Array[String], loc: T.nilable(Loc)).void }
+    def initialize(method, args: [], loc: nil)
+      super(loc: loc)
       @method = method
       @args = args
     end

@@ -115,16 +115,17 @@ module RBI
 
     sig { params(node: AST::Node).void }
     def visit_scope(node)
+      loc = node_loc(node)
       scope = case node.type
       when :module
         name = T.must(ConstBuilder.visit(node.children[0]))
-        Module.new(name)
+        Module.new(name, loc: loc)
       when :class
         name = T.must(ConstBuilder.visit(node.children[0]))
         superclass_name = ConstBuilder.visit(node.children[1])
-        Class.new(name, superclass_name: superclass_name)
+        Class.new(name, superclass_name: superclass_name, loc: loc)
       when :sclass
-        SClass.new
+        SClass.new(loc: loc)
       else
         raise "Unsupported node #{node.type}"
       end
@@ -138,22 +139,25 @@ module RBI
     sig { params(node: AST::Node).void }
     def visit_const_assign(node)
       name = T.must(ConstBuilder.visit(node))
-      current_scope << Const.new(name)
+      current_scope << Const.new(name, loc: node_loc(node))
     end
 
     sig { params(node: AST::Node).void }
     def visit_def(node)
+      loc = node_loc(node)
       case node.type
       when :def
         current_scope << Method.new(
           node.children[0].to_s,
-          params: node.children[1].children.map { |child| visit_param(child) }
+          params: node.children[1].children.map { |child| visit_param(child) },
+          loc: loc
         )
       when :defs
         current_scope << Method.new(
           node.children[1].to_s,
           params: node.children[2].children.map { |child| visit_param(child) },
-          is_singleton: true
+          is_singleton: true,
+          loc: loc
         )
       else
         raise "Unsupported node #{node.type}"
@@ -162,22 +166,23 @@ module RBI
 
     sig { params(node: AST::Node).returns(Param) }
     def visit_param(node)
+      loc = node_loc(node)
       name = node.children[0].to_s
       case node.type
       when :arg
-        Param.new(name)
+        Param.new(name, loc: loc)
       when :optarg
-        Param.new(name, is_optional: true)
+        Param.new(name, loc: loc, is_optional: true)
       when :restarg
-        Param.new(name, is_rest: true)
+        Param.new(name, loc: loc, is_rest: true)
       when :kwarg
-        Param.new(name, is_keyword: true)
+        Param.new(name, loc: loc, is_keyword: true)
       when :kwoptarg
-        Param.new(name, is_keyword: true, is_optional: true)
+        Param.new(name, loc: loc, is_keyword: true, is_optional: true)
       when :kwrestarg
-        Param.new(name, is_keyword: true, is_rest: true)
+        Param.new(name, loc: loc, is_keyword: true, is_rest: true)
       when :blockarg
-        Param.new(name, is_block: true)
+        Param.new(name, loc: loc, is_block: true)
       else
         raise "Unsupported node #{node.type}"
       end
@@ -192,7 +197,13 @@ module RBI
       args = node.children[2..-1].map do |child|
         ConstBuilder.visit(child)
       end
-      current_scope << Send.new(name, args: args)
+      current_scope << Send.new(name, args: args, loc: node_loc(node))
+    end
+
+    sig { params(node: AST::Node).returns(Loc) }
+    def node_loc(node)
+      loc = node.location
+      Loc.new(file: @file, begin_line: loc.line, begin_column: loc.column, end_line: loc.last_line, end_column: loc.last_column)
     end
   end
 

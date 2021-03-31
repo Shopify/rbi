@@ -124,5 +124,31 @@ module RBI
       RB
       assert_print_same(rb)
     end
+
+    # Loc
+
+    def test_parse_locations
+      rbi = <<~RBI
+        class Foo
+          def foo; end
+          def foo; end
+          def foo(a, b:); end
+          def foo(a); end
+          attr_reader :a
+        end
+        def foo; end
+      RBI
+      assert_equal(<<~EXP, print(rbi, opts: { show_locs: true }))
+        # -:1:0-7:3
+        class Foo
+          def foo; end # -:2:2-2:14
+          def foo; end # -:3:2-3:14
+          def foo(a, b:); end # -:4:2-4:21
+          def foo(a); end # -:5:2-5:17
+          attr_reader(:a) # -:6:2-6:16
+        end
+        def foo; end # -:8:0-8:12
+      EXP
+    end
   end
 end
