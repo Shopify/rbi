@@ -104,6 +104,8 @@ module RBI
         visit_scope(node)
       when :casgn
         visit_const_assign(node)
+      when :def, :defs
+        visit_def(node)
       else
         visit_all(node.children)
       end
@@ -135,6 +137,48 @@ module RBI
     def visit_const_assign(node)
       name = T.must(ConstBuilder.visit(node))
       current_scope << Const.new(name)
+    end
+
+    sig { params(node: AST::Node).void }
+    def visit_def(node)
+      case node.type
+      when :def
+        current_scope << Method.new(
+          node.children[0].to_s,
+          params: node.children[1].children.map { |child| visit_param(child) }
+        )
+      when :defs
+        current_scope << Method.new(
+          node.children[1].to_s,
+          params: node.children[2].children.map { |child| visit_param(child) },
+          is_singleton: true
+        )
+      else
+        raise "Unsupported node #{node.type}"
+      end
+    end
+
+    sig { params(node: AST::Node).returns(Param) }
+    def visit_param(node)
+      name = node.children[0].to_s
+      case node.type
+      when :arg
+        Param.new(name)
+      when :optarg
+        Param.new(name, is_optional: true)
+      when :restarg
+        Param.new(name, is_rest: true)
+      when :kwarg
+        Param.new(name, is_keyword: true)
+      when :kwoptarg
+        Param.new(name, is_keyword: true, is_optional: true)
+      when :kwrestarg
+        Param.new(name, is_keyword: true, is_rest: true)
+      when :blockarg
+        Param.new(name, is_block: true)
+      else
+        raise "Unsupported node #{node.type}"
+      end
     end
   end
 

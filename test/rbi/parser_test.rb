@@ -88,5 +88,26 @@ module RBI
         ::C::C = _
       EXP
     end
+
+    # Defs
+
+    def test_parse_methods
+      rb = <<~RB
+        def foo; end
+        def foo(x, *y, z:); end
+        def foo(p1, p2 = 42, *p3); end
+        def foo(p1:, p2: "foo", **p3); end
+        def self.foo(p1:, p2: 3.14, p3: nil); end
+        def self.foo(p1: T.let("", String), p2: T::Array[String].new, p3: [1, 2, {}]); end
+      RB
+      assert_print_equal(<<~EXP, rb)
+        def foo; end
+        def foo(x, *y, z:); end
+        def foo(p1, p2 = _, *p3); end
+        def foo(p1:, p2: _, **p3); end
+        def self.foo(p1:, p2: _, p3: _); end
+        def self.foo(p1: _, p2: _, p3: _); end
+      EXP
+    end
   end
 end

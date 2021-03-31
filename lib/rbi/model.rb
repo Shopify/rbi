@@ -95,4 +95,69 @@ module RBI
       @name = name
     end
   end
+
+  class Method < Node
+    extend T::Sig
+
+    sig { returns(String) }
+    attr_accessor :name
+
+    sig { returns(T::Array[Param]) }
+    attr_reader :params
+
+    sig { returns(T::Boolean) }
+    attr_accessor :is_singleton
+
+    sig do
+      params(
+        name: String,
+        params: T::Array[Param],
+        is_singleton: T::Boolean
+      ).void
+    end
+    def initialize(name, params: [], is_singleton: false)
+      super()
+      @name = name
+      @params = params
+      @is_singleton = is_singleton
+    end
+
+    sig { returns(String) }
+    def to_s
+      name
+    end
+  end
+
+  class Param < Node
+    extend T::Sig
+
+    sig { returns(String) }
+    attr_reader :name
+
+    sig { returns(T::Boolean) }
+    attr_accessor :is_optional, :is_keyword, :is_rest, :is_block
+
+    sig do
+      params(
+        name: String,
+        is_optional: T::Boolean,
+        is_keyword: T::Boolean,
+        is_rest: T::Boolean,
+        is_block: T::Boolean
+      ).void
+    end
+    def initialize(name, is_optional: false, is_keyword: false, is_rest: false, is_block: false)
+      super()
+      @name = name
+      @is_optional = is_optional
+      @is_keyword = is_keyword
+      @is_rest = is_rest
+      @is_block = is_block
+    end
+
+    sig { returns(String) }
+    def to_s
+      name
+    end
+  end
 end
