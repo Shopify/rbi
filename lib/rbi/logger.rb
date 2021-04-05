@@ -20,13 +20,12 @@ module RBI
     sig { returns(T::Boolean) }
     attr_reader :color
 
-    sig { params(level: Integer, quiet: T::Boolean, color: T::Boolean, out: IO, time: T::Boolean).void }
-    def initialize(level: INFO, quiet: false, color: true, out: $stderr, time: false)
+    sig { params(level: Integer, quiet: T::Boolean, color: T::Boolean, out: IO).void }
+    def initialize(level: INFO, quiet: false, color: true, out: $stderr)
       @level = level
       @quiet = quiet
       @color = color
       @out = out
-      @time = time
     end
 
     sig { params(message: String).void }
@@ -58,20 +57,6 @@ module RBI
     def colorize(string, color)
       return string unless @color
       string.colorize(color)
-    end
-
-    sig { params(step: String, blk: T.proc.returns(T.untyped)).returns(T.untyped) }
-    def time(step, &blk)
-      if @time
-        start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        ret = blk.call
-        end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        puts(@level, format("#{step} completed in %5.2fs", end_time - start_time))
-
-        ret
-      else
-        blk.call
-      end
     end
 
     private
