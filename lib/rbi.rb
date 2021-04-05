@@ -4,6 +4,7 @@
 require "sorbet-runtime"
 require "parser/current"
 require "stringio"
+require "colorize"
 
 module RBI
   class Error < StandardError; end
@@ -15,6 +16,7 @@ require_relative "rbi/parser"
 require_relative "rbi/visitor"
 require_relative "rbi/printer"
 require_relative "rbi/index"
+require_relative "rbi/logger"
 
 require_relative "rbi/validators/duplicates"
 
