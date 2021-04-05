@@ -13,6 +13,7 @@ commands:
   run:
     desc:   'start the application'
     run:    bin/run
+  style:    bin/style
   test:
     syntax:
       argument: file
