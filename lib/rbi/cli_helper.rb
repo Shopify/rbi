@@ -1,4 +1,4 @@
-# typed: true
+# typed: strict
 # frozen_string_literal: true
 
 require "thor"
@@ -24,9 +24,10 @@ module RBI
       end
     end
 
+    sig { returns(CustomLogger) }
     def logger
       level = options[:verbose] ? Logger::Severity::DEBUG : Logger::Severity::INFO
-      MyLogger.new(level: level, color: options[:color], quiet: options[:quiet])
+      CustomLogger.new(level: level, color: options[:color], quiet: options[:quiet])
     end
   end
 end
