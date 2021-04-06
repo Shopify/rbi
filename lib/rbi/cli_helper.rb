@@ -12,7 +12,7 @@ module RBI
 
     sig { params(msg: String, logger: Logger, blk: T.proc.returns(T.untyped)).returns(T.untyped) }
     def measure_duration(msg, logger, &blk)
-      if logger.level == Logger::DEBUG
+      if logger.level == ::Logger::DEBUG
         start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         ret = blk.call
         end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
@@ -24,10 +24,10 @@ module RBI
       end
     end
 
-    sig { returns(CustomLogger) }
+    sig { returns(Logger) }
     def logger
-      level = options[:verbose] ? Logger::Severity::DEBUG : Logger::Severity::INFO
-      CustomLogger.new(level: level, color: options[:color], quiet: options[:quiet])
+      level = options[:verbose] ? ::Logger::Severity::DEBUG : ::Logger::Severity::INFO
+      Logger.new(level: level, color: options[:color], quiet: options[:quiet])
     end
   end
 end
