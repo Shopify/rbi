@@ -1,12 +1,14 @@
 # typed: true
 # frozen_string_literal: true
 
+require "thor"
+
 module RBI
   module CLIHelper
     extend T::Sig
     extend T::Helpers
 
-    requires_ancestor Kernel
+    requires_ancestor Thor
 
     sig { params(msg: String, logger: Logger, blk: T.proc.returns(T.untyped)).returns(T.untyped) }
     def measure_duration(msg, logger, &blk)
@@ -20,6 +22,11 @@ module RBI
       else
         blk.call
       end
+    end
+
+    def logger
+      level = options[:verbose] ? Logger::Severity::DEBUG : Logger::Severity::INFO
+      MyLogger.new(level: level, color: options[:color], quiet: options[:quiet])
     end
   end
 end

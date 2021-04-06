@@ -44,12 +44,5 @@ module RBI
         errors.each { |error| logger.error(error.to_s) }
       end
     end
-
-    no_commands do
-      def logger
-        level = options[:verbose] ? Logger::DEBUG : Logger::INFO
-        Logger.new(level: level, color: options[:color], quiet: options[:quiet])
-      end
-    end
   end
 end
