@@ -7,6 +7,11 @@ module RBI
   class DuplicatesTest < Minitest::Test
     include TestHelper
 
+    def setup
+      @reader, @writer = IO.pipe
+      @logger = logger(color: false, logdev: @writer)
+    end
+
     def test_no_duplicates
       rb = <<~RB
         module A
@@ -24,16 +29,26 @@ module RBI
     def test_duplicates_in_same_scope
       rb = <<~RB
         module A
-          def foo; end
+          def foo;end
           def foo; end
         end
+      RB
+
+      exp = <<~RB
+        Error: Duplicate definitions for `foo`
+
+          -:2:
+
+          -:3:
+
       RB
 
       tree = parse(rb)
       res, errors = Validators::Duplicates.validate([tree])
       refute(res)
       assert_equal(1, errors.size)
-      assert_equal("Duplicate definitions found for `foo`: -:2:2-2:14,-:3:2-3:14", errors.first.to_s)
+      error = errors.first
+      assert_log(exp, @reader, @writer) { @logger.error(error&.message, error&.sections) }
     end
 
     def test_duplicates_in_different_scopes
@@ -47,11 +62,21 @@ module RBI
         end
       RB
 
+      exp = <<~RB
+        Error: Duplicate definitions for `foo`
+
+          -:2:
+
+          -:6:
+
+      RB
+
       tree = parse(rb)
       res, errors = Validators::Duplicates.validate([tree])
       refute(res)
       assert_equal(1, errors.size)
-      assert_equal("Duplicate definitions found for `foo`: -:2:2-2:14,-:6:2-6:14", errors.first.to_s)
+      error = errors.first
+      assert_log(exp, @reader, @writer) { @logger.error(error&.message, error&.sections) }
     end
 
     def test_duplicates_in_root_scope
@@ -60,11 +85,21 @@ module RBI
         def foo; end
       RB
 
+      exp = <<~RB
+        Error: Duplicate definitions for `foo`
+
+          -:1:
+
+          -:2:
+
+      RB
+
       tree = parse(rb)
       res, errors = Validators::Duplicates.validate([tree])
       refute(res)
       assert_equal(1, errors.size)
-      assert_equal("Duplicate definitions found for `foo`: -:1:0-1:12,-:2:0-2:12", errors.first.to_s)
+      error = errors.first
+      assert_log(exp, @reader, @writer) { @logger.error(error&.message, error&.sections) }
     end
   end
 end

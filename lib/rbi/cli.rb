@@ -41,7 +41,7 @@ module RBI
       if res
         logger.info("No duplicate RBI definitions were found.")
       else
-        errors.each { |error| logger.error(error.to_s) }
+        errors.each { |error| logger.error(error.message, error.sections) }
       end
     end
   end
