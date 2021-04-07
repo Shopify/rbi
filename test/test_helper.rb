@@ -35,26 +35,6 @@ module RBI
     def assert_print_same(string, opts: {})
       assert_print_equal(string, string, opts: opts)
     end
-
-    sig { params(exp: String, reader: IO, writer: IO, blk: T.proc.returns(T.untyped)).returns(T::Boolean) }
-    def assert_log(exp, reader, writer, &blk)
-      blk.call
-      writer.close
-      out = T.unsafe(reader).gets(nil)
-      assert_equal(exp, out)
-    end
-
-    sig do
-      params(
-        level: Integer,
-        color: T::Boolean,
-        quiet: T::Boolean,
-        logdev: T.any(String, IO, StringIO, NilClass)
-      ).returns(Logger)
-    end
-    def logger(level: ::Logger::Severity::INFO, color: true, quiet: false, logdev: $stdout)
-      Logger.new(level: level, color: color, quiet: quiet, logdev: logdev)
-    end
   end
 end
 

@@ -7,11 +7,6 @@ module RBI
   class DuplicatesTest < Minitest::Test
     include TestHelper
 
-    def setup
-      @reader, @writer = IO.pipe
-      @logger = logger(color: false, logdev: @writer)
-    end
-
     def test_no_duplicates
       rb = <<~RB
         module A
@@ -34,21 +29,11 @@ module RBI
         end
       RB
 
-      exp = <<~RB
-        Error: Duplicate definitions for `foo`
-
-          -:2:
-
-          -:3:
-
-      RB
-
       tree = parse(rb)
       res, errors = Validators::Duplicates.validate([tree])
       refute(res)
       assert_equal(1, errors.size)
-      error = errors.first
-      assert_log(exp, @reader, @writer) { @logger.error(error&.message, error&.sections) }
+      assert_equal("Duplicate definitions for `foo`", errors.first&.message)
     end
 
     def test_duplicates_in_different_scopes
@@ -62,21 +47,11 @@ module RBI
         end
       RB
 
-      exp = <<~RB
-        Error: Duplicate definitions for `foo`
-
-          -:2:
-
-          -:6:
-
-      RB
-
       tree = parse(rb)
       res, errors = Validators::Duplicates.validate([tree])
       refute(res)
       assert_equal(1, errors.size)
-      error = errors.first
-      assert_log(exp, @reader, @writer) { @logger.error(error&.message, error&.sections) }
+      assert_equal("Duplicate definitions for `foo`", errors.first&.message)
     end
 
     def test_duplicates_in_root_scope
@@ -85,21 +60,11 @@ module RBI
         def foo; end
       RB
 
-      exp = <<~RB
-        Error: Duplicate definitions for `foo`
-
-          -:1:
-
-          -:2:
-
-      RB
-
       tree = parse(rb)
       res, errors = Validators::Duplicates.validate([tree])
       refute(res)
       assert_equal(1, errors.size)
-      error = errors.first
-      assert_log(exp, @reader, @writer) { @logger.error(error&.message, error&.sections) }
+      assert_equal("Duplicate definitions for `foo`", errors.first&.message)
     end
   end
 end
