@@ -25,10 +25,11 @@ module RBI
         colorize_severity(severity) + msg.to_s + "\n" unless @quiet
       end
 
-      sig { params(string: String, color: Symbol).returns(String) }
+      sig { params(string: String, color: T.nilable(Symbol)).returns(String) }
       def colorize(string, color)
         return string unless @color
-        string.colorize(color)
+        string = string.colorize(color) if color
+        highlight(string)
       end
 
       private
@@ -47,6 +48,27 @@ module RBI
         else
           ""
         end
+      end
+
+      sig { params(string: String).returns(String) }
+      def highlight(string)
+        res = StringIO.new
+        word = StringIO.new
+        in_ticks = T.let(false, T::Boolean)
+        string.chars.each do |c|
+          if c == "`" && !in_ticks
+            in_ticks = true
+          elsif c == "`" && in_ticks
+            in_ticks = false
+            res << colorize(word.string, :blue)
+            word = StringIO.new
+          elsif in_ticks
+            word << c
+          else
+            res << c
+          end
+        end
+        res.string
       end
     end
 
@@ -73,7 +95,7 @@ module RBI
     sig { params(message: String, sections: T::Array[Validators::Duplicates::Error::Section]).void }
     def error(message, sections)
       str = StringIO.new
-      str << "#{message}\n"
+      str << colorize("#{message}\n")
 
       sections.each do |section|
         loc = section.loc
@@ -87,6 +109,8 @@ module RBI
 
       super(str.string)
     end
+
+    private
 
     sig { params(loc: Loc).returns(String) }
     def show_source(loc)
@@ -104,7 +128,7 @@ module RBI
       lines.each do |line|
         rjust = @color ? 23 : 9
         str << colorize("#{loc.begin_line} | ", :light_black).rjust(rjust)
-        str << colorize(line.rstrip)
+        str << line.rstrip
         str << "\n"
       end
 
@@ -113,7 +137,6 @@ module RBI
 
     sig { params(string: String, color: T.nilable(Symbol)).returns(String) }
     def colorize(string, color = nil)
-      return string unless color
       T.cast(@formatter, Formatter).colorize(string, color)
     end
   end
