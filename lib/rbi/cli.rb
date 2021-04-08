@@ -30,7 +30,7 @@ module RBI
 
       trees = measure_duration("Parsing files", logger) do
         files.map do |file|
-          T.unsafe(Parser).parse_file(file)
+          Parser.parse_file(file)
         end
       end
 
@@ -41,7 +41,7 @@ module RBI
       if res
         logger.info("No duplicate RBI definitions were found.")
       else
-        errors.each { |error| logger.error(error.message, error.sections) }
+        errors.each { |error| logger.validation_error(error) }
       end
     end
   end

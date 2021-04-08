@@ -24,8 +24,8 @@ module RBI
     def test_duplicates_in_same_scope
       rb = <<~RB
         module A
-          def foo;end
           def foo; end
+          def foo; end # with a trailing comment
         end
       RB
 
@@ -43,7 +43,7 @@ module RBI
         end
 
         module A
-          def foo; end
+          def foo; end # with a trailing comment
         end
       RB
 
@@ -57,7 +57,7 @@ module RBI
     def test_duplicates_in_root_scope
       rb = <<~RB
         def foo; end
-        def foo; end
+        def foo; end # with a trailing comment
       RB
 
       tree = parse(rb)

@@ -20,6 +20,7 @@ require_relative "rbi/logger"
 require_relative "rbi/cli_helper"
 
 require_relative "rbi/validators/duplicates"
+require_relative "rbi/validators/error"
 
 require_relative "rbi/cli"
 require_relative "rbi/version"

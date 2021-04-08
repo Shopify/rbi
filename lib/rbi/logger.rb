@@ -92,8 +92,11 @@ module RBI
       @color = color
     end
 
-    sig { params(message: String, sections: T::Array[Validators::Duplicates::Error::Section]).void }
-    def error(message, sections)
+    sig { params(error: Validators::Error).void }
+    def validation_error(error)
+      message = error.message
+      sections = error.sections
+
       str = StringIO.new
       str << colorize("#{message}\n")
 
@@ -107,7 +110,7 @@ module RBI
         str << show_source(loc)
       end
 
-      super(str.string)
+      error(str.string)
     end
 
     private
@@ -120,11 +123,16 @@ module RBI
       str = StringIO.new
       source = File.read(file)
       lines = T.must(source.lines[(T.must(loc.begin_line) - 1)..(T.must(loc.end_line) - 1)])
-      lines = [
-        *lines[0..2],
-        colorize("#{" " * T.must(lines[2]&.index(/[^ ]/))}...\n"),
-        *lines[-3..lines.size],
-      ] if lines.size > 10
+
+      if lines.size > 10
+        # Shorten the source and add `...`
+        lines = [
+          *lines[0..2],
+          colorize("#{" " * T.must(lines[2]&.index(/[^ ]/))}...\n"),
+          *lines[-3..lines.size],
+        ]
+      end
+
       lines.each do |line|
         rjust = @color ? 23 : 9
         str << colorize("#{loc.begin_line} | ", :light_black).rjust(rjust)
