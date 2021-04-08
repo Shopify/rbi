@@ -42,7 +42,12 @@ module RBI
         logger.info("No duplicate RBI definitions were found.")
       else
         errors.each { |error| logger.validation_error(error) }
+        exit(1)
       end
+    end
+
+    def self.exit_on_failure?
+      true
     end
   end
 end
