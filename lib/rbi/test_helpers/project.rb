@@ -31,22 +31,13 @@ module RBI
         File.write(path, content)
       end
 
-      # Run a command with `bundle exec` in this project
+      # Run a command in this project
       sig { params(cmd: String, args: String).returns([T.nilable(String), T::Boolean]) }
-      def bundle_exec(cmd, *args)
+      def run(cmd, *args)
         opts = {}
         opts[:chdir] = @path
-        out, _, status = Open3.capture3(["bundle", "exec", cmd, *args].join(" "), opts)
+        out, _, status = Open3.capture3([cmd, *args].join(" "), opts)
         [out, status.success?]
-      end
-
-      # Run `bundle install` in this project
-      sig { returns([T.nilable(String), T.nilable(String), T::Boolean]) }
-      def bundle_install
-        opts = {}
-        opts[:chdir] = @path
-        out, err, status = Open3.capture3("bundle", "install", "--path", "vendor/bundle", opts)
-        [out, err, status.success?]
       end
 
       # Delete this project and its content

@@ -43,9 +43,6 @@ module RBI
     def project(name)
       project = TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name}")
       project.gemfile(gemfile)
-      Bundler.with_clean_env do
-        project.bundle_install
-      end
       project
     end
 

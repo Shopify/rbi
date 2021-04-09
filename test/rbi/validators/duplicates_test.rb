@@ -27,7 +27,7 @@ module RBI
         Info: No duplicate RBI definitions were found.
       OUT
 
-      out, status = @project.bundle_exec("rbi validate --no-color")
+      out, status = @project.run("rbi validate --no-color")
       assert(status)
       assert_equal(expected, out)
     end
@@ -51,7 +51,7 @@ module RBI
 
       OUT
 
-      out, status = @project.bundle_exec("rbi validate --no-color")
+      out, status = @project.run("rbi validate --no-color")
       refute(status)
       assert_equal(expected, out)
     end
@@ -78,7 +78,7 @@ module RBI
 
       OUT
 
-      out, status = @project.bundle_exec("rbi validate --no-color")
+      out, status = @project.run("rbi validate --no-color")
       refute(status)
       assert_equal(expected, out)
     end
@@ -100,7 +100,7 @@ module RBI
 
       OUT
 
-      out, status = @project.bundle_exec("rbi validate --no-color")
+      out, status = @project.run("rbi validate --no-color")
       refute(status)
       assert_equal(expected, out)
     end
