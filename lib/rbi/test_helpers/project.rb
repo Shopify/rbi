@@ -17,12 +17,6 @@ module RBI
         FileUtils.mkdir_p(@path)
       end
 
-      # Set the content of the Gemfile in this project
-      sig { params(content: String).void }
-      def gemfile(content)
-        write("Gemfile", content)
-      end
-
       # Write `content` in the file at `rel_path`
       sig { params(rel_path: String, content: String).void }
       def write(rel_path, content = "")
