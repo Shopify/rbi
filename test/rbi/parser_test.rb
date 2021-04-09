@@ -12,6 +12,87 @@ module RBI
       assert(tree.empty?)
     end
 
+    # Comments
+
+    def test_parse_magic_comments
+      rb = <<~RB
+        # typed: true
+        # frozen_string_literal: true
+        # A real comment
+        module A; end
+      RB
+      assert_print_same(rb)
+    end
+
+    def test_parse_discard_comments_from_empty_file
+      rb = <<~RB
+        # Comment line 1
+        # Comment line 2
+        # Comment line 3
+      RB
+      assert_print_equal("", rb)
+    end
+
+    def test_parse_multiline_comments
+      rb = <<~RB
+        # typed: true
+        # Comment line 1
+        # Comment line 2
+        # Comment line 3
+        module M; end
+      RB
+      assert_print_same(rb)
+    end
+
+    def test_parse_header_comments
+      rb = <<~RB
+        # A comment
+        module A
+          # B comment
+          class B
+            # c comment
+            def c; end
+            # d comment
+            attr_reader
+            # E comment
+            E = _
+          end
+        end
+      RB
+      assert_print_same(rb)
+    end
+
+    def test_parse_move_trailing_comments
+      rb = <<~RB
+        # A comment 1
+        # A comment 2
+        module A
+          # B comment
+          class B; end
+          # A comment 3
+        end
+      RB
+      assert_print_equal(<<~EXP, rb)
+        # A comment 1
+        # A comment 2
+        # A comment 3
+        module A
+          # B comment
+          class B; end
+        end
+      EXP
+    end
+
+    def test_parse_discard_orphan_comments
+      rb = <<~RB
+        module A; end
+        # Orphan comment
+      RB
+      assert_print_equal(<<~EXP, rb)
+        module A; end
+      EXP
+    end
+
     # Scopes
 
     def test_parse_nesting
