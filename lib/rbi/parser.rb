@@ -53,7 +53,7 @@ module RBI
     sig { params(path: String).returns(RBI::Tree) }
     def parse_file(path)
       node = ::Parser::CurrentRuby.parse_file(path)
-      builder = TreeBuilder.new(path)
+      builder = TreeBuilder.new(file: path)
       builder.visit(node)
       builder.tree
     rescue ::Parser::SyntaxError => e
@@ -83,7 +83,7 @@ module RBI
     attr_reader :tree
 
     sig { params(file: String).void }
-    def initialize(file = "-")
+    def initialize(file: "-")
       super()
       @file = file
       @tree = T.let(Tree.new, Tree)
