@@ -41,24 +41,7 @@ module RBI
 
     sig { params(name: String).returns(TestHelpers::Project) }
     def project(name)
-      project = TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name}")
-      project.gemfile(gemfile)
-      project
-    end
-
-    sig { returns(String) }
-    def gemfile
-      <<~GEM
-        gem("rbi", path: "#{rbi_path}")
-      GEM
-    end
-
-    sig { returns(String) }
-    def rbi_path
-      path = File.dirname(__FILE__)   # rbi/test/rbi/
-      path = File.dirname(path)       # rbi/test/
-      path = File.dirname(path)       # rbi/
-      File.expand_path(path)
+      TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name}")
     end
   end
 end
