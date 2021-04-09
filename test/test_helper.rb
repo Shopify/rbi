@@ -4,6 +4,7 @@
 $LOAD_PATH.unshift(File.expand_path("../../lib", __FILE__))
 
 require "rbi"
+require "rbi/test_helpers/project"
 require "minitest/test"
 
 module RBI
@@ -12,6 +13,8 @@ module RBI
     extend T::Helpers
 
     requires_ancestor Minitest::Test
+
+    TEST_PROJECTS_PATH = "/tmp/rbi/tests"
 
     sig { params(string: String).returns(Tree) }
     def parse(string)
@@ -34,6 +37,11 @@ module RBI
     sig { params(string: String, opts: T::Hash[Symbol, T.untyped]).void }
     def assert_print_same(string, opts: {})
       assert_print_equal(string, string, opts: opts)
+    end
+
+    sig { params(name: String).returns(TestHelpers::Project) }
+    def project(name)
+      TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name}")
     end
   end
 end

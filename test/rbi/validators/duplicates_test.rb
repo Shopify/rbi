@@ -7,37 +7,57 @@ module RBI
   class DuplicatesTest < Minitest::Test
     include TestHelper
 
+    def setup
+      @project = project("duplicates_test")
+    end
+
+    def teardown
+      @project.destroy
+    end
+
     def test_no_duplicates
-      rb = <<~RB
+      @project.write("sorbet/rbi/test.rbi", <<~RB)
         module A
           def foo; end
           def bar; end
         end
       RB
 
-      tree = parse(rb)
-      res, errors = Validators::Duplicates.validate([tree])
-      assert(res)
-      assert_empty(errors)
+      expected = <<~OUT
+        Info: No duplicate RBI definitions were found.
+      OUT
+
+      out, status = @project.run("rbi validate --no-color")
+      assert(status)
+      assert_equal(expected, out)
     end
 
     def test_duplicates_in_same_scope
-      rb = <<~RB
+      @project.write("sorbet/rbi/test.rbi", <<~RB)
         module A
           def foo; end
           def foo; end # with a trailing comment
         end
       RB
 
-      tree = parse(rb)
-      res, errors = Validators::Duplicates.validate([tree])
-      refute(res)
-      assert_equal(1, errors.size)
-      assert_equal("Duplicate definitions for `foo`", errors.first&.message)
+      expected = <<~OUT
+        Error: Duplicate definitions for `foo`
+
+          sorbet/rbi/test.rbi:2:
+             2 |   def foo; end
+
+          sorbet/rbi/test.rbi:3:
+             3 |   def foo; end # with a trailing comment
+
+      OUT
+
+      out, status = @project.run("rbi validate --no-color")
+      refute(status)
+      assert_equal(expected, out)
     end
 
     def test_duplicates_in_different_scopes
-      rb = <<~RB
+      @project.write("sorbet/rbi/test.rbi", <<~RB)
         module A
           def foo; end
         end
@@ -47,24 +67,71 @@ module RBI
         end
       RB
 
-      tree = parse(rb)
-      res, errors = Validators::Duplicates.validate([tree])
-      refute(res)
-      assert_equal(1, errors.size)
-      assert_equal("Duplicate definitions for `foo`", errors.first&.message)
+      expected = <<~OUT
+        Error: Duplicate definitions for `foo`
+
+          sorbet/rbi/test.rbi:2:
+             2 |   def foo; end
+
+          sorbet/rbi/test.rbi:6:
+             6 |   def foo; end # with a trailing comment
+
+      OUT
+
+      out, status = @project.run("rbi validate --no-color")
+      refute(status)
+      assert_equal(expected, out)
     end
 
     def test_duplicates_in_root_scope
-      rb = <<~RB
+      @project.write("sorbet/rbi/test.rbi", <<~RB)
         def foo; end
         def foo; end # with a trailing comment
       RB
 
-      tree = parse(rb)
-      res, errors = Validators::Duplicates.validate([tree])
-      refute(res)
-      assert_equal(1, errors.size)
-      assert_equal("Duplicate definitions for `foo`", errors.first&.message)
+      expected = <<~OUT
+        Error: Duplicate definitions for `foo`
+
+          sorbet/rbi/test.rbi:1:
+             1 | def foo; end
+
+          sorbet/rbi/test.rbi:2:
+             2 | def foo; end # with a trailing comment
+
+      OUT
+
+      out, status = @project.run("rbi validate --no-color")
+      refute(status)
+      assert_equal(expected, out)
+    end
+
+    def test_duplicates_in_different_files
+      @project.write("sorbet/rbi/a.rbi", <<~RB)
+        module A
+          def foo; end # in a.rbi
+        end
+      RB
+
+      @project.write("sorbet/rbi/b.rbi", <<~RB)
+        module A
+          def foo; end # in b.rbi
+        end
+      RB
+
+      expected = <<~OUT
+        Error: Duplicate definitions for `foo`
+
+          sorbet/rbi/a.rbi:2:
+             2 |   def foo; end # in a.rbi
+
+          sorbet/rbi/b.rbi:2:
+             2 |   def foo; end # in b.rbi
+
+      OUT
+
+      out, status = @project.run("rbi validate --no-color")
+      refute(status)
+      assert_equal(expected, out)
     end
   end
 end
