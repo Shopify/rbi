@@ -104,5 +104,34 @@ module RBI
       refute(status)
       assert_equal(expected, out)
     end
+
+    def test_duplicates_in_different_files
+      @project.write("sorbet/rbi/a.rbi", <<~RB)
+        module A
+          def foo; end # in a.rbi
+        end
+      RB
+
+      @project.write("sorbet/rbi/b.rbi", <<~RB)
+        module A
+          def foo; end # in b.rbi
+        end
+      RB
+
+      expected = <<~OUT
+        Error: Duplicate definitions for `foo`
+
+          sorbet/rbi/a.rbi:2:
+             2 |   def foo; end # in a.rbi
+
+          sorbet/rbi/b.rbi:2:
+             2 |   def foo; end # in b.rbi
+
+      OUT
+
+      out, status = @project.run("rbi validate --no-color")
+      refute(status)
+      assert_equal(expected, out)
+    end
   end
 end
