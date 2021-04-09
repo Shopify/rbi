@@ -25,7 +25,7 @@ module RBI
       rb = <<~RB
         module A
           def foo; end
-          def foo; end
+          def foo; end # with a trailing comment
         end
       RB
 
@@ -33,7 +33,7 @@ module RBI
       res, errors = Validators::Duplicates.validate([tree])
       refute(res)
       assert_equal(1, errors.size)
-      assert_equal("Duplicate definitions found for `foo`: -:2:2-2:14,-:3:2-3:14", errors.first.to_s)
+      assert_equal("Duplicate definitions for `foo`", errors.first&.message)
     end
 
     def test_duplicates_in_different_scopes
@@ -43,7 +43,7 @@ module RBI
         end
 
         module A
-          def foo; end
+          def foo; end # with a trailing comment
         end
       RB
 
@@ -51,20 +51,20 @@ module RBI
       res, errors = Validators::Duplicates.validate([tree])
       refute(res)
       assert_equal(1, errors.size)
-      assert_equal("Duplicate definitions found for `foo`: -:2:2-2:14,-:6:2-6:14", errors.first.to_s)
+      assert_equal("Duplicate definitions for `foo`", errors.first&.message)
     end
 
     def test_duplicates_in_root_scope
       rb = <<~RB
         def foo; end
-        def foo; end
+        def foo; end # with a trailing comment
       RB
 
       tree = parse(rb)
       res, errors = Validators::Duplicates.validate([tree])
       refute(res)
       assert_equal(1, errors.size)
-      assert_equal("Duplicate definitions found for `foo`: -:1:0-1:12,-:2:0-2:12", errors.first.to_s)
+      assert_equal("Duplicate definitions for `foo`", errors.first&.message)
     end
   end
 end

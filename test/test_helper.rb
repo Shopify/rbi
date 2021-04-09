@@ -4,10 +4,14 @@
 $LOAD_PATH.unshift(File.expand_path("../../lib", __FILE__))
 
 require "rbi"
+require "minitest/test"
 
 module RBI
   module TestHelper
     extend T::Sig
+    extend T::Helpers
+
+    requires_ancestor Minitest::Test
 
     sig { params(string: String).returns(Tree) }
     def parse(string)
@@ -24,7 +28,7 @@ module RBI
 
     sig { params(exp: String, string: String, opts: T::Hash[Symbol, T.untyped]).void }
     def assert_print_equal(exp, string, opts: {})
-      T.unsafe(self).assert_equal(exp, print(string, opts: opts))
+      assert_equal(exp, print(string, opts: opts))
     end
 
     sig { params(string: String, opts: T::Hash[Symbol, T.untyped]).void }
