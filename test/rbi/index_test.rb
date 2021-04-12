@@ -91,6 +91,29 @@ module RBI
       INDEX
     end
 
+    def test_index_attr
+      rb = <<~RB
+        attr_reader :foo
+        attr_writer :bar
+        attr_accessor :baz
+        class A
+          attr_accessor :foo
+        end
+        method_call
+      RB
+
+      index = parse_and_index(rb)
+      assert_equal(<<~INDEX, index)
+        #bar=: bar
+        #baz: baz
+        #baz=: baz
+        #foo: foo
+        ::A: A
+        ::A#foo: foo
+        ::A#foo=: foo
+      INDEX
+    end
+
     private
 
     sig { params(rb: String).returns(String) }

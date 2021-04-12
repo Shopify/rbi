@@ -18,7 +18,7 @@ module RBI
     sig { void }
     def initialize
       super()
-      @index = T.let({}, T::Hash[String, T::Array[T.all(Indexable, Node)]])
+      @index = T.let({}, T::Hash[String, T::Array[Node]])
     end
 
     sig { override.params(node: T.nilable(Node)).void }
@@ -27,7 +27,7 @@ module RBI
       when Module, Class
         index(node)
         visit_all(node.nodes)
-      when Method, Const
+      when Method, Const, Send
         index(node)
       when Tree
         visit_all(node.nodes)
@@ -44,7 +44,7 @@ module RBI
       @index.keys
     end
 
-    sig { params(block: T.proc.params(pair: [String, T::Array[T.all(Node, Indexable)]]).void).void }
+    sig { params(block: T.proc.params(pair: [String, T::Array[Node]]).void).void }
     def each(&block)
       @index.each(&block)
     end
@@ -59,48 +59,57 @@ module RBI
 
     private
 
-    sig { params(node: T.all(Indexable, Node)).void }
+    ATTR_REGEX = /^attr_(.*)/
+
+    sig { params(node: Node).void }
     def index(node)
-      name = node.index_key
-      arr = @index[name] ||= []
-      arr << node
+      case node
+      when Scope, Method, Const
+        name = node.qualified_name
+        arr = @index[name] ||= []
+        arr << node
+      when Send
+        match = attr_method(node.method)
+        return unless match
+        if match[1] == "reader"
+          full_name, method_name = rewrite_attr_reader(node.args, node.parent_scope)
+          arr = @index[full_name] ||= []
+          arr << method_name
+        elsif match [1] == "writer"
+          full_name, method_name = rewrite_attr_writer(node.args, node.parent_scope)
+          arr = @index[full_name] ||= []
+          arr << method_name
+        elsif match[1] == "accessor"
+          reader_full_name, reader_method_name = rewrite_attr_reader(node.args, node.parent_scope)
+          writer_full_name, writer_method_name = rewrite_attr_writer(node.args, node.parent_scope)
+
+          arr = @index[reader_full_name] ||= []
+          arr << reader_method_name
+          arr = @index[writer_full_name] ||= []
+          arr << writer_method_name
+        end
+      end
     end
-  end
 
-  module Indexable
-    extend T::Sig
-    extend T::Helpers
-
-    interface!
-
-    sig { abstract.returns(String) }
-    def index_key; end
-  end
-
-  class Scope
-    include Indexable
-
-    sig { override.returns(String) }
-    def index_key
-      qualified_name
+    sig { params(method: Symbol).returns(T.nilable(MatchData)) }
+    def attr_method(method)
+      method.match(ATTR_REGEX)
     end
-  end
 
-  class Method
-    include Indexable
-
-    sig { override.returns(String) }
-    def index_key
-      qualified_name
+    def rewrite_attr_reader(args, scope)
+      method_name = args.first[1..-1]
+      sep = "#" # TODO: Handle singletons with better SClass support
+      str = "#{sep}#{method_name}"
+      return str, method_name unless scope
+      ["#{scope.qualified_name}#{str}", method_name]
     end
-  end
 
-  class Const
-    include Indexable
-
-    sig { override.returns(String) }
-    def index_key
-      qualified_name
+    def rewrite_attr_writer(args, scope)
+      method_name = args.first[1..-1]
+      sep = "#" # TODO: Handle singletons with better SClass support
+      str = "#{sep}#{method_name}="
+      return str, method_name unless scope
+      ["#{scope.qualified_name}#{str}", method_name]
     end
   end
 end

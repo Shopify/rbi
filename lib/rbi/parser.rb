@@ -211,6 +211,8 @@ module RBI
       current_scope << Send.new(name, args: args, loc: node_loc(node), comments: node_comments(node))
     end
 
+    private
+
     sig { params(node: AST::Node).returns(Loc) }
     def node_loc(node)
       ast_to_rbi_loc(node.location)
