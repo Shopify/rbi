@@ -42,8 +42,9 @@ module RBI
 
     sig { params(string: String).returns(RBI::Tree) }
     def parse_string(string)
-      node = ::Parser::CurrentRuby.parse(string)
-      builder = TreeBuilder.new
+      node, comments = ::Parser::CurrentRuby.parse_with_comments(string)
+      assoc = ::Parser::Source::Comment.associate_locations(node, comments)
+      builder = TreeBuilder.new(comments: assoc)
       builder.visit(node)
       builder.tree
     rescue ::Parser::SyntaxError => e
@@ -52,8 +53,9 @@ module RBI
 
     sig { params(path: String).returns(RBI::Tree) }
     def parse_file(path)
-      node = ::Parser::CurrentRuby.parse_file(path)
-      builder = TreeBuilder.new(path)
+      node, comments = ::Parser::CurrentRuby.parse_file_with_comments(path)
+      assoc = ::Parser::Source::Comment.associate_locations(node, comments)
+      builder = TreeBuilder.new(file: path, comments: assoc)
       builder.visit(node)
       builder.tree
     rescue ::Parser::SyntaxError => e
@@ -82,10 +84,16 @@ module RBI
     sig { returns(Tree) }
     attr_reader :tree
 
-    sig { params(file: String).void }
-    def initialize(file = "-")
+    sig do
+      params(
+        file: String,
+        comments: T.nilable(T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]])
+      ).void
+    end
+    def initialize(file: "-", comments: nil)
       super()
       @file = file
+      @comments = comments
       @tree = T.let(Tree.new, Tree)
       @scopes_stack = T.let([@tree], T::Array[Tree])
     end
@@ -115,16 +123,17 @@ module RBI
     sig { params(node: AST::Node).void }
     def visit_scope(node)
       loc = node_loc(node)
+      comments = node_comments(node)
       scope = case node.type
       when :module
         name = T.must(ConstBuilder.visit(node.children[0]))
-        Module.new(name, loc: loc)
+        Module.new(name, loc: loc, comments: comments)
       when :class
         name = T.must(ConstBuilder.visit(node.children[0]))
         superclass_name = ConstBuilder.visit(node.children[1])
-        Class.new(name, superclass_name: superclass_name, loc: loc)
+        Class.new(name, superclass_name: superclass_name, loc: loc, comments: comments)
       when :sclass
-        SClass.new(loc: loc)
+        SClass.new(loc: loc, comments: comments)
       else
         raise "Unsupported node #{node.type}"
       end
@@ -138,7 +147,7 @@ module RBI
     sig { params(node: AST::Node).void }
     def visit_const_assign(node)
       name = T.must(ConstBuilder.visit(node))
-      current_scope << Const.new(name, loc: node_loc(node))
+      current_scope << Const.new(name, loc: node_loc(node), comments: node_comments(node))
     end
 
     sig { params(node: AST::Node).void }
@@ -149,14 +158,16 @@ module RBI
         current_scope << Method.new(
           node.children[0].to_s,
           params: node.children[1].children.map { |child| visit_param(child) },
-          loc: loc
+          loc: loc,
+          comments: node_comments(node)
         )
       when :defs
         current_scope << Method.new(
           node.children[1].to_s,
           params: node.children[2].children.map { |child| visit_param(child) },
           is_singleton: true,
-          loc: loc
+          loc: loc,
+          comments: node_comments(node)
         )
       else
         raise "Unsupported node #{node.type}"
@@ -167,21 +178,22 @@ module RBI
     def visit_param(node)
       loc = node_loc(node)
       name = node.children[0].to_s
+      comments = node_comments(node)
       case node.type
       when :arg
-        Param.new(name, loc: loc)
+        Param.new(name, loc: loc, comments: comments)
       when :optarg
-        Param.new(name, loc: loc, is_optional: true)
+        Param.new(name, loc: loc, comments: comments, is_optional: true)
       when :restarg
-        Param.new(name, loc: loc, is_rest: true)
+        Param.new(name, loc: loc, comments: comments, is_rest: true)
       when :kwarg
-        Param.new(name, loc: loc, is_keyword: true)
+        Param.new(name, loc: loc, comments: comments, is_keyword: true)
       when :kwoptarg
-        Param.new(name, loc: loc, is_keyword: true, is_optional: true)
+        Param.new(name, loc: loc, comments: comments, is_keyword: true, is_optional: true)
       when :kwrestarg
-        Param.new(name, loc: loc, is_keyword: true, is_rest: true)
+        Param.new(name, loc: loc, comments: comments, is_keyword: true, is_rest: true)
       when :blockarg
-        Param.new(name, loc: loc, is_block: true)
+        Param.new(name, loc: loc, comments: comments, is_block: true)
       else
         raise "Unsupported node #{node.type}"
       end
@@ -196,14 +208,31 @@ module RBI
       args = node.children[2..-1].map do |child|
         ConstBuilder.visit(child)
       end
-      current_scope << Send.new(name, args: args, loc: node_loc(node))
+      current_scope << Send.new(name, args: args, loc: node_loc(node), comments: node_comments(node))
     end
 
     sig { params(node: AST::Node).returns(Loc) }
     def node_loc(node)
-      loc = node.location
-      Loc.new(file: @file, begin_line: loc.line, begin_column: loc.column, end_line: loc.last_line,
-end_column: loc.last_column)
+      ast_to_rbi_loc(node.location)
+    end
+
+    sig { params(ast_loc: ::Parser::Source::Map).returns(Loc) }
+    def ast_to_rbi_loc(ast_loc)
+      Loc.new(
+        file: @file,
+        begin_line: ast_loc.line,
+        begin_column: ast_loc.column,
+        end_line: ast_loc.last_line,
+        end_column: ast_loc.last_column
+      )
+    end
+
+    sig { params(node: AST::Node).returns(T::Array[Comment]) }
+    def node_comments(node)
+      return [] unless @comments
+      comments = @comments[node.location]
+      return [] unless comments
+      comments.map { |comment| Comment.new(comment.text, loc: ast_to_rbi_loc(comment.location)) }
     end
   end
 
