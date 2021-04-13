@@ -76,7 +76,7 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      v.printl(text)
+      v.printl(text.strip)
     end
   end
 
@@ -141,10 +141,33 @@ module RBI
       v.print("self.") if is_singleton
       v.print(name.to_s)
       unless params.empty?
-        v.print("(")
-        params.each_with_index do |param, index|
-          v.print(", ") if index > 0
-          v.visit(param)
+        can_inline = params.reject { |p| p.comments.empty? }.empty?
+        if can_inline
+          v.print("(")
+          params.each_with_index do |param, index|
+            v.print(", ") if index > 0
+            v.visit(param)
+          end
+        else
+          v.printn("(")
+          v.indent
+          params.each_with_index do |param, pindex|
+            v.printt
+            v.visit(param)
+            v.print(", ") if pindex < params.size - 1
+            param.comments.each_with_index do |comment, cindex|
+              if cindex > 0
+                size = comment.text.length - 1
+                text = comment.text[1..size] || ""
+                v.print(", ")
+                v.print(text.strip)
+              else
+                v.print(comment.text.strip)
+              end
+            end
+            v.printn
+          end
+          v.dedent
         end
         v.print(")")
       end

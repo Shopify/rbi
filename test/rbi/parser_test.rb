@@ -93,6 +93,26 @@ module RBI
       EXP
     end
 
+    def test_parse_param_comments
+      rb = <<~RB
+        def foo(
+          a, # `a` comment
+          b:, # `b` comment
+              # `c` comment 1
+          c:, # `c` comment 2
+          d: _
+        ); end
+      RB
+      assert_print_equal(<<~EXP, rb)
+        def foo(
+          a, # `a` comment
+          b:, # `b` comment
+          c:, # `c` comment 1, `c` comment 2
+          d: _
+        ); end
+      EXP
+    end
+
     # Scopes
 
     def test_parse_nesting
