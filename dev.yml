@@ -24,6 +24,7 @@ commands:
     aliases: ['tc']
     depends-railgun: false
     run: bundle exec srb tc
+  sanity: 'bin/typecheck; bin/test; bin/style'
   rbi:
     desc:   "generate Ruby interface files for Sorbet"
     subcommands:
