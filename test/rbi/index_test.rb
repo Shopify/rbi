@@ -93,7 +93,7 @@ module RBI
 
     def test_index_attr
       rb = <<~RB
-        attr_reader :foo
+        attr_reader :foo, :bar
         attr_writer :bar
         attr_accessor :baz
         class A
@@ -104,6 +104,7 @@ module RBI
 
       index = parse_and_index(rb)
       assert_equal(<<~INDEX, index)
+        #bar: bar
         #bar=: bar
         #baz: baz
         #baz=: baz

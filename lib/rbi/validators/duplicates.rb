@@ -24,6 +24,7 @@ module RBI
       def validate(trees)
         index = Index.index(trees)
 
+        ret = T.let(true, T::Boolean)
         index.each do |_name, nodes|
           next if nodes.size <= 1
 
@@ -38,10 +39,10 @@ module RBI
           end
           @errors << err
 
-          return false
+          ret = false
         end
 
-        true
+        ret
       end
     end
   end
