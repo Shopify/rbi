@@ -90,7 +90,7 @@ module RBI
 
     sig { params(method: Symbol).returns(T::Boolean) }
     def attr_method?(method)
-      method.start_with?("attr")
+      method.to_s.start_with?("attr")
     end
 
     sig { params(arg: String, scope: T.nilable(Scope)).returns(String) }
