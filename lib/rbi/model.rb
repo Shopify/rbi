@@ -267,5 +267,10 @@ module RBI
       @method = method
       @args = args
     end
+
+    sig { returns(String) }
+    def to_s
+      "#{method} #{args.join(", ")}"
+    end
   end
 end

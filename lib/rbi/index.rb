@@ -59,8 +59,6 @@ module RBI
 
     private
 
-    ATTR_REGEX = /^attr_(.*)/
-
     sig { params(node: Node).void }
     def index(node)
       case node
@@ -69,54 +67,54 @@ module RBI
         arr = @index[name] ||= []
         arr << node
       when Send
-        match = attr_method(node.method)
-        return unless match
+        send_method = node.method
+        return unless attr_method?(send_method)
         node.args.each do |arg|
-          if match[1] == "reader"
-            full_name, method_name = rewrite_attr_reader(arg, node.parent_scope)
-            add_to_index(full_name, method_name, node.loc)
-          elsif match [1] == "writer"
-            full_name, method_name = rewrite_attr_writer(arg, node.parent_scope)
-            add_to_index(full_name, method_name, node.loc)
-          elsif match[1] == "accessor"
-            reader_full_name, reader_method_name = rewrite_attr_reader(arg, node.parent_scope)
-            writer_full_name, writer_method_name = rewrite_attr_writer(arg, node.parent_scope)
+          case send_method
+          when :attr_reader
+            full_name = rewrite_attr_reader(arg, node.parent_scope)
+            add_to_index(full_name, node)
+          when :attr_writer
+            full_name = rewrite_attr_writer(arg, node.parent_scope)
+            add_to_index(full_name, node)
+          when :attr_accessor
+            reader_full_name = rewrite_attr_reader(arg, node.parent_scope)
+            writer_full_name = rewrite_attr_writer(arg, node.parent_scope)
 
-            add_to_index(reader_full_name, reader_method_name, node.loc)
-            add_to_index(writer_full_name, writer_method_name, node.loc)
+            add_to_index(reader_full_name, node)
+            add_to_index(writer_full_name, node)
           end
         end
       end
     end
 
-    sig { params(method: Symbol).returns(T.nilable(MatchData)) }
-    def attr_method(method)
-      method.match(ATTR_REGEX)
+    sig { params(method: Symbol).returns(T::Boolean) }
+    def attr_method?(method)
+      method.start_with?("attr")
     end
 
-    sig { params(arg: String, scope: T.nilable(Scope)).returns([String, String]) }
+    sig { params(arg: String, scope: T.nilable(Scope)).returns(String) }
     def rewrite_attr_reader(arg, scope)
       method_name = T.must(arg[1..-1])
       sep = "#" # TODO: Handle singletons with better SClass support
       str = "#{sep}#{method_name}"
-      return [str, method_name] unless scope
-      ["#{scope.qualified_name}#{str}", method_name]
+      return str unless scope
+      "#{scope.qualified_name}#{str}"
     end
 
-    sig { params(arg: String, scope: T.nilable(Scope)).returns([String, String]) }
+    sig { params(arg: String, scope: T.nilable(Scope)).returns(String) }
     def rewrite_attr_writer(arg, scope)
       method_name = T.must(arg[1..-1])
       sep = "#" # TODO: Handle singletons with better SClass support
       str = "#{sep}#{method_name}="
-      return str, method_name unless scope
-      ["#{scope.qualified_name}#{str}", method_name]
+      return str unless scope
+      "#{scope.qualified_name}#{str}"
     end
 
-    sig { params(key: String, method_name: String, method_loc: T.nilable(Loc)).void }
-    def add_to_index(key, method_name, method_loc)
+    sig { params(key: String, send: Send).void }
+    def add_to_index(key, send)
       arr = @index[key] ||= []
-      method = Method.new(method_name, loc: method_loc)
-      arr << method
+      arr << send
     end
   end
 end

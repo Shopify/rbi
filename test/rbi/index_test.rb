@@ -104,14 +104,14 @@ module RBI
 
       index = parse_and_index(rb)
       assert_equal(<<~INDEX, index)
-        #bar: bar
-        #bar=: bar
-        #baz: baz
-        #baz=: baz
-        #foo: foo
+        #bar: attr_reader :foo, :bar
+        #bar=: attr_writer :bar
+        #baz: attr_accessor :baz
+        #baz=: attr_accessor :baz
+        #foo: attr_reader :foo, :bar
         ::A: A
-        ::A#foo: foo
-        ::A#foo=: foo
+        ::A#foo: attr_accessor :foo
+        ::A#foo=: attr_accessor :foo
       INDEX
     end
 

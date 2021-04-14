@@ -25,15 +25,21 @@ module RBI
         index = Index.index(trees)
 
         ret = T.let(true, T::Boolean)
-        index.each do |_name, nodes|
+        index.each do |name, nodes|
           next if nodes.size <= 1
 
           first_node = nodes.first
-          next unless first_node.is_a?(Method)
+          if first_node.is_a?(Method)
+            err = Validators::Error.new("Duplicate definitions for `#{first_node.name}`")
+          elsif first_node.is_a?(Send)
+            method_name = T.must(T.must(name.match(/#(.*)/))[1]).delete_suffix("=")
+            err = Validators::Error.new("Duplicate definitions for `#{method_name}`")
+          else
+            next
+          end
 
-          err = Validators::Error.new("Duplicate definitions for `#{first_node.name}`")
           nodes.each do |node|
-            next unless node.is_a?(Method)
+            next unless node.is_a?(Method) || node.is_a?(Send)
 
             err.add_section(loc: node.loc)
           end
