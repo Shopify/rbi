@@ -115,6 +115,23 @@ module RBI
       INDEX
     end
 
+    def test_index_alias_method
+      rb = <<~RB
+        alias_method :foo, :bar
+        def foo; end
+        class A
+          alias_method :foo, :bar
+        end
+      RB
+
+      index = parse_and_index(rb)
+      assert_equal(<<~INDEX, index)
+        #foo: alias_method(:foo, :bar), foo
+        ::A: A
+        ::A#foo: alias_method(:foo, :bar)
+      INDEX
+    end
+
     private
 
     sig { params(rb: String).returns(String) }

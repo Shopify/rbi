@@ -189,5 +189,34 @@ module RBI
       refute(status)
       assert_equal(expected, out)
     end
+
+    def test_duplicates_with_alias_method
+      @project.write("sorbet/rbi/test.rbi", <<~RB)
+        module A
+          alias_method :foo, :bar
+          def foo; end
+          def bar; end
+          alias_method :foo, :baz
+        end
+      RB
+
+      expected = <<~OUT
+        Error: Duplicate definitions for `foo`
+
+          sorbet/rbi/test.rbi:2:
+             2 |   alias_method :foo, :bar
+
+          sorbet/rbi/test.rbi:3:
+             3 |   def foo; end
+
+          sorbet/rbi/test.rbi:5:
+             5 |   alias_method :foo, :baz
+
+      OUT
+
+      out, status = @project.run("rbi validate --no-color")
+      refute(status)
+      assert_equal(expected, out)
+    end
   end
 end

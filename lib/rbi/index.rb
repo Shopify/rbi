@@ -74,6 +74,8 @@ module RBI
           node.args.each { |arg| index_attr_writer(arg, node) }
         when :attr_accessor
           node.args.each { |arg| index_attr_accessor(arg, node) }
+        when :alias_method
+          index_alias_method(T.must(node.args.first), node)
         end
       end
     end
@@ -108,6 +110,19 @@ module RBI
     def index_attr_accessor(arg, node)
       index_attr_reader(arg, node)
       index_attr_writer(arg, node)
+    end
+
+    sig { params(arg: String, node: Node).void }
+    def index_alias_method(arg, node)
+      scope = node.parent_scope
+      method_name = T.must(arg[1..-1])
+      sep = "#"
+      full_name = "#{sep}#{method_name}"
+      if scope
+        full_name = "#{scope.qualified_name}#{full_name}"
+      end
+
+      add_to_index(full_name, node)
     end
 
     sig { params(key: String, node: Node).void }
