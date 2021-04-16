@@ -68,18 +68,21 @@ module RBI
         arr << node
       when Send
         send_method = node.method
-        return unless attr_method?(send_method)
-        node.args.each do |arg|
-          case send_method
-          when :attr_reader
-            full_name = rewrite_attr_reader(arg, node.parent_scope)
+        case send_method
+        when :attr_reader
+          node.args.each do |arg|
+            full_name = attr_reader_key(arg, node.parent_scope)
             add_to_index(full_name, node)
-          when :attr_writer
-            full_name = rewrite_attr_writer(arg, node.parent_scope)
+          end
+        when :attr_writer
+          node.args.each do |arg|
+            full_name = attr_writer_key(arg, node.parent_scope)
             add_to_index(full_name, node)
-          when :attr_accessor
-            reader_full_name = rewrite_attr_reader(arg, node.parent_scope)
-            writer_full_name = rewrite_attr_writer(arg, node.parent_scope)
+          end
+        when :attr_accessor
+          node.args.each do |arg|
+            reader_full_name = attr_reader_key(arg, node.parent_scope)
+            writer_full_name = attr_writer_key(arg, node.parent_scope)
 
             add_to_index(reader_full_name, node)
             add_to_index(writer_full_name, node)
@@ -88,13 +91,8 @@ module RBI
       end
     end
 
-    sig { params(method: Symbol).returns(T::Boolean) }
-    def attr_method?(method)
-      method.to_s.start_with?("attr")
-    end
-
     sig { params(arg: String, scope: T.nilable(Scope)).returns(String) }
-    def rewrite_attr_reader(arg, scope)
+    def attr_reader_key(arg, scope)
       method_name = T.must(arg[1..-1])
       sep = "#" # TODO: Handle singletons with better SClass support
       str = "#{sep}#{method_name}"
@@ -103,7 +101,7 @@ module RBI
     end
 
     sig { params(arg: String, scope: T.nilable(Scope)).returns(String) }
-    def rewrite_attr_writer(arg, scope)
+    def attr_writer_key(arg, scope)
       method_name = T.must(arg[1..-1])
       sep = "#" # TODO: Handle singletons with better SClass support
       str = "#{sep}#{method_name}="

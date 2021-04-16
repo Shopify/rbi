@@ -270,7 +270,7 @@ module RBI
 
     sig { returns(String) }
     def to_s
-      "#{method} #{args.join(", ")}"
+      "#{method}(#{args.join(", ")})"
     end
   end
 end
