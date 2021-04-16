@@ -64,55 +64,56 @@ module RBI
       case node
       when Scope, Method, Const
         name = node.qualified_name
-        arr = @index[name] ||= []
-        arr << node
+        add_to_index(name, node)
       when Send
         send_method = node.method
         case send_method
         when :attr_reader
-          node.args.each do |arg|
-            full_name = attr_reader_key(arg, node.parent_scope)
-            add_to_index(full_name, node)
-          end
+          node.args.each { |arg|  index_attr_reader(arg, node) }
         when :attr_writer
-          node.args.each do |arg|
-            full_name = attr_writer_key(arg, node.parent_scope)
-            add_to_index(full_name, node)
-          end
+          node.args.each { |arg|  index_attr_writer(arg, node) }
         when :attr_accessor
-          node.args.each do |arg|
-            reader_full_name = attr_reader_key(arg, node.parent_scope)
-            writer_full_name = attr_writer_key(arg, node.parent_scope)
-
-            add_to_index(reader_full_name, node)
-            add_to_index(writer_full_name, node)
-          end
+          node.args.each { |arg|  index_attr_accessor(arg, node) }
         end
       end
     end
 
-    sig { params(arg: String, scope: T.nilable(Scope)).returns(String) }
-    def attr_reader_key(arg, scope)
+    sig { params(arg: String, node: Node).void }
+    def index_attr_reader(arg, node)
+      scope = node.parent_scope
       method_name = T.must(arg[1..-1])
       sep = "#" # TODO: Handle singletons with better SClass support
-      str = "#{sep}#{method_name}"
-      return str unless scope
-      "#{scope.qualified_name}#{str}"
+      full_name = "#{sep}#{method_name}"
+      if scope
+        full_name = "#{scope.qualified_name}#{full_name}"
+      end
+
+      add_to_index(full_name, node)
     end
 
-    sig { params(arg: String, scope: T.nilable(Scope)).returns(String) }
-    def attr_writer_key(arg, scope)
+    sig { params(arg: String, node: Node).void }
+    def index_attr_writer(arg, node)
+      scope = node.parent_scope
       method_name = T.must(arg[1..-1])
       sep = "#" # TODO: Handle singletons with better SClass support
-      str = "#{sep}#{method_name}="
-      return str unless scope
-      "#{scope.qualified_name}#{str}"
+      full_name = "#{sep}#{method_name}="
+      if scope
+        full_name = "#{scope.qualified_name}#{full_name}"
+      end
+
+      add_to_index(full_name, node)
     end
 
-    sig { params(key: String, send: Send).void }
-    def add_to_index(key, send)
+    sig { params(arg: String, node: Node).void }
+    def index_attr_accessor(arg, node)
+      index_attr_reader(arg, node)
+      index_attr_writer(arg, node)
+    end
+
+    sig { params(key: String, node: Node).void }
+    def add_to_index(key, node)
       arr = @index[key] ||= []
-      arr << send
+      arr << node
     end
   end
 end
