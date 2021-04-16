@@ -69,11 +69,11 @@ module RBI
         send_method = node.method
         case send_method
         when :attr_reader
-          node.args.each { |arg|  index_attr_reader(arg, node) }
+          node.args.each { |arg| index_attr_reader(arg, node) }
         when :attr_writer
-          node.args.each { |arg|  index_attr_writer(arg, node) }
+          node.args.each { |arg| index_attr_writer(arg, node) }
         when :attr_accessor
-          node.args.each { |arg|  index_attr_accessor(arg, node) }
+          node.args.each { |arg| index_attr_accessor(arg, node) }
         end
       end
     end
