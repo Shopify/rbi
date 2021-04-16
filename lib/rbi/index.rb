@@ -18,7 +18,7 @@ module RBI
     sig { void }
     def initialize
       super()
-      @index = T.let({}, T::Hash[String, T::Array[T.all(Indexable, Node)]])
+      @index = T.let({}, T::Hash[String, T::Array[Node]])
     end
 
     sig { override.params(node: T.nilable(Node)).void }
@@ -27,7 +27,7 @@ module RBI
       when Module, Class
         index(node)
         visit_all(node.nodes)
-      when Method, Const
+      when Method, Const, Send
         index(node)
       when Tree
         visit_all(node.nodes)
@@ -44,7 +44,7 @@ module RBI
       @index.keys
     end
 
-    sig { params(block: T.proc.params(pair: [String, T::Array[T.all(Node, Indexable)]]).void).void }
+    sig { params(block: T.proc.params(pair: [String, T::Array[Node]]).void).void }
     def each(&block)
       @index.each(&block)
     end
@@ -59,48 +59,61 @@ module RBI
 
     private
 
-    sig { params(node: T.all(Indexable, Node)).void }
+    sig { params(node: Node).void }
     def index(node)
-      name = node.index_key
-      arr = @index[name] ||= []
+      case node
+      when Scope, Method, Const
+        name = node.qualified_name
+        add_to_index(name, node)
+      when Send
+        send_method = node.method
+        case send_method
+        when :attr_reader
+          node.args.each { |arg| index_attr_reader(arg, node) }
+        when :attr_writer
+          node.args.each { |arg| index_attr_writer(arg, node) }
+        when :attr_accessor
+          node.args.each { |arg| index_attr_accessor(arg, node) }
+        end
+      end
+    end
+
+    sig { params(arg: String, node: Node).void }
+    def index_attr_reader(arg, node)
+      scope = node.parent_scope
+      method_name = T.must(arg[1..-1])
+      sep = "#" # TODO: Handle singletons with better SClass support
+      full_name = "#{sep}#{method_name}"
+      if scope
+        full_name = "#{scope.qualified_name}#{full_name}"
+      end
+
+      add_to_index(full_name, node)
+    end
+
+    sig { params(arg: String, node: Node).void }
+    def index_attr_writer(arg, node)
+      scope = node.parent_scope
+      method_name = T.must(arg[1..-1])
+      sep = "#" # TODO: Handle singletons with better SClass support
+      full_name = "#{sep}#{method_name}="
+      if scope
+        full_name = "#{scope.qualified_name}#{full_name}"
+      end
+
+      add_to_index(full_name, node)
+    end
+
+    sig { params(arg: String, node: Node).void }
+    def index_attr_accessor(arg, node)
+      index_attr_reader(arg, node)
+      index_attr_writer(arg, node)
+    end
+
+    sig { params(key: String, node: Node).void }
+    def add_to_index(key, node)
+      arr = @index[key] ||= []
       arr << node
-    end
-  end
-
-  module Indexable
-    extend T::Sig
-    extend T::Helpers
-
-    interface!
-
-    sig { abstract.returns(String) }
-    def index_key; end
-  end
-
-  class Scope
-    include Indexable
-
-    sig { override.returns(String) }
-    def index_key
-      qualified_name
-    end
-  end
-
-  class Method
-    include Indexable
-
-    sig { override.returns(String) }
-    def index_key
-      qualified_name
-    end
-  end
-
-  class Const
-    include Indexable
-
-    sig { override.returns(String) }
-    def index_key
-      qualified_name
     end
   end
 end

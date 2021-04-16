@@ -133,5 +133,61 @@ module RBI
       refute(status)
       assert_equal(expected, out)
     end
+
+    def test_duplicates_with_attr_methods
+      @project.write("sorbet/rbi/test.rbi", <<~RB)
+        module A
+          attr_accessor :foo
+          def foo; end
+          def foo=; end
+          attr_reader :foo, :bar
+          def bar; end
+          attr_writer :baz
+          def baz=; end
+        end
+      RB
+
+      expected = <<~OUT
+        Error: Duplicate definitions for `foo`
+
+          sorbet/rbi/test.rbi:2:
+             2 |   attr_accessor :foo
+
+          sorbet/rbi/test.rbi:3:
+             3 |   def foo; end
+
+          sorbet/rbi/test.rbi:5:
+             5 |   attr_reader :foo, :bar
+
+        Error: Duplicate definitions for `foo`
+
+          sorbet/rbi/test.rbi:2:
+             2 |   attr_accessor :foo
+
+          sorbet/rbi/test.rbi:4:
+             4 |   def foo=; end
+
+        Error: Duplicate definitions for `bar`
+
+          sorbet/rbi/test.rbi:5:
+             5 |   attr_reader :foo, :bar
+
+          sorbet/rbi/test.rbi:6:
+             6 |   def bar; end
+
+        Error: Duplicate definitions for `baz`
+
+          sorbet/rbi/test.rbi:7:
+             7 |   attr_writer :baz
+
+          sorbet/rbi/test.rbi:8:
+             8 |   def baz=; end
+
+      OUT
+
+      out, status = @project.run("rbi validate --no-color")
+      refute(status)
+      assert_equal(expected, out)
+    end
   end
 end
