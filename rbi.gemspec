@@ -25,4 +25,9 @@ Gem::Specification.new do |spec|
     Gemfile
     Rakefile
   )
+
+  spec.add_dependency("colorize")
+  spec.add_dependency("rake", "~> 13.0")
+  spec.add_dependency("sorbet-runtime")
+  spec.add_dependency("thor")
 end

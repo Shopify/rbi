@@ -2,6 +2,10 @@ PATH
   remote: .
   specs:
     rbi (0.1.0)
+      colorize
+      rake (~> 13.0)
+      sorbet-runtime
+      thor
 
 GEM
   remote: https://rubygems.org/
@@ -74,15 +78,12 @@ PLATFORMS
 DEPENDENCIES
   byebug
   minitest
-  rake (~> 13.0)
   rbi!
   rubocop (~> 1.7)
   rubocop-shopify
   rubocop-sorbet
   sorbet
-  sorbet-runtime
   tapioca
-  thor
 
 BUNDLED WITH
    2.2.6
