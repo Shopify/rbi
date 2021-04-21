@@ -15,6 +15,7 @@ require_relative "rbi/cli_helper"
 require_relative "rbi/logger"
 require_relative "rbi/client"
 require_relative "rbi/repo"
+require_relative "rbi/github_client"
 
 require_relative "rbi/cli"
 require_relative "rbi/version"

@@ -5,18 +5,23 @@ module RBI
   class Client
     extend T::Sig
 
-    CENTRAL_REPO_PATH = T.let("#{__dir__}/../../central_repo", String)
     CENTRAL_REPO_SLUG = "shopify/rbi"
     GEM_RBI_DIRECTORY = "sorbet/rbi/gems"
 
-    sig { params(logger: Logger).void }
-    def initialize(logger)
+    sig { params(logger: Logger, github_client: T.nilable(GithubClient), project_path: String).void }
+    def initialize(logger, github_client: nil, project_path: ".")
       @logger = logger
-      @github_client = T.let(Octokit::Client.new(
-        access_token: github_token,
-        auto_paginate: true,
-        per_page: 100
-      ), Octokit::Client)
+      @project_path = project_path
+
+      if github_client
+        @github_client = github_client
+      else
+        @github_client = T.let(Octokit::Client.new(
+          access_token: github_token,
+          auto_paginate: true,
+          per_page: 100
+        ), GithubClient)
+      end
 
       index = github_file_content("central_repo/index.json")
       @repo = T.let(Repo.from_index(index), Repo)
@@ -24,7 +29,7 @@ module RBI
 
     sig { void }
     def init
-      file = Bundler.read_file("Gemfile.lock")
+      file = Bundler.read_file("#{@project_path}/Gemfile.lock")
       parser = Bundler::LockfileParser.new(file)
       parser.specs.each do |spec|
         version = spec.version.to_s
@@ -32,8 +37,6 @@ module RBI
         pull_rbi(name, version)
       end
     end
-
-    private
 
     sig { params(name: String, version: String).returns(T::Boolean) }
     def pull_rbi(name, version)
@@ -46,19 +49,22 @@ module RBI
 
       str = github_file_content("central_repo/#{path}")
 
-      FileUtils.mkdir_p(GEM_RBI_DIRECTORY.to_s)
-      File.write("#{GEM_RBI_DIRECTORY}/#{path}", str)
+      dir = "#{@project_path}/#{GEM_RBI_DIRECTORY}"
+      FileUtils.mkdir_p(dir)
+      File.write("#{dir}/#{path}", str)
 
       true
     end
+
+    private
 
     sig { returns(String) }
     def github_token
       token = load_token("/opt/dev/var/private/git_credential_store", "GITHUB_TOKEN")
       if token.nil? || token == ""
         @logger.error("Please set a Github Token so rbi can access the central repository" \
-                     " by setting the environment variable `GITHUB_TOKEN`" \
-                     " or creating a `github.token` file.")
+                      " by setting the environment variable `GITHUB_TOKEN`" \
+                      " or creating a `github.token` file.")
         Kernel.exit(1)
       end
       token
@@ -78,8 +84,7 @@ module RBI
 
     sig { params(path: String).returns(String) }
     def github_file_content(path)
-      content = @github_client.content(CENTRAL_REPO_SLUG, path: path).content
-      Base64.decode64(content)
+      @github_client.file_content(CENTRAL_REPO_SLUG, path)
     end
   end
 end

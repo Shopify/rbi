@@ -9,6 +9,9 @@ module RBI
     class Project
       extend T::Sig
 
+      sig { returns(String) }
+      attr_reader :path
+
       # Create a new test project at `path`
       sig { params(path: String).void }
       def initialize(path)
