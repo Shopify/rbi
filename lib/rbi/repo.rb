@@ -27,10 +27,8 @@ module RBI
     end
 
     sig { params(name: String, version: String).returns(T.nilable(String)) }
-    def retrieve_rbi(name, version)
-      path = @index.fetch(name, nil)&.fetch(version, nil)
-      return nil unless path
-      "#{@repo_path}/#{path}"
+    def rbi_path(name, version)
+      @index.fetch(name, nil)&.fetch(version, nil)
     end
   end
 end
