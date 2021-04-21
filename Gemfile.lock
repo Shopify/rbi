@@ -75,6 +75,7 @@ GEM
       sorbet-static (= 0.5.6385)
     sorbet-runtime (0.5.6385)
     sorbet-static (0.5.6385-universal-darwin-19)
+    sorbet-static (0.5.6385-x86_64-linux)
     spoom (1.1.0)
       colorize
       sorbet (>= 0.5.6347)
@@ -93,6 +94,7 @@ GEM
 
 PLATFORMS
   x86_64-darwin-19
+  x86_64-linux
 
 DEPENDENCIES
   byebug

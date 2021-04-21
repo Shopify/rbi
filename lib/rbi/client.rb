@@ -7,7 +7,7 @@ module RBI
 
     CENTRAL_REPO_PATH = T.let("#{__dir__}/../../central_repo", String)
     CENTRAL_REPO_SLUG = "shopify/rbi"
-    GEM_RBI_DIRECTORY = "sorbet/rbi"
+    GEM_RBI_DIRECTORY = "sorbet/rbi/gems"
 
     sig { params(logger: Logger).void }
     def initialize(logger)
@@ -46,7 +46,7 @@ module RBI
 
       str = github_file_content("central_repo/#{path}")
 
-      FileUtils.mkdir_p("#{GEM_RBI_DIRECTORY}/gems")
+      FileUtils.mkdir_p(GEM_RBI_DIRECTORY.to_s)
       File.write("#{GEM_RBI_DIRECTORY}/#{path}", str)
 
       true
@@ -54,7 +54,7 @@ module RBI
 
     sig { returns(String) }
     def github_token
-      token = load_token("github.token", "GITHUB_TOKEN")
+      token = load_token("/opt/dev/var/private/git_credential_store", "GITHUB_TOKEN")
       if token.nil? || token == ""
         @logger.error("Please set a Github Token so rbi can access the central repository" \
                      " by setting the environment variable `GITHUB_TOKEN`" \
@@ -67,10 +67,12 @@ module RBI
     sig { params(file: String, env: String).returns(T.nilable(String)) }
     def load_token(file, env)
       if File.file?(file)
-        return File.read(file).strip
+        content = File.read(file).strip
+        return content.split(":").last&.split("@")&.first
       elsif ENV.key?(env)
         return ENV[env]&.strip
       end
+
       nil
     end
 
