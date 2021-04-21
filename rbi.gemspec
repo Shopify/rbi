@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency("rake", "~> 13.0")
   spec.add_dependency("sorbet-runtime")
   spec.add_dependency("thor")
+  spec.add_dependency("octokit")
 end
