@@ -28,5 +28,10 @@ module RBI
     def rbi_path(name, version)
       @index.fetch(name, nil)&.fetch(version, nil)
     end
+
+    sig { returns(T::Array[String]) }
+    def gems
+      @index.keys
+    end
   end
 end
