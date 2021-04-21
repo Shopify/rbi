@@ -3,12 +3,7 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in rbi.gemspec
 gemspec
-
-gem("rake", "~> 13.0")
-gem("sorbet-runtime")
-gem("thor")
 
 group(:development, :test) do
   gem("minitest")
