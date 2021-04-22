@@ -29,15 +29,19 @@ module RBI
       @logger.unknown("Clean `#{@project_path}/#{GEM_RBI_DIRECTORY}` directory.")
     end
 
-    sig { void }
+    sig { returns(T::Boolean) }
     def init
+      unless Dir.glob("#{@project_path}/#{GEM_RBI_DIRECTORY}/*.rbi").empty?
+        @logger.error("Can't init while you RBI gems directory is not empty.\n" \
+                      "Run `rbi clean` to delete it.\n")
+        return false
+      end
       file = Bundler.read_file("#{@project_path}/Gemfile.lock")
       parser = Bundler::LockfileParser.new(file)
       parser.specs.each do |spec|
-        version = spec.version.to_s
-        name = spec.name
-        pull_rbi(name, version)
+        pull_rbi(spec.name, spec.version.to_s)
       end
+      true
     end
 
     sig { params(name: String, version: String).returns(T::Boolean) }

@@ -35,6 +35,28 @@ module RBI
       project.destroy
     end
 
+    def test_init_with_non_empty_gem_rbis
+      project = self.project("test_init_with_non_empty_gem_rbis")
+      project.write("sorbet/rbi/gems/foo@1.0.0.rbi")
+      project.write("sorbet/rbi/gems/foo@2.0.0.rbi")
+      project.write("sorbet/rbi/gems/bar@1.0.0.rbi")
+
+      client, out = client(default_client_mock, project.path)
+      res = client.init
+
+      refute(res)
+      assert_equal(<<~MSG.strip, out.string.strip)
+        Error: Can't init while you RBI gems directory is not empty.
+        Run `rbi clean` to delete it.
+      MSG
+
+      assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
+      assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@2.0.0.rbi"))
+      assert(File.file?("#{project.path}/sorbet/rbi/gems/bar@1.0.0.rbi"))
+
+      project.destroy
+    end
+
     def test_init
       project = self.project("test_init")
       project.write("Gemfile.lock", <<~LOCK)
