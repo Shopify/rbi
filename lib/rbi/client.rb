@@ -24,6 +24,12 @@ module RBI
     end
 
     sig { void }
+    def clean
+      FileUtils.rm_rf("#{@project_path}/#{GEM_RBI_DIRECTORY}")
+      @logger.unknown("Clean `#{@project_path}/#{GEM_RBI_DIRECTORY}` directory.")
+    end
+
+    sig { void }
     def init
       file = Bundler.read_file("#{@project_path}/Gemfile.lock")
       parser = Bundler::LockfileParser.new(file)

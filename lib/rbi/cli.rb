@@ -22,6 +22,12 @@ module RBI
       client.init
     end
 
+    desc "clean", "Remove all gem RBIs from local project"
+    def clean
+      client = self.client
+      client.clean
+    end
+
     def self.exit_on_failure?
       true
     end

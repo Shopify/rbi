@@ -19,6 +19,22 @@ module RBI
   class ClientTest < Minitest::Test
     include TestHelper
 
+    def test_clean
+      project = self.project("test_clean")
+      project.write("sorbet/rbi/gems/foo@1.0.0.rbi")
+      project.write("sorbet/rbi/gems/foo@2.0.0.rbi")
+      project.write("sorbet/rbi/gems/bar@1.0.0.rbi")
+
+      client, _ = client(default_client_mock, project.path)
+      client.clean
+
+      refute(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
+      refute(File.file?("#{project.path}/sorbet/rbi/gems/foo@2.0.0.rbi"))
+      refute(File.file?("#{project.path}/sorbet/rbi/gems/bar@1.0.0.rbi"))
+
+      project.destroy
+    end
+
     def test_init
       project = self.project("test_init")
       project.write("Gemfile.lock", <<~LOCK)
