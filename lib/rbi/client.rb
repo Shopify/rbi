@@ -13,15 +13,11 @@ module RBI
       @logger = logger
       @project_path = project_path
 
-      if github_client
-        @github_client = github_client
-      else
-        @github_client = T.let(Octokit::Client.new(
-          access_token: github_token,
-          auto_paginate: true,
-          per_page: 100
-        ), GithubClient)
-      end
+      @github_client = T.let(github_client || Octokit::Client.new(
+        access_token: github_token,
+        auto_paginate: true,
+        per_page: 100
+      ), GithubClient)
 
       index = github_file_content("central_repo/index.json")
       @repo = T.let(Repo.from_index(index), Repo)
