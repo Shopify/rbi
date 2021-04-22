@@ -105,7 +105,7 @@ module RBI
         @logger.error("Please set a Github Token so rbi can access the central repository" \
                       " by setting the environment variable `GITHUB_TOKEN`" \
                       " or creating a `github.token` file.")
-        Kernel.exit(1)
+        exit(1)
       end
       token
     end
