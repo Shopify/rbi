@@ -20,20 +20,7 @@ module RBI
     include TestHelper
 
     def test_init
-      mock = MockGithubClient.new do |path|
-        case path
-        when "central_repo/index.json"
-          dummy_json_index
-        when "central_repo/foo@1.0.0.rbi"
-          "FOO = 1"
-        when "central_repo/bar@2.0.0.rbi"
-          "BAR = 2"
-        else
-          raise "Unsupported path: `#{path}`"
-        end
-      end
-
-      project = self.project("InitRBI")
+      project = self.project("test_init")
       project.write("Gemfile.lock", <<~LOCK)
         GEM
           specs:
@@ -41,7 +28,7 @@ module RBI
               bar
             bar (2.0.0)
       LOCK
-      client, out = client(mock, project.path)
+      client, out = client(default_client_mock, project.path)
       res = client.init
 
       assert(res)
@@ -73,19 +60,8 @@ module RBI
     end
 
     def test_pull_rbi
-      mock = MockGithubClient.new do |path|
-        case path
-        when "central_repo/index.json"
-          dummy_json_index
-        when "central_repo/foo@1.0.0.rbi"
-          "FOO = 1"
-        else
-          raise "Unsupported path: `#{path}`"
-        end
-      end
-
-      project = self.project("PullRBI")
-      client, out = client(mock, project.path)
+      project = self.project("test_pull_rbi")
+      client, out = client(default_client_mock, project.path)
       res = client.pull_rbi("foo", "1.0.0")
 
       assert(res)
@@ -109,6 +85,21 @@ module RBI
           }
         }
       JSON
+    end
+
+    def default_client_mock
+      MockGithubClient.new do |path|
+        case path
+        when "central_repo/index.json"
+          dummy_json_index
+        when "central_repo/foo@1.0.0.rbi"
+          "FOO = 1"
+        when "central_repo/bar@2.0.0.rbi"
+          "BAR = 2"
+        else
+          raise "Unsupported path: `#{path}`"
+        end
+      end
     end
 
     def client(mock, path)
