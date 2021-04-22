@@ -44,6 +44,23 @@ module RBI
       true
     end
 
+    sig { void }
+    def update
+      file = Bundler.read_file("#{@project_path}/Gemfile.lock")
+      parser = Bundler::LockfileParser.new(file)
+      parser.specs.each do |spec|
+        name = spec.name
+        version = spec.version.to_s
+        if has_local_rbi_for_gem_version?(name, version)
+          next
+        elsif has_local_rbi_for_gem?(name)
+          remove_local_rbi_for_gem(name)
+        end
+        pull_rbi(name, version)
+      end
+      @logger.unknown("Gem RBIs successfully updated.")
+    end
+
     sig { params(name: String, version: String).returns(T::Boolean) }
     def pull_rbi(name, version)
       path = @repo.rbi_path(name, version)
@@ -60,6 +77,23 @@ module RBI
       File.write("#{dir}/#{path}", str)
 
       true
+    end
+
+    sig { params(name: String, version: String).returns(T::Boolean) }
+    def has_local_rbi_for_gem_version?(name, version)
+      File.file?("#{@project_path}/#{GEM_RBI_DIRECTORY}/#{name}@#{version}.rbi")
+    end
+
+    sig { params(name: String).returns(T::Boolean) }
+    def has_local_rbi_for_gem?(name)
+      !Dir.glob("#{@project_path}/#{GEM_RBI_DIRECTORY}/#{name}@*.rbi").empty?
+    end
+
+    sig { params(name: String).void }
+    def remove_local_rbi_for_gem(name)
+      Dir.glob("#{@project_path}/#{GEM_RBI_DIRECTORY}/#{name}@*.rbi").each do |path|
+        FileUtils.rm_rf(path)
+      end
     end
 
     private

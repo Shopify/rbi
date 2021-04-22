@@ -28,6 +28,12 @@ module RBI
       client.clean
     end
 
+    desc "update", "Update gem RBIs from local project from central repository"
+    def update
+      client = self.client
+      client.update
+    end
+
     def self.exit_on_failure?
       true
     end
