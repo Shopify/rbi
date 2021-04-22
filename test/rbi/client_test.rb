@@ -20,22 +20,10 @@ module RBI
     include TestHelper
 
     def test_init
-      index_json = <<~JSON
-        {
-          "foo": {
-            "1.0.0": "foo@1.0.0.rbi"
-          },
-          "bar": {
-            "1.0.0": "bar@1.0.0.rbi",
-            "2.0.0": "bar@2.0.0.rbi"
-          }
-        }
-      JSON
-
       mock = MockGithubClient.new do |path|
         case path
         when "central_repo/index.json"
-          index_json
+          dummy_json_index
         when "central_repo/foo@1.0.0.rbi"
           "FOO = 1"
         when "central_repo/bar@2.0.0.rbi"
@@ -85,22 +73,10 @@ module RBI
     end
 
     def test_pull_rbi
-      index_json = <<~JSON
-        {
-          "foo": {
-            "1.0.0": "foo@1.0.0.rbi"
-          },
-          "bar": {
-            "1.0.0": "bar@1.0.0.rbi",
-            "2.0.0": "bar@2.0.0.rbi"
-          }
-        }
-      JSON
-
       mock = MockGithubClient.new do |path|
         case path
         when "central_repo/index.json"
-          index_json
+          dummy_json_index
         when "central_repo/foo@1.0.0.rbi"
           "FOO = 1"
         else
@@ -120,6 +96,20 @@ module RBI
     end
 
     private
+
+    def dummy_json_index
+      <<~JSON
+        {
+          "foo": {
+            "1.0.0": "foo@1.0.0.rbi"
+          },
+          "bar": {
+            "1.0.0": "bar@1.0.0.rbi",
+            "2.0.0": "bar@2.0.0.rbi"
+          }
+        }
+      JSON
+    end
 
     def client(mock, path)
       out = StringIO.new
