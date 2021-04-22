@@ -35,11 +35,11 @@ module RBI
       mock = MockGithubClient.new do |path|
         case path
         when "central_repo/index.json"
-          return index_json
+          index_json
         when "central_repo/foo@1.0.0.rbi"
-          return "FOO = 1"
+          "FOO = 1"
         when "central_repo/bar@2.0.0.rbi"
-          return "BAR = 2"
+          "BAR = 2"
         else
           raise "Unsupported path: `#{path}`"
         end
@@ -68,7 +68,7 @@ module RBI
       mock = MockGithubClient.new do |path|
         case path
         when "central_repo/index.json"
-          return "{}"
+          "{}"
         else
           raise "Unsupported path: `#{path}`"
         end
@@ -100,9 +100,9 @@ module RBI
       mock = MockGithubClient.new do |path|
         case path
         when "central_repo/index.json"
-          return index_json
+          index_json
         when "central_repo/foo@1.0.0.rbi"
-          return "FOO = 1"
+          "FOO = 1"
         else
           raise "Unsupported path: `#{path}`"
         end
