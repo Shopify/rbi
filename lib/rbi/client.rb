@@ -84,7 +84,7 @@ module RBI
 
     sig { params(path: String).returns(String) }
     def github_file_content(path)
-      @github_client.file_content(CENTRAL_REPO_SLUG, path)
+      T.must(@github_client.file_content(CENTRAL_REPO_SLUG, path))
     end
   end
 end

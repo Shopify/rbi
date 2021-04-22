@@ -11,7 +11,7 @@ module RBI
       @blk = blk
     end
 
-    def file_content(repo, path)
+    def file_content(_repo, path)
       @blk.call(path)
     end
   end

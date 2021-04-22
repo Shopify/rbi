@@ -13,11 +13,15 @@ module RBI
   end
 end
 
-class Octokit::Client
-  include RBI::GithubClient
+module Octokit
+  class Client
+    extend T::Sig
+    include RBI::GithubClient
 
-  def file_content(repo, path)
-    base64 = content(repo, path: path).content
-    Base64.decode64(base64)
+    sig { override.params(repo: String, path: String).returns(T.nilable(String)) }
+    def file_content(repo, path)
+      base64 = content(repo, path: path).content
+      Base64.decode64(base64)
+    end
   end
 end
