@@ -4,7 +4,6 @@
 $LOAD_PATH.unshift(File.expand_path("../../lib", __FILE__))
 
 require "rbi"
-require "rbi/test_helpers/project"
 require "minitest/test"
 
 module RBI
@@ -16,9 +15,9 @@ module RBI
 
     TEST_PROJECTS_PATH = "/tmp/rbi/tests"
 
-    sig { params(name: String).returns(TestHelpers::Project) }
+    sig { params(name: String).returns(Context) }
     def project(name)
-      TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name}")
+      Context.new("#{TEST_PROJECTS_PATH}/#{name}")
     end
 
     sig { params(level: Integer, quiet: T::Boolean, color: T::Boolean).returns([Logger, StringIO]) }

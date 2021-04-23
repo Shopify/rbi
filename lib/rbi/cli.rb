@@ -28,10 +28,16 @@ module RBI
       client.clean
     end
 
-    desc "update", "Update gem RBIs from local project from central repository"
+    desc "update", "Update local gem RBIs by pulling from central repository"
     def update
       client = self.client
       client.update
+    end
+
+    desc "generate [gem...]", "Generate RBIs from gems"
+    def generate(*gems)
+      client = self.client
+      client.generate(gems)
     end
 
     def self.exit_on_failure?

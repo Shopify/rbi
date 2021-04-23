@@ -61,6 +61,43 @@ module RBI
       @logger.success("Gem RBIs successfully updated.")
     end
 
+    sig { params(gems: T::Array[String]).void }
+    def generate(gems)
+      if gems.empty?
+        file = Bundler.read_file("#{@project_path}/Gemfile.lock")
+        parser = Bundler::LockfileParser.new(file)
+        # TODO: Don't iterate over lockfile, iterate over direct dependencies only
+        parser.specs.each do |spec|
+          name = spec.name
+          version = spec.version.to_s
+          path = @repo.rbi_path(name, version)
+          if path
+            @logger.error("The RBI for `#{name}@#{version}` gem already exists in the central repository.")
+            @logger.hint("Run `rbi update` to get it.")
+            next
+          end
+
+          tapioca_generate(name, version)
+        end
+      else
+        gems.each do |gem|
+          name, version = gem.split("@")
+          if !name || !version
+            @logger.error("Argument to `rbi generate` is in the wrong format. Please pass in `gem_name@gem_version`.")
+            next
+          end
+          path = @repo.rbi_path(T.must(name), T.must(version))
+          if path
+            @logger.error("The RBI for `#{name}@#{version}` gem already exists in the central repository.")
+            @logger.hint("Run `rbi update` to get it.")
+            next
+          end
+
+          tapioca_generate(name, version)
+        end
+      end
+    end
+
     sig { params(name: String, version: String).returns(T::Boolean) }
     def pull_rbi(name, version)
       path = @repo.rbi_path(name, version)
@@ -94,6 +131,37 @@ module RBI
       Dir.glob("#{@project_path}/#{GEM_RBI_DIRECTORY}/#{name}@*.rbi").each do |path|
         FileUtils.rm_rf(path)
       end
+    end
+
+    def tapioca_generate(name, version)
+      # Create directory (tmp)
+      ctx = Context.new("/tmp/rbi/gems/#{name}/#{version}")
+      ctx.sorbet_config(".")
+      # TODO: Support installing of internal gems
+      # TODO: Don't add tapioca as a gem to context
+      ctx.gemfile(<<~GEMFILE)
+        source "https://rubygems.org"
+        gem("#{name}", "#{version}")
+        gem("tapioca")
+      GEMFILE
+
+      # TODO: Error handling
+      Bundler.with_unbundled_env do
+        out, err, status = ctx.run("bundle config set --local path 'vendor/bundle'")
+        puts out, err, status
+        out, err, status = ctx.run("bundle", "install")
+        puts out, err, status
+        out, err, status = ctx.run("bundle", "exec", "tapioca", "generate")
+        puts out, err, status
+      end
+
+      gem_rbi_path = ctx.absolute_path("sorbet/rbi/gems/#{name}@#{version}.rbi")
+      FileUtils.cp(gem_rbi_path, "#{@project_path}/#{GEM_RBI_DIRECTORY}/")
+      # TODO: Don't generate gem RBIs coming due to tapioca
+      # TODO: Copy over dependencies of the gem as well
+      # TODO: Success logging
+
+      ctx.destroy
     end
 
     private

@@ -12,6 +12,7 @@ module RBI
 end
 
 require_relative "rbi/cli_helper"
+require_relative "rbi/context"
 require_relative "rbi/logger"
 require_relative "rbi/client"
 require_relative "rbi/repo"
