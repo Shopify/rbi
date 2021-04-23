@@ -26,14 +26,14 @@ module RBI
     sig { void }
     def clean
       FileUtils.rm_rf("#{@project_path}/#{GEM_RBI_DIRECTORY}")
-      @logger.unknown("Clean `#{@project_path}/#{GEM_RBI_DIRECTORY}` directory.")
+      @logger.success("Clean `#{@project_path}/#{GEM_RBI_DIRECTORY}` directory.")
     end
 
     sig { returns(T::Boolean) }
     def init
       unless Dir.glob("#{@project_path}/#{GEM_RBI_DIRECTORY}/*.rbi").empty?
-        @logger.error("Can't init while you RBI gems directory is not empty.\n" \
-                      "Run `rbi clean` to delete it.\n")
+        @logger.error("Can't init while you RBI gems directory is not empty.")
+        @logger.hint("Run `rbi clean` to delete it.")
         return false
       end
       file = Bundler.read_file("#{@project_path}/Gemfile.lock")
@@ -58,15 +58,15 @@ module RBI
         end
         pull_rbi(name, version)
       end
-      @logger.unknown("Gem RBIs successfully updated.")
+      @logger.success("Gem RBIs successfully updated.")
     end
 
     sig { params(name: String, version: String).returns(T::Boolean) }
     def pull_rbi(name, version)
       path = @repo.rbi_path(name, version)
       unless path
-        @logger.error("The RBI for `#{name}@#{version}` gem doesn't exist in the central repository\n" \
-                      "Run `rbi generate #{name}@#{version}` to generate it.\n")
+        @logger.error("The RBI for `#{name}@#{version}` gem doesn't exist in the central repository.")
+        @logger.hint("Run `rbi generate #{name}@#{version}` to generate it.")
         return false
       end
 

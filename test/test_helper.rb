@@ -20,6 +20,17 @@ module RBI
     def project(name)
       TestHelpers::Project.new("#{TEST_PROJECTS_PATH}/#{name}")
     end
+
+    sig { params(level: Integer, quiet: T::Boolean, color: T::Boolean).returns([Logger, StringIO]) }
+    def logger(level: Logger::INFO, quiet: false, color: false)
+      out = StringIO.new
+      [Logger.new(level: level, quiet: quiet, color: color, out: out), out]
+    end
+
+    sig { params(exp: String, out: String).void }
+    def assert_log(exp, out)
+      assert_equal(exp, "#{out.rstrip}\n")
+    end
   end
 end
 

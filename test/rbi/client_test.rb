@@ -45,10 +45,11 @@ module RBI
       res = client.init
 
       refute(res)
-      assert_equal(<<~MSG.strip, out.string.strip)
+      assert_log(<<~OUT, out.string)
         Error: Can't init while you RBI gems directory is not empty.
-        Run `rbi clean` to delete it.
-      MSG
+
+        Hint: Run `rbi clean` to delete it.
+      OUT
 
       assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
       assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@2.0.0.rbi"))
@@ -116,10 +117,11 @@ module RBI
       res = client.pull_rbi("foo", "1.0.0")
 
       refute(res)
-      assert_equal(<<~ERR.strip, out.string.strip)
-        Error: The RBI for `foo@1.0.0` gem doesn't exist in the central repository
-        Run `rbi generate foo@1.0.0` to generate it.
-      ERR
+      assert_log(<<~OUT, out.string)
+        Error: The RBI for `foo@1.0.0` gem doesn't exist in the central repository.
+
+        Hint: Run `rbi generate foo@1.0.0` to generate it.
+      OUT
     end
 
     def test_pull_rbi
@@ -215,8 +217,7 @@ module RBI
     end
 
     def client(mock, path)
-      out = StringIO.new
-      logger = Logger.new(logdev: out, color: false)
+      logger, out = self.logger
       [Client.new(logger, github_client: mock, project_path: path), out]
     end
   end
