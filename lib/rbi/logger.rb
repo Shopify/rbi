@@ -1,102 +1,106 @@
 # typed: strict
 # frozen_string_literal: true
 
-require "logger"
-
 module RBI
-  class Logger < ::Logger
+  class Logger
     extend T::Sig
 
-    class Formatter < ::Logger::Formatter
-      extend T::Sig
+    ERROR = 6
+    SUCCESS = 5
+    HINT = 4
+    WARN = 3
+    INFO = 2
+    DEBUG = 1
 
-      sig { params(quiet: T::Boolean, color: T::Boolean).void }
-      def initialize(quiet: false, color: true)
-        super()
+    sig { params(level: Integer, quiet: T::Boolean, color: T::Boolean, out: T.any(IO, StringIO)).void }
+    def initialize(level: INFO, quiet: false, color: true, out: $stderr)
+      @level = level
+      @quiet = quiet
+      @color = color
+      @out = out
+    end
 
-        @quiet = quiet
-        @color = color
-      end
+    sig { params(message: String, label: T.nilable(String)).void }
+    def error(message, label: "Error")
+      log(ERROR, message, label: label, label_color: :red)
+    end
 
-      sig do
-        params(severity: String, _time: Time, _progname: T.nilable(String), msg: T.untyped).returns(T.nilable(String))
-      end
-      def call(severity, _time, _progname, msg)
-        colorize_severity(severity) + msg.to_s + "\n" unless @quiet
-      end
+    sig { params(message: String, label: T.nilable(String)).void }
+    def success(message, label: "Success")
+      log(SUCCESS, message, label: label, label_color: :green)
+    end
 
-      sig { params(string: String, color: T.nilable(Symbol)).returns(String) }
-      def colorize(string, color)
-        return string unless @color
-        string = string.colorize(color) if color
-        highlight(string)
-      end
+    sig { params(message: String, label: T.nilable(String)).void }
+    def hint(message, label: "Hint")
+      log(HINT, message, label: label, label_color: :green)
+    end
 
-      private
+    sig { params(message: String, label: T.nilable(String)).void }
+    def warn(message, label: "Warning")
+      log(WARN, message, label: label, label_color: :yellow)
+    end
 
-      sig { params(severity: String).returns(String) }
-      def colorize_severity(severity)
-        case severity
-        when "ERROR"
-          colorize("Error", :red) + ": "
-        when "WARN"
-          colorize("Warning", :yellow) + ": "
-        when "INFO"
-          "Info: "
-        when "DEBUG"
-          colorize("Debug", :light_black) + ": "
-        else
-          ""
-        end
-      end
+    sig { params(message: String, label: T.nilable(String)).void }
+    def info(message, label: "Info")
+      log(INFO, message, label: label, label_color: :white)
+    end
 
-      sig { params(string: String).returns(String) }
-      def highlight(string)
-        res = StringIO.new
-        word = StringIO.new
-        in_ticks = T.let(false, T::Boolean)
-        string.chars.each do |c|
-          if c == "`" && !in_ticks
-            in_ticks = true
-          elsif c == "`" && in_ticks
-            in_ticks = false
-            res << colorize(word.string, :blue)
-            word = StringIO.new
-          elsif in_ticks
-            word << c
-          else
-            res << c
-          end
-        end
-        res.string
-      end
+    sig { params(message: String, label: T.nilable(String)).void }
+    def debug(message, label: "Debug")
+      log(DEBUG, message, label: label, label_color: :gray)
     end
 
     sig do
       params(
         level: Integer,
-        quiet: T::Boolean,
-        color: T::Boolean,
-        logdev: T.any(String, IO, StringIO, NilClass),
-        formatter: Formatter
+        message: String,
+        label: T.nilable(String),
+        label_color: T.nilable(Symbol)
       ).void
     end
-    def initialize(level: INFO,
-      quiet: false,
-      color: true,
-      logdev: $stdout,
-      formatter: Formatter.new(quiet: quiet, color: color))
-      super(logdev, level: level, formatter: formatter)
-      @level = level
-      @quiet = quiet
-      @color = color
+    def log(level, message, label: nil, label_color: nil)
+      if label
+        puts(level, colorize(label, label_color), ": ", highlight(message), "\n\n")
+      else
+        puts(level, highlight(message), "\n\n")
+      end
+    end
+
+    sig { params(string: String, color: T.nilable(Symbol)).returns(String) }
+    def colorize(string, color)
+      return string unless @color
+      string = string.colorize(color) if color
+      highlight(string)
+    end
+
+    sig { params(string: String).returns(String) }
+    def highlight(string)
+      return string unless @color
+      res = StringIO.new
+      word = StringIO.new
+      in_ticks = T.let(false, T::Boolean)
+      string.chars.each do |c|
+        if c == "`" && !in_ticks
+          in_ticks = true
+        elsif c == "`" && in_ticks
+          in_ticks = false
+          res << colorize(word.string, :blue)
+          word = StringIO.new
+        elsif in_ticks
+          word << c
+        else
+          res << c
+        end
+      end
+      res.string
     end
 
     private
 
-    sig { params(string: String, color: T.nilable(Symbol)).returns(String) }
-    def colorize(string, color = nil)
-      T.cast(@formatter, Formatter).colorize(string, color)
+    sig { params(level: Integer, string: String).void }
+    def puts(level, *string)
+      return if @quiet || level < @level
+      @out.puts string.join
     end
   end
 end

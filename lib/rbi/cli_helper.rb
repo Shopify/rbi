@@ -17,7 +17,7 @@ module RBI
 
     sig { returns(Logger) }
     def logger
-      level = options[:verbose] ? ::Logger::Severity::DEBUG : ::Logger::Severity::INFO
+      level = options[:verbose] ? Logger::DEBUG : Logger::INFO
       Logger.new(level: level, color: options[:color], quiet: options[:quiet])
     end
   end
