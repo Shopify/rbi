@@ -63,6 +63,7 @@ module RBI
 
     sig { params(gems: T::Array[String]).void }
     def generate(gems)
+      # TODO: Skip if RBI already exists locally (Thus no need to "merge" inside generate command)
       if gems.empty?
         file = Bundler.read_file("#{@project_path}/Gemfile.lock")
         parser = Bundler::LockfileParser.new(file)
@@ -138,7 +139,7 @@ module RBI
       ctx = Context.new("/tmp/rbi/gems/#{name}/#{version}")
       ctx.sorbet_config(".")
       # TODO: Support installing of internal gems
-      # TODO: Don't add tapioca as a gem to context
+      # TODO: Don't add tapioca as a gem to context to prevent its dependencies being generated
       ctx.gemfile(<<~GEMFILE)
         source "https://rubygems.org"
         gem("#{name}", "#{version}")
@@ -148,17 +149,23 @@ module RBI
       # TODO: Error handling
       Bundler.with_unbundled_env do
         out, err, status = ctx.run("bundle config set --local path 'vendor/bundle'")
-        puts out, err, status
         out, err, status = ctx.run("bundle", "install")
-        puts out, err, status
         out, err, status = ctx.run("bundle", "exec", "tapioca", "generate")
-        puts out, err, status
       end
 
       gem_rbi_path = ctx.absolute_path("sorbet/rbi/gems/#{name}@#{version}.rbi")
       FileUtils.cp(gem_rbi_path, "#{@project_path}/#{GEM_RBI_DIRECTORY}/")
-      # TODO: Don't generate gem RBIs coming due to tapioca
-      # TODO: Copy over dependencies of the gem as well
+
+      file = Bundler.read_file("/tmp/rbi/gems/#{name}/#{version}/Gemfile.lock")
+      parser = Bundler::LockfileParser.new(file)
+      spec = parser.specs.find { |spec| spec.name == name }
+      spec.dependencies.each do |dependency|
+        name = dependency.name
+        version = parser.specs.find { |spec| spec.name == name }.version.to_s
+        gem_rbi_path = ctx.absolute_path("sorbet/rbi/gems/#{name}@#{version}.rbi")
+        FileUtils.cp(gem_rbi_path, "#{@project_path}/#{GEM_RBI_DIRECTORY}/")
+      end
+
       # TODO: Success logging
 
       ctx.destroy
