@@ -63,6 +63,8 @@ module RBI
         # copy missing ones from generate output
         gemfile = <<~GEMFILE
           source "https://rubygems.org"
+          source "https://pkgs.shopify.io/basic/gems/ruby"
+          gem('tapioca')
         GEMFILE
 
         entries = []
@@ -81,8 +83,6 @@ module RBI
 
     sig { params(gemfile: String, requested_rbis: T::Array[String]).void }
     def generate(gemfile, requested_rbis)
-      # next if dep.name == "rbi" # TODO: Remove, Support installing of internal gems
-
       ctx = Context.new("/tmp/rbi/generate")
       ctx.sorbet_config(".")
       ctx.gemfile(gemfile)
