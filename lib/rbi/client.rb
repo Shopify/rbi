@@ -58,6 +58,7 @@ module RBI
         end
         missing_rbis << [name, version] unless pull_rbi(name, version)
       end
+
       unless missing_rbis.empty?
         gemfile = <<~GEMFILE
           source "https://rubygems.org"
