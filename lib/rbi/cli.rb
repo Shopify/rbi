@@ -36,8 +36,34 @@ module RBI
 
     desc "generate [gem...]", "Generate RBIs from gems"
     def generate(*gems)
+      if gems.empty?
+        logger.error("Wrong number of arguments passed to `generate`. Please pass at least 1 gem")
+        exit
+      end
+
+      entries = []
+      requested_rbis = []
+
+      gems.each do |gem|
+        name, version = gem.split("@")
+        if !name || !version
+          @logger.error("Argument to `generate` is in the wrong format. Please pass in `gem_name@gem_version`.")
+          exit
+        end
+
+        entries << "gem('#{name}', '#{version}')"
+        requested_rbis << name
+      end
+
+      gemfile = <<~GEMFILE
+        source "https://rubygems.org"
+        source "https://pkgs.shopify.io/basic/gems/ruby"
+        gem('tapioca')
+      GEMFILE
+      gemfile += entries.uniq.join("\n")
+
       client = self.client
-      client.generate(gems)
+      client.generate(gemfile, requested_rbis)
     end
 
     def self.exit_on_failure?

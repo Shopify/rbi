@@ -12,7 +12,7 @@ module RBI
     def initialize(logger, github_client: nil, project_path: ".")
       @logger = logger
       @project_path = project_path
-      @lockfile = "#{@project_path}/Gemfile.lock"
+      @lockfile = T.let("#{@project_path}/Gemfile.lock", String)
 
       @github_client = T.let(github_client || Octokit::Client.new(
         access_token: github_token,
@@ -59,8 +59,6 @@ module RBI
         missing_rbis << [name, version] unless pull_rbi(name, version)
       end
       unless missing_rbis.empty?
-        # generate in another dir
-        # copy missing ones from generate output
         gemfile = <<~GEMFILE
           source "https://rubygems.org"
           source "https://pkgs.shopify.io/basic/gems/ruby"
@@ -71,10 +69,11 @@ module RBI
         missing_rbis.each do |rbi|
           name = rbi[0]
           version = rbi[1]
-          entries << "gem('#{name}', '#{version}')" unless name == "rbi" || name == "test" # TODO
+          # TODO: Remove conditionals when "rbi" is published. Workaround for app itself being a spec
+          entries << "gem('#{name}', '#{version}')" unless name == "rbi" || name == "test"
         end
-
         gemfile += entries.uniq.join("\n")
+
         generate(gemfile, missing_rbis.map(&:first))
       end
 
@@ -96,7 +95,8 @@ module RBI
           exit
         end
 
-        _, err, status = ctx.run("bundle", "exec", "tapioca", "generate") # TODO: "--only" option to not generate subdependency RBIs?
+        # TODO: "--only" option to not generate subdependency RBIs?
+        _, err, status = ctx.run("bundle", "exec", "tapioca", "generate")
         unless status
           @logger.error("Unable to generate RBI: #{err}")
           ctx.destroy
@@ -111,14 +111,13 @@ module RBI
         exit
       end
 
-      generated_rbis = out.split
+      generated_rbis = T.must(out).split
       generated_rbis.each do |filename|
         name = filename.split("@").first
-        if requested_rbis.include?(name)
-          gem_rbi_path = ctx.absolute_path("sorbet/rbi/gems/#{filename}")
-          FileUtils.cp(gem_rbi_path, "#{@project_path}/#{GEM_RBI_DIRECTORY}/")
-          @logger.success("Generated #{filename}")
-        end
+        next unless requested_rbis.include?(name)
+        gem_rbi_path = ctx.absolute_path("sorbet/rbi/gems/#{filename}")
+        FileUtils.cp(gem_rbi_path, "#{@project_path}/#{GEM_RBI_DIRECTORY}/")
+        @logger.success("Generated #{filename}")
       end
 
       ctx.destroy
@@ -160,11 +159,13 @@ module RBI
 
     private
 
+    sig { returns(Bundler::LockfileParser) }
     def parser
+      @parser = T.let(@parser, T.nilable(Bundler::LockfileParser))
       @parser ||= begin
-                    file = Bundler.read_file(@lockfile)
-                    Bundler::LockfileParser.new(file)
-                  end
+        file = Bundler.read_file(@lockfile)
+        Bundler::LockfileParser.new(file)
+      end
     end
 
     sig { returns(String) }
