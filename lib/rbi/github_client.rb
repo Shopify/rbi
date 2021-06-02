@@ -11,6 +11,16 @@ module RBI
     sig { abstract.params(repo: String, path: String).returns(T.nilable(String)) }
     def file_content(repo, path); end
   end
+
+  class MockGithubClient
+    extend T::Sig
+    include RBI::GithubClient
+
+    sig { override.params(_repo: String, path: String).returns(T.nilable(String)) }
+    def file_content(_repo, path)
+      File.read(path)
+    end
+  end
 end
 
 module Octokit
