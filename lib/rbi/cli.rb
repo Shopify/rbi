@@ -29,9 +29,10 @@ module RBI
       client.clean
     end
 
-    desc "update", "Update gem RBIs from local project from central repository"
+    desc "update", "Update local gem RBIs"
+    option "mock-github-client", type: :boolean, default: false
     def update
-      client = self.client
+      client = self.client(options["mock-github-client"])
       client.update
     end
 

@@ -6,6 +6,7 @@ require "stringio"
 require "colorize"
 require "octokit"
 require "base64"
+require "open3"
 
 module RBI
   class Error < StandardError; end

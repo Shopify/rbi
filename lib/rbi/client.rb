@@ -7,6 +7,7 @@ module RBI
 
     CENTRAL_REPO_SLUG = "shopify/rbi"
     GEM_RBI_DIRECTORY = "sorbet/rbi/gems"
+    IGNORED_GEMS      = T.let(%w(sorbet sorbet-runtime sorbet-static), T::Array[String])
 
     sig { params(logger: Logger, github_client: T.nilable(GithubClient), project_path: String).void }
     def initialize(logger, github_client: nil, project_path: ".")
@@ -21,6 +22,7 @@ module RBI
 
       index = github_file_content("central_repo/index.json")
       @repo = T.let(Repo.from_index(index), Repo)
+      @parser = T.let(nil, T.nilable(Bundler::LockfileParser))
     end
 
     sig { void }
@@ -36,8 +38,6 @@ module RBI
         @logger.hint("Run `rbi clean` to delete it.")
         return false
       end
-      file = Bundler.read_file("#{@project_path}/Gemfile.lock")
-      parser = Bundler::LockfileParser.new(file)
       parser.specs.each do |spec|
         pull_rbi(spec.name, spec.version.to_s)
       end
@@ -46,18 +46,28 @@ module RBI
 
     sig { void }
     def update
-      file = Bundler.read_file("#{@project_path}/Gemfile.lock")
-      parser = Bundler::LockfileParser.new(file)
+      missing_specs = []
+
       parser.specs.each do |spec|
         name = spec.name
         version = spec.version.to_s
+        next if IGNORED_GEMS.include?(name)
+
         if has_local_rbi_for_gem_version?(name, version)
           next
         elsif has_local_rbi_for_gem?(name)
           remove_local_rbi_for_gem(name)
         end
-        pull_rbi(name, version)
+        missing_specs << spec unless pull_rbi(name, version)
       end
+
+      missing_specs = remove_application_spec(missing_specs)
+
+      unless missing_specs.empty?
+        exclude = parser.specs - missing_specs
+        tapioca_generate(exclude: exclude)
+      end
+
       @logger.success("Gem RBIs successfully updated.")
     end
 
@@ -65,8 +75,6 @@ module RBI
     def pull_rbi(name, version)
       path = @repo.rbi_path(name, version)
       unless path
-        @logger.error("The RBI for `#{name}@#{version}` gem doesn't exist in the central repository.")
-        @logger.hint("Run `rbi generate #{name}@#{version}` to generate it.")
         return false
       end
 
@@ -75,6 +83,7 @@ module RBI
       dir = "#{@project_path}/#{GEM_RBI_DIRECTORY}"
       FileUtils.mkdir_p(dir)
       File.write("#{dir}/#{path}", str)
+      @logger.success("Pulled `#{name}@#{version}.rbi` from central repository")
 
       true
     end
@@ -97,6 +106,35 @@ module RBI
     end
 
     private
+
+    sig { returns(Bundler::LockfileParser) }
+    def parser
+      @parser ||= gemfile_lock_parser
+    end
+
+    sig { params(specs: T::Array[Bundler::LazySpecification]).returns(T::Array[Bundler::LazySpecification]) }
+    def remove_application_spec(specs)
+      return specs if specs.empty?
+      application_directory = File.expand_path(Bundler.root)
+      specs.reject do |spec|
+        spec.source.class == Bundler::Source::Path && File.expand_path(spec.source.path) == application_directory
+      end
+    end
+
+    sig { params(exclude: T::Array[Bundler::LazySpecification]).void }
+    def tapioca_generate(exclude:)
+      @logger.info("Generating RBIs that were missing in the central repository using tapioca.")
+      spec_names = exclude.map(&:name)
+      exclude_option = exclude.empty? ? "" : "--exclude #{spec_names.join(" ")}"
+
+      out, err, status = Open3.capture3("bundle exec tapioca generate #{exclude_option}")
+      unless status.success?
+        @logger.error("Unable to generate RBI: #{err}.")
+        exit
+      end
+
+      @logger.debug(out)
+    end
 
     sig { returns(String) }
     def github_token
@@ -125,6 +163,12 @@ module RBI
     sig { params(path: String).returns(String) }
     def github_file_content(path)
       T.must(@github_client.file_content(CENTRAL_REPO_SLUG, path))
+    end
+
+    sig { returns(Bundler::LockfileParser) }
+    def gemfile_lock_parser
+      file = Bundler.read_file("#{@project_path}/Gemfile.lock")
+      Bundler::LockfileParser.new(file)
     end
   end
 end
