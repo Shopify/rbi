@@ -17,8 +17,9 @@ module RBI
 
     # TODO: Support triggering this command outside of root directory
     desc "init", "Initialize a project by retrieving all gem RBIs from central repository"
+    option "mock-github-client", type: :boolean, default: false
     def init
-      client = self.client
+      client = self.client(options["mock-github-client"])
       client.init
     end
 

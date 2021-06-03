@@ -5,14 +5,13 @@ require "fileutils"
 require "open3"
 
 module RBI
-  module TestHelpers
-    class Project
+  module TestHelper
+    class Context
       extend T::Sig
 
       sig { returns(String) }
       attr_reader :path
 
-      # Create a new test project at `path`
       sig { params(path: String).void }
       def initialize(path)
         @path = path
@@ -20,7 +19,11 @@ module RBI
         FileUtils.mkdir_p(@path)
       end
 
-      # Write `content` in the file at `rel_path`
+      sig { params(content: String).void }
+      def gemfile(content)
+        write("Gemfile", content)
+      end
+
       sig { params(rel_path: String, content: String).void }
       def write(rel_path, content = "")
         path = absolute_path(rel_path)
@@ -28,16 +31,14 @@ module RBI
         File.write(path, content)
       end
 
-      # Run a command in this project
-      sig { params(cmd: String, args: String).returns([T.nilable(String), T::Boolean]) }
+      sig { params(cmd: String, args: String).returns([String, String, T::Boolean]) }
       def run(cmd, *args)
         opts = {}
         opts[:chdir] = @path
-        out, _, status = Open3.capture3([cmd, *args].join(" "), opts)
-        [out, status.success?]
+        out, err, status = Open3.capture3([cmd, *args].join(" "), opts)
+        [out, err, status.success?]
       end
 
-      # Delete this project and its content
       sig { void }
       def destroy
         FileUtils.rm_rf(@path)
@@ -45,7 +46,6 @@ module RBI
 
       private
 
-      # Create an absolute path from `self.path` and `rel_path`
       sig { params(rel_path: String).returns(String) }
       def absolute_path(rel_path)
         (Pathname.new(@path) / rel_path).to_s

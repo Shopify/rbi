@@ -10,8 +10,10 @@ module RBI
 
     requires_ancestor Thor
 
-    sig { returns(Client) }
-    def client
+    sig { params(mock_github_client: T::Boolean).returns(Client) }
+    def client(mock_github_client = false)
+      return Client.new(logger, github_client: RBI::MockGithubClient.new) if mock_github_client
+
       Client.new(logger)
     end
 
