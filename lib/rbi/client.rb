@@ -83,7 +83,7 @@ module RBI
       dir = "#{@project_path}/#{GEM_RBI_DIRECTORY}"
       FileUtils.mkdir_p(dir)
       File.write("#{dir}/#{path}", str)
-      @logger.success("Pulled `#{name}@#{version}.rbi` from central repository")
+      @logger.success("Pulled `#{name}@#{version}.rbi` from central repository.")
 
       true
     end
