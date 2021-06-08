@@ -72,7 +72,11 @@ module RBI
         res = client.init
 
         assert(res)
-        assert_empty(out.string)
+        assert_log(<<~OUT, out.string)
+          Success: Pulled `bar@2.0.0.rbi` from central repository.
+
+          Success: Pulled `foo@1.0.0.rbi` from central repository.
+        OUT
         assert_equal("FOO = 1", File.read("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
         assert_equal("BAR = 2", File.read("#{project.path}/sorbet/rbi/gems/bar@2.0.0.rbi"))
 
@@ -118,11 +122,7 @@ module RBI
         res = client.pull_rbi("foo", "1.0.0")
 
         refute(res)
-        assert_log(<<~OUT, out.string)
-          Error: The RBI for `foo@1.0.0` gem doesn't exist in the central repository.
-
-          Hint: Run `rbi generate foo@1.0.0` to generate it.
-        OUT
+        assert_empty(out.string)
       end
 
       def test_pull_rbi
@@ -131,7 +131,9 @@ module RBI
         res = client.pull_rbi("foo", "1.0.0")
 
         assert(res)
-        assert_empty(out.string)
+        assert_log(<<~OUT, out.string)
+          Success: Pulled `foo@1.0.0.rbi` from central repository.
+        OUT
         assert_equal("FOO = 1", File.read("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
 
         project.destroy
