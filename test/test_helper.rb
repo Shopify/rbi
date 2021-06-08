@@ -4,7 +4,7 @@
 $LOAD_PATH.unshift(File.expand_path("../../lib", __FILE__))
 
 require "rbi"
-require "rbi/test_helpers/context"
+require "rbi/context"
 require "minitest/test"
 
 module RBI

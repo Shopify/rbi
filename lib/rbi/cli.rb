@@ -36,6 +36,15 @@ module RBI
       client.update
     end
 
+    desc "generate foo@1.0.0", "Generates RBI for a given gem. To use Sorbet in your project, use `rbi update` instead."
+    option "cloudsmith-source",
+      type: :boolean,
+      default: false,
+      desc: "Gem should be downloaded from cloudsmith instead of rubygems"
+    def generate(gem)
+      generate_rbi(gem, options["cloudsmith-source"])
+    end
+
     def self.exit_on_failure?
       true
     end

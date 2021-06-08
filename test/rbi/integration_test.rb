@@ -143,5 +143,60 @@ module RBI
 
       project.destroy
     end
+
+    def test_generate_public_gem
+      project = self.project("test_generate_gem")
+
+      project.gemfile(<<~GEMFILE)
+        source "https://rubygems.org"
+
+        gem "rbi", path: "#{File.expand_path(Bundler.root)}"
+        gem "tapioca"
+      GEMFILE
+
+      gem_input = "parser@2.3.1.2"
+      Bundler.with_unbundled_env do
+        project.run("bundle config set --local path 'vendor/bundle'")
+        project.run("bundle install")
+        refute(File.file?("#{project.path}/#{gem_input}.rbi"))
+
+        _, err, status = project.run("bundle exec rbi generate #{gem_input} --no-color")
+        assert(status)
+        assert_log(<<~OUT, T.must(err))
+          Success: Generated `parser@2.3.1.2.rbi`
+        OUT
+      end
+      assert(File.file?("#{project.path}/#{gem_input}.rbi"))
+
+      project.destroy
+    end
+
+    def test_generate_cloudsmith_gem
+      skip("Requires authentication to cloudsmith on CI")
+      project = self.project("test_generate_cloudsmith_gem")
+
+      project.gemfile(<<~GEMFILE)
+        source "https://rubygems.org"
+
+        gem "rbi", path: "#{File.expand_path(Bundler.root)}"
+        gem "tapioca"
+      GEMFILE
+
+      gem_input = "softer_delete@0.2.2"
+      Bundler.with_unbundled_env do
+        project.run("bundle config set --local path 'vendor/bundle'")
+        project.run("bundle install")
+        refute(File.file?("#{project.path}/#{gem_input}.rbi"))
+
+        _, err, status = project.run("bundle exec rbi generate #{gem_input} --cloudsmith-source --no-color")
+        assert(status)
+        assert_log(<<~OUT, T.must(err))
+          Success: Generated `softer_delete@0.2.2.rbi`
+        OUT
+      end
+      assert(File.file?("#{project.path}/#{gem_input}.rbi"))
+
+      project.destroy
+    end
   end
 end

@@ -18,6 +18,7 @@ require_relative "rbi/client"
 require_relative "rbi/repo"
 require_relative "rbi/github_client"
 require_relative "rbi/mock_github_client"
+require_relative "rbi/context"
 
 require_relative "rbi/cli"
 require_relative "rbi/version"
