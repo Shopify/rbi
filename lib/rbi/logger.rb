@@ -60,9 +60,9 @@ module RBI
     end
     def log(level, message, label: nil, label_color: nil)
       if label
-        puts(level, colorize(label, label_color), ": ", highlight(message), "\n\n")
+        puts(level, colorize(label, label_color), ": ", highlight(message))
       else
-        puts(level, highlight(message), "\n\n")
+        puts(level, highlight(message))
       end
     end
 

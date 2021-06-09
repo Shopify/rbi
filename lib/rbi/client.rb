@@ -133,7 +133,7 @@ module RBI
         exit
       end
 
-      @logger.debug(out)
+      @logger.debug("#{out}\n")
     end
 
     sig { returns(String) }

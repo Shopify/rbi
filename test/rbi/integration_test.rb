@@ -128,7 +128,6 @@ module RBI
         assert(status)
         assert_log(<<~OUT, T.must(err))
           Info: Generating RBIs that were missing in the central repository using tapioca
-
           Debug: Requiring all gems to prepare for compiling...  Done
 
           Processing 'foo' gem:
@@ -136,7 +135,6 @@ module RBI
 
           All operations performed in working directory.
           Please review changes and commit them.
-
 
           Success: Gem RBIs successfully updated
         OUT
