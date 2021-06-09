@@ -47,9 +47,9 @@ module RBI
 
         refute(res)
         assert_log(<<~OUT, out.string)
-          Error: Can't init while you RBI gems directory is not empty.
+          Error: Can't init while you RBI gems directory is not empty
 
-          Hint: Run `rbi clean` to delete it.
+          Hint: Run `rbi clean` to delete it
         OUT
 
         assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
@@ -73,9 +73,9 @@ module RBI
 
         assert(res)
         assert_log(<<~OUT, out.string)
-          Success: Pulled `bar@2.0.0.rbi` from central repository.
+          Success: Pulled `bar@2.0.0.rbi` from central repository
 
-          Success: Pulled `foo@1.0.0.rbi` from central repository.
+          Success: Pulled `foo@1.0.0.rbi` from central repository
         OUT
         assert_equal("FOO = 1", File.read("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
         assert_equal("BAR = 2", File.read("#{project.path}/sorbet/rbi/gems/bar@2.0.0.rbi"))
@@ -132,7 +132,7 @@ module RBI
 
         assert(res)
         assert_log(<<~OUT, out.string)
-          Success: Pulled `foo@1.0.0.rbi` from central repository.
+          Success: Pulled `foo@1.0.0.rbi` from central repository
         OUT
         assert_equal("FOO = 1", File.read("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
 

@@ -28,14 +28,14 @@ module RBI
     sig { void }
     def clean
       FileUtils.rm_rf("#{@project_path}/#{GEM_RBI_DIRECTORY}")
-      @logger.success("Clean `#{@project_path}/#{GEM_RBI_DIRECTORY}` directory.")
+      @logger.success("Clean `#{@project_path}/#{GEM_RBI_DIRECTORY}` directory")
     end
 
     sig { returns(T::Boolean) }
     def init
       unless Dir.glob("#{@project_path}/#{GEM_RBI_DIRECTORY}/*.rbi").empty?
-        @logger.error("Can't init while you RBI gems directory is not empty.")
-        @logger.hint("Run `rbi clean` to delete it.")
+        @logger.error("Can't init while you RBI gems directory is not empty")
+        @logger.hint("Run `rbi clean` to delete it")
         return false
       end
       parser.specs.each do |spec|
@@ -68,7 +68,7 @@ module RBI
         tapioca_generate(exclude: exclude)
       end
 
-      @logger.success("Gem RBIs successfully updated.")
+      @logger.success("Gem RBIs successfully updated")
     end
 
     sig { params(name: String, version: String).returns(T::Boolean) }
@@ -83,7 +83,7 @@ module RBI
       dir = "#{@project_path}/#{GEM_RBI_DIRECTORY}"
       FileUtils.mkdir_p(dir)
       File.write("#{dir}/#{path}", str)
-      @logger.success("Pulled `#{name}@#{version}.rbi` from central repository.")
+      @logger.success("Pulled `#{name}@#{version}.rbi` from central repository")
 
       true
     end
@@ -123,13 +123,13 @@ module RBI
 
     sig { params(exclude: T::Array[Bundler::LazySpecification]).void }
     def tapioca_generate(exclude:)
-      @logger.info("Generating RBIs that were missing in the central repository using tapioca.")
+      @logger.info("Generating RBIs that were missing in the central repository using tapioca")
       spec_names = exclude.map(&:name)
       exclude_option = exclude.empty? ? "" : "--exclude #{spec_names.join(" ")}"
 
       out, err, status = Open3.capture3("bundle exec tapioca generate #{exclude_option}")
       unless status.success?
-        @logger.error("Unable to generate RBI: #{err}.")
+        @logger.error("Unable to generate RBI: #{err}")
         exit
       end
 
@@ -142,7 +142,7 @@ module RBI
       if token.nil? || token == ""
         @logger.error("Please set a Github Token so rbi can access the central repository" \
                       " by setting the environment variable `GITHUB_TOKEN`" \
-                      " or creating a `github.token` file.")
+                      " or creating a `github.token` file")
         exit(1)
       end
       token
