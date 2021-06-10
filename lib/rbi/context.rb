@@ -43,8 +43,6 @@ module RBI
       FileUtils.rm_rf(@path)
     end
 
-    private
-
     sig { params(rel_path: String).returns(String) }
     def absolute_path(rel_path)
       (Pathname.new(@path) / rel_path).to_s

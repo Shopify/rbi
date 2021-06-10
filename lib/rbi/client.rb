@@ -130,7 +130,7 @@ module RBI
       out, err, status = Open3.capture3("bundle exec tapioca generate #{exclude_option}")
       unless status.success?
         @logger.error("Unable to generate RBI: #{err}")
-        exit
+        exit(1)
       end
 
       @logger.debug("#{out}\n")

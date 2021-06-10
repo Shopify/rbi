@@ -23,24 +23,39 @@ module RBI
       Logger.new(level: level, color: options[:color], quiet: options[:quiet])
     end
 
-    sig { params(input_string: String, cloudsmith_source: T::Boolean).void }
-    def generate_rbi(input_string, cloudsmith_source)
+    sig do
+      params(
+        name: String,
+        version: String,
+        source: T.nilable(String),
+        git: T.nilable(String),
+        path: T.nilable(String)
+      ).void
+    end
+    def generate_rbi(name, version, source: nil, git: nil, path: nil)
       logger = self.logger
-      split = input_string.split("@")
-      unless split.size == 2
-        logger.error("Argument to `generate` is in the wrong format. Please pass in `gem_name@full_version_number`.")
-        exit
+
+      arr = [source, git, path]
+      num_options = arr.count { |x| !x.nil? }
+      if num_options > 1
+        logger.error(<<~ERR)
+          You passed in too many options to `rbi generate`.
+          Please pass only one of `--source`, `--git` and `--path`.
+        ERR
+        exit(1)
       end
-      name, version = split
+
+      gem_string = if source
+        "gem '#{name}', '#{version}', source: '#{source}'"
+      elsif git
+        "gem '#{name}', '#{version}', git: '#{git}'" # TODO: Support passing a specific branch
+      elsif path
+        "gem '#{name}', '#{version}', path: '#{path}'"
+      else
+        "gem '#{name}', '#{version}'"
+      end
 
       ctx = Context.new("/tmp/rbi/generate/#{name}")
-      gem_string =
-        if cloudsmith_source
-          "gem '#{name}', '#{version}', source: 'https://pkgs.shopify.io/basic/gems/ruby'"
-        else
-          "gem '#{name}', '#{version}'"
-        end
-
       ctx.gemfile(<<~GEMFILE)
         source "https://rubygems.org"
 
@@ -53,19 +68,34 @@ module RBI
         _, err, status = ctx.run("bundle install")
         unless status
           logger.error(<<~ERR)
-            If the gem you are specifying is hosted on cloudsmith please pass `--cloudsmith-source` flag to `rbi generate`.
-            Unable to install gem: #{err}
+            If the gem you are specifying is not hosted on RubyGems please pass the correct flag to `rbi generate`.
+            You can find all available flags by running `bundle exec rbi help generate`.
+            \n#{err}
           ERR
-          exit
+          exit(1)
         end
         _, err, status = ctx.run("bundle exec tapioca generate")
         unless status
-          logger.error("Unable to generate RBI: #{err}.")
-          exit
+          logger.error("Unable to generate RBI: #{err}")
+          exit(1)
         end
       end
-      FileUtils.mv("#{ctx.path}/sorbet/rbi/gems/#{name}@#{version}.rbi", ".")
-      logger.success("Generated `#{name}@#{version}.rbi`")
+      begin
+        gem_rbi_path = "#{ctx.path}/sorbet/rbi/gems"
+        if git
+          file_path = Dir["#{gem_rbi_path}/#{name}@#{version}-*.rbi"]
+          FileUtils.mv(file_path, ".")
+          logger.success("Generated RBI for `#{name}@#{version}`")
+        else
+          FileUtils.mv("#{gem_rbi_path}/#{name}@#{version}.rbi", ".")
+          logger.success("Generated `#{name}@#{version}.rbi`")
+        end
+      rescue Errno::ENOENT
+        logger.error(<<~ERR)
+          Unable to move gem RBI to target directory. Generated RBI must have a different version number than what you specifified.
+          Ensure version number to `rbi generate` command matches the version number retrieved from your specific source.
+        ERR
+      end
 
       ctx.destroy
     end
