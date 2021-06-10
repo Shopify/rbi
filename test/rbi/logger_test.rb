@@ -19,15 +19,10 @@ module RBI
 
       assert_log(<<~OUT, out.string)
         Error: message `highlight`
-
         Success: message `highlight`
-
         Hint: message `highlight`
-
         Warning: message `highlight`
-
         Info: message `highlight`
-
         Debug: message `highlight`
       OUT
     end
@@ -44,15 +39,10 @@ module RBI
 
       assert_log(<<~OUT, out.string)
         \e[0;31;49mError\e[0m: message \e[0;34;49mhighlight\e[0m
-
         \e[0;32;49mSuccess\e[0m: message \e[0;34;49mhighlight\e[0m
-
         \e[0;32;49mHint\e[0m: message \e[0;34;49mhighlight\e[0m
-
         \e[0;33;49mWarning\e[0m: message \e[0;34;49mhighlight\e[0m
-
         \e[0;37;49mInfo\e[0m: message \e[0;34;49mhighlight\e[0m
-
         \e[0;39;49mDebug\e[0m: message \e[0;34;49mhighlight\e[0m
       OUT
     end
