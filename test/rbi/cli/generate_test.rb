@@ -26,7 +26,7 @@ module RBI
 
         _, err, status = project.run("bundle exec rbi generate #{name} #{version} --no-color")
         assert(status)
-        assert_log(<<~OUT, T.must(err))
+        assert_log(<<~OUT, err)
           Success: Generated `#{filename}.rbi`
         OUT
       end
@@ -55,7 +55,7 @@ module RBI
         url = "https://rubygems.org"
         _, err, status = project.run("bundle exec rbi generate #{name} #{version} --source=#{url} --no-color")
         assert(status)
-        assert_log(<<~OUT, T.must(err))
+        assert_log(<<~OUT, err)
           Success: Generated `#{filename}.rbi`
         OUT
       end
@@ -84,7 +84,7 @@ module RBI
         url = "https://github.com/fazibear/colorize.git"
         _, err, status = project.run("bundle exec rbi generate #{name} #{version} --git=#{url} --no-color")
         assert(status)
-        assert_log(<<~OUT, T.must(err))
+        assert_log(<<~OUT, err)
           Success: Generated RBI for `colorize@0.8.1`
         OUT
       end
@@ -131,7 +131,7 @@ module RBI
         path = "#{project.path}/vendor/cache/"
         _, err, status = project.run("bundle exec rbi generate #{name} #{version} --path=#{path} --no-color")
         assert(status)
-        assert_log(<<~OUT, T.must(err))
+        assert_log(<<~OUT, err)
           Success: Generated `foo@1.0.0.rbi`
         OUT
       end

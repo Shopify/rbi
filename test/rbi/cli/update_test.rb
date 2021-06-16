@@ -47,7 +47,7 @@ module RBI
 
         _, err, status = project.run("bundle exec rbi update --mock-github-client -v --no-color")
         assert(status)
-        assert_log(<<~OUT, T.must(err))
+        assert_log(<<~OUT, err)
           Info: Generating RBIs that were missing in the central repository using tapioca
           Debug: Requiring all gems to prepare for compiling...  Done
 
