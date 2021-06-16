@@ -41,12 +41,12 @@ module RBI
     option "git", type: :string, default: nil, desc: "Download gem from this git repo"
     option "branch", type: :string, default: nil, desc: "Install gem from this git branch"
     option "path", type: :string, default: nil, desc: "Install gem from this path"
-    def generate(name, version)
+    def generate(name, version = nil)
       source = options["source"]
       git = options["git"]
       path = options["path"]
       branch = options["branch"]
-      generate_rbi(name, version, source: source, git: git, branch: branch, path: path)
+      generate_rbi(name, version: version, source: source, git: git, branch: branch, path: path)
     end
 
     def self.exit_on_failure?

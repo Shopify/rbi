@@ -17,6 +17,31 @@ module RBI
         gem "rbi", path: "#{File.expand_path(Bundler.root)}"
       GEMFILE
 
+      Bundler.with_unbundled_env do
+        project.run("bundle config set --local path 'vendor/bundle'")
+        project.run("bundle install")
+
+        _, err, status = project.run("bundle exec rbi generate colorize --no-color")
+        assert(status)
+        assert_log(<<~OUT, censor_version(err))
+          Success: Generated `colorize@X.Y.Z.rbi`
+        OUT
+      end
+      file = T.must(Dir["#{project.path}/colorize@*.rbi"].first)
+      assert(File.file?(file))
+
+      project.destroy
+    end
+
+    def test_generate_gem_from_rubygem_with_version
+      project = self.project("test_generate_gem_from_rubygem")
+
+      project.gemfile(<<~GEMFILE)
+        source "https://rubygems.org"
+
+        gem "rbi", path: "#{File.expand_path(Bundler.root)}"
+      GEMFILE
+
       name = "colorize"
       version = "0.8.0"
       filename = "#{name}@#{version}"

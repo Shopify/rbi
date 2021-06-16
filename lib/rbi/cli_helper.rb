@@ -26,14 +26,14 @@ module RBI
     sig do
       params(
         name: String,
-        version: String,
+        version: T.nilable(String),
         source: T.nilable(String),
         git: T.nilable(String),
         branch: T.nilable(String),
         path: T.nilable(String)
       ).void
     end
-    def generate_rbi(name, version, source: nil, git: nil, branch: nil, path: nil)
+    def generate_rbi(name, version: nil, source: nil, git: nil, branch: nil, path: nil)
       logger = self.logger
 
       if [source, git, path].count { |x| !x.nil? } > 1
@@ -50,7 +50,8 @@ module RBI
       end
 
       gem_string = String.new
-      gem_string << "gem '#{name}', '#{version}'"
+      gem_string << "gem '#{name}'"
+      gem_string << ", '#{version}'" if version
       gem_string << ", source: '#{source}'" if source
       gem_string << ", git: '#{git}'" if git
       gem_string << ", branch: '#{branch}'" if branch
