@@ -29,10 +29,11 @@ module RBI
         version: String,
         source: T.nilable(String),
         git: T.nilable(String),
+        branch: T.nilable(String),
         path: T.nilable(String)
       ).void
     end
-    def generate_rbi(name, version, source: nil, git: nil, path: nil)
+    def generate_rbi(name, version, source: nil, git: nil, branch: nil, path: nil)
       logger = self.logger
 
       if [source, git, path].count { |x| !x.nil? } > 1
@@ -43,15 +44,17 @@ module RBI
         exit(1)
       end
 
-      gem_string = if source
-        "gem '#{name}', '#{version}', source: '#{source}'"
-      elsif git
-        "gem '#{name}', '#{version}', git: '#{git}'" # TODO: Support passing a specific branch
-      elsif path
-        "gem '#{name}', '#{version}', path: '#{path}'"
-      else
-        "gem '#{name}', '#{version}'"
+      if branch && !git
+        logger.error("Option `--branch` can only be used together with option `--git`")
+        exit(1)
       end
+
+      gem_string = String.new
+      gem_string << "gem '#{name}', '#{version}'"
+      gem_string << ", source: '#{source}'" if source
+      gem_string << ", git: '#{git}'" if git
+      gem_string << ", branch: '#{branch}'" if branch
+      gem_string << ", path: '#{path}'" if path
 
       ctx = Context.new("/tmp/rbi/generate/#{name}")
       ctx.gemfile(<<~GEMFILE)
