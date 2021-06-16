@@ -35,9 +35,7 @@ module RBI
     def generate_rbi(name, version, source: nil, git: nil, path: nil)
       logger = self.logger
 
-      arr = [source, git, path]
-      num_options = arr.count { |x| !x.nil? }
-      if num_options > 1
+      if [source, git, path].count { |x| !x.nil? } > 1
         logger.error(<<~ERR)
           You passed in too many options to `rbi generate`.
           Please pass only one of `--source`, `--git` and `--path`.
