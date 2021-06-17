@@ -1,12 +1,12 @@
 # typed: strict
 # frozen_string_literal: true
 
-require "sorbet-runtime"
-require "stringio"
+require "base64"
 require "colorize"
 require "octokit"
-require "base64"
 require "open3"
+require "sorbet-runtime"
+require "stringio"
 
 module RBI
   class Error < StandardError; end
