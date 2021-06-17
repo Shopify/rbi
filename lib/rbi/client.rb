@@ -25,19 +25,6 @@ module RBI
       @parser = T.let(nil, T.nilable(Bundler::LockfileParser))
     end
 
-    sig { params(context: Context).returns(T::Boolean) }
-    def init(context)
-      unless Dir.glob("#{@project_path}/#{GEM_RBI_DIRECTORY}/*.rbi").empty?
-        @logger.error("Can't init while you RBI gems directory is not empty")
-        @logger.hint("Run `rbi clean` to delete it")
-        return false
-      end
-      context.gemfile_lock_parser.specs.each do |spec|
-        pull_rbi(spec.name, spec.version.to_s)
-      end
-      true
-    end
-
     sig { params(context: Context).void }
     def update(context)
       missing_specs = []

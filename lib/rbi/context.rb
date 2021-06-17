@@ -27,6 +27,19 @@ module RBI
       @logger.success("Clean `#{simplify_path(path)}` directory")
     end
 
+    sig { params(client: Client).returns(T::Boolean) }
+    def init(client)
+      if has_local_rbis?
+        @logger.error("Can't init while you RBI gems directory is not empty")
+        @logger.hint("Run `rbi clean` to delete it")
+        return false
+      end
+      gemfile_lock_parser.specs.each do |spec|
+        client.pull_rbi(spec.name, spec.version.to_s)
+      end
+      true
+    end
+
     # Utils
 
     sig { returns(String) }
@@ -53,6 +66,11 @@ module RBI
     sig { params(name: String).returns(T::Boolean) }
     def has_local_rbi_for_gem?(name)
       !Dir.glob("#{gem_rbi_dir}/#{name}@*.rbi").empty?
+    end
+
+    sig { returns(T::Boolean) }
+    def has_local_rbis?
+      !Dir.glob("#{gem_rbi_dir}/*.rbi").empty?
     end
 
     sig { params(name: String).void }
