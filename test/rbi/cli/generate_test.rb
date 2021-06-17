@@ -92,6 +92,35 @@ module RBI
       project.destroy
     end
 
+    def test_generate_gem_from_git_with_branch
+      project = self.project("test_generate_gem_from_git_with_branch")
+
+      project.gemfile(<<~GEMFILE)
+        source "https://rubygems.org"
+
+        gem "rbi", path: "#{File.expand_path(Bundler.root)}"
+      GEMFILE
+
+      name = "colorize"
+      version = "0.8.1"
+      filename = "#{name}@#{version}"
+      Bundler.with_unbundled_env do
+        project.run("bundle config set --local path 'vendor/bundle'")
+        project.run("bundle install")
+        refute(File.file?("#{project.absolute_path(filename)}.rbi"))
+
+        url = "https://github.com/fazibear/colorize.git"
+        _, err, status = project.run("bundle exec rbi generate #{name} #{version} --git=#{url}" \
+          " --branch=master --no-color")
+        assert(status)
+        assert_log(<<~OUT, err)
+          Success: Generated RBI for `colorize@0.8.1`
+        OUT
+      end
+
+      project.destroy
+    end
+
     def test_generate_gem_from_path
       project = self.project("test_generate_gem_from_path")
 
