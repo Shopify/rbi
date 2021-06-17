@@ -10,7 +10,7 @@ module RBI
 
     sig { returns(Context) }
     def context
-      Context.new(".") # TODO: pass `path` as an option
+      Context.new(".", logger: logger) # TODO: pass `path` as an option
     end
 
     sig { params(mock_github_client: T::Boolean).returns(Client) }

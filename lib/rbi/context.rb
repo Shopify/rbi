@@ -9,9 +9,13 @@ module RBI
     sig { returns(String) }
     attr_reader :path
 
-    sig { params(path: String).void }
-    def initialize(path)
+    sig { returns(Logger) }
+    attr_reader :logger
+
+    sig { params(path: String, logger: Logger).void }
+    def initialize(path, logger: Logger.new)
       @path = path
+      @logger = logger
     end
   end
 end
