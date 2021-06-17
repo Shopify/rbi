@@ -21,8 +21,8 @@ module RBI
     desc "init", "Initialize a project by retrieving all gem RBIs from central repository"
     option "mock-github-client", type: :boolean, default: false
     def init
-      client = self.client(options["mock-github-client"])
-      context.init(client)
+      fetcher = self.fetcher(options["mock-github-client"])
+      context.init(fetcher)
     end
 
     desc "generate foo 1.0.0", "Generates RBI for a given gem. To use Sorbet in your project, use `rbi update` instead"
@@ -42,7 +42,8 @@ module RBI
     option "mock-github-client", type: :boolean, default: false
     def update
       client = self.client(options["mock-github-client"])
-      context.update(client)
+      fetcher = self.fetcher(options["mock-github-client"])
+      context.update(client, fetcher)
     end
 
     def self.exit_on_failure?

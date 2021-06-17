@@ -82,9 +82,9 @@ module RBI
         project.write("sorbet/rbi/gems/bar@1.0.0.rbi")
 
         logger, out = self.logger
-        client, _ = client(default_client_mock, project.path)
         context = self.context(project, logger: logger)
-        res = context.init(client)
+        fetcher = self.fetcher(default_client_mock)
+        res = context.init(fetcher)
 
         refute(res)
         assert_log(<<~OUT, out.string)
@@ -109,9 +109,10 @@ module RBI
               bar (2.0.0)
         LOCK
 
-        client, out = client(default_client_mock, project.path)
-        context = self.context(project)
-        res = context.init(client)
+        logger, out = self.logger
+        context = self.context(project, logger: logger)
+        fetcher = self.fetcher(default_client_mock)
+        res = context.init(fetcher)
 
         assert(res)
         assert_log(<<~OUT, out.string)
@@ -139,7 +140,8 @@ module RBI
 
         client, _ = client(default_client_mock, project.path)
         context = self.context(project)
-        res = context.update(client)
+        fetcher = self.fetcher(default_client_mock)
+        res = context.update(client, fetcher)
 
         assert(res)
 

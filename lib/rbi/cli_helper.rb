@@ -20,6 +20,12 @@ module RBI
       Client.new(logger)
     end
 
+    sig { params(mock_github_client: T::Boolean).returns(Fetcher) }
+    def fetcher(mock_github_client = false)
+      return Fetcher.new(github_client: RBI::MockGithubClient.new) if mock_github_client
+      Fetcher.new
+    end
+
     sig { returns(Logger) }
     def logger
       level = options[:verbose] ? Logger::DEBUG : Logger::INFO

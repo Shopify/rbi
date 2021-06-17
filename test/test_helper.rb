@@ -71,6 +71,11 @@ module RBI
       [Client.new(logger, github_client: mock, project_path: path), out]
     end
 
+    sig { params(mock: Test::MockGithubClient).returns(Fetcher) }
+    def fetcher(mock)
+      Fetcher.new(github_client: mock)
+    end
+
     sig { params(exp: String, out: String).void }
     def assert_log(exp, out)
       assert_equal(exp, "#{out.rstrip}\n")

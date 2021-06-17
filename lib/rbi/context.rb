@@ -29,21 +29,21 @@ module RBI
       @logger.success("Clean `#{simplify_path(path)}` directory")
     end
 
-    sig { params(client: Client).returns(T::Boolean) }
-    def init(client)
+    sig { params(fetcher: Fetcher).returns(T::Boolean) }
+    def init(fetcher)
       if has_local_rbis?
         @logger.error("Can't init while you RBI gems directory is not empty")
         @logger.hint("Run `rbi clean` to delete it")
         return false
       end
       gemfile_lock_parser.specs.each do |spec|
-        client.pull_rbi(spec.name, spec.version.to_s)
+        fetch_rbi(fetcher, spec.name, spec.version.to_s)
       end
       true
     end
 
-    sig { params(client: Client).void }
-    def update(client)
+    sig { params(client: Client, fetcher: Fetcher).void }
+    def update(client, fetcher)
       missing_specs = []
       parser = gemfile_lock_parser
 
@@ -57,7 +57,7 @@ module RBI
         elsif has_local_rbi_for_gem?(name)
           remove_local_rbi_for_gem(name)
         end
-        missing_specs << spec unless client.pull_rbi(name, version)
+        missing_specs << spec unless fetch_rbi(fetcher, name, version)
       end
 
       missing_specs = client.remove_application_spec(missing_specs)
@@ -111,6 +111,19 @@ module RBI
     end
 
     private
+
+    sig { params(fetcher: Fetcher, name: String, version: String).returns(T::Boolean) }
+    def fetch_rbi(fetcher, name, version)
+      content = fetcher.pull_rbi_content(name, version)
+      return false unless content
+
+      dir = gem_rbi_dir
+      FileUtils.mkdir_p(dir)
+      File.write("#{dir}/#{name}@#{version}.rbi", content)
+      @logger.success("Pulled `#{name}@#{version}.rbi` from central repository")
+
+      true
+    end
 
     sig { returns(Pathname) }
     def root_pathname
