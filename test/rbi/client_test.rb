@@ -27,7 +27,7 @@ module RBI
         project.write("sorbet/rbi/gems/bar@1.0.0.rbi")
 
         client, out = client(default_client_mock, project.path)
-        res = client.init
+        res = client.init(context(project))
 
         refute(res)
         assert_log(<<~OUT, out.string)
@@ -52,7 +52,7 @@ module RBI
               bar (2.0.0)
         LOCK
         client, out = client(default_client_mock, project.path)
-        res = client.init
+        res = client.init(context(project))
 
         assert(res)
         assert_log(<<~OUT, out.string)

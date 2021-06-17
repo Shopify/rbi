@@ -34,6 +34,17 @@ module RBI
       (root_pathname / "sorbet/rbi/gems").to_s
     end
 
+    sig { returns(String) }
+    def gemfile_lock_path
+      (root_pathname / "Gemfile.lock").to_s
+    end
+
+    sig { returns(Bundler::LockfileParser) }
+    def gemfile_lock_parser
+      file = Bundler.read_file(gemfile_lock_path)
+      Bundler::LockfileParser.new(file)
+    end
+
     sig { params(name: String, version: String).returns(T::Boolean) }
     def has_local_rbi_for_gem_version?(name, version)
       File.file?("#{gem_rbi_dir}/#{name}@#{version}.rbi")

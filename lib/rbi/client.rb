@@ -25,14 +25,14 @@ module RBI
       @parser = T.let(nil, T.nilable(Bundler::LockfileParser))
     end
 
-    sig { returns(T::Boolean) }
-    def init
+    sig { params(context: Context).returns(T::Boolean) }
+    def init(context)
       unless Dir.glob("#{@project_path}/#{GEM_RBI_DIRECTORY}/*.rbi").empty?
         @logger.error("Can't init while you RBI gems directory is not empty")
         @logger.hint("Run `rbi clean` to delete it")
         return false
       end
-      parser.specs.each do |spec|
+      context.gemfile_lock_parser.specs.each do |spec|
         pull_rbi(spec.name, spec.version.to_s)
       end
       true
@@ -41,6 +41,8 @@ module RBI
     sig { params(context: Context).void }
     def update(context)
       missing_specs = []
+
+      parser = context.gemfile_lock_parser
 
       parser.specs.each do |spec|
         name = spec.name
@@ -83,11 +85,6 @@ module RBI
     end
 
     private
-
-    sig { returns(Bundler::LockfileParser) }
-    def parser
-      @parser ||= gemfile_lock_parser
-    end
 
     sig { params(specs: T::Array[Bundler::LazySpecification]).returns(T::Array[Bundler::LazySpecification]) }
     def remove_application_spec(specs)
@@ -140,12 +137,6 @@ module RBI
     sig { params(path: String).returns(String) }
     def github_file_content(path)
       T.must(@github_client.file_content(CENTRAL_REPO_SLUG, path))
-    end
-
-    sig { returns(Bundler::LockfileParser) }
-    def gemfile_lock_parser
-      file = Bundler.read_file("#{@project_path}/Gemfile.lock")
-      Bundler::LockfileParser.new(file)
     end
   end
 end

@@ -22,7 +22,7 @@ module RBI
     option "mock-github-client", type: :boolean, default: false
     def init
       client = self.client(options["mock-github-client"])
-      client.init
+      client.init(context)
     end
 
     desc "generate foo 1.0.0", "Generates RBI for a given gem. To use Sorbet in your project, use `rbi update` instead"
