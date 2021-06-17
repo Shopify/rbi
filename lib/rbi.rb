@@ -18,7 +18,6 @@ module RBI
 end
 
 require_relative "rbi/logger"
-require_relative "rbi/repo"
 require_relative "rbi/fetcher"
 require_relative "rbi/github_fetcher"
 require_relative "rbi/mock_fetcher"

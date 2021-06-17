@@ -12,21 +12,26 @@ module RBI
       super()
       @github_client = T.let(Octokit::Client.new, Octokit::Client)
       @index_string = T.let(nil, T.nilable(String))
-      @repo = T.let(nil, T.nilable(Repo))
+      @index = T.let(nil, T.nilable(T::Hash[String, T::Hash[String, String]]))
     end
 
     sig { override.params(name: String, version: String).returns(T.nilable(String)) }
     def pull_rbi_content(name, version)
-      path = repo.rbi_path(name, version)
+      path = rbi_path(name, version)
       return nil unless path
       github_file_content("central_repo/#{path}")
     end
 
     private
 
-    sig { returns(Repo) }
-    def repo
-      @repo ||= Repo.from_index(index_string)
+    sig { params(name: String, version: String).returns(T.nilable(String)) }
+    def rbi_path(name, version)
+      @index&.fetch(name, nil)&.fetch(version, nil)
+    end
+
+    sig { returns(String) }
+    def index
+      @index ||= JSON.parse(index_string)
     end
 
     sig { returns(String) }
