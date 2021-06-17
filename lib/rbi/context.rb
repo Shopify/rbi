@@ -34,6 +34,23 @@ module RBI
       (root_pathname / "sorbet/rbi/gems").to_s
     end
 
+    sig { params(name: String, version: String).returns(T::Boolean) }
+    def has_local_rbi_for_gem_version?(name, version)
+      File.file?("#{gem_rbi_dir}/#{name}@#{version}.rbi")
+    end
+
+    sig { params(name: String).returns(T::Boolean) }
+    def has_local_rbi_for_gem?(name)
+      !Dir.glob("#{gem_rbi_dir}/#{name}@*.rbi").empty?
+    end
+
+    sig { params(name: String).void }
+    def remove_local_rbi_for_gem(name)
+      Dir.glob("#{gem_rbi_dir}/#{name}@*.rbi").each do |path|
+        FileUtils.rm_rf(path)
+      end
+    end
+
     private
 
     sig { returns(Pathname) }

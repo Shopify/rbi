@@ -79,7 +79,7 @@ module RBI
         LOCK
 
         client, _ = client(default_client_mock, project.path)
-        res = client.update
+        res = client.update(context(project))
 
         assert(res)
 
@@ -117,55 +117,6 @@ module RBI
           Success: Pulled `foo@1.0.0.rbi` from central repository
         OUT
         assert_equal("FOO = 1", File.read("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
-
-        project.destroy
-      end
-
-      def test_has_local_rbi_for_gem_version
-        project = self.project("test_has_local_rbi_for_gem_version")
-        project.write("sorbet/rbi/gems/foo@1.0.0.rbi")
-
-        client, out = client(default_client_mock, project.path)
-        assert_empty(out.string)
-
-        assert(client.has_local_rbi_for_gem_version?("foo", "1.0.0"))
-        refute(client.has_local_rbi_for_gem_version?("foo", "2.0.0"))
-        refute(client.has_local_rbi_for_gem_version?("bar", "1.0.0"))
-
-        project.destroy
-      end
-
-      def test_has_local_rbi_for_gem
-        project = self.project("test_has_local_rbi_for_gem")
-        project.write("sorbet/rbi/gems/foo@1.0.0.rbi")
-
-        client, out = client(default_client_mock, project.path)
-        assert_empty(out.string)
-
-        assert(client.has_local_rbi_for_gem?("foo"))
-        refute(client.has_local_rbi_for_gem?("bar"))
-
-        project.destroy
-      end
-
-      def test_remove_local_rbi_for_gem
-        project = self.project("test_remove_local_rbi_for_gem")
-        project.write("sorbet/rbi/gems/foo@1.0.0.rbi")
-        project.write("sorbet/rbi/gems/foo@2.0.0.rbi")
-
-        client, out = client(default_client_mock, project.path)
-        assert_empty(out.string)
-
-        assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
-        assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@2.0.0.rbi"))
-        refute(File.file?("#{project.path}/sorbet/rbi/gems/bar@1.0.0.rbi"))
-
-        client.remove_local_rbi_for_gem("foo")
-        client.remove_local_rbi_for_gem("bar")
-
-        refute(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
-        refute(File.file?("#{project.path}/sorbet/rbi/gems/foo@2.0.0.rbi"))
-        refute(File.file?("#{project.path}/sorbet/rbi/gems/bar@1.0.0.rbi"))
 
         project.destroy
       end

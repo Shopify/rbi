@@ -38,8 +38,8 @@ module RBI
       true
     end
 
-    sig { void }
-    def update
+    sig { params(context: Context).void }
+    def update(context)
       missing_specs = []
 
       parser.specs.each do |spec|
@@ -47,10 +47,10 @@ module RBI
         version = spec.version.to_s
         next if IGNORED_GEMS.include?(name)
 
-        if has_local_rbi_for_gem_version?(name, version)
+        if context.has_local_rbi_for_gem_version?(name, version)
           next
-        elsif has_local_rbi_for_gem?(name)
-          remove_local_rbi_for_gem(name)
+        elsif context.has_local_rbi_for_gem?(name)
+          context.remove_local_rbi_for_gem(name)
         end
         missing_specs << spec unless pull_rbi(name, version)
       end
@@ -80,23 +80,6 @@ module RBI
       @logger.success("Pulled `#{name}@#{version}.rbi` from central repository")
 
       true
-    end
-
-    sig { params(name: String, version: String).returns(T::Boolean) }
-    def has_local_rbi_for_gem_version?(name, version)
-      File.file?("#{@project_path}/#{GEM_RBI_DIRECTORY}/#{name}@#{version}.rbi")
-    end
-
-    sig { params(name: String).returns(T::Boolean) }
-    def has_local_rbi_for_gem?(name)
-      !Dir.glob("#{@project_path}/#{GEM_RBI_DIRECTORY}/#{name}@*.rbi").empty?
-    end
-
-    sig { params(name: String).void }
-    def remove_local_rbi_for_gem(name)
-      Dir.glob("#{@project_path}/#{GEM_RBI_DIRECTORY}/#{name}@*.rbi").each do |path|
-        FileUtils.rm_rf(path)
-      end
     end
 
     private
