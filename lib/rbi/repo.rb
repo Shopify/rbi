@@ -1,8 +1,6 @@
 # typed: strict
 # frozen_string_literal: true
 
-require "json"
-
 module RBI
   class Repo
     extend T::Sig
