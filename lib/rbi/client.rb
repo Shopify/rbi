@@ -10,15 +10,6 @@ module RBI
       @logger = logger
     end
 
-    sig { params(specs: T::Array[Bundler::LazySpecification]).returns(T::Array[Bundler::LazySpecification]) }
-    def remove_application_spec(specs)
-      return specs if specs.empty?
-      application_directory = File.expand_path(Bundler.root)
-      specs.reject do |spec|
-        spec.source.class == Bundler::Source::Path && File.expand_path(spec.source.path) == application_directory
-      end
-    end
-
     sig { params(exclude: T::Array[Bundler::LazySpecification]).void }
     def tapioca_generate(exclude:)
       @logger.info("Generating RBIs that were missing in the central repository using tapioca")

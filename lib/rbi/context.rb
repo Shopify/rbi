@@ -60,7 +60,7 @@ module RBI
         missing_specs << spec unless fetch_rbi(fetcher, name, version)
       end
 
-      missing_specs = client.remove_application_spec(missing_specs)
+      missing_specs = remove_application_spec(missing_specs)
 
       unless missing_specs.empty?
         exclude = parser.specs - missing_specs
@@ -123,6 +123,15 @@ module RBI
       @logger.success("Pulled `#{name}@#{version}.rbi` from central repository")
 
       true
+    end
+
+    sig { params(specs: T::Array[Bundler::LazySpecification]).returns(T::Array[Bundler::LazySpecification]) }
+    def remove_application_spec(specs)
+      return specs if specs.empty?
+      application_directory = File.expand_path(Bundler.root)
+      specs.reject do |spec|
+        spec.source.class == Bundler::Source::Path && File.expand_path(spec.source.path) == application_directory
+      end
     end
 
     sig { returns(Pathname) }
