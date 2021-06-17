@@ -14,8 +14,7 @@ module RBI
 
     desc "clean", "Remove all gem RBIs from local project"
     def clean
-      client = self.client
-      client.clean
+      context.clean
     end
 
     # TODO: Support triggering this command outside of root directory

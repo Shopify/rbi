@@ -20,6 +20,12 @@ module RBI
       MockContext.new("#{TEST_PROJECTS_PATH}/#{name}")
     end
 
+    sig { params(project: MockContext).returns(Context) }
+    def context(project)
+      logger, _ = self.logger
+      Context.new(project.path, logger: logger)
+    end
+
     sig { params(level: Integer, quiet: T::Boolean, color: T::Boolean).returns([Logger, StringIO]) }
     def logger(level: Logger::INFO, quiet: false, color: false)
       out = StringIO.new

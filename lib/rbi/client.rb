@@ -25,12 +25,6 @@ module RBI
       @parser = T.let(nil, T.nilable(Bundler::LockfileParser))
     end
 
-    sig { void }
-    def clean
-      FileUtils.rm_rf("#{@project_path}/#{GEM_RBI_DIRECTORY}")
-      @logger.success("Clean `#{@project_path}/#{GEM_RBI_DIRECTORY}` directory")
-    end
-
     sig { returns(T::Boolean) }
     def init
       unless Dir.glob("#{@project_path}/#{GEM_RBI_DIRECTORY}/*.rbi").empty?
