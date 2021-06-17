@@ -15,9 +15,9 @@ module RBI
 
     TEST_PROJECTS_PATH = "/tmp/rbi/tests"
 
-    sig { params(name: String).returns(Context) }
+    sig { params(name: String).returns(MockContext) }
     def project(name)
-      Context.new("#{TEST_PROJECTS_PATH}/#{name}")
+      MockContext.new("#{TEST_PROJECTS_PATH}/#{name}")
     end
 
     sig { params(level: Integer, quiet: T::Boolean, color: T::Boolean).returns([Logger, StringIO]) }

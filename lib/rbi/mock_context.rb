@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 module RBI
-  class Context
+  class MockContext
     extend T::Sig
 
     sig { returns(String) }
