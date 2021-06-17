@@ -5,9 +5,35 @@ require "test_helper"
 
 module RBI
   class GenerateTest < Minitest::Test
+    extend T::Sig
     include TestHelper
 
     def test_generate_gem_from_rubygem
+      project = self.project("test_generate_gem_from_rubygem")
+
+      project.gemfile(<<~GEMFILE)
+        source "https://rubygems.org"
+
+        gem "rbi", path: "#{File.expand_path(Bundler.root)}"
+      GEMFILE
+
+      Bundler.with_unbundled_env do
+        project.run("bundle config set --local path 'vendor/bundle'")
+        project.run("bundle install")
+
+        _, err, status = project.run("bundle exec rbi generate colorize --no-color")
+        assert(status)
+        assert_log(<<~OUT, censor_version(err))
+          Success: Generated `colorize@X.Y.Z.rbi`
+        OUT
+      end
+      file = T.must(Dir["#{project.path}/colorize@*.rbi"].first)
+      assert(File.file?(file))
+
+      project.destroy
+    end
+
+    def test_generate_gem_from_rubygem_with_version
       project = self.project("test_generate_gem_from_rubygem")
 
       project.gemfile(<<~GEMFILE)
@@ -84,8 +110,8 @@ module RBI
         url = "https://github.com/fazibear/colorize.git"
         _, err, status = project.run("bundle exec rbi generate #{name} #{version} --git=#{url} --no-color")
         assert(status)
-        assert_log(<<~OUT, err)
-          Success: Generated RBI for `colorize@0.8.1`
+        assert_log(<<~OUT, censor_version(err))
+          Success: Generated `colorize@X.Y.Z.rbi`
         OUT
       end
 
@@ -113,8 +139,8 @@ module RBI
         _, err, status = project.run("bundle exec rbi generate #{name} #{version} --git=#{url}" \
           " --branch=master --no-color")
         assert(status)
-        assert_log(<<~OUT, err)
-          Success: Generated RBI for `colorize@0.8.1`
+        assert_log(<<~OUT, censor_version(err))
+          Success: Generated `colorize@X.Y.Z.rbi`
         OUT
       end
 
@@ -167,6 +193,13 @@ module RBI
       assert(File.file?("#{project.path}/#{filename}.rbi"))
 
       project.destroy
+    end
+
+    private
+
+    sig { params(output: String).returns(String) }
+    def censor_version(output)
+      output.sub(/@[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9]+)?/, "@X.Y.Z")
     end
   end
 end

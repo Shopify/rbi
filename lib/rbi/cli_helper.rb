@@ -24,14 +24,14 @@ module RBI
     sig do
       params(
         name: String,
-        version: String,
+        version: T.nilable(String),
         source: T.nilable(String),
         git: T.nilable(String),
         branch: T.nilable(String),
         path: T.nilable(String)
       ).void
     end
-    def generate_rbi(name, version, source: nil, git: nil, branch: nil, path: nil)
+    def generate_rbi(name, version: nil, source: nil, git: nil, branch: nil, path: nil)
       logger = self.logger
 
       if [source, git, path].count { |x| !x.nil? } > 1
@@ -48,7 +48,8 @@ module RBI
       end
 
       gem_string = String.new
-      gem_string << "gem '#{name}', '#{version}'"
+      gem_string << "gem '#{name}'"
+      gem_string << ", '#{version}'" if version
       gem_string << ", source: '#{source}'" if source
       gem_string << ", git: '#{git}'" if git
       gem_string << ", branch: '#{branch}'" if branch
@@ -79,22 +80,17 @@ module RBI
           exit(1)
         end
       end
-      begin
-        gem_rbi_path = "#{ctx.path}/sorbet/rbi/gems"
-        if git
-          file_path = Dir["#{gem_rbi_path}/#{name}@#{version}-*.rbi"]
-          FileUtils.mv(file_path, ".")
-          logger.success("Generated RBI for `#{name}@#{version}`")
-        else
-          FileUtils.mv("#{gem_rbi_path}/#{name}@#{version}.rbi", ".")
-          logger.success("Generated `#{name}@#{version}.rbi`")
-        end
-      rescue Errno::ENOENT
-        logger.error(<<~ERR)
-          Unable to move gem RBI to target directory. Generated RBI must have a different version number than what you specifified.
-          Ensure version number to `rbi generate` command matches the version number retrieved from your specific source.
-        ERR
+      gem_rbi_path = "#{ctx.path}/sorbet/rbi/gems/#{name}@#{version}*.rbi"
+      files = Dir[gem_rbi_path]
+      if files.empty?
+        logger.error("Unable to generate RBI: no file matching #{gem_rbi_path}")
+        exit(1)
       end
+
+      file_path = T.must(files.first)
+      version_string = file_path.sub(/^.*@/, "").sub(/\.rbi$/, "")
+      FileUtils.mv(file_path, ".")
+      logger.success("Generated `#{name}@#{version_string}.rbi`")
 
       ctx.destroy
     end
