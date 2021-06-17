@@ -65,12 +65,6 @@ module RBI
       end
     end
 
-    sig { params(mock: Test::MockGithubClient, path: String).returns([Client, StringIO]) }
-    def client(mock, path)
-      logger, out = self.logger
-      [Client.new(logger, github_client: mock, project_path: path), out]
-    end
-
     sig { params(mock: Test::MockGithubClient).returns(Fetcher) }
     def fetcher(mock)
       Fetcher.new(github_client: mock)

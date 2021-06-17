@@ -138,10 +138,9 @@ module RBI
               bar (2.0.0)
         LOCK
 
-        client, _ = client(default_client_mock, project.path)
         context = self.context(project)
         fetcher = self.fetcher(default_client_mock)
-        res = context.update(client, fetcher)
+        res = context.update(fetcher)
 
         assert(res)
 

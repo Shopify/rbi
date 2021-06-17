@@ -41,9 +41,8 @@ module RBI
     desc "update", "Update local gem RBIs"
     option "mock-github-client", type: :boolean, default: false
     def update
-      client = self.client(options["mock-github-client"])
       fetcher = self.fetcher(options["mock-github-client"])
-      context.update(client, fetcher)
+      context.update(fetcher)
     end
 
     def self.exit_on_failure?

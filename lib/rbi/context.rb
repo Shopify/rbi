@@ -42,8 +42,8 @@ module RBI
       true
     end
 
-    sig { params(client: Client, fetcher: Fetcher).void }
-    def update(client, fetcher)
+    sig { params(fetcher: Fetcher).void }
+    def update(fetcher)
       missing_specs = []
       parser = gemfile_lock_parser
 
@@ -64,7 +64,7 @@ module RBI
 
       unless missing_specs.empty?
         exclude = parser.specs - missing_specs
-        client.tapioca_generate(exclude: exclude)
+        generate_rbi(exclude: exclude)
       end
 
       @logger.success("Gem RBIs successfully updated")
@@ -123,6 +123,21 @@ module RBI
       @logger.success("Pulled `#{name}@#{version}.rbi` from central repository")
 
       true
+    end
+
+    sig { params(exclude: T::Array[Bundler::LazySpecification]).void }
+    def generate_rbi(exclude:)
+      @logger.info("Generating RBIs that were missing in the central repository using tapioca")
+      spec_names = exclude.map(&:name)
+      exclude_option = exclude.empty? ? "" : "--exclude #{spec_names.join(" ")}"
+
+      out, err, status = Open3.capture3("bundle exec tapioca generate #{exclude_option}")
+      unless status.success?
+        @logger.error("Unable to generate RBI: #{err}")
+        exit(1)
+      end
+
+      @logger.debug("#{out}\n")
     end
 
     sig { params(specs: T::Array[Bundler::LazySpecification]).returns(T::Array[Bundler::LazySpecification]) }
