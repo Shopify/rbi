@@ -1,9 +1,6 @@
 # typed: true
 # frozen_string_literal: true
 
-require "thor"
-require "bundler"
-
 module RBI
   class CLI < ::Thor
     extend T::Sig
