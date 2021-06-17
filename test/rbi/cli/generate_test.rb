@@ -5,6 +5,7 @@ require "test_helper"
 
 module RBI
   class GenerateTest < Minitest::Test
+    extend T::Sig
     include TestHelper
 
     def test_generate_gem_from_rubygem
@@ -84,8 +85,8 @@ module RBI
         url = "https://github.com/fazibear/colorize.git"
         _, err, status = project.run("bundle exec rbi generate #{name} #{version} --git=#{url} --no-color")
         assert(status)
-        assert_log(<<~OUT, err)
-          Success: Generated RBI for `colorize@0.8.1`
+        assert_log(<<~OUT, censor_version(err))
+          Success: Generated `colorize@X.Y.Z.rbi`
         OUT
       end
 
@@ -113,8 +114,8 @@ module RBI
         _, err, status = project.run("bundle exec rbi generate #{name} #{version} --git=#{url}" \
           " --branch=master --no-color")
         assert(status)
-        assert_log(<<~OUT, err)
-          Success: Generated RBI for `colorize@0.8.1`
+        assert_log(<<~OUT, censor_version(err))
+          Success: Generated `colorize@X.Y.Z.rbi`
         OUT
       end
 
@@ -167,6 +168,13 @@ module RBI
       assert(File.file?("#{project.path}/#{filename}.rbi"))
 
       project.destroy
+    end
+
+    private
+
+    sig { params(output: String).returns(String) }
+    def censor_version(output)
+      output.sub(/@[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9]+)?/, "@X.Y.Z")
     end
   end
 end
