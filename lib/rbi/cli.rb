@@ -42,7 +42,7 @@ module RBI
     option "mock-github-client", type: :boolean, default: false
     def update
       client = self.client(options["mock-github-client"])
-      client.update(context)
+      context.update(client)
     end
 
     def self.exit_on_failure?

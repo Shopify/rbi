@@ -6,6 +6,8 @@ module RBI
   class Context
     extend T::Sig
 
+    IGNORED_GEMS = T.let(%w(sorbet sorbet-runtime sorbet-static), T::Array[String])
+
     sig { returns(String) }
     attr_reader :path
 
@@ -38,6 +40,34 @@ module RBI
         client.pull_rbi(spec.name, spec.version.to_s)
       end
       true
+    end
+
+    sig { params(client: Client).void }
+    def update(client)
+      missing_specs = []
+      parser = gemfile_lock_parser
+
+      parser.specs.each do |spec|
+        name = spec.name
+        version = spec.version.to_s
+        next if IGNORED_GEMS.include?(name)
+
+        if has_local_rbi_for_gem_version?(name, version)
+          next
+        elsif has_local_rbi_for_gem?(name)
+          remove_local_rbi_for_gem(name)
+        end
+        missing_specs << spec unless client.pull_rbi(name, version)
+      end
+
+      missing_specs = client.remove_application_spec(missing_specs)
+
+      unless missing_specs.empty?
+        exclude = parser.specs - missing_specs
+        client.tapioca_generate(exclude: exclude)
+      end
+
+      @logger.success("Gem RBIs successfully updated")
     end
 
     # Utils

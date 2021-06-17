@@ -123,6 +123,32 @@ module RBI
 
         project.destroy
       end
+
+      def test_update
+        project = self.project("test_update")
+        project.write("sorbet/rbi/gems/foo@1.0.0.rbi")
+        project.write("sorbet/rbi/gems/bar@1.0.0.rbi")
+
+        project.write("Gemfile.lock", <<~LOCK)
+          GEM
+            specs:
+              foo (1.0.0)
+                bar
+              bar (2.0.0)
+        LOCK
+
+        client, _ = client(default_client_mock, project.path)
+        context = self.context(project)
+        res = context.update(client)
+
+        assert(res)
+
+        assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
+        refute(File.file?("#{project.path}/sorbet/rbi/gems/bar@1.0.0.rbi"))
+        assert(File.file?("#{project.path}/sorbet/rbi/gems/bar@2.0.0.rbi"))
+
+        project.destroy
+      end
     end
   end
 end

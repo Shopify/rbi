@@ -7,7 +7,6 @@ module RBI
 
     CENTRAL_REPO_SLUG = "shopify/rbi"
     GEM_RBI_DIRECTORY = "sorbet/rbi/gems"
-    IGNORED_GEMS      = T.let(%w(sorbet sorbet-runtime sorbet-static), T::Array[String])
 
     sig { params(logger: Logger, github_client: T.nilable(GithubClient), project_path: String).void }
     def initialize(logger, github_client: nil, project_path: ".")
@@ -23,35 +22,6 @@ module RBI
       index = github_file_content("central_repo/index.json")
       @repo = T.let(Repo.from_index(index), Repo)
       @parser = T.let(nil, T.nilable(Bundler::LockfileParser))
-    end
-
-    sig { params(context: Context).void }
-    def update(context)
-      missing_specs = []
-
-      parser = context.gemfile_lock_parser
-
-      parser.specs.each do |spec|
-        name = spec.name
-        version = spec.version.to_s
-        next if IGNORED_GEMS.include?(name)
-
-        if context.has_local_rbi_for_gem_version?(name, version)
-          next
-        elsif context.has_local_rbi_for_gem?(name)
-          context.remove_local_rbi_for_gem(name)
-        end
-        missing_specs << spec unless pull_rbi(name, version)
-      end
-
-      missing_specs = remove_application_spec(missing_specs)
-
-      unless missing_specs.empty?
-        exclude = parser.specs - missing_specs
-        tapioca_generate(exclude: exclude)
-      end
-
-      @logger.success("Gem RBIs successfully updated")
     end
 
     sig { params(name: String, version: String).returns(T::Boolean) }
@@ -70,8 +40,6 @@ module RBI
 
       true
     end
-
-    private
 
     sig { params(specs: T::Array[Bundler::LazySpecification]).returns(T::Array[Bundler::LazySpecification]) }
     def remove_application_spec(specs)
@@ -96,6 +64,8 @@ module RBI
 
       @logger.debug("#{out}\n")
     end
+
+    private
 
     sig { returns(String) }
     def github_token
