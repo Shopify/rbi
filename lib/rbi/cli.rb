@@ -11,6 +11,7 @@ module RBI
     class_option :color, type: :boolean, default: true
     class_option :quiet, type: :boolean, default: false, aliases: :q
     class_option :verbose, type: :boolean, default: false, aliases: :v
+    class_option :mock_fetcher_file, type: :string
 
     desc "clean", "Remove all gem RBIs from local project"
     def clean
@@ -19,10 +20,8 @@ module RBI
 
     # TODO: Support triggering this command outside of root directory
     desc "init", "Initialize a project by retrieving all gem RBIs from central repository"
-    option "mock-github-client", type: :boolean, default: false
     def init
-      fetcher = self.fetcher(options["mock-github-client"])
-      context.init(fetcher)
+      context.init
     end
 
     desc "generate foo 1.0.0", "Generates RBI for a given gem. To use Sorbet in your project, use `rbi update` instead"
@@ -99,10 +98,8 @@ module RBI
     end
 
     desc "update", "Update local gem RBIs"
-    option "mock-github-client", type: :boolean, default: false
     def update
-      fetcher = self.fetcher(options["mock-github-client"])
-      context.update(fetcher)
+      context.update
     end
 
     def self.exit_on_failure?

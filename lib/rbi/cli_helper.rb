@@ -10,13 +10,14 @@ module RBI
 
     sig { returns(Context) }
     def context
-      Context.new(".", logger: logger) # TODO: pass `path` as an option
+      Context.new(".", logger: logger, fetcher: fetcher) # TODO: pass `path` as an option
     end
 
-    sig { params(mock_github_client: T::Boolean).returns(Fetcher) }
-    def fetcher(mock_github_client = false)
-      return Fetcher.new(github_client: RBI::MockGithubClient.new) if mock_github_client
-      Fetcher.new
+    sig { returns(Fetcher) }
+    def fetcher
+      mock_file = options[:mock_fetcher_file]
+      return MockFetcher.from_file(mock_file) if mock_file
+      GithubFetcher.new
     end
 
     sig { returns(Logger) }

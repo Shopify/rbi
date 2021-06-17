@@ -7,6 +7,7 @@ module RBI
   module Test
     class ContextTest < Minitest::Test
       include TestHelper
+      extend T::Sig
 
       def test_clean
         project = self.project("test_clean")
@@ -14,8 +15,12 @@ module RBI
         project.write("sorbet/rbi/gems/foo@2.0.0.rbi")
         project.write("sorbet/rbi/gems/bar@1.0.0.rbi")
 
-        context = self.context(project)
+        context, out = mock_context(project)
         context.clean
+
+        assert_log(<<~OUT, out.string)
+          Success: Clean `sorbet/rbi/gems` directory
+        OUT
 
         refute(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
         refute(File.file?("#{project.path}/sorbet/rbi/gems/foo@2.0.0.rbi"))
@@ -28,7 +33,7 @@ module RBI
         project = self.project("test_has_local_rbi_for_gem_version")
         project.write("sorbet/rbi/gems/foo@1.0.0.rbi")
 
-        context = self.context(project)
+        context, _ = mock_context(project)
         assert(context.has_local_rbi_for_gem_version?("foo", "1.0.0"))
         refute(context.has_local_rbi_for_gem_version?("foo", "2.0.0"))
         refute(context.has_local_rbi_for_gem_version?("bar", "1.0.0"))
@@ -40,7 +45,7 @@ module RBI
         project = self.project("test_has_local_rbi_for_gem")
         project.write("sorbet/rbi/gems/foo@1.0.0.rbi")
 
-        context = self.context(project)
+        context, _ = mock_context(project)
         assert(context.has_local_rbi_for_gem?("foo"))
         refute(context.has_local_rbi_for_gem?("bar"))
 
@@ -49,7 +54,7 @@ module RBI
 
       def test_has_local_rbis
         project = self.project("test_has_local_rbis")
-        context = self.context(project)
+        context, _ = mock_context(project)
 
         refute(context.has_local_rbis?)
 
@@ -64,7 +69,7 @@ module RBI
         project.write("sorbet/rbi/gems/foo@1.0.0.rbi")
         project.write("sorbet/rbi/gems/foo@2.0.0.rbi")
 
-        context = self.context(project)
+        context, _ = mock_context(project)
         context.remove_local_rbi_for_gem("foo")
         context.remove_local_rbi_for_gem("bar")
 
@@ -81,10 +86,8 @@ module RBI
         project.write("sorbet/rbi/gems/foo@2.0.0.rbi")
         project.write("sorbet/rbi/gems/bar@1.0.0.rbi")
 
-        logger, out = self.logger
-        context = self.context(project, logger: logger)
-        fetcher = self.fetcher(default_client_mock)
-        res = context.init(fetcher)
+        context, out = mock_context(project)
+        res = context.init
 
         refute(res)
         assert_log(<<~OUT, out.string)
@@ -109,10 +112,8 @@ module RBI
               bar (2.0.0)
         LOCK
 
-        logger, out = self.logger
-        context = self.context(project, logger: logger)
-        fetcher = self.fetcher(default_client_mock)
-        res = context.init(fetcher)
+        context, out = mock_context(project)
+        res = context.init
 
         assert(res)
         assert_log(<<~OUT, out.string)
@@ -138,17 +139,36 @@ module RBI
               bar (2.0.0)
         LOCK
 
-        context = self.context(project)
-        fetcher = self.fetcher(default_client_mock)
-        res = context.update(fetcher)
+        context, out = mock_context(project)
+        res = context.update
 
         assert(res)
-
+        assert_log(<<~OUT, out.string)
+          Success: Pulled `bar@2.0.0.rbi` from central repository
+          Success: Gem RBIs successfully updated
+        OUT
         assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
         refute(File.file?("#{project.path}/sorbet/rbi/gems/bar@1.0.0.rbi"))
         assert(File.file?("#{project.path}/sorbet/rbi/gems/bar@2.0.0.rbi"))
 
         project.destroy
+      end
+
+      private
+
+      sig { params(project: MockContext).returns([Context, StringIO]) }
+      def mock_context(project)
+        logger, out = self.logger
+        context = Context.new(project.path, logger: logger, fetcher: mock_fetcher)
+        [context, out]
+      end
+
+      sig { returns(Fetcher) }
+      def mock_fetcher
+        MockFetcher.new({
+          "foo@1.0.0" => "FOO = 1",
+          "bar@2.0.0" => "BAR = 2",
+        })
       end
     end
   end

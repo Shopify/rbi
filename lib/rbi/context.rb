@@ -14,10 +14,11 @@ module RBI
     sig { returns(Logger) }
     attr_reader :logger
 
-    sig { params(path: String, logger: Logger).void }
-    def initialize(path, logger: Logger.new)
+    sig { params(path: String, logger: Logger, fetcher: Fetcher).void }
+    def initialize(path, logger: Logger.new, fetcher: GithubFetcher.new)
       @path = path
       @logger = logger
+      @fetcher = fetcher
     end
 
     # Actions
@@ -29,21 +30,21 @@ module RBI
       @logger.success("Clean `#{simplify_path(path)}` directory")
     end
 
-    sig { params(fetcher: Fetcher).returns(T::Boolean) }
-    def init(fetcher)
+    sig { returns(T::Boolean) }
+    def init
       if has_local_rbis?
         @logger.error("Can't init while you RBI gems directory is not empty")
         @logger.hint("Run `rbi clean` to delete it")
         return false
       end
       gemfile_lock_parser.specs.each do |spec|
-        fetch_rbi(fetcher, spec.name, spec.version.to_s)
+        fetch_rbi(spec.name, spec.version.to_s)
       end
       true
     end
 
-    sig { params(fetcher: Fetcher).void }
-    def update(fetcher)
+    sig { void }
+    def update
       missing_specs = []
       parser = gemfile_lock_parser
 
@@ -57,7 +58,7 @@ module RBI
         elsif has_local_rbi_for_gem?(name)
           remove_local_rbi_for_gem(name)
         end
-        missing_specs << spec unless fetch_rbi(fetcher, name, version)
+        missing_specs << spec unless fetch_rbi(name, version)
       end
 
       missing_specs = remove_application_spec(missing_specs)
@@ -112,9 +113,9 @@ module RBI
 
     private
 
-    sig { params(fetcher: Fetcher, name: String, version: String).returns(T::Boolean) }
-    def fetch_rbi(fetcher, name, version)
-      content = fetcher.pull_rbi_content(name, version)
+    sig { params(name: String, version: String).returns(T::Boolean) }
+    def fetch_rbi(name, version)
+      content = @fetcher.pull_rbi_content(name, version)
       return false unless content
 
       dir = gem_rbi_dir
