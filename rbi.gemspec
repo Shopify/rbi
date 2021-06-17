@@ -27,8 +27,8 @@ Gem::Specification.new do |spec|
   )
 
   spec.add_dependency("colorize")
+  spec.add_dependency("octokit")
   spec.add_dependency("rake", "~> 13.0")
   spec.add_dependency("sorbet-runtime")
   spec.add_dependency("thor")
-  spec.add_dependency("octokit")
 end
