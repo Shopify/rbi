@@ -56,7 +56,7 @@ module RBI
         gem "bar", path: "gems/bar"
       GEMFILE
 
-      project.write("index.json", <<~JSON)
+      project.write("index_mock.json", <<~JSON)
         {
           "foo@1.0.0": "FOO = 1",
           "bar@2.0.0": "BAR = 2"
@@ -66,7 +66,7 @@ module RBI
       Bundler.with_unbundled_env do
         project.run("bundle config set --local path 'vendor/bundle'")
         project.run("bundle install")
-        out, err, status = project.run("bundle exec rbi init --mock-fetcher-file index.json --no-color")
+        out, err, status = project.run("bundle exec rbi init --mock-fetcher-file index_mock.json --no-color")
         assert(status)
         assert_empty(out)
         assert_log(<<~OUT, err)
