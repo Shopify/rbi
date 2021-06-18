@@ -17,13 +17,12 @@ module RBI
   class Error < StandardError; end
 end
 
-require_relative "rbi/cli_helper"
 require_relative "rbi/logger"
-require_relative "rbi/client"
-require_relative "rbi/repo"
-require_relative "rbi/github_client"
-require_relative "rbi/mock_github_client"
+require_relative "rbi/fetcher"
+require_relative "rbi/github_fetcher"
+require_relative "rbi/mock_fetcher"
 require_relative "rbi/context"
-
+require_relative "rbi/tmp_dir"
+require_relative "rbi/cli_helper"
 require_relative "rbi/cli"
 require_relative "rbi/version"

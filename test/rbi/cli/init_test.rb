@@ -56,30 +56,23 @@ module RBI
         gem "bar", path: "gems/bar"
       GEMFILE
 
-      project.write("central_repo/index.json", <<~JSON)
+      project.write("index_mock.json", <<~JSON)
         {
-          "foo": {
-            "1.0.0": "foo@1.0.0.rbi"
-          },
-          "bar": {
-            "2.0.0": "bar@2.0.0.rbi"
-          }
+          "foo@1.0.0": "FOO = 1",
+          "bar@2.0.0": "BAR = 2"
         }
       JSON
-
-      project.write("central_repo/foo@1.0.0.rbi", <<~RBI)
-        FOO = 1
-      RBI
-
-      project.write("central_repo/bar@2.0.0.rbi", <<~RBI)
-        BAR = 2
-      RBI
 
       Bundler.with_unbundled_env do
         project.run("bundle config set --local path 'vendor/bundle'")
         project.run("bundle install")
-        _, _, status = project.run("bundle exec rbi init --mock-github-client")
+        out, err, status = project.run("bundle exec rbi init --mock-fetcher-file index_mock.json --no-color")
         assert(status)
+        assert_empty(out)
+        assert_log(<<~OUT, err)
+          Success: Pulled `bar@2.0.0.rbi` from central repository
+          Success: Pulled `foo@1.0.0.rbi` from central repository
+        OUT
       end
 
       assert_equal("FOO = 1", File.read("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi").strip)
