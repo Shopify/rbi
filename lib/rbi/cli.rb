@@ -57,7 +57,7 @@ module RBI
       gem_string << ", branch: '#{branch}'" if branch
       gem_string << ", path: '#{path}'" if path
 
-      ctx = MockContext.new("/tmp/rbi/generate/#{name}")
+      ctx = TMPDir.new("/tmp/rbi/generate/#{name}")
       ctx.gemfile(<<~GEMFILE)
         source "https://rubygems.org"
 

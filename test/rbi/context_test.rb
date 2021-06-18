@@ -156,7 +156,7 @@ module RBI
 
       private
 
-      sig { params(project: MockContext).returns([Context, StringIO]) }
+      sig { params(project: TMPDir).returns([Context, StringIO]) }
       def mock_context(project)
         logger, out = self.logger
         context = Context.new(project.path, logger: logger, fetcher: mock_fetcher)
