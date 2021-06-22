@@ -17,7 +17,12 @@ module RBI
     def fetcher
       mock_file = options[:mock_fetcher_file]
       return MockFetcher.from_file(mock_file) if mock_file
-      GithubFetcher.new
+
+      GithubFetcher.new(
+        netrc: options[:netrc],
+        netrc_file: options[:netrc_file],
+        central_repo_slug: options[:central_repo_slug]
+      )
     end
 
     sig { returns(Logger) }

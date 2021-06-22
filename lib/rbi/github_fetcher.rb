@@ -26,9 +26,12 @@ module RBI
       end
     end
 
-    sig { void }
-    def initialize
+    sig { params(netrc: T::Boolean, netrc_file: T.nilable(String), central_repo_slug: T.nilable(String)).void }
+    def initialize(netrc: true, netrc_file: nil, central_repo_slug: nil)
       super()
+      @netrc = netrc
+      @netrc_file = netrc_file
+      @central_repo_slug = T.let(central_repo_slug || CENTRAL_REPO_SLUG, String)
       @github_client = T.let(nil, T.nilable(Octokit::Client))
       @index_string = T.let(nil, T.nilable(String))
       @index = T.let(nil, T.nilable(T::Hash[String, T::Hash[String, String]]))
@@ -45,12 +48,12 @@ module RBI
 
     sig { returns(Octokit::Client) }
     def github_client
-      @github_client ||= Octokit::Client.new(netrc: true, netrc_file: netrc_file)
+      @github_client ||= Octokit::Client.new(netrc: @netrc, netrc_file: netrc_file)
     end
 
     sig { returns(String) }
     def netrc_file
-      ENV["RBI_NETRC"] || ENV["OCTOKIT_NETRC"] || ENV["NETRC"] || File.join(ENV["HOME"], ".netrc")
+      @netrc_file || ENV["RBI_NETRC"] || ENV["OCTOKIT_NETRC"] || ENV["NETRC"] || File.join(ENV["HOME"], ".netrc")
     end
 
     sig { params(name: String, version: String).returns(T.nilable(String)) }
@@ -70,9 +73,9 @@ module RBI
 
     sig { params(path: String).returns(String) }
     def github_file_content(path)
-      Base64.decode64(github_client.content(CENTRAL_REPO_SLUG, path: path).content)
+      Base64.decode64(github_client.content(@central_repo_slug, path: path).content)
     rescue Octokit::NotFound => e
-      raise FetchError, FetchError.error_string(CENTRAL_REPO_SLUG, e.message)
+      raise FetchError, FetchError.error_string(@central_repo_slug, e.message)
     end
   end
 end
