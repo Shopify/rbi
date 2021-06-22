@@ -27,6 +27,19 @@ module RBI
           https://github.com/Shopify/rbi#using-a-netrc-file
         ERR
       end
+
+      def test_pull_rbi_from_public_repo
+        fetcher = GithubFetcher.new(netrc: false, central_repo_slug: "Shopify/rbi-repo-test")
+        rbi = fetcher.pull_rbi_content("foo", "1.0.0")
+
+        assert_equal(<<~RBI, rbi)
+          # typed: true
+
+          module Foo
+            FOO = 42
+          end
+        RBI
+      end
     end
   end
 end
