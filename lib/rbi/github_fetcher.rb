@@ -31,7 +31,7 @@ module RBI
 
     sig { params(name: String, version: String).returns(T.nilable(String)) }
     def rbi_path(name, version)
-      @index&.fetch(name, nil)&.fetch(version, nil)
+      index&.fetch(name, nil)&.fetch(version, nil)
     end
 
     sig { returns(String) }
