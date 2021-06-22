@@ -6,6 +6,7 @@ module RBI
     extend T::Sig
 
     CENTRAL_REPO_SLUG = "shopify/rbi"
+    CENTRAL_REPO_PATH = "central_repo"
 
     sig { void }
     def initialize
@@ -19,7 +20,7 @@ module RBI
     def pull_rbi_content(name, version)
       path = rbi_path(name, version)
       return nil unless path
-      github_file_content("central_repo/#{path}")
+      github_file_content("#{CENTRAL_REPO_PATH}/#{path}")
     end
 
     private
@@ -41,7 +42,7 @@ module RBI
 
     sig { returns(String) }
     def index_string
-      @index_string ||= github_file_content("central_repo/index.json")
+      @index_string ||= github_file_content("#{CENTRAL_REPO_PATH}/index.json")
     end
 
     sig { params(path: String).returns(String) }
