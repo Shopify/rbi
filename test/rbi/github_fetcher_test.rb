@@ -17,7 +17,7 @@ module RBI
         end
 
         assert_log(<<~ERR, exception.message)
-          Can't fetch RBI index from shopify/rbi.
+          Can't fetch RBI content from shopify/rbi
 
           It looks like we can't access shopify/rbi repo (GET https://api.github.com/repos/shopify/rbi/contents/central_repo/index.json: 404 - Not Found // See: https://docs.github.com/rest/reference/repos#get-repository-content).
 

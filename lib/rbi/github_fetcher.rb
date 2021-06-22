@@ -12,8 +12,10 @@ module RBI
       extend T::Sig
 
       sig { params(repo: String, cause: String).returns(String) }
-      def self.netrc_help(repo, cause)
+      def self.error_string(repo, cause)
         <<~HELP
+          Can't fetch RBI content from #{repo}
+
           It looks like we can't access #{repo} repo (#{cause}).
 
           Are you trying to access a private repository?
@@ -65,11 +67,7 @@ module RBI
     def github_file_content(path)
       Base64.decode64(github_client.content(CENTRAL_REPO_SLUG, path: path).content)
     rescue Octokit::NotFound => e
-      raise FetchError, <<~ERR
-        Can't fetch RBI index from #{CENTRAL_REPO_SLUG}.
-
-        #{FetchError.netrc_help(CENTRAL_REPO_SLUG, e.message)}
-      ERR
+      raise FetchError, FetchError.error_string(CENTRAL_REPO_SLUG, e.message)
     end
   end
 end
