@@ -66,7 +66,7 @@ module RBI
       Bundler.with_unbundled_env do
         project.run("bundle config set --local path 'vendor/bundle'")
         project.run("bundle install")
-        out, err, status = project.bundle_exec("rbi init --mock-fetcher-file index_mock.json --no-color")
+        out, err, status = project.bundle_exec("rbi init --no-netrc --mock-fetcher-file index_mock.json --no-color")
         assert(status)
         assert_empty(out)
         assert_log(<<~OUT, err)

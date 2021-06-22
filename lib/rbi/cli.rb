@@ -11,6 +11,9 @@ module RBI
     class_option :color, type: :boolean, default: true
     class_option :quiet, type: :boolean, default: false, aliases: :q
     class_option :verbose, type: :boolean, default: false, aliases: :v
+    class_option :netrc, type: :boolean, default: true
+    class_option :netrc_file, type: :string
+    class_option :central_repo_slug, type: :string
     class_option :mock_fetcher_file, type: :string
 
     desc "clean", "Remove all gem RBIs from local project"
