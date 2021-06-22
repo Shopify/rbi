@@ -12,5 +12,5 @@ group(:development, :test) do
   gem("rubocop-shopify", require: false)
   gem("rubocop-sorbet", require: false)
   gem("sorbet", require: false)
-  gem("tapioca", require: false)
+  gem("tapioca", require: false, github: "Shopify/tapioca", branch: "master")
 end
