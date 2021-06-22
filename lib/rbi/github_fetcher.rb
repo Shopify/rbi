@@ -5,8 +5,7 @@ module RBI
   class GithubFetcher < Fetcher
     extend T::Sig
 
-    CENTRAL_REPO_SLUG = "shopify/rbi"
-    CENTRAL_REPO_PATH = "central_repo"
+    CENTRAL_REPO_SLUG = "shopify/rbi-repo"
 
     class FetchError < StandardError
       extend T::Sig
@@ -16,7 +15,7 @@ module RBI
         <<~HELP
           Can't fetch RBI content from #{repo}
 
-          It looks like we can't access #{repo} repo (#{cause}).
+          It looks like we can't access #{repo} (#{cause}).
 
           Are you trying to access a private repository?
           If so, please specify your Github credentials in your ~/.netrc file.
@@ -41,7 +40,7 @@ module RBI
     def pull_rbi_content(name, version)
       path = rbi_path(name, version)
       return nil unless path
-      github_file_content("#{CENTRAL_REPO_PATH}/#{path}")
+      github_file_content(path)
     end
 
     private
@@ -68,7 +67,7 @@ module RBI
 
     sig { returns(String) }
     def index_string
-      @index_string ||= github_file_content("#{CENTRAL_REPO_PATH}/index.json")
+      @index_string ||= github_file_content("index.json")
     end
 
     sig { params(path: String).returns(String) }
