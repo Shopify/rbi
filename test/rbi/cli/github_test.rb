@@ -76,6 +76,19 @@ module RBI
       project.destroy
     end
 
+    def test_access_private_repo_without_netrc_but_netrc_file
+      project = self.project("test_access_private_repo_without_netrc_but_netrc_file")
+
+      out, err, status = project.run("bundle exec rbi update --no-color --no-netrc --netrc-file netrc")
+      refute(status)
+      assert_empty(out)
+      assert_log(<<~OUT, err)
+        Error: Option `-netrc-file` can only be used with option `--netrc`
+      OUT
+
+      project.destroy
+    end
+
     def test_access_private_repo_not_found
       project = self.project("test_access_private_repo_not_found")
 
