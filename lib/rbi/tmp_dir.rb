@@ -35,6 +35,11 @@ module RBI
       [out, err, status.success?]
     end
 
+    sig { params(cmd: String, args: String).returns([String, String, T::Boolean]) }
+    def bundle_exec(cmd, *args)
+      T.unsafe(self).run("bundle exec", cmd, *args)
+    end
+
     sig { void }
     def destroy
       FileUtils.rm_rf(@path)

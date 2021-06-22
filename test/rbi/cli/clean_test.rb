@@ -18,7 +18,7 @@ module RBI
         context = Context.new(project.path, logger: logger)
         context.clean
 
-        out, err, status = project.run("bundle exec rbi clean --no-color")
+        out, err, status = project.bundle_exec("rbi clean --no-color")
         assert_empty(out)
         assert_equal(<<~ERR, err)
           Success: Clean `sorbet/rbi/gems` directory

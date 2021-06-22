@@ -42,10 +42,10 @@ module RBI
       Bundler.with_unbundled_env do
         project.run("bundle config set --local path 'vendor/bundle'")
         project.run("bundle install")
-        project.run("bundle exec tapioca generate --exclude foo")
+        project.bundle_exec("tapioca generate --exclude foo")
         refute(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
 
-        out, err, status = project.run("bundle exec rbi update --mock-fetcher-file index.json -v --no-color")
+        out, err, status = project.bundle_exec("rbi update --mock-fetcher-file index.json -v --no-color")
         assert(status)
         assert_empty(out)
         assert_log(<<~OUT, err)
