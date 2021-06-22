@@ -45,7 +45,12 @@ module RBI
 
     sig { returns(Octokit::Client) }
     def github_client
-      @github_client ||= Octokit::Client.new
+      @github_client ||= Octokit::Client.new(netrc: true, netrc_file: netrc_file)
+    end
+
+    sig { returns(String) }
+    def netrc_file
+      ENV["RBI_NETRC"] || ENV["OCTOKIT_NETRC"] || ENV["NETRC"] || File.join(ENV["HOME"], ".netrc")
     end
 
     sig { params(name: String, version: String).returns(T.nilable(String)) }

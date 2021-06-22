@@ -10,7 +10,7 @@ module RBI
       extend T::Sig
 
       def test_pull_rbi_without_auth
-        fetcher = GithubFetcher.new
+        fetcher = GithubFetcher.new(netrc: false)
 
         exception = assert_raises(RBI::GithubFetcher::FetchError) do
           fetcher.pull_rbi_content("foo", "1.0.0")
