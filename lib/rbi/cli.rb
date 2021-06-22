@@ -76,7 +76,7 @@ module RBI
           ERR
           exit(1)
         end
-        _, err, status = ctx.run("bundle exec tapioca generate")
+        _, err, status = ctx.bundle_exec("tapioca generate")
         unless status
           logger.error("Unable to generate RBI: #{err}")
           exit(1)
