@@ -24,7 +24,7 @@ module RBI
           Are you trying to access a private repository?
           If so, please specify your Github credentials in your ~/.netrc file.
 
-          https://github.com/octokit/octokit.rb#using-a-netrc-file
+          https://github.com/Shopify/rbi#using-a-netrc-file
         ERR
       end
     end

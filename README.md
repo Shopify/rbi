@@ -24,6 +24,30 @@ Or install it yourself as:
 
 TODO: Write usage instructions here
 
+### Using a .netrc file
+
+RBI supports reading credentials from a netrc file (defaulting to `~/.netrc`).
+
+Specify these lines in your netrc:
+
+```
+machine api.github.com
+  login defunkt
+  password <your 40 char token>
+```
+
+Then run the `rbi` command with the `--netrc` option. `--netrc-file` also be specified to read another file than `~/.netrc`:
+
+```
+rbi --netrc --netrc-file /path/to/my/netrc
+```
+
+If the `--netrc-file` isn't specified, RBI will try to find the netrc file from the environment by reading the following variables in order:
+
+1. `RBI_NETRC`
+2. `OCTOKIT_NETRC`
+3. `NETRC`
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
