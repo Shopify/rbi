@@ -124,6 +124,9 @@ module RBI
       @logger.success("Pulled `#{name}@#{version}.rbi` from central repository")
 
       true
+    rescue GithubFetcher::FetchError => e
+      @logger.error(e.message)
+      exit(1)
     end
 
     sig { params(exclude: T::Array[Bundler::LazySpecification]).void }

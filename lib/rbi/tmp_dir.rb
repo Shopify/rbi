@@ -20,6 +20,11 @@ module RBI
       write("Gemfile", content)
     end
 
+    sig { params(content: String).void }
+    def gemfile_lock(content)
+      write("Gemfile.lock", content)
+    end
+
     sig { params(rel_path: String, content: String).void }
     def write(rel_path, content = "")
       path = absolute_path(rel_path)
