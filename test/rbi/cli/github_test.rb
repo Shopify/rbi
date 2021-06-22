@@ -28,9 +28,9 @@ module RBI
       refute(status)
       assert_empty(out)
       assert_log(<<~OUT, err)
-        Error: Can't fetch RBI content from shopify/rbi
+        Error: Can't fetch RBI content from shopify/rbi-repo
 
-        It looks like we can't access shopify/rbi repo (GET https://api.github.com/repos/shopify/rbi/contents/central_repo/index.json: 404 - Not Found // See: https://docs.github.com/rest/reference/repos#get-repository-content).
+        It looks like we can't access shopify/rbi-repo (GET https://api.github.com/repos/shopify/rbi-repo/contents/index.json: 404 - Not Found // See: https://docs.github.com/rest/reference/repos#get-repository-content).
 
         Are you trying to access a private repository?
         If so, please specify your Github credentials in your ~/.netrc file.
@@ -63,9 +63,9 @@ module RBI
       assert_empty(out)
       assert_log(<<~OUT, err)
         Error loading credentials from netrc file for https://api.github.com/
-        Error: Can't fetch RBI content from shopify/rbi
+        Error: Can't fetch RBI content from shopify/rbi-repo
 
-        It looks like we can't access shopify/rbi repo (GET https://api.github.com/repos/shopify/rbi/contents/central_repo/index.json: 404 - Not Found // See: https://docs.github.com/rest/reference/repos#get-repository-content).
+        It looks like we can't access shopify/rbi-repo (GET https://api.github.com/repos/shopify/rbi-repo/contents/index.json: 404 - Not Found // See: https://docs.github.com/rest/reference/repos#get-repository-content).
 
         Are you trying to access a private repository?
         If so, please specify your Github credentials in your ~/.netrc file.
@@ -114,7 +114,7 @@ module RBI
       assert_log(<<~OUT, err)
         Error: Can't fetch RBI content from #{repo}
 
-        It looks like we can't access #{repo} repo (GET https://api.github.com/repos/#{repo}/contents/central_repo/index.json: 404 - Not Found // See: https://docs.github.com/rest/reference/repos#get-repository-content).
+        It looks like we can't access #{repo} (GET https://api.github.com/repos/#{repo}/contents/index.json: 404 - Not Found // See: https://docs.github.com/rest/reference/repos#get-repository-content).
 
         Are you trying to access a private repository?
         If so, please specify your Github credentials in your ~/.netrc file.
