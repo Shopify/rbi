@@ -10,7 +10,7 @@ module RBI
     sig { void }
     def initialize
       super()
-      @github_client = T.let(Octokit::Client.new, Octokit::Client)
+      @github_client = T.let(nil, T.nilable(Octokit::Client))
       @index_string = T.let(nil, T.nilable(String))
       @index = T.let(nil, T.nilable(T::Hash[String, T::Hash[String, String]]))
     end
@@ -23,6 +23,11 @@ module RBI
     end
 
     private
+
+    sig { returns(Octokit::Client) }
+    def github_client
+      @github_client ||= Octokit::Client.new
+    end
 
     sig { params(name: String, version: String).returns(T.nilable(String)) }
     def rbi_path(name, version)
@@ -41,7 +46,7 @@ module RBI
 
     sig { params(path: String).returns(String) }
     def github_file_content(path)
-      T.must(@github_client.file_content(CENTRAL_REPO_SLUG, path))
+      Base64.decode64(github_client.content(CENTRAL_REPO_SLUG, path: path).content)
     end
   end
 end
