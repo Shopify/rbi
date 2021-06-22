@@ -8,6 +8,22 @@ module RBI
     CENTRAL_REPO_SLUG = "shopify/rbi"
     CENTRAL_REPO_PATH = "central_repo"
 
+    class FetchError < StandardError
+      extend T::Sig
+
+      sig { params(repo: String, cause: String).returns(String) }
+      def self.netrc_help(repo, cause)
+        <<~HELP
+          It looks like we can't access #{repo} repo (#{cause}).
+
+          Are you trying to access a private repository?
+          If so, please specify your Github credentials in your ~/.netrc file.
+
+          https://github.com/octokit/octokit.rb#using-a-netrc-file
+        HELP
+      end
+    end
+
     sig { void }
     def initialize
       super()
@@ -48,6 +64,12 @@ module RBI
     sig { params(path: String).returns(String) }
     def github_file_content(path)
       Base64.decode64(github_client.content(CENTRAL_REPO_SLUG, path: path).content)
+    rescue Octokit::NotFound => e
+      raise FetchError, <<~ERR
+        Can't fetch RBI index from #{CENTRAL_REPO_SLUG}.
+
+        #{FetchError.netrc_help(CENTRAL_REPO_SLUG, e.message)}
+      ERR
     end
   end
 end
