@@ -71,6 +71,11 @@ module RBI
       @logger.success("Gem RBIs successfully updated")
     end
 
+    sig { params(name: String, version: String, path: String).void }
+    def push(name, version, path)
+      @fetcher.push_rbi_content(name, version, path)
+    end
+
     # Utils
 
     sig { returns(String) }

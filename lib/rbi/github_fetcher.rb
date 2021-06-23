@@ -43,6 +43,13 @@ module RBI
       github_file_content(path)
     end
 
+    sig { override.params(name: String, version: String, path: String).void }
+    def push_rbi_content(name, version, path)
+      commit_new_rbi(name, version, path)
+      commit_index_json(name, version)
+      open_pull_request(name, version)
+    end
+
     private
 
     sig { returns(Octokit::Client) }
@@ -75,6 +82,50 @@ module RBI
       Base64.decode64(github_client.content(@central_repo_slug, path: path).content)
     rescue Octokit::NotFound => e
       raise FetchError, FetchError.error_string(@central_repo_slug, e.message)
+    end
+
+    sig { params(name: String, version: String, path: String).void }
+    def commit_new_rbi(name, version, path)
+      sha = github_client.ref(CENTRAL_REPO_SLUG, "heads/main").object.sha
+      branch = "rbi-#{name}-#{version}"
+      github_client.create_ref(CENTRAL_REPO_SLUG, "heads/#{branch}", sha)
+      github_client.create_contents(
+        CENTRAL_REPO_SLUG,
+        "central_repo/#{name}@#{version}.rbi",
+        "Add RBI for #{name}@#{version}",
+        branch: branch,
+        file: path
+      )
+    end
+
+    sig { params(name: String, version: String).void }
+    def commit_index_json(name, version)
+      version_hash = index[name] ||= {}
+      version_hash[version] = "#{name}@#{version}.rbi"
+      index_sha = github_client.contents(CENTRAL_REPO_SLUG, path: "index.json").sha
+      index_json = JSON.pretty_generate(index) << "\n"
+
+      branch = "rbi-#{name}-#{version}"
+      github_client.update_contents(
+        CENTRAL_REPO_SLUG,
+        "index.json",
+        "Add index entry for #{name}@#{version}",
+        index_sha,
+        index_json,
+        branch: branch,
+      )
+    end
+
+    sig { params(name: String, version: String).void }
+    def open_pull_request(name, version)
+      branch = "rbi-#{name}-#{version}"
+      github_client.create_pull_request(
+        CENTRAL_REPO_SLUG,
+        "main",
+        branch,
+        "Add RBI for #{name}@#{version}",
+        "This pull request was automatically generated using the `rbi push` command."
+      )
     end
   end
 end

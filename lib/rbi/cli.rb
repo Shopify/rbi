@@ -105,6 +105,11 @@ module RBI
       context.update
     end
 
+    desc "push foo 1.0.0 sorbet/rbi/gems/foo@1.0.0.rbi", "Pushes rbi file to central repo and opens a pull request"
+    def push(name, version, path)
+      context.push(name, version, path)
+    end
+
     def self.exit_on_failure?
       true
     end
