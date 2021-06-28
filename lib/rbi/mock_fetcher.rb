@@ -16,11 +16,15 @@ module RBI
     def initialize(content)
       super()
       @content = content
+      @logger = T.let(Logger.new(color: false), Logger)
     end
 
     sig { override.params(name: String, version: String).returns(T.nilable(String)) }
     def pull_rbi_content(name, version)
       @content["#{name}@#{version}"]
     end
+
+    sig { override.params(name: String, version: String, path: String).void }
+    def push_rbi_content(name, version, path); end
   end
 end
