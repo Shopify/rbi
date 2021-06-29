@@ -7,6 +7,37 @@ module RBI
   class InitTest < Minitest::Test
     include TestHelper
 
+    def test_init_with_non_empty_gem_rbis
+      project = self.project("test_init_with_non_empty_gem_rbis")
+      project.write("sorbet/rbi/gems/foo@1.0.0.rbi")
+      project.write("sorbet/rbi/gems/foo@2.0.0.rbi")
+      project.write("sorbet/rbi/gems/bar@1.0.0.rbi")
+
+      project.gemfile(<<~GEMFILE)
+        source "https://rubygems.org"
+
+        gem "rbi", path: "#{File.expand_path(Bundler.root)}"
+      GEMFILE
+
+      project.write("index_mock.json", <<~JSON)
+        {}
+      JSON
+
+      out, err, status = project.bundle_exec("rbi init --no-netrc --mock-fetcher-file index_mock.json --no-color")
+      refute(status)
+      assert_empty(out)
+      assert_log(<<~OUT, err)
+        Error: Can't init while you RBI gems directory is not empty
+        Hint: Run `rbi clean` to delete it. Or use `rbi update` to update gem RBIs
+      OUT
+
+      assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
+      assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@2.0.0.rbi"))
+      assert(File.file?("#{project.path}/sorbet/rbi/gems/bar@1.0.0.rbi"))
+
+      project.destroy
+    end
+
     def test_init
       project = self.project("test_init")
 
