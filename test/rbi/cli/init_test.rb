@@ -54,6 +54,7 @@ module RBI
         gem "rbi", path: "#{File.expand_path(Bundler.root)}"
         gem "foo", path: "gems/foo"
         gem "bar", path: "gems/bar"
+        gem "tapioca"
       GEMFILE
 
       project.write("index_mock.json", <<~JSON)
@@ -66,12 +67,15 @@ module RBI
       Bundler.with_unbundled_env do
         project.run("bundle config set --local path 'vendor/bundle'")
         project.run("bundle install")
+
         out, err, status = project.bundle_exec("rbi init --no-netrc --mock-fetcher-file index_mock.json --no-color")
         assert(status)
         assert_empty(out)
         assert_log(<<~OUT, err)
           Success: Pulled `bar@2.0.0.rbi` from central repository
           Success: Pulled `foo@1.0.0.rbi` from central repository
+          Info: Generating RBIs that were missing in the central repository using tapioca
+          Success: Gem RBIs successfully updated
         OUT
       end
 

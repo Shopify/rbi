@@ -30,17 +30,15 @@ module RBI
       @logger.success("Clean `#{simplify_path(path)}` directory")
     end
 
-    sig { returns(T::Boolean) }
+    sig { void }
     def init
       if has_local_rbis?
         @logger.error("Can't init while you RBI gems directory is not empty")
-        @logger.hint("Run `rbi clean` to delete it")
-        return false
+        @logger.hint("Run `rbi clean` to delete it. Or use `rbi update` to update gem RBIs")
+        exit(1)
       end
-      gemfile_lock_parser.specs.each do |spec|
-        fetch_rbi(spec.name, spec.version.to_s)
-      end
-      true
+
+      update
     end
 
     sig { void }
