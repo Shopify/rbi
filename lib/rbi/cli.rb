@@ -41,6 +41,12 @@ module RBI
       context.generate(name, version: version, source: source, git: git, branch: branch, path: path)
     end
 
+    desc "merge", "Merge two RBI files together"
+    # TODO: options: clean, keep, resolve, annotate (left/right)
+    def merge(rbi1, rbi2)
+      context.merge(rbi1, rbi2)
+    end
+
     desc "update", "Update local gem RBIs"
     def update
       context.update
