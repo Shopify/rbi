@@ -50,6 +50,13 @@ module RBI
       open_pull_request(name, version)
     end
 
+    sig { override.params(name: String).returns(T.nilable(String)) }
+    def last_version_for_gem(name)
+      versions = index[name]
+      return nil unless versions
+      versions.keys.sort.last
+    end
+
     private
 
     sig { returns(Octokit::Client) }
