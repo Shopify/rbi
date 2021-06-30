@@ -146,7 +146,7 @@ module RBI
       ctx.destroy
     end
 
-    sig { params(rbi1: String, rbi2: String).void }
+    sig { params(rbi1: String, rbi2: String).returns([String, T::Array[Tapioca::RBI::Rewriters::Merge::Conflict]]) }
     def merge(rbi1, rbi2)
       tree1 = parse_file(rbi1)
       tree2 = parse_file(rbi2)
@@ -158,17 +158,7 @@ module RBI
       conflicts.concat(merger.merge(tree2))
       merged = merger.tree
 
-      puts merged.string
-
-      logger = self.logger
-
-      unless conflicts.empty?
-        conflicts.each do |conflict|
-          logger.error("Merge conflict between definitions `#{rbi1}##{conflict.left}` and `#{rbi2}##{conflict.right}`")
-          # TODO: error sections & show source
-        end
-        exit(1)
-      end
+      [merged.string, conflicts]
     end
 
     # Utils

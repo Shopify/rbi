@@ -43,8 +43,25 @@ module RBI
 
     desc "merge", "Merge two RBI files together"
     # TODO: options: clean, keep, resolve, annotate (left/right)
+    option "output", type: :string, aliases: :o, default: nil, desc: "Save output to a file"
     def merge(rbi1, rbi2)
-      context.merge(rbi1, rbi2)
+      rbi, conflicts = context.merge(rbi1, rbi2)
+
+      output_path = options[:output]
+      if output_path
+        File.write(output_path, rbi)
+      else
+        puts rbi
+      end
+
+      logger = self.logger
+      unless conflicts.empty?
+        conflicts.each do |conflict|
+          logger.error("Merge conflict between definitions `#{rbi1}##{conflict.left}` and `#{rbi2}##{conflict.right}`")
+          # TODO: error sections & show source
+        end
+        exit(1)
+      end
     end
 
     desc "update", "Update local gem RBIs"

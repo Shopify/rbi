@@ -163,6 +163,45 @@ module RBI
 
         project.destroy
       end
+
+      def test_merge_files_and_save_output
+        project = self.project("test_merge_files_and_save_output")
+        project.write("a.rb", <<~RBI)
+          class A
+            def a1; end
+            def a2; end
+          end
+        RBI
+
+        project.write("b.rb", <<~RBI)
+          class A
+            def a1; end
+            def a2(x); end
+          end
+        RBI
+
+        out, err, status = project.bundle_exec("rbi merge a.rb b.rb -o out.rbi --no-color")
+
+        assert_empty(out)
+        assert_equal(<<~ERR.strip, err.strip)
+          Error: Merge conflict between definitions `a.rb#::A#a2()` and `b.rb#::A#a2(x)`
+        ERR
+        refute(status)
+
+        rbi = File.read(project.absolute_path("out.rbi"))
+        assert_equal(<<~RBI.strip, rbi.strip)
+          class A
+            def a1; end
+            <<<<<<< a.rb
+            def a2; end
+            =======
+            def a2(x); end
+            >>>>>>> b.rb
+          end
+        RBI
+
+        project.destroy
+      end
     end
   end
 end
