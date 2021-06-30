@@ -24,12 +24,12 @@ module RBI
       JSON
 
       out, err, status = project.bundle_exec("rbi init --no-netrc --mock-fetcher-file index_mock.json --no-color")
-      refute(status)
       assert_empty(out)
       assert_log(<<~OUT, err)
         Error: Can't init while you RBI gems directory is not empty
         Hint: Run `rbi clean` to delete it. Or use `rbi update` to update gem RBIs
       OUT
+      refute(status)
 
       assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
       assert(File.file?("#{project.path}/sorbet/rbi/gems/foo@2.0.0.rbi"))
@@ -100,7 +100,6 @@ module RBI
         project.run("bundle install")
 
         out, err, status = project.bundle_exec("rbi init --no-netrc --mock-fetcher-file index_mock.json --no-color")
-        assert(status)
         assert_empty(out)
         assert_log(<<~OUT, err)
           Success: Pulled `bar@2.0.0.rbi` from central repository
@@ -108,6 +107,7 @@ module RBI
           Info: Generating RBIs that were missing in the central repository using tapioca
           Success: Gem RBIs successfully updated
         OUT
+        assert(status)
       end
 
       assert_equal("FOO = 1", File.read("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi").strip)

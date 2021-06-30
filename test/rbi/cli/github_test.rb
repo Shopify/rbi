@@ -25,7 +25,6 @@ module RBI
       GEMFILE_LOCK
 
       out, err, status = project.run("bundle exec rbi update --no-color --no-netrc")
-      refute(status)
       assert_empty(out)
       assert_log(<<~OUT, err)
         Error: Can't fetch RBI content from shopify/rbi-repo
@@ -37,6 +36,7 @@ module RBI
 
         https://github.com/Shopify/rbi#using-a-netrc-file
       OUT
+      refute(status)
 
       project.destroy
     end
@@ -59,7 +59,6 @@ module RBI
       GEMFILE_LOCK
 
       out, err, status = project.run("bundle exec rbi update --no-color --netrc-file netrc")
-      refute(status)
       assert_empty(out)
       assert_log(<<~OUT, err)
         Error loading credentials from netrc file for https://api.github.com/
@@ -72,6 +71,7 @@ module RBI
 
         https://github.com/Shopify/rbi#using-a-netrc-file
       OUT
+      refute(status)
 
       project.destroy
     end
@@ -80,11 +80,11 @@ module RBI
       project = self.project("test_access_private_repo_without_netrc_but_netrc_file")
 
       out, err, status = project.run("bundle exec rbi update --no-color --no-netrc --netrc-file netrc")
-      refute(status)
       assert_empty(out)
       assert_log(<<~OUT, err)
         Error: Option `--netrc-file` can only be used with option `--netrc`
       OUT
+      refute(status)
 
       project.destroy
     end
@@ -109,7 +109,6 @@ module RBI
       repo = "Shopify/RBIRepoNotFound"
 
       out, err, status = project.bundle_exec("rbi update --no-color --no-netrc --central-repo-slug #{repo}")
-      refute(status)
       assert_empty(out)
       assert_log(<<~OUT, err)
         Error: Can't fetch RBI content from #{repo}
@@ -121,6 +120,7 @@ module RBI
 
         https://github.com/Shopify/rbi#using-a-netrc-file
       OUT
+      refute(status)
 
       project.destroy
     end

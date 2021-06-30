@@ -22,10 +22,10 @@ module RBI
         project.run("bundle install")
 
         _, err, status = project.bundle_exec("rbi generate colorize --no-color")
-        assert(status)
         assert_log(<<~OUT, censor_version(err))
           Success: Generated `colorize@X.Y.Z.rbi`
         OUT
+        assert(status)
       end
       file = T.must(Dir["#{project.path}/colorize@*.rbi"].first)
       assert(File.file?(file))
@@ -51,10 +51,10 @@ module RBI
         refute(File.file?("#{project.absolute_path(filename)}.rbi"))
 
         _, err, status = project.bundle_exec("rbi generate #{name} #{version} --no-color")
-        assert(status)
         assert_log(<<~OUT, err)
           Success: Generated `#{filename}.rbi`
         OUT
+        assert(status)
       end
       assert(File.file?("#{project.path}/#{filename}.rbi"))
 
@@ -80,10 +80,10 @@ module RBI
 
         url = "https://rubygems.org"
         _, err, status = project.bundle_exec("rbi generate #{name} #{version} --source=#{url} --no-color")
-        assert(status)
         assert_log(<<~OUT, err)
           Success: Generated `#{filename}.rbi`
         OUT
+        assert(status)
       end
       assert(File.file?("#{project.path}/#{filename}.rbi"))
 
@@ -109,10 +109,10 @@ module RBI
 
         url = "https://github.com/fazibear/colorize.git"
         _, err, status = project.bundle_exec("rbi generate #{name} #{version} --git=#{url} --no-color")
-        assert(status)
         assert_log(<<~OUT, censor_version(err))
           Success: Generated `colorize@X.Y.Z.rbi`
         OUT
+        assert(status)
       end
 
       project.destroy
@@ -138,10 +138,10 @@ module RBI
         url = "https://github.com/fazibear/colorize.git"
         _, err, status = project.bundle_exec("rbi generate #{name} #{version} --git=#{url}" \
           " --branch=master --no-color")
-        assert(status)
         assert_log(<<~OUT, censor_version(err))
           Success: Generated `colorize@X.Y.Z.rbi`
         OUT
+        assert(status)
       end
 
       project.destroy
@@ -185,10 +185,10 @@ module RBI
 
         path = "#{project.path}/vendor/cache/"
         _, err, status = project.bundle_exec("rbi generate #{name} #{version} --path=#{path} --no-color")
-        assert(status)
         assert_log(<<~OUT, err)
           Success: Generated `foo@1.0.0.rbi`
         OUT
+        assert(status)
       end
       assert(File.file?("#{project.path}/#{filename}.rbi"))
 
