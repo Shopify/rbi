@@ -1,1 +1,3 @@
-# Default config
+deploy:
+ override:
+   - buildkite-trigger rbi-publish-package
