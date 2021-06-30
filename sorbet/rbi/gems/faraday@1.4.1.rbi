@@ -30,10 +30,10 @@ module Faraday
 end
 
 class Faraday::Adapter
-  extend(::Faraday::MiddlewareRegistry)
-  extend(::Faraday::DependencyLoader)
-  extend(::Faraday::Adapter::Parallelism)
-  extend(::Faraday::AutoloadHelper)
+  extend ::Faraday::MiddlewareRegistry
+  extend ::Faraday::DependencyLoader
+  extend ::Faraday::Adapter::Parallelism
+  extend ::Faraday::AutoloadHelper
 
   def initialize(_app = T.unsafe(nil), opts = T.unsafe(nil), &block); end
 
@@ -50,7 +50,7 @@ end
 Faraday::Adapter::CONTENT_LENGTH = T.let(T.unsafe(nil), String)
 
 class Faraday::Adapter::EMHttp < ::Faraday::Adapter
-  include(::Faraday::Adapter::EMHttp::Options)
+  include ::Faraday::Adapter::EMHttp::Options
 
   def call(env); end
   def create_request(env); end
@@ -90,7 +90,7 @@ module Faraday::Adapter::EMHttp::Options
 end
 
 class Faraday::Adapter::EMSynchrony < ::Faraday::Adapter
-  include(::Faraday::Adapter::EMHttp::Options)
+  include ::Faraday::Adapter::EMHttp::Options
 
   def call(env); end
   def create_request(env); end
@@ -150,7 +150,6 @@ class Faraday::Adapter::Rack < ::Faraday::Adapter
 end
 
 Faraday::Adapter::Rack::SPECIAL_HEADERS = T.let(T.unsafe(nil), Array)
-
 Faraday::Adapter::TIMEOUT_KEYS = T.let(T.unsafe(nil), Hash)
 
 class Faraday::Adapter::Test < ::Faraday::Adapter
@@ -192,8 +191,7 @@ class Faraday::Adapter::Test::Stubs
   def new_stub(request_method, path, headers = T.unsafe(nil), body = T.unsafe(nil), &block); end
 end
 
-class Faraday::Adapter::Test::Stubs::NotFound < ::StandardError
-end
+class Faraday::Adapter::Test::Stubs::NotFound < ::StandardError; end
 
 class Faraday::Adapter::Typhoeus < ::Faraday::Adapter
   def call; end
@@ -212,11 +210,8 @@ module Faraday::AutoloadHelper
   def load_autoloaded_constants; end
 end
 
-class Faraday::BadRequestError < ::Faraday::ClientError
-end
-
-class Faraday::ClientError < ::Faraday::Error
-end
+class Faraday::BadRequestError < ::Faraday::ClientError; end
+class Faraday::ClientError < ::Faraday::Error; end
 
 class Faraday::CompositeReadIO
   def initialize(*parts); end
@@ -233,11 +228,10 @@ class Faraday::CompositeReadIO
   def current_io; end
 end
 
-class Faraday::ConflictError < ::Faraday::ClientError
-end
+class Faraday::ConflictError < ::Faraday::ClientError; end
 
 class Faraday::Connection
-  extend(::Forwardable)
+  extend ::Forwardable
 
   def initialize(url = T.unsafe(nil), options = T.unsafe(nil)); end
 
@@ -297,9 +291,7 @@ class Faraday::Connection
 end
 
 Faraday::Connection::METHODS = T.let(T.unsafe(nil), Set)
-
-class Faraday::ConnectionFailed < ::Faraday::Error
-end
+class Faraday::ConnectionFailed < ::Faraday::Error; end
 
 class Faraday::ConnectionOptions < ::Faraday::Options
   def builder_class; end
@@ -346,7 +338,7 @@ module Faraday::EncodeMethods
 end
 
 class Faraday::Env < ::Faraday::Options
-  extend(::Forwardable)
+  extend ::Forwardable
 
   def [](key); end
   def []=(key, value); end
@@ -370,11 +362,8 @@ class Faraday::Env < ::Faraday::Options
 end
 
 Faraday::Env::ContentLength = T.let(T.unsafe(nil), String)
-
 Faraday::Env::MethodsWithBodies = T.let(T.unsafe(nil), Set)
-
 Faraday::Env::StatusesWithoutBody = T.let(T.unsafe(nil), Set)
-
 Faraday::Env::SuccessfulStatuses = T.let(T.unsafe(nil), Range)
 
 class Faraday::Error < ::StandardError
@@ -407,16 +396,43 @@ module Faraday::FlatParamsEncoder
   end
 end
 
-class Faraday::ForbiddenError < ::Faraday::ClientError
+class Faraday::ForbiddenError < ::Faraday::ClientError; end
+module Faraday::Logging; end
+
+class Faraday::Logging::Formatter
+  extend ::Forwardable
+
+  def initialize(logger:, options:); end
+
+  def debug(*args, &block); end
+  def error(*args, &block); end
+  def fatal(*args, &block); end
+  def filter(filter_word, filter_replacement); end
+  def info(*args, &block); end
+  def request(env); end
+  def response(env); end
+  def warn(*args, &block); end
+
+  private
+
+  def apply_filters(output); end
+  def dump_body(body); end
+  def dump_headers(headers); end
+  def log_body(type, body); end
+  def log_body?(type); end
+  def log_headers(type, headers); end
+  def log_headers?(type); end
+  def log_level; end
+  def pretty_inspect(body); end
 end
 
+Faraday::Logging::Formatter::DEFAULT_OPTIONS = T.let(T.unsafe(nil), Hash)
 Faraday::METHODS_WITH_BODY = T.let(T.unsafe(nil), Array)
-
 Faraday::METHODS_WITH_QUERY = T.let(T.unsafe(nil), Array)
 
 class Faraday::Middleware
-  extend(::Faraday::MiddlewareRegistry)
-  extend(::Faraday::DependencyLoader)
+  extend ::Faraday::MiddlewareRegistry
+  extend ::Faraday::DependencyLoader
 
   def initialize(app = T.unsafe(nil), options = T.unsafe(nil)); end
 
@@ -436,8 +452,8 @@ module Faraday::MiddlewareRegistry
 end
 
 module Faraday::NestedParamsEncoder
-  extend(::Faraday::EncodeMethods)
-  extend(::Faraday::DecodeMethods)
+  extend ::Faraday::EncodeMethods
+  extend ::Faraday::DecodeMethods
 
   class << self
     def escape(*args, &block); end
@@ -496,16 +512,12 @@ class Faraday::ParamPart
   def value; end
 end
 
-class Faraday::ParsingError < ::Faraday::Error
-end
-
+class Faraday::ParsingError < ::Faraday::Error; end
 Faraday::Parts = Parts
-
-class Faraday::ProxyAuthError < ::Faraday::ClientError
-end
+class Faraday::ProxyAuthError < ::Faraday::ClientError; end
 
 class Faraday::ProxyOptions < ::Faraday::Options
-  extend(::Forwardable)
+  extend ::Forwardable
 
   def host(*args, &block); end
   def host=(*args, &block); end
@@ -569,17 +581,13 @@ class Faraday::RackBuilder::Handler
 end
 
 Faraday::RackBuilder::Handler::REGISTRY = T.let(T.unsafe(nil), Faraday::AdapterRegistry)
-
 Faraday::RackBuilder::LOCK_ERR = T.let(T.unsafe(nil), String)
-
 Faraday::RackBuilder::NO_ARGUMENT = T.let(T.unsafe(nil), Object)
-
-class Faraday::RackBuilder::StackLocked < ::RuntimeError
-end
+class Faraday::RackBuilder::StackLocked < ::RuntimeError; end
 
 class Faraday::Request < ::Struct
-  extend(::Faraday::MiddlewareRegistry)
-  extend(::Faraday::AutoloadHelper)
+  extend ::Faraday::MiddlewareRegistry
+  extend ::Faraday::AutoloadHelper
 
   def [](key); end
   def []=(key, value); end
@@ -656,7 +664,6 @@ class Faraday::Request::Retry < ::Faraday::Middleware
 end
 
 Faraday::Request::Retry::DEFAULT_EXCEPTIONS = T.let(T.unsafe(nil), Array)
-
 Faraday::Request::Retry::IDEMPOTENT_METHODS = T.let(T.unsafe(nil), Array)
 
 class Faraday::Request::Retry::Options < ::Faraday::Options
@@ -705,13 +712,12 @@ class Faraday::RequestOptions < ::Faraday::Options
   def stream_response?; end
 end
 
-class Faraday::ResourceNotFound < ::Faraday::ClientError
-end
+class Faraday::ResourceNotFound < ::Faraday::ClientError; end
 
 class Faraday::Response
-  extend(::Forwardable)
-  extend(::Faraday::MiddlewareRegistry)
-  extend(::Faraday::AutoloadHelper)
+  extend ::Forwardable
+  extend ::Faraday::MiddlewareRegistry
+  extend ::Faraday::AutoloadHelper
 
   def initialize(env = T.unsafe(nil)); end
 
@@ -748,39 +754,27 @@ class Faraday::Response::RaiseError < ::Faraday::Response::Middleware
 end
 
 Faraday::Response::RaiseError::ClientErrorStatuses = T.let(T.unsafe(nil), Range)
-
 Faraday::Response::RaiseError::ServerErrorStatuses = T.let(T.unsafe(nil), Range)
-
-class Faraday::RetriableResponse < ::Faraday::Error
-end
-
-class Faraday::SSLError < ::Faraday::Error
-end
+class Faraday::RetriableResponse < ::Faraday::Error; end
+class Faraday::SSLError < ::Faraday::Error; end
 
 class Faraday::SSLOptions < ::Faraday::Options
   def disable?; end
   def verify?; end
 end
 
-class Faraday::ServerError < ::Faraday::Error
-end
+class Faraday::ServerError < ::Faraday::Error; end
 
 class Faraday::TimeoutError < ::Faraday::ServerError
   def initialize(exc = T.unsafe(nil), response = T.unsafe(nil)); end
 end
 
 Faraday::Timer = Timeout
-
-class Faraday::UnauthorizedError < ::Faraday::ClientError
-end
-
-class Faraday::UnprocessableEntityError < ::Faraday::ClientError
-end
-
+class Faraday::UnauthorizedError < ::Faraday::ClientError; end
+class Faraday::UnprocessableEntityError < ::Faraday::ClientError; end
 Faraday::UploadIO = UploadIO
 
 module Faraday::Utils
-
   private
 
   def URI(url); end
@@ -821,7 +815,6 @@ module Faraday::Utils
 end
 
 Faraday::Utils::DEFAULT_SEP = T.let(T.unsafe(nil), Regexp)
-
 Faraday::Utils::ESCAPE_RE = T.let(T.unsafe(nil), Regexp)
 
 class Faraday::Utils::Headers < ::Hash
@@ -881,35 +874,3 @@ class Faraday::Utils::ParamsHash < ::Hash
 end
 
 Faraday::VERSION = T.let(T.unsafe(nil), String)
-
-module Faraday::Logging
-end
-
-class Faraday::Logging::Formatter
-  extend(::Forwardable)
-
-  def initialize(logger:, options:); end
-
-  def debug(*args, &block); end
-  def error(*args, &block); end
-  def fatal(*args, &block); end
-  def filter(filter_word, filter_replacement); end
-  def info(*args, &block); end
-  def request(env); end
-  def response(env); end
-  def warn(*args, &block); end
-
-  private
-
-  def apply_filters(output); end
-  def dump_body(body); end
-  def dump_headers(headers); end
-  def log_body(type, body); end
-  def log_body?(type); end
-  def log_headers(type, headers); end
-  def log_headers?(type); end
-  def log_level; end
-  def pretty_inspect(body); end
-end
-
-Faraday::Logging::Formatter::DEFAULT_OPTIONS = T.let(T.unsafe(nil), Hash)

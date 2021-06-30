@@ -4,8 +4,7 @@
 
 # typed: true
 
-module Colorize
-end
+module Colorize; end
 
 module Colorize::ClassMethods
   def color_codes; end

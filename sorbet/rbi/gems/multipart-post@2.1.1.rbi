@@ -16,17 +16,16 @@ class CompositeReadIO
   def current_io; end
 end
 
-module Parts
-end
+module Parts; end
 
 class Parts::EpiloguePart
-  include(::Parts::Part)
+  include ::Parts::Part
 
   def initialize(boundary); end
 end
 
 class Parts::FilePart
-  include(::Parts::Part)
+  include ::Parts::Part
 
   def initialize(boundary, name, io, headers = T.unsafe(nil)); end
 
@@ -35,7 +34,7 @@ class Parts::FilePart
 end
 
 class Parts::ParamPart
-  include(::Parts::Part)
+  include ::Parts::Part
 
   def initialize(boundary, name, value, headers = T.unsafe(nil)); end
 

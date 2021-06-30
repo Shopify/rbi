@@ -4,8 +4,7 @@
 
 # typed: true
 
-module Sawyer
-end
+module Sawyer; end
 
 class Sawyer::Agent
   def initialize(endpoint, options = T.unsafe(nil)); end
@@ -37,12 +36,8 @@ class Sawyer::Agent
 end
 
 Sawyer::Agent::NO_BODY = T.let(T.unsafe(nil), Set)
-
-class Sawyer::Error < ::StandardError
-end
-
-module Sawyer::LinkParsers
-end
+class Sawyer::Error < ::StandardError; end
+module Sawyer::LinkParsers; end
 
 class Sawyer::LinkParsers::Hal
   def parse(data); end
@@ -91,7 +86,7 @@ class Sawyer::Relation::Map
 end
 
 class Sawyer::Resource
-  include(::Enumerable)
+  include ::Enumerable
 
   def initialize(agent, data = T.unsafe(nil)); end
 
@@ -119,9 +114,7 @@ class Sawyer::Resource
 end
 
 Sawyer::Resource::ATTR_PREDICATE = T.let(T.unsafe(nil), String)
-
 Sawyer::Resource::ATTR_SETTER = T.let(T.unsafe(nil), String)
-
 Sawyer::Resource::SPECIAL_METHODS = T.let(T.unsafe(nil), Set)
 
 class Sawyer::Response
