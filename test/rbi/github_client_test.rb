@@ -5,15 +5,15 @@ require "test_helper"
 
 module RBI
   module Test
-    class GithubFetcherTest < Minitest::Test
+    class GithubClientTest < Minitest::Test
       include TestHelper
       extend T::Sig
 
       def test_pull_rbi_without_auth
-        fetcher = GithubFetcher.new(netrc: false)
+        client = GithubClient.new(netrc: false)
 
-        exception = assert_raises(RBI::GithubFetcher::FetchError) do
-          fetcher.pull_rbi_content("foo", "1.0.0")
+        exception = assert_raises(RBI::GithubClient::FetchError) do
+          client.pull_rbi_content("foo", "1.0.0")
         end
 
         assert_log(<<~ERR, exception.message)
@@ -29,8 +29,8 @@ module RBI
       end
 
       def test_pull_rbi_from_public_repo
-        fetcher = GithubFetcher.new(netrc: false, central_repo_slug: "Shopify/rbi-repo-test")
-        rbi = fetcher.pull_rbi_content("foo", "1.0.0")
+        client = GithubClient.new(netrc: false, central_repo_slug: "Shopify/rbi-repo-test")
+        rbi = client.pull_rbi_content("foo", "1.0.0")
 
         assert_equal(<<~RBI, rbi)
           # typed: true

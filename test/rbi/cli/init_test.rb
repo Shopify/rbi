@@ -23,7 +23,7 @@ module RBI
         {}
       JSON
 
-      out, err, status = project.bundle_exec("rbi init --no-netrc --mock-fetcher-file index_mock.json --no-color")
+      out, err, status = project.bundle_exec("rbi init --no-netrc --mock-index-file index_mock.json --no-color")
       assert_empty(out)
       assert_log(<<~OUT, err)
         Error: Can't init while you RBI gems directory is not empty
@@ -99,7 +99,7 @@ module RBI
         project.run("bundle config set --local path 'vendor/bundle'")
         project.run("bundle install")
 
-        out, err, status = project.bundle_exec("rbi init --no-netrc --mock-fetcher-file index_mock.json --no-color")
+        out, err, status = project.bundle_exec("rbi init --no-netrc --mock-index-file index_mock.json --no-color")
         assert_empty(out)
         assert_log(<<~OUT, err)
           Success: Pulled `bar@2.0.0.rbi` from central repository

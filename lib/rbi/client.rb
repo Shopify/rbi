@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 module RBI
-  class Fetcher
+  class Client
     extend T::Sig
     extend T::Helpers
 

@@ -45,7 +45,7 @@ module RBI
         project.bundle_exec("tapioca generate --exclude foo")
         refute(File.file?("#{project.path}/sorbet/rbi/gems/foo@1.0.0.rbi"))
 
-        out, err, status = project.bundle_exec("rbi update --no-netrc --mock-fetcher-file index.json -v --no-color")
+        out, err, status = project.bundle_exec("rbi update --no-netrc --mock-index-file index.json -v --no-color")
         assert_empty(out)
         assert_log(<<~OUT, err)
           Info: Generating RBIs that were missing in the central repository using tapioca
