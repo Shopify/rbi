@@ -21,6 +21,11 @@ module RBI
       context.clean
     end
 
+    desc "clean-shims", "Compare shims against gem RBIs and remove outdated definitions"
+    def clean_shims
+      context.clean_shims
+    end
+
     # TODO: Support triggering this command outside of root directory
     desc "init", "Initialize a project by retrieving all gem RBIs from central repository"
     def init

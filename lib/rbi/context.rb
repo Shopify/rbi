@@ -31,6 +31,35 @@ module RBI
     end
 
     sig { void }
+    def clean_shims
+      files = Dir.glob("#{rbi_gems_dir}/*.rbi")
+      trees = parse_files(files)
+      index = Tapioca::RBI::Index.index(*T.unsafe(trees))
+
+      Dir.glob("#{rbi_shims_dir}/*.rbi").sort.each do |path|
+        original = parse_file(path)
+        cleaned, operations = TreeCleaner.clean(original, index)
+
+        if operations.empty?
+          logger.debug("Nothing to clean in #{path}")
+        else
+          operations.each do |operation|
+            logger.debug(operation.to_s)
+          end
+          if cleaned.empty?
+            logger.info("Deleted empty file #{path}")
+            FileUtils.rm(path)
+          else
+            logger.info("Cleaned #{path}")
+            File.write(path, cleaned.string)
+          end
+        end
+      end
+
+      logger.success("Cleaned `#{rbi_shims_dir}` directory")
+    end
+
+    sig { void }
     def init
       if has_local_rbis?
         @logger.error("Can't init while you RBI gems directory is not empty")
@@ -211,6 +240,11 @@ module RBI
     end
 
     sig { returns(String) }
+    def rbi_shims_dir
+      (root_pathname / "sorbet/rbi/shims").to_s
+    end
+
+    sig { returns(String) }
     def gemfile_lock_path
       (root_pathname / "Gemfile.lock").to_s
     end
@@ -310,6 +344,11 @@ module RBI
     rescue Tapioca::RBI::Parser::Error => e
       logger.error("Parse error in `#{path}`: #{e.message}.")
       exit(1)
+    end
+
+    sig { params(paths: T::Array[String]).returns(T::Array[Tapioca::RBI::Tree]) }
+    def parse_files(paths)
+      paths.map { |path| parse_file(path) }
     end
   end
 end
