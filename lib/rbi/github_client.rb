@@ -98,7 +98,7 @@ module RBI
       github_client.create_ref(CENTRAL_REPO_SLUG, "heads/#{branch}", sha)
       github_client.create_contents(
         CENTRAL_REPO_SLUG,
-        "central_repo/#{name}@#{version}.rbi",
+        "gems/#{name}@#{version}.rbi",
         "Add RBI for #{name}@#{version}",
         branch: branch,
         file: path
@@ -110,7 +110,7 @@ module RBI
     sig { params(name: String, version: String).void }
     def commit_index_json(name, version)
       version_hash = index[name] ||= {}
-      version_hash[version] = "#{name}@#{version}.rbi"
+      version_hash[version] = "gems/#{name}@#{version}.rbi"
       index_sha = github_client.contents(CENTRAL_REPO_SLUG, path: "index.json").sha
       index_json = JSON.pretty_generate(index) << "\n"
 
