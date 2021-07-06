@@ -25,7 +25,7 @@ module RBI
 
     sig { void }
     def clean
-      path = gem_rbi_dir
+      path = rbi_gems_dir
       FileUtils.rm_rf(path)
       @logger.success("Clean `#{simplify_path(path)}` directory")
     end
@@ -206,7 +206,7 @@ module RBI
     # Utils
 
     sig { returns(String) }
-    def gem_rbi_dir
+    def rbi_gems_dir
       (root_pathname / "sorbet/rbi/gems").to_s
     end
 
@@ -223,22 +223,22 @@ module RBI
 
     sig { params(name: String, version: String).returns(T::Boolean) }
     def has_local_rbi_for_gem_version?(name, version)
-      File.file?("#{gem_rbi_dir}/#{name}@#{version}.rbi")
+      File.file?("#{rbi_gems_dir}/#{name}@#{version}.rbi")
     end
 
     sig { params(name: String).returns(T::Boolean) }
     def has_local_rbi_for_gem?(name)
-      !Dir.glob("#{gem_rbi_dir}/#{name}@*.rbi").empty?
+      !Dir.glob("#{rbi_gems_dir}/#{name}@*.rbi").empty?
     end
 
     sig { returns(T::Boolean) }
     def has_local_rbis?
-      !Dir.glob("#{gem_rbi_dir}/*.rbi").empty?
+      !Dir.glob("#{rbi_gems_dir}/*.rbi").empty?
     end
 
     sig { params(name: String).void }
     def remove_local_rbi_for_gem(name)
-      Dir.glob("#{gem_rbi_dir}/#{name}@*.rbi").each do |path|
+      Dir.glob("#{rbi_gems_dir}/#{name}@*.rbi").each do |path|
         FileUtils.rm_rf(path)
       end
     end
@@ -250,7 +250,7 @@ module RBI
       content = @client.pull_rbi_content(name, version)
       return false unless content
 
-      dir = gem_rbi_dir
+      dir = rbi_gems_dir
       FileUtils.mkdir_p(dir)
       File.write("#{dir}/#{name}@#{version}.rbi", content)
       @logger.success("Pulled `#{name}@#{version}.rbi` from central repository")
