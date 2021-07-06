@@ -103,6 +103,8 @@ module RBI
         branch: branch,
         file: path
       )
+    rescue Octokit::NotFound => e
+      raise FetchError, FetchError.error_string(@central_repo_slug, e.message)
     end
 
     sig { params(name: String, version: String).void }
@@ -121,6 +123,8 @@ module RBI
         index_json,
         branch: branch,
       )
+    rescue Octokit::NotFound => e
+      raise FetchError, FetchError.error_string(@central_repo_slug, e.message)
     end
 
     sig { params(name: String, version: String).void }
@@ -133,6 +137,8 @@ module RBI
         "Add RBI for #{name}@#{version}",
         "This pull request was automatically generated using the `rbi push` command."
       )
+    rescue Octokit::NotFound => e
+      raise FetchError, FetchError.error_string(@central_repo_slug, e.message)
     end
   end
 end

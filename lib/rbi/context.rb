@@ -72,6 +72,9 @@ module RBI
     sig { params(name: String, version: String, path: String).void }
     def push(name, version, path)
       @client.push_rbi_content(name, version, path)
+    rescue GithubClient::FetchError => e
+      @logger.error(e.message)
+      exit(1)
     end
 
     sig do
