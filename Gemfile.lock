@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/Shopify/tapioca.git
-  revision: 764853e21ba003fe111a1ccdc550dd8a88d2720a
+  revision: faf5ee6abc3a925327c4d00e1081306710757126
   branch: master
   specs:
     tapioca (0.4.23)
@@ -54,7 +54,7 @@ GEM
       faraday (>= 0.9)
       sawyer (~> 0.8.0, >= 0.5.3)
     parallel (1.20.1)
-    parlour (6.0.0)
+    parlour (6.0.1)
       commander (~> 4.5)
       parser
       rainbow (~> 3.0)
@@ -89,11 +89,11 @@ GEM
     sawyer (0.8.2)
       addressable (>= 2.3.5)
       faraday (> 0.8, < 2.0)
-    sorbet (0.5.6480)
-      sorbet-static (= 0.5.6480)
-    sorbet-runtime (0.5.6480)
-    sorbet-static (0.5.6480-universal-darwin-19)
-    sorbet-static (0.5.6480-x86_64-linux)
+    sorbet (0.5.6482)
+      sorbet-static (= 0.5.6482)
+    sorbet-runtime (0.5.6482)
+    sorbet-static (0.5.6482-universal-darwin-19)
+    sorbet-static (0.5.6482-x86_64-linux)
     spoom (1.1.1)
       colorize
       sorbet (>= 0.5.6347)
