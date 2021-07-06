@@ -82,7 +82,7 @@ module RBI
         git: T.nilable(String),
         branch: T.nilable(String),
         path: T.nilable(String)
-      ).void
+      ).returns(String)
     end
     def generate(name, version: nil, source: nil, git: nil, branch: nil, path: nil)
       if [source, git, path].count { |x| !x.nil? } > 1
@@ -140,10 +140,13 @@ module RBI
 
       file_path = T.must(files.first)
       version_string = file_path.sub(/^.*@/, "").sub(/\.rbi$/, "")
+      generated_path = "#{name}@#{version_string}.rbi"
       FileUtils.mv(file_path, ".")
-      logger.success("Generated `#{name}@#{version_string}.rbi`")
+      logger.success("Generated `#{generated_path}`")
 
       ctx.destroy
+
+      generated_path
     end
 
     sig { params(rbi1: String, rbi2: String).returns([String, T::Array[Tapioca::RBI::Rewriters::Merge::Conflict]]) }
@@ -159,6 +162,45 @@ module RBI
       merged = merger.tree
 
       [merged.string, conflicts]
+    end
+
+    sig do
+      params(
+        name: String,
+        version: String,
+        source: T.nilable(String),
+        git: T.nilable(String),
+        branch: T.nilable(String),
+        path: T.nilable(String)
+      ).void
+    end
+    def bump(name, version, source: nil, git: nil, branch: nil, path: nil)
+      if @client.pull_rbi_content(name, version)
+        logger.error("RBI for `#{name}@#{version}` already in the central repo, run `rbi update` to pull it")
+        exit(1)
+      end
+
+      old_version = @client.last_version_for_gem(name)
+      unless old_version
+        logger.error("No RBI for `#{name}` in the central repo, run `rbi generate #{name}` to create it")
+        exit(1)
+      end
+
+      old_path = "#{name}@#{old_version}.rbi"
+      old_content = @client.pull_rbi_content(name, old_version)
+      File.write(old_path, old_content)
+
+      new_path = generate(name, version: version, source: source, git: git, branch: branch, path: path)
+
+      merged_content, conflicts = merge(new_path, old_path)
+      File.write(new_path, merged_content)
+
+      unless conflicts.empty?
+        logger.error("Merge conflicts in `#{new_path}`, please edit the file manually to resolve them")
+        exit(1)
+      end
+
+      logger.success("Merged `#{old_path}` with `#{new_path}`")
     end
 
     # Utils

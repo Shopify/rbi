@@ -26,5 +26,10 @@ module RBI
 
     sig { override.params(name: String, version: String, path: String).void }
     def push_rbi_content(name, version, path); end
+
+    sig { override.params(name: String).returns(T.nilable(String)) }
+    def last_version_for_gem(name)
+      @content.keys.select { |key| key.start_with?(name) }.sort.last&.split("@")&.last
+    end
   end
 end
