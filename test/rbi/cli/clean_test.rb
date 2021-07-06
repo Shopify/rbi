@@ -14,10 +14,6 @@ module RBI
         project.write("sorbet/rbi/gems/foo@2.0.0.rbi")
         project.write("sorbet/rbi/gems/bar@1.0.0.rbi")
 
-        logger, _ = self.logger
-        context = Context.new(project.path, logger: logger)
-        context.clean
-
         out, err, status = project.bundle_exec("rbi clean --no-color")
         assert_empty(out)
         assert_equal(<<~ERR, err)
