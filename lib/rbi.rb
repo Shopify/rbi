@@ -11,6 +11,7 @@ require "open3"
 require "open3"
 require "sorbet-runtime"
 require "stringio"
+require "tapioca/internal"
 require "thor"
 
 module RBI

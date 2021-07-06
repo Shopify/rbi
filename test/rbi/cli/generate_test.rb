@@ -14,6 +14,7 @@ module RBI
       project.gemfile(<<~GEMFILE)
         source "https://rubygems.org"
 
+        gem "tapioca"
         gem "rbi", path: "#{File.expand_path(Bundler.root)}"
       GEMFILE
 
@@ -39,6 +40,7 @@ module RBI
       project.gemfile(<<~GEMFILE)
         source "https://rubygems.org"
 
+        gem "tapioca"
         gem "rbi", path: "#{File.expand_path(Bundler.root)}"
       GEMFILE
 
@@ -67,6 +69,7 @@ module RBI
       project.gemfile(<<~GEMFILE)
         source "https://rubygems.org"
 
+        gem "tapioca"
         gem "rbi", path: "#{File.expand_path(Bundler.root)}"
       GEMFILE
 
@@ -96,6 +99,7 @@ module RBI
       project.gemfile(<<~GEMFILE)
         source "https://rubygems.org"
 
+        gem "tapioca"
         gem "rbi", path: "#{File.expand_path(Bundler.root)}"
       GEMFILE
 
@@ -124,6 +128,7 @@ module RBI
       project.gemfile(<<~GEMFILE)
         source "https://rubygems.org"
 
+        gem "tapioca"
         gem "rbi", path: "#{File.expand_path(Bundler.root)}"
       GEMFILE
 
@@ -172,6 +177,7 @@ module RBI
       project.gemfile(<<~GEMFILE)
         source "https://rubygems.org"
 
+        gem "tapioca"
         gem "rbi", path: "#{File.expand_path(Bundler.root)}"
       GEMFILE
 

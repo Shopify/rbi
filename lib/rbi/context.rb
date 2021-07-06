@@ -146,6 +146,21 @@ module RBI
       ctx.destroy
     end
 
+    sig { params(rbi1: String, rbi2: String).returns([String, T::Array[Tapioca::RBI::Rewriters::Merge::Conflict]]) }
+    def merge(rbi1, rbi2)
+      tree1 = parse_file(rbi1)
+      tree2 = parse_file(rbi2)
+
+      merger = Tapioca::RBI::Rewriters::Merge.new(left_name: rbi1, right_name: rbi2)
+
+      conflicts = []
+      conflicts.concat(merger.merge(tree1))
+      conflicts.concat(merger.merge(tree2))
+      merged = merger.tree
+
+      [merged.string, conflicts]
+    end
+
     # Utils
 
     sig { returns(String) }
@@ -236,6 +251,23 @@ module RBI
     sig { params(path: String).returns(String) }
     def simplify_path(path)
       path.delete_prefix("#{root_pathname}/")
+    end
+
+    sig { params(path: String).void }
+    def check_file_exists(path)
+      unless File.file?(path)
+        logger.error("Can't read file `#{path}`.")
+        exit(1)
+      end
+    end
+
+    sig { params(path: String).returns(Tapioca::RBI::Tree) }
+    def parse_file(path)
+      check_file_exists(path)
+      Tapioca::RBI::Parser.parse_file(path)
+    rescue Tapioca::RBI::Parser::Error => e
+      logger.error("Parse error in `#{path}`: #{e.message}.")
+      exit(1)
     end
   end
 end

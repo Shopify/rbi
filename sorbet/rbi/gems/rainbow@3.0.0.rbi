@@ -59,7 +59,7 @@ class Rainbow::Color::RGB < ::Rainbow::Color::Indexed
 end
 
 class Rainbow::Color::X11Named < ::Rainbow::Color::RGB
-  include(::Rainbow::X11ColorNames)
+  include ::Rainbow::X11ColorNames
 
   def initialize(ground, name); end
 
@@ -149,7 +149,5 @@ class Rainbow::Wrapper
   def wrap(string); end
 end
 
-module Rainbow::X11ColorNames
-end
-
+module Rainbow::X11ColorNames; end
 Rainbow::X11ColorNames::NAMES = T.let(T.unsafe(nil), Hash)

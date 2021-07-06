@@ -4,8 +4,7 @@
 
 # typed: true
 
-module AST
-end
+module AST; end
 
 class AST::Node
   def initialize(type, children = T.unsafe(nil), properties = T.unsafe(nil)); end
@@ -41,7 +40,7 @@ class AST::Node
 end
 
 class AST::Processor
-  include(::AST::Processor::Mixin)
+  include ::AST::Processor::Mixin
 end
 
 module AST::Processor::Mixin

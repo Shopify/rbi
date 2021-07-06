@@ -4,5 +4,8 @@
 
 # typed: true
 
-# THIS IS AN EMPTY RBI FILE.
-# see https://github.com/Shopify/tapioca/blob/master/README.md#manual-gem-requires
+class Set
+  include ::Enumerable
+end
+
+Set::InspectKey = T.let(T.unsafe(nil), Symbol)

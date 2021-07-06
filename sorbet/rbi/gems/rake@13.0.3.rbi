@@ -7,8 +7,8 @@
 FileList = Rake::FileList
 
 module FileUtils
-  include(::FileUtils::StreamUtils_)
-  extend(::FileUtils::StreamUtils_)
+  include ::FileUtils::StreamUtils_
+  extend ::FileUtils::StreamUtils_
 
   def ruby(*args, **options, &block); end
   def safe_ln(*args, **options); end
@@ -23,7 +23,6 @@ module FileUtils
 end
 
 FileUtils::LN_SUPPORTED = T.let(T.unsafe(nil), Array)
-
 FileUtils::RUBY = T.let(T.unsafe(nil), String)
 
 class Module
@@ -31,9 +30,9 @@ class Module
 end
 
 module Rake
-  extend(::FileUtils::StreamUtils_)
-  extend(::FileUtils)
-  extend(::Rake::FileUtilsExt)
+  extend ::FileUtils::StreamUtils_
+  extend ::FileUtils
+  extend ::Rake::FileUtilsExt
 
   class << self
     def add_rakelib(*files); end
@@ -49,8 +48,8 @@ module Rake
 end
 
 class Rake::Application
-  include(::Rake::TaskManager)
-  include(::Rake::TraceOutput)
+  include ::Rake::TaskManager
+  include ::Rake::TraceOutput
 
   def initialize; end
 
@@ -127,24 +126,18 @@ module Rake::Backtrace
 end
 
 Rake::Backtrace::SUPPRESSED_PATHS = T.let(T.unsafe(nil), Array)
-
 Rake::Backtrace::SUPPRESSED_PATHS_RE = T.let(T.unsafe(nil), String)
-
 Rake::Backtrace::SUPPRESS_PATTERN = T.let(T.unsafe(nil), Regexp)
-
 Rake::Backtrace::SYS_KEYS = T.let(T.unsafe(nil), Array)
-
 Rake::Backtrace::SYS_PATHS = T.let(T.unsafe(nil), Array)
 
 module Rake::Cloneable
-
   private
 
   def initialize_copy(source); end
 end
 
-class Rake::CommandLineOptionError < ::StandardError
-end
+class Rake::CommandLineOptionError < ::StandardError; end
 
 class Rake::CpuCounter
   def count; end
@@ -156,10 +149,9 @@ class Rake::CpuCounter
 end
 
 module Rake::DSL
-  include(::FileUtils::StreamUtils_)
-  include(::FileUtils)
-  include(::Rake::FileUtilsExt)
-
+  include ::FileUtils::StreamUtils_
+  include ::FileUtils
+  include ::Rake::FileUtilsExt
 
   private
 
@@ -179,13 +171,12 @@ class Rake::DefaultLoader
 end
 
 Rake::EARLY = T.let(T.unsafe(nil), Rake::EarlyTime)
-
 Rake::EMPTY_TASK_ARGS = T.let(T.unsafe(nil), Rake::TaskArguments)
 
 class Rake::EarlyTime
-  include(::Comparable)
-  include(::Singleton)
-  extend(::Singleton::SingletonClassMethods)
+  include ::Comparable
+  include ::Singleton
+  extend ::Singleton::SingletonClassMethods
 
   def <=>(other); end
   def to_s; end
@@ -197,7 +188,7 @@ class Rake::FileCreationTask < ::Rake::FileTask
 end
 
 class Rake::FileList
-  include(::Rake::Cloneable)
+  include ::Rake::Cloneable
 
   def initialize(*patterns); end
 
@@ -371,19 +362,12 @@ class Rake::FileList
 end
 
 Rake::FileList::ARRAY_METHODS = T.let(T.unsafe(nil), Array)
-
 Rake::FileList::DEFAULT_IGNORE_PATTERNS = T.let(T.unsafe(nil), Array)
-
 Rake::FileList::DEFAULT_IGNORE_PROCS = T.let(T.unsafe(nil), Array)
-
 Rake::FileList::DELEGATING_METHODS = T.let(T.unsafe(nil), Array)
-
 Rake::FileList::GLOB_PATTERN = T.let(T.unsafe(nil), Regexp)
-
 Rake::FileList::MUST_DEFINE = T.let(T.unsafe(nil), Array)
-
 Rake::FileList::MUST_NOT_DEFINE = T.let(T.unsafe(nil), Array)
-
 Rake::FileList::SPECIAL_RETURN = T.let(T.unsafe(nil), Array)
 
 class Rake::FileTask < ::Rake::Task
@@ -400,11 +384,11 @@ class Rake::FileTask < ::Rake::Task
 end
 
 module Rake::FileUtilsExt
-  include(::FileUtils::StreamUtils_)
-  include(::FileUtils)
-  extend(::FileUtils::StreamUtils_)
-  extend(::FileUtils)
-  extend(::Rake::FileUtilsExt)
+  include ::FileUtils::StreamUtils_
+  include ::FileUtils
+  extend ::FileUtils::StreamUtils_
+  extend ::FileUtils
+  extend ::Rake::FileUtilsExt
 
   def cd(*args, **options, &block); end
   def chdir(*args, **options, &block); end
@@ -483,16 +467,16 @@ end
 Rake::LATE = T.let(T.unsafe(nil), Rake::LateTime)
 
 class Rake::LateTime
-  include(::Comparable)
-  include(::Singleton)
-  extend(::Singleton::SingletonClassMethods)
+  include ::Comparable
+  include ::Singleton
+  extend ::Singleton::SingletonClassMethods
 
   def <=>(other); end
   def to_s; end
 end
 
 class Rake::LinkedList
-  include(::Enumerable)
+  include ::Enumerable
 
   def initialize(head, tail = T.unsafe(nil)); end
 
@@ -525,7 +509,6 @@ class Rake::LinkedList::EmptyLinkedList < ::Rake::LinkedList
 end
 
 class Rake::MultiTask < ::Rake::Task
-
   private
 
   def invoke_prerequisites(task_args, invocation_chain); end
@@ -540,7 +523,7 @@ class Rake::NameSpace
 end
 
 module Rake::PrivateReader
-  mixes_in_class_methods(::Rake::PrivateReader::ClassMethods)
+  mixes_in_class_methods ::Rake::PrivateReader::ClassMethods
 
   class << self
     def included(base); end
@@ -671,11 +654,10 @@ class Rake::Task
   end
 end
 
-class Rake::TaskArgumentError < ::ArgumentError
-end
+class Rake::TaskArgumentError < ::ArgumentError; end
 
 class Rake::TaskArguments
-  include(::Enumerable)
+  include ::Enumerable
 
   def initialize(names, values, parent = T.unsafe(nil)); end
 
@@ -741,8 +723,8 @@ module Rake::TaskManager
 end
 
 class Rake::ThreadHistoryDisplay
-  include(::Rake::PrivateReader)
-  extend(::Rake::PrivateReader::ClassMethods)
+  include ::Rake::PrivateReader
+  extend ::Rake::PrivateReader::ClassMethods
 
   def initialize(stats); end
 
@@ -779,18 +761,11 @@ module Rake::TraceOutput
 end
 
 Rake::VERSION = T.let(T.unsafe(nil), String)
-
-module Rake::Version
-end
-
+module Rake::Version; end
 Rake::Version::BUILD = T.let(T.unsafe(nil), String)
-
 Rake::Version::MAJOR = T.let(T.unsafe(nil), String)
-
 Rake::Version::MINOR = T.let(T.unsafe(nil), String)
-
 Rake::Version::NUMBERS = T.let(T.unsafe(nil), Array)
-
 Rake::Version::OTHER = T.let(T.unsafe(nil), Array)
 
 module Rake::Win32
@@ -801,17 +776,15 @@ module Rake::Win32
   end
 end
 
-class Rake::Win32::Win32HomeError < ::RuntimeError
-end
-
+class Rake::Win32::Win32HomeError < ::RuntimeError; end
 RakeFileUtils = Rake::FileUtilsExt
 
 class String
-  include(::Comparable)
-  include(::JSON::Ext::Generator::GeneratorMethods::String)
-  include(::Colorize::InstanceMethods)
-  extend(::JSON::Ext::Generator::GeneratorMethods::String::Extend)
-  extend(::Colorize::ClassMethods)
+  include ::Comparable
+  include ::JSON::Ext::Generator::GeneratorMethods::String
+  include ::Colorize::InstanceMethods
+  extend ::JSON::Ext::Generator::GeneratorMethods::String::Extend
+  extend ::Colorize::ClassMethods
 
   def ext(newext = T.unsafe(nil)); end
   def pathmap(spec = T.unsafe(nil), &block); end
