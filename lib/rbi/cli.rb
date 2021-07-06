@@ -80,13 +80,13 @@ module RBI
     option "branch", type: :string, default: nil, desc: "Install gem from this git branch"
     option "path", type: :string, default: nil, desc: "Install gem from this path"
     # TODO: options: clean, keep, resolve, annotate (left/right)
-    def bump(name, version = nil)
+    def bump(name, version)
       source = options["source"]
       git = options["git"]
       path = options["path"]
       branch = options["branch"]
 
-      context.bump(name, version: version, source: source, git: git, branch: branch, path: path)
+      context.bump(name, version, source: source, git: git, branch: branch, path: path)
     end
 
     def self.exit_on_failure?

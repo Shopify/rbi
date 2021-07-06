@@ -167,15 +167,15 @@ module RBI
     sig do
       params(
         name: String,
-        version: T.nilable(String),
+        version: String,
         source: T.nilable(String),
         git: T.nilable(String),
         branch: T.nilable(String),
         path: T.nilable(String)
       ).void
     end
-    def bump(name, version: nil, source: nil, git: nil, branch: nil, path: nil)
-      if version && @client.pull_rbi_content(name, version)
+    def bump(name, version, source: nil, git: nil, branch: nil, path: nil)
+      if @client.pull_rbi_content(name, version)
         logger.error("RBI for `#{name}@#{version}` already in the central repo, run `rbi update` to pull it")
         exit(1)
       end
