@@ -138,13 +138,13 @@ module RBI
       sig { params(project: TMPDir).returns([Context, StringIO]) }
       def mock_context(project)
         logger, out = self.logger
-        context = Context.new(project.path, logger: logger, fetcher: mock_fetcher)
+        context = Context.new(project.path, logger: logger, client: mock_client)
         [context, out]
       end
 
-      sig { returns(Fetcher) }
-      def mock_fetcher
-        MockFetcher.new({
+      sig { returns(Client) }
+      def mock_client
+        MockClient.new({
           "foo@1.0.0" => "FOO = 1",
           "bar@2.0.0" => "BAR = 2",
         })

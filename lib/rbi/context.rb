@@ -14,11 +14,11 @@ module RBI
     sig { returns(Logger) }
     attr_reader :logger
 
-    sig { params(path: String, logger: Logger, fetcher: Fetcher).void }
-    def initialize(path, logger: Logger.new, fetcher: GithubFetcher.new)
+    sig { params(path: String, logger: Logger, client: Client).void }
+    def initialize(path, logger: Logger.new, client: GithubClient.new)
       @path = path
       @logger = logger
-      @fetcher = fetcher
+      @client = client
     end
 
     # Actions
@@ -71,7 +71,7 @@ module RBI
 
     sig { params(name: String, version: String, path: String).void }
     def push(name, version, path)
-      @fetcher.push_rbi_content(name, version, path)
+      @client.push_rbi_content(name, version, path)
     end
 
     sig do
@@ -205,7 +205,7 @@ module RBI
 
     sig { params(name: String, version: String).returns(T::Boolean) }
     def fetch_rbi(name, version)
-      content = @fetcher.pull_rbi_content(name, version)
+      content = @client.pull_rbi_content(name, version)
       return false unless content
 
       dir = gem_rbi_dir
@@ -214,7 +214,7 @@ module RBI
       @logger.success("Pulled `#{name}@#{version}.rbi` from central repository")
 
       true
-    rescue GithubFetcher::FetchError => e
+    rescue GithubClient::FetchError => e
       @logger.error(e.message)
       exit(1)
     end

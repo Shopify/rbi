@@ -2,14 +2,14 @@
 # frozen_string_literal: true
 
 module RBI
-  class MockFetcher < Fetcher
+  class MockClient < Client
     extend T::Sig
 
-    sig { params(path: String).returns(MockFetcher) }
+    sig { params(path: String).returns(MockClient) }
     def self.from_file(path)
       json = File.read(path)
       content = JSON.parse(json)
-      MockFetcher.new(content)
+      MockClient.new(content)
     end
 
     sig { params(content: T::Hash[String, T.nilable(String)]).void }

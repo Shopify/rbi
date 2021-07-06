@@ -14,7 +14,7 @@ module RBI
     class_option :netrc, type: :boolean, default: true
     class_option :netrc_file, type: :string
     class_option :central_repo_slug, type: :string
-    class_option :mock_fetcher_file, type: :string
+    class_option :mock_index_file, type: :string
 
     desc "clean", "Remove all gem RBIs from local project"
     def clean

@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 module RBI
-  class GithubFetcher < Fetcher
+  class GithubClient < Client
     extend T::Sig
 
     CENTRAL_REPO_SLUG = "shopify/rbi-repo"

@@ -10,24 +10,24 @@ module RBI
 
     sig { returns(Context) }
     def context
-      Context.new(".", logger: logger, fetcher: fetcher) # TODO: pass `path` as an option
+      Context.new(".", logger: logger, client: client) # TODO: pass `path` as an option
     end
 
-    sig { returns(Fetcher) }
-    def fetcher
+    sig { returns(Client) }
+    def client
       netrc = options[:netrc]
       netrc_file = options[:netrc_file]
       central_repo_slug = options[:central_repo_slug]
-      mock_file = options[:mock_fetcher_file]
+      mock_file = options[:mock_index_file]
 
       if mock_file
         if netrc || netrc_file || central_repo_slug
-          logger.error("Option `--mock-fetcher-file` can't be used with options `--netrc`, " \
+          logger.error("Option `--mock-index-file` can't be used with options `--netrc`, " \
                         "`--netrc-file` and `--central-repo-slug`")
           exit(1)
         end
 
-        return MockFetcher.from_file(mock_file)
+        return MockClient.from_file(mock_file)
       end
 
       if netrc_file && !netrc
@@ -35,7 +35,7 @@ module RBI
         exit(1)
       end
 
-      GithubFetcher.new(netrc: netrc, netrc_file: netrc_file, central_repo_slug: central_repo_slug)
+      GithubClient.new(netrc: netrc, netrc_file: netrc_file, central_repo_slug: central_repo_slug)
     end
 
     sig { returns(Logger) }
