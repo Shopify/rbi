@@ -26,8 +26,8 @@ commands:
     run: bundle exec srb tc
   sanity: 'bin/typecheck; bin/test; bin/style'
   rbi:
-    desc:   "generate Ruby interface files for Sorbet"
+    desc:   "updates Ruby interface files for Sorbet"
     subcommands:
       gems:
-        desc: "updates gem RBI files. Use 'dev rbi gems <gem, ...>' to update individual gem RBI files."
-        run: bundle exec tapioca sync -c 'dev rbi gems'
+        desc: "updates gem RBI files."
+        run: bundle exec rbi update
