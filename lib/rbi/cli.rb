@@ -35,15 +35,25 @@ module RBI
     desc "generate foo 1.0.0", "Generates RBI for a given gem.", hide: true
     option "source", type: :string, default: nil, desc: "Download gem from this source"
     option "git", type: :string, default: nil, desc: "Download gem from this git repo"
+    option "glob", type: :string, default: nil, desc: "Specify the location of the gemspec (for --git)"
     option "branch", type: :string, default: nil, desc: "Install gem from this git branch"
+    option "ref", type: :string, default: nil, desc: "Install gem from this git ref"
+    option "tag", type: :string, default: nil, desc: "Install gem from this git tag"
+    option "submodules", type: :boolean, default: false, desc: "Expand the git submodules (for --git)"
     option "path", type: :string, default: nil, desc: "Install gem from this path"
     def generate(name, version = nil)
-      source = options["source"]
-      git = options["git"]
-      path = options["path"]
-      branch = options["branch"]
-
-      context.generate(name, version: version, source: source, git: git, branch: branch, path: path)
+      context.generate(
+        name,
+        version: version,
+        source: options["source"],
+        git: options["git"],
+        glob: options["glob"],
+        branch: options["branch"],
+        ref: options["ref"],
+        tag: options["tag"],
+        submodules: options["submodules"],
+        path: options["path"]
+      )
     end
 
     desc "merge", "Merge two RBI files together", hide: true
@@ -82,16 +92,26 @@ module RBI
     desc "bump foo 1.0.0", "Generates RBI for a given gem reusing the RBI from the previous version", hide: true
     option "source", type: :string, default: nil, desc: "Download gem from this source"
     option "git", type: :string, default: nil, desc: "Download gem from this git repo"
+    option "glob", type: :string, default: nil, desc: "Specify the location of the gemspec (for --git)"
     option "branch", type: :string, default: nil, desc: "Install gem from this git branch"
+    option "ref", type: :string, default: nil, desc: "Install gem from this git ref"
+    option "tag", type: :string, default: nil, desc: "Install gem from this git tag"
+    option "submodules", type: :boolean, default: false, desc: "Expand the git submodules (for --git)"
     option "path", type: :string, default: nil, desc: "Install gem from this path"
     # TODO: options: clean, keep, resolve, annotate (left/right)
     def bump(name, version)
-      source = options["source"]
-      git = options["git"]
-      path = options["path"]
-      branch = options["branch"]
-
-      context.bump(name, version, source: source, git: git, branch: branch, path: path)
+      context.bump(
+        name,
+        version,
+        source: options["source"],
+        git: options["git"],
+        glob: options["glob"],
+        branch: options["branch"],
+        ref: options["ref"],
+        tag: options["tag"],
+        submodules: options["submodules"],
+        path: options["path"]
+      )
     end
 
     def self.exit_on_failure?

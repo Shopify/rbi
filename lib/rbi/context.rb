@@ -112,11 +112,16 @@ module RBI
         version: T.nilable(String),
         source: T.nilable(String),
         git: T.nilable(String),
+        glob: T.nilable(String),
         branch: T.nilable(String),
+        ref: T.nilable(String),
+        tag: T.nilable(String),
+        submodules: T::Boolean,
         path: T.nilable(String)
       ).returns(String)
     end
-    def generate(name, version: nil, source: nil, git: nil, branch: nil, path: nil)
+    def generate(name, version: nil, source: nil, git: nil, glob: nil, branch: nil, ref: nil, tag: nil,
+      submodules: false, path: nil)
       if [source, git, path].count { |x| !x.nil? } > 1
         logger.error(<<~ERR)
           You passed in too many options to `rbi generate`.
@@ -125,8 +130,28 @@ module RBI
         exit(1)
       end
 
+      if glob && !git
+        logger.error("Option `--glob` can only be used together with option `--git`")
+        exit(1)
+      end
+
       if branch && !git
         logger.error("Option `--branch` can only be used together with option `--git`")
+        exit(1)
+      end
+
+      if ref && !git
+        logger.error("Option `--ref` can only be used together with option `--git`")
+        exit(1)
+      end
+
+      if tag && !git
+        logger.error("Option `--tag` can only be used together with option `--git`")
+        exit(1)
+      end
+
+      if submodules && !git
+        logger.error("Option `--submodules` can only be used together with option `--git`")
         exit(1)
       end
 
@@ -135,7 +160,11 @@ module RBI
       gem_string << ", '#{version}'" if version
       gem_string << ", source: '#{source}'" if source
       gem_string << ", git: '#{git}'" if git
+      gem_string << ", glob: '#{glob}'" if glob
       gem_string << ", branch: '#{branch}'" if branch
+      gem_string << ", ref: '#{ref}'" if ref
+      gem_string << ", tag: '#{tag}'" if tag
+      gem_string << ", submodules: true" if submodules
       gem_string << ", path: '#{path}'" if path
 
       ctx = TMPDir.new("/tmp/rbi/generate/#{name}")
@@ -202,11 +231,16 @@ module RBI
         version: String,
         source: T.nilable(String),
         git: T.nilable(String),
+        glob: T.nilable(String),
         branch: T.nilable(String),
+        ref: T.nilable(String),
+        tag: T.nilable(String),
+        submodules: T::Boolean,
         path: T.nilable(String)
       ).void
     end
-    def bump(name, version, source: nil, git: nil, branch: nil, path: nil)
+    def bump(name, version, source: nil, git: nil, glob: nil, branch: nil, ref: nil, tag: nil,
+      submodules: false, path: nil)
       if @client.pull_rbi_content(name, version)
         logger.error("RBI for `#{name}@#{version}` already in the central repo, run `rbi update` to pull it")
         exit(1)
@@ -222,7 +256,18 @@ module RBI
       old_content = @client.pull_rbi_content(name, old_version)
       File.write(old_path, old_content)
 
-      new_path = generate(name, version: version, source: source, git: git, branch: branch, path: path)
+      new_path = generate(
+        name,
+        version: version,
+        source: source,
+        git: git,
+        glob: glob,
+        branch: branch,
+        ref: ref,
+        tag: tag,
+        submodules: submodules,
+        path: path
+      )
 
       merged_content, conflicts = merge(new_path, old_path)
       File.write(new_path, merged_content)
