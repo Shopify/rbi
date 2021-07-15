@@ -32,7 +32,7 @@ module RBI
       context.init
     end
 
-    desc "generate foo 1.0.0", "Generates RBI for a given gem. To use Sorbet in your project, use `rbi update` instead"
+    desc "generate foo 1.0.0", "Generates RBI for a given gem.", hide: true
     option "source", type: :string, default: nil, desc: "Download gem from this source"
     option "git", type: :string, default: nil, desc: "Download gem from this git repo"
     option "branch", type: :string, default: nil, desc: "Install gem from this git branch"
@@ -46,7 +46,7 @@ module RBI
       context.generate(name, version: version, source: source, git: git, branch: branch, path: path)
     end
 
-    desc "merge", "Merge two RBI files together"
+    desc "merge", "Merge two RBI files together", hide: true
     # TODO: options: clean, keep, resolve, annotate (left/right)
     option "output", type: :string, aliases: :o, default: nil, desc: "Save output to a file"
     def merge(rbi1, rbi2)
@@ -74,12 +74,12 @@ module RBI
       context.update
     end
 
-    desc "push foo 1.0.0 sorbet/rbi/gems/foo@1.0.0.rbi", "Pushes rbi file to central repo and opens a pull request"
+    desc "push foo 1.0.0 foo@1.0.0.rbi", "Pushes rbi file to central repo and opens a pull request", hide: true
     def push(name, version, path)
       context.push(name, version, path)
     end
 
-    desc "bump foo 1.0.0", "Generates RBI for a given gem reusing the RBI from the previous version"
+    desc "bump foo 1.0.0", "Generates RBI for a given gem reusing the RBI from the previous version", hide: true
     option "source", type: :string, default: nil, desc: "Download gem from this source"
     option "git", type: :string, default: nil, desc: "Download gem from this git repo"
     option "branch", type: :string, default: nil, desc: "Install gem from this git branch"
