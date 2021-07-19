@@ -117,6 +117,45 @@ module RBI
       )
     end
 
+    desc "update-repo", "Update central repository", hide: true
+    def update_repo
+      logger = self.logger
+      client = self.client
+
+      logger.debug("Fetching index...")
+      index = client.index
+
+      silenced_logger = Logger.new(quiet: true)
+      context = Context.new(".", client: client, logger: silenced_logger)
+
+      index.each do |name, versions|
+        begin
+          logger.debug("Generating RBI for #{name}...")
+          path = context.generate(name)
+        rescue GenerateError => e
+          logger.warn("Can't generate RBI for ##{name} (#{e.message.gsub("`", "")})")
+          next
+        end
+        version = path.sub(/^.*@/, "").sub(/\.rbi$/, "")
+
+        if versions.key?(version)
+          logger.debug("Already known #{name}@#{version}")
+        else
+          logger.debug("New version found for #{name}@#{version}")
+          logger.debug("Opening PR on central repo for #{name}@#{version}")
+          begin
+            client.push_rbi_content(name, version, path)
+          rescue => e
+            logger.warn("Can't open PR on central repo for #{name}@#{version} (#{e.message})")
+            next
+          end
+          logger.success("Opened PR on central repo for #{name}@#{version}")
+        end
+
+        FileUtils.rm(path)
+      end
+    end
+
     def self.exit_on_failure?
       true
     end
