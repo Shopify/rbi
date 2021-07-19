@@ -54,6 +54,9 @@ module RBI
         submodules: options["submodules"],
         path: options["path"]
       )
+    rescue GenerateError => e
+      logger.error(e.message)
+      exit(1)
     end
 
     desc "merge", "Merge two RBI files together", hide: true

@@ -2,6 +2,8 @@
 # frozen_string_literal: true
 
 module RBI
+  class GenerateError < Error; end
+
   # The context (ie repo or project) where `rbi` is running
   class Context
     extend T::Sig
@@ -179,24 +181,21 @@ module RBI
         ctx.run("bundle config set --local path 'vendor/bundle'")
         _, err, status = ctx.run("bundle install")
         unless status
-          logger.error(<<~ERR)
+          raise GenerateError, <<~ERR
             If the gem you are specifying is not hosted on RubyGems please pass the correct flag to `rbi generate`.
             You can find all available flags by running `bundle exec rbi help generate`.
             \n#{err}
           ERR
-          exit(1)
         end
         _, err, status = ctx.bundle_exec("tapioca generate")
         unless status
-          logger.error("Unable to generate RBI: #{err}")
-          exit(1)
+          raise GenerateError, "Unable to generate RBI: #{err}"
         end
       end
       gem_rbi_path = "#{ctx.path}/sorbet/rbi/gems/#{name}@#{version}*.rbi"
       files = Dir[gem_rbi_path]
       if files.empty?
-        logger.error("Unable to generate RBI: no file matching #{gem_rbi_path}")
-        exit(1)
+        raise GenerateError, "Unable to generate RBI: no file matching #{gem_rbi_path}"
       end
 
       file_path = T.must(files.first)
