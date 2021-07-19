@@ -14,7 +14,7 @@ module RBI
     sig { abstract.params(name: String, version: String, path: String).void }
     def push_rbi_content(name, version, path); end
 
-    sig { abstract.params(name: String).returns(T.nilable(String)) }
-    def last_version_for_gem(name); end
+    sig { abstract.returns(Index) }
+    def index; end
   end
 end
