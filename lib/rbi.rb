@@ -19,6 +19,7 @@ module RBI
 end
 
 require_relative "rbi/logger"
+require_relative "rbi/index"
 require_relative "rbi/client"
 require_relative "rbi/github_client"
 require_relative "rbi/mock_client"

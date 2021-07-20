@@ -246,7 +246,7 @@ module RBI
         exit(1)
       end
 
-      old_version = @client.last_version_for_gem(name)
+      old_version = @client.index.last_version_for_gem(name)
       unless old_version
         logger.error("No RBI for `#{name}` in the central repo, run `rbi generate #{name}` to create it")
         exit(1)

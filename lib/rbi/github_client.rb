@@ -33,12 +33,12 @@ module RBI
       @central_repo_slug = T.let(central_repo_slug || CENTRAL_REPO_SLUG, String)
       @github_client = T.let(nil, T.nilable(Octokit::Client))
       @index_string = T.let(nil, T.nilable(String))
-      @index = T.let(nil, T.nilable(T::Hash[String, T::Hash[String, String]]))
+      @index = T.let(nil, T.nilable(Index))
     end
 
     sig { override.params(name: String, version: String).returns(T.nilable(String)) }
     def pull_rbi_content(name, version)
-      path = rbi_path(name, version)
+      path = index.rbi_path(name, version)
       return nil unless path
       github_file_content(path)
     end
@@ -50,11 +50,9 @@ module RBI
       open_pull_request(name, version)
     end
 
-    sig { override.params(name: String).returns(T.nilable(String)) }
-    def last_version_for_gem(name)
-      versions = index[name]
-      return nil unless versions
-      versions.keys.sort.last
+    sig { override.returns(Index) }
+    def index
+      @index ||= Index.from_json(index_string)
     end
 
     private
@@ -67,16 +65,6 @@ module RBI
     sig { returns(String) }
     def netrc_file
       @netrc_file || ENV["RBI_NETRC"] || ENV["OCTOKIT_NETRC"] || ENV["NETRC"] || File.join(ENV["HOME"], ".netrc")
-    end
-
-    sig { params(name: String, version: String).returns(T.nilable(String)) }
-    def rbi_path(name, version)
-      index.fetch(name, nil)&.fetch(version, nil)
-    end
-
-    sig { returns(T::Hash[String, T::Hash[String, String]]) }
-    def index
-      @index ||= JSON.parse(index_string)
     end
 
     sig { returns(String) }
@@ -109,10 +97,8 @@ module RBI
 
     sig { params(name: String, version: String).void }
     def commit_index_json(name, version)
-      version_hash = index[name] ||= {}
-      version_hash[version] = "gems/#{name}@#{version}.rbi"
+      index.index(name, version, "gems/#{name}@#{version}.rbi")
       index_sha = github_client.contents(CENTRAL_REPO_SLUG, path: "index.json").sha
-      index_json = JSON.pretty_generate(index) << "\n"
 
       branch = "rbi-#{name}-#{version}"
       github_client.update_contents(
@@ -120,7 +106,7 @@ module RBI
         "index.json",
         "Add index entry for #{name}@#{version}",
         index_sha,
-        index_json,
+        index.to_pretty_json,
         branch: branch,
       )
     rescue Octokit::NotFound => e

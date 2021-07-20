@@ -12,10 +12,14 @@ module RBI
       MockClient.new(content)
     end
 
+    sig { override.returns(Index) }
+    attr_reader :index
+
     sig { params(content: T::Hash[String, T.nilable(String)]).void }
     def initialize(content)
       super()
       @content = content
+      @index = T.let(build_index(content), Index)
       @logger = T.let(Logger.new(color: false), Logger)
     end
 
@@ -27,9 +31,16 @@ module RBI
     sig { override.params(name: String, version: String, path: String).void }
     def push_rbi_content(name, version, path); end
 
-    sig { override.params(name: String).returns(T.nilable(String)) }
-    def last_version_for_gem(name)
-      @content.keys.select { |key| key.start_with?(name) }.sort.last&.split("@")&.last
+    private
+
+    sig { params(content: T::Hash[String, T.nilable(String)]).returns(Index) }
+    def build_index(content)
+      index = Index.new
+      content.each do |key, _|
+        name, version = key.split("@")
+        index.index(T.must(name), T.must(version), "path/to/#{name}@#{version}.rbi")
+      end
+      index
     end
   end
 end
