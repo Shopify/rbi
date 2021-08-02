@@ -16,8 +16,6 @@ Gem::Specification.new do |spec|
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
-  spec.bindir        = "exe"
-  spec.executables   = %w(rbi)
   spec.require_paths = ["lib"]
 
   spec.files         = Dir.glob("lib/**/*.rb") + %w(
@@ -26,6 +24,9 @@ Gem::Specification.new do |spec|
     Rakefile
   )
 
+  spec.add_dependency("ast")
+  spec.add_dependency("parser")
   spec.add_dependency("rake", "~> 13.0")
   spec.add_dependency("sorbet-runtime")
+  spec.add_dependency("unparser")
 end

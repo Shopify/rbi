@@ -16,9 +16,12 @@ GIT
 PATH
   remote: .
   specs:
-    rbi (0.0.1)
+    rbi (0.0.2)
+      ast
+      parser
       rake (~> 13.0)
       sorbet-runtime
+      unparser
 
 GEM
   remote: https://rubygems.org/
