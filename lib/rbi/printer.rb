@@ -494,7 +494,11 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
+      previous_node = v.previous_node
+      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
+
       v.printl("# #{loc}") if loc && v.print_locs
+      v.visit_all(comments)
       v.printl(visibility.to_s)
     end
   end
@@ -630,13 +634,19 @@ module RBI
     sig { override.params(v: Printer).void }
     def accept_printer(v)
       v.in_visibility_group = true
-      v.printn unless v.previous_node.nil?
-      unless visibility.public?
+      if visibility.public?
+        v.printn unless v.previous_node.nil?
+      else
         v.visit(visibility)
         v.printn
       end
       v.visit_all(nodes)
       v.in_visibility_group = false
+    end
+
+    sig { override.returns(T::Boolean) }
+    def oneline?
+      false
     end
   end
 end

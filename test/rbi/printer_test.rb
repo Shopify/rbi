@@ -378,6 +378,10 @@ module RBI
       rbi << RBI::Include.new("A", comments: comments_single)
       rbi << RBI::Extend.new("A", comments: comments_multi)
 
+      rbi << RBI::Public.new(comments: comments_single)
+      rbi << RBI::Protected.new(comments: comments_single)
+      rbi << RBI::Private.new(comments: comments_single)
+
       struct = RBI::TStruct.new("Foo", comments: comments_single)
       struct << RBI::TStructConst.new("a", "A", comments: comments_multi)
       struct << RBI::TStructProp.new("c", "C", comments: comments_single)
@@ -413,6 +417,15 @@ module RBI
         # This is a
         # Multiline Comment
         extend A
+
+        # This is a single line comment
+        public
+
+        # This is a single line comment
+        protected
+
+        # This is a single line comment
+        private
 
         # This is a single line comment
         class Foo < ::T::Struct

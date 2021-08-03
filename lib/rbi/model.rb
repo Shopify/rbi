@@ -585,7 +585,7 @@ module RBI
 
   # Visibility
 
-  class Visibility < Node
+  class Visibility < NodeWithComments
     extend T::Sig
     extend T::Helpers
 
@@ -594,9 +594,9 @@ module RBI
     sig { returns(Symbol) }
     attr_reader :visibility
 
-    sig { params(visibility: Symbol, loc: T.nilable(Loc)).void }
-    def initialize(visibility, loc: nil)
-      super(loc: loc)
+    sig { params(visibility: Symbol, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
+    def initialize(visibility, loc: nil, comments: [])
+      super(loc: loc, comments: comments)
       @visibility = visibility
     end
 
@@ -624,27 +624,27 @@ module RBI
   class Public < Visibility
     extend T::Sig
 
-    sig { params(loc: T.nilable(Loc)).void }
-    def initialize(loc: nil)
-      super(:public, loc: loc)
+    sig { params(loc: T.nilable(Loc), comments: T::Array[Comment]).void }
+    def initialize(loc: nil, comments: [])
+      super(:public, loc: loc, comments: comments)
     end
   end
 
   class Protected < Visibility
     extend T::Sig
 
-    sig { params(loc: T.nilable(Loc)).void }
-    def initialize(loc: nil)
-      super(:protected, loc: loc)
+    sig { params(loc: T.nilable(Loc), comments: T::Array[Comment]).void }
+    def initialize(loc: nil, comments: [])
+      super(:protected, loc: loc, comments: comments)
     end
   end
 
   class Private < Visibility
     extend T::Sig
 
-    sig { params(loc: T.nilable(Loc)).void }
-    def initialize(loc: nil)
-      super(:private, loc: loc)
+    sig { params(loc: T.nilable(Loc), comments: T::Array[Comment]).void }
+    def initialize(loc: nil, comments: [])
+      super(:private, loc: loc, comments: comments)
     end
   end
 
