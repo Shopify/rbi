@@ -12,18 +12,18 @@ module RBI
 
         case node
         when Tree
-          public_group = VisibilityGroup.new(Visibility::Public)
-          protected_group = VisibilityGroup.new(Visibility::Protected)
-          private_group = VisibilityGroup.new(Visibility::Private)
+          public_group = VisibilityGroup.new(Public.new)
+          protected_group = VisibilityGroup.new(Protected.new)
+          private_group = VisibilityGroup.new(Private.new)
 
           node.nodes.dup.each do |child|
             visit(child)
             next unless child.is_a?(Method)
             child.detach
             case child.visibility
-            when Visibility::Protected
+            when Protected
               protected_group << child
-            when Visibility::Private
+            when Private
               private_group << child
             else
               public_group << child

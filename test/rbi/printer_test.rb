@@ -115,9 +115,9 @@ module RBI
     def test_print_attributes
       rbi = RBI::Tree.new
       rbi << RBI::AttrReader.new(:m1)
-      rbi << RBI::AttrWriter.new(:m2, :m3, visibility: Visibility::Public)
-      rbi << RBI::AttrAccessor.new(:m4, visibility: Visibility::Private)
-      rbi << RBI::AttrReader.new(:m5, visibility: Visibility::Protected)
+      rbi << RBI::AttrWriter.new(:m2, :m3, visibility: Public.new)
+      rbi << RBI::AttrAccessor.new(:m4, visibility: Private.new)
+      rbi << RBI::AttrReader.new(:m5, visibility: Protected.new)
 
       assert_equal(<<~RBI, rbi.string)
         attr_reader :m1
@@ -130,11 +130,11 @@ module RBI
     def test_print_methods
       rbi = RBI::Tree.new
       rbi << RBI::Method.new("m1")
-      rbi << RBI::Method.new("m2", visibility: Visibility::Public)
-      rbi << RBI::Method.new("m3", visibility: Visibility::Private)
-      rbi << RBI::Method.new("m4", visibility: Visibility::Protected)
+      rbi << RBI::Method.new("m2", visibility: Public.new)
+      rbi << RBI::Method.new("m3", visibility: Private.new)
+      rbi << RBI::Method.new("m4", visibility: Protected.new)
       rbi << RBI::Method.new("m5", is_singleton: true)
-      rbi << RBI::Method.new("m6", is_singleton: true, visibility: Visibility::Private) # TODO: avoid this?
+      rbi << RBI::Method.new("m6", is_singleton: true, visibility: Private.new) # TODO: avoid this?
 
       assert_equal(<<~RBI, rbi.string)
         def m1; end
@@ -241,11 +241,11 @@ module RBI
 
     def test_print_visibility_labels
       tree = RBI::Tree.new
-      tree << RBI::Visibility::Public
+      tree << RBI::Public.new
       tree << RBI::Method.new("m1")
-      tree << RBI::Visibility::Protected
+      tree << RBI::Protected.new
       tree << RBI::Method.new("m2")
-      tree << RBI::Visibility::Private
+      tree << RBI::Private.new
       tree << RBI::Method.new("m3")
 
       assert_equal(<<~RBI, tree.string)

@@ -278,7 +278,7 @@ module RBI
       sigs.each { |sig| v.visit(sig) }
       v.printl("# #{loc}") if loc && v.print_locs
       v.printt
-      unless v.in_visibility_group || visibility == Visibility::Public
+      unless v.in_visibility_group || visibility.public?
         v.print(visibility.visibility.to_s)
         v.print(" ")
       end
@@ -315,7 +315,7 @@ module RBI
       v.visit_all(sigs)
       v.printl("# #{loc}") if loc && v.print_locs
       v.printt
-      unless v.in_visibility_group || visibility == Visibility::Public
+      unless v.in_visibility_group || visibility.public?
         v.print(visibility.visibility.to_s)
         v.print(" ")
       end
@@ -631,8 +631,7 @@ module RBI
     def accept_printer(v)
       v.in_visibility_group = true
       v.printn unless v.previous_node.nil?
-      case visibility
-      when Visibility::Protected, Visibility::Private
+      unless visibility.public?
         v.visit(visibility)
         v.printn
       end
