@@ -275,6 +275,7 @@ module RBI
     extend T::Helpers
 
     abstract!
+    sealed!
 
     sig { returns(T::Array[Symbol]) }
     attr_accessor :names
