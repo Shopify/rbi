@@ -10,6 +10,7 @@ module RBI
       rbi << RBI::Const.new("C", "42")
       rbi << RBI::Module.new("S1")
       rbi << RBI::Class.new("S2")
+      rbi << RBI::Struct.new("S3")
       rbi << RBI::Method.new("m1")
       rbi << RBI::Method.new("m2", is_singleton: true)
       rbi << RBI::Extend.new("E")
@@ -41,6 +42,7 @@ module RBI
         C = 42
         module S1; end
         class S2; end
+        S3 = ::Struct.new
         class TE < ::T::Enum; end
         class TS < ::T::Struct; end
       RBI
@@ -54,12 +56,12 @@ module RBI
       scope1 << RBI::Method.new("m1")
       scope1 << RBI::Method.new("m2")
 
-      scope2 = RBI::Class.new("Scope2")
+      scope2 = RBI::Module.new("Scope2")
       scope2 << RBI::Const.new("C1", "42")
       scope2 << RBI::Const.new("C2", "42")
       scope2 << RBI::Module.new("M1")
 
-      scope3 = RBI::Class.new("Scope3")
+      scope3 = RBI::Struct.new("Scope3")
       scope3 << RBI::Extend.new("E1")
       scope3 << RBI::Extend.new("E2")
       scope3 << RBI::MixesInClassMethods.new("MICM1")
@@ -78,12 +80,12 @@ module RBI
           def m1; end
           def m2; end
 
-          class Scope2
+          module Scope2
             C1 = 42
             C2 = 42
             module M1; end
 
-            class Scope3
+            Scope3 = ::Struct.new do
               extend E1
               extend E2
 
@@ -99,6 +101,7 @@ module RBI
       rbi << RBI::Const.new("C", "42")
       rbi << RBI::Module.new("S1")
       rbi << RBI::Class.new("S2")
+      rbi << RBI::Struct.new("S3")
       rbi << RBI::Method.new("m1")
       rbi << RBI::Method.new("m2", is_singleton: true)
       rbi << RBI::Extend.new("E")
@@ -130,6 +133,7 @@ module RBI
         C = 42
         module S1; end
         class S2; end
+        S3 = ::Struct.new
         class TE < ::T::Enum; end
         class TS < ::T::Struct; end
       RBI
@@ -182,6 +186,7 @@ module RBI
       scope << RBI::Const.new("C", "42")
       scope << RBI::Module.new("S1")
       scope << RBI::Class.new("S2")
+      scope << RBI::Struct.new("S3")
       scope << RBI::Method.new("m1")
       scope << RBI::Method.new("m2", is_singleton: true)
       scope << RBI::Include.new("I")
@@ -220,6 +225,7 @@ module RBI
           C = 42
           module S1; end
           class S2; end
+          S3 = ::Struct.new
           class TE < ::T::Enum; end
           class TS < ::T::Struct; end
         end
@@ -240,7 +246,7 @@ module RBI
       rbi << RBI::TEnum.new("TE2")
       rbi << RBI::TStruct.new("TS2")
       rbi << RBI::Const.new("C1", "42")
-      rbi << RBI::Module.new("S1")
+      rbi << RBI::Class.new("S1")
       rbi << RBI::Method.new("m1")
       rbi << RBI::Include.new("I1")
       rbi << RBI::Extend.new("E1")
@@ -250,6 +256,7 @@ module RBI
       rbi << RBI::TStructConst.new("SC1", "Type")
       rbi << RBI::TEnum.new("TE1")
       rbi << RBI::TStruct.new("TS1")
+      rbi << RBI::Struct.new("S3")
       rbi << RBI::TypeMember.new("TM2", "type_template")
       rbi << RBI::TypeMember.new("TM1", "type_member")
 
@@ -281,8 +288,9 @@ module RBI
 
         C1 = 42
         C2 = 42
-        module S1; end
+        class S1; end
         module S2; end
+        S3 = ::Struct.new
         class TE1 < ::T::Enum; end
         class TE2 < ::T::Enum; end
         class TS1 < ::T::Struct; end
@@ -306,7 +314,7 @@ module RBI
       sscope << RBI::TEnum.new("TE2")
       sscope << RBI::TStruct.new("TS2")
       sscope << RBI::Const.new("C1", "42")
-      sscope << RBI::Module.new("S1")
+      sscope << RBI::Class.new("S1")
       sscope << RBI::Method.new("m1")
       sscope << RBI::Include.new("I1")
       sscope << RBI::Extend.new("E1")
@@ -316,6 +324,7 @@ module RBI
       sscope << RBI::TStructConst.new("SC1", "Type")
       sscope << RBI::TEnum.new("TE1")
       sscope << RBI::TStruct.new("TS1")
+      sscope << RBI::Struct.new("S3")
       sscope << RBI::TypeMember.new("TM2", "type_template")
       sscope << RBI::TypeMember.new("TM1", "type_member")
 
@@ -333,7 +342,7 @@ module RBI
       scope << RBI::TEnum.new("TE2")
       scope << RBI::TStruct.new("TS2")
       scope << RBI::Const.new("C1", "42")
-      scope << RBI::Module.new("S1")
+      scope << RBI::Class.new("S1")
       scope << RBI::Method.new("m1")
       scope << RBI::Include.new("I1")
       scope << RBI::Extend.new("E1")
@@ -343,6 +352,7 @@ module RBI
       scope << RBI::TStructConst.new("SC1", "Type")
       scope << RBI::TEnum.new("TE1")
       scope << RBI::TStruct.new("TS1")
+      scope << RBI::Struct.new("S3")
       scope << RBI::TypeMember.new("TM2", "type_template")
       scope << RBI::TypeMember.new("TM1", "type_member")
       rbi << scope
@@ -360,7 +370,7 @@ module RBI
       scope << RBI::TEnum.new("TE2")
       scope << RBI::TStruct.new("TS2")
       scope << RBI::Const.new("C1", "42")
-      scope << RBI::Module.new("S1")
+      scope << RBI::Class.new("S1")
       scope << RBI::Method.new("m1")
       scope << RBI::Include.new("I1")
       scope << RBI::Extend.new("E1")
@@ -370,6 +380,7 @@ module RBI
       scope << RBI::TStructConst.new("SC1", "Type")
       scope << RBI::TEnum.new("TE1")
       scope << RBI::TStruct.new("TS1")
+      scope << RBI::Struct.new("S3")
       scope << RBI::TypeMember.new("TM2", "type_template")
       scope << RBI::TypeMember.new("TM1", "type_member")
       rbi << scope
@@ -403,8 +414,9 @@ module RBI
 
           C1 = 42
           C2 = 42
-          module S1; end
+          class S1; end
           module S2; end
+          S3 = ::Struct.new
           class TE1 < ::T::Enum; end
           class TE2 < ::T::Enum; end
           class TS1 < ::T::Struct; end
@@ -436,8 +448,9 @@ module RBI
 
           C1 = 42
           C2 = 42
-          module S1; end
+          class S1; end
           module S2; end
+          S3 = ::Struct.new
 
           class Scope2.1
             include I2
@@ -464,8 +477,9 @@ module RBI
 
             C1 = 42
             C2 = 42
-            module S1; end
+            class S1; end
             module S2; end
+            S3 = ::Struct.new
             class TE1 < ::T::Enum; end
             class TE2 < ::T::Enum; end
             class TS1 < ::T::Struct; end
