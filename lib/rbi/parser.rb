@@ -114,7 +114,7 @@ module RBI
       when :casgn
         current_scope << parse_const_assign(node)
       when :def, :defs
-        visit_def(node)
+        current_scope << parse_def(node)
       when :send
         visit_send(node)
       when :block
@@ -166,9 +166,9 @@ module RBI
       Const.new(name, value, loc: loc, comments: comments)
     end
 
-    sig { params(node: AST::Node).void }
-    def visit_def(node)
-      current_scope << case node.type
+    sig { params(node: AST::Node).returns(Method) }
+    def parse_def(node)
+      case node.type
       when :def
         Method.new(
           node.children[0].to_s,
