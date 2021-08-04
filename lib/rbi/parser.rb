@@ -119,7 +119,12 @@ module RBI
         node = parse_send(node)
         current_scope << node if node
       when :block
-        visit_block(node)
+        node = parse_block(node)
+        if node.is_a?(Sig)
+          @last_sigs << node
+        elsif node
+          current_scope << node
+        end
       else
         visit_all(node.children)
       end
@@ -263,15 +268,15 @@ module RBI
       end
     end
 
-    sig { params(node: AST::Node).void }
-    def visit_block(node)
+    sig { params(node: AST::Node).returns(T.nilable(RBI::Node)) }
+    def parse_block(node)
       name = node.children[0].children[1]
 
       case name
       when :sig
-        @last_sigs << visit_sig(node)
+        parse_sig(node)
       when :enums
-        current_scope << visit_enum(node)
+        parse_enum(node)
       else
         raise "Unsupported node #{node.type} with name #{name}"
       end
@@ -294,14 +299,14 @@ module RBI
     end
 
     sig { params(node: AST::Node).returns(Sig) }
-    def visit_sig(node)
+    def parse_sig(node)
       sig = SigBuilder.build(node)
       sig.loc = node_loc(node)
       sig
     end
 
     sig { params(node: AST::Node).returns(TEnumBlock) }
-    def visit_enum(node)
+    def parse_enum(node)
       enum = TEnumBlock.new
       node.children[2].children.each do |child|
         enum << parse_name(child)
