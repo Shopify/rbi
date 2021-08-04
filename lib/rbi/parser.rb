@@ -162,14 +162,18 @@ module RBI
       end
     end
 
-    sig { params(node: AST::Node).returns(Const) }
+    sig { params(node: AST::Node).returns(RBI::Node) }
     def parse_const_assign(node)
-      name = parse_name(node)
-      value = parse_expr(node.children[2])
-      loc = node_loc(node)
-      comments = node_comments(node)
-
-      Const.new(name, value, loc: loc, comments: comments)
+      node_value = node.children[2]
+      if struct_definition?(node_value)
+        parse_struct(node)
+      else
+        name = parse_name(node)
+        value = parse_expr(node_value)
+        loc = node_loc(node)
+        comments = node_comments(node)
+        Const.new(name, value, loc: loc, comments: comments)
+      end
     end
 
     sig { params(node: AST::Node).returns(Method) }
@@ -258,10 +262,10 @@ module RBI
       when :public, :protected, :private
         Visibility.new(method_name, loc: loc)
       when :prop
-        name, type, default_value = parse_struct_prop(node)
+        name, type, default_value = parse_tstruct_prop(node)
         TStructProp.new(name, type, default: default_value, loc: loc, comments: comments)
       when :const
-        name, type, default_value = parse_struct_prop(node)
+        name, type, default_value = parse_tstruct_prop(node)
         TStructConst.new(name, type, default: default_value, loc: loc, comments: comments)
       else
         raise "Unsupported node #{node.type} with name #{method_name}"
@@ -282,8 +286,53 @@ module RBI
       end
     end
 
+    sig { params(node: AST::Node).returns(T::Boolean) }
+    def struct_definition?(node)
+      (node.type == :send && node.children[0]&.type == :const && node.children[0].children[1] == :Struct) ||
+        (node.type == :block && struct_definition?(node.children[0]))
+    end
+
+    sig { params(node: AST::Node).returns(RBI::Struct) }
+    def parse_struct(node)
+      name = parse_name(node)
+      loc = node_loc(node)
+      comments = node_comments(node)
+
+      send = node.children[2]
+      body = []
+
+      if send.type == :block
+        if send.children[2].type == :begin
+          body = send.children[2].children
+        else
+          body << send.children[2]
+        end
+        send = send.children[0]
+      end
+
+      members = []
+      keyword_init = T.let(false, T::Boolean)
+      send.children[2..].each do |child|
+        if child.type == :sym
+          members << child.children[0]
+        elsif child.type == :kwargs
+          pair = child.children[0]
+          if pair.children[0].children[0] == :keyword_init
+            keyword_init = true if pair.children[1].type == :true
+          end
+        end
+      end
+
+      struct = Struct.new(name, members: members, keyword_init: keyword_init, loc: loc, comments: comments)
+      @scopes_stack << struct
+      visit_all(body)
+      @scopes_stack.pop
+
+      struct
+    end
+
     sig { params(node: AST::Node).returns([String, String, T.nilable(String)]) }
-    def parse_struct_prop(node)
+    def parse_tstruct_prop(node)
       name = node.children[2].children[0].to_s
       type = parse_expr(node.children[3])
       has_default = node.children[4]
