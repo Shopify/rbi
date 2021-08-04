@@ -116,7 +116,8 @@ module RBI
       when :def, :defs
         current_scope << parse_def(node)
       when :send
-        visit_send(node)
+        node = parse_send(node)
+        current_scope << node if node
       when :block
         visit_block(node)
       else
@@ -219,16 +220,16 @@ module RBI
       end
     end
 
-    sig { params(node: AST::Node).void }
-    def visit_send(node)
+    sig { params(node: AST::Node).returns(T.nilable(RBI::Node)) }
+    def parse_send(node)
       recv = node.children[0]
-      return if recv && recv != :self
+      return nil if recv && recv != :self
 
       method_name = node.children[1]
       loc = node_loc(node)
       comments = node_comments(node)
 
-      current_scope << case method_name
+      case method_name
       when :attr_reader
         symbols = node.children[2..-1].map { |child| child.children[0] }
         AttrReader.new(*symbols, sigs: current_sigs, loc: loc, comments: comments)
@@ -252,10 +253,10 @@ module RBI
       when :public, :protected, :private
         Visibility.new(method_name, loc: loc)
       when :prop
-        name, type, default_value = visit_struct_prop(node)
+        name, type, default_value = parse_struct_prop(node)
         TStructProp.new(name, type, default: default_value, loc: loc, comments: comments)
       when :const
-        name, type, default_value = visit_struct_prop(node)
+        name, type, default_value = parse_struct_prop(node)
         TStructConst.new(name, type, default: default_value, loc: loc, comments: comments)
       else
         raise "Unsupported node #{node.type} with name #{method_name}"
@@ -277,7 +278,7 @@ module RBI
     end
 
     sig { params(node: AST::Node).returns([String, String, T.nilable(String)]) }
-    def visit_struct_prop(node)
+    def parse_struct_prop(node)
       name = node.children[2].children[0].to_s
       type = parse_expr(node.children[3])
       has_default = node.children[4]
