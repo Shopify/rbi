@@ -70,7 +70,7 @@ module RBI
     private
 
     sig { params(node: AST::Node).returns(String) }
-    def visit_name(node)
+    def parse_name(node)
       T.must(ConstBuilder.visit(node))
     end
 
@@ -139,10 +139,10 @@ module RBI
 
       scope = case node.type
       when :module
-        name = visit_name(node.children[0])
+        name = parse_name(node.children[0])
         Module.new(name, loc: loc, comments: comments)
       when :class
-        name = visit_name(node.children[0])
+        name = parse_name(node.children[0])
         superclass_name = ConstBuilder.visit(node.children[1])
         Class.new(name, superclass_name: superclass_name, loc: loc, comments: comments)
       when :sclass
@@ -159,8 +159,8 @@ module RBI
 
     sig { params(node: AST::Node).void }
     def visit_const_assign(node)
-      name = visit_name(node)
       value = visit_expr(node.children[2])
+      name = parse_name(node)
       loc = node_loc(node)
       comments = node_comments(node)
 
@@ -240,15 +240,15 @@ module RBI
         symbols = node.children[2..-1].map { |child| child.children[0] }
         AttrAccessor.new(*symbols, sigs: current_sigs, loc: loc, comments: comments)
       when :include
-        names = node.children[2..-1].map { |child| visit_name(child) }
+        names = node.children[2..-1].map { |child| parse_name(child) }
         Include.new(*names, loc: loc, comments: comments)
       when :extend
-        names = node.children[2..-1].map { |child| visit_name(child) }
+        names = node.children[2..-1].map { |child| parse_name(child) }
         Extend.new(*names, loc: loc, comments: comments)
       when :abstract!, :sealed!, :interface!
         Helper.new(method_name.to_s.delete_suffix("!"), loc: loc, comments: comments)
       when :mixes_in_class_methods
-        names = node.children[2..-1].map { |child| visit_name(child) }
+        names = node.children[2..-1].map { |child| parse_name(child) }
         MixesInClassMethods.new(*names, loc: loc, comments: comments)
       when :public, :protected, :private
         Visibility.new(method_name, loc: loc)
@@ -304,7 +304,7 @@ module RBI
     def visit_enum(node)
       enum = TEnumBlock.new
       node.children[2].children.each do |child|
-        enum << visit_name(child)
+        enum << parse_name(child)
       end
       enum.loc = node_loc(node)
       enum
