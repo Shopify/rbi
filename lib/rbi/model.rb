@@ -92,7 +92,7 @@ module RBI
       params(
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(tree: Tree).void)
+        block: T.nilable(T.proc.params(node: Tree).void)
       ).void
     end
     def initialize(loc: nil, comments: [], &block)
@@ -129,7 +129,7 @@ module RBI
       params(
         strictness: T.nilable(String),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(mod: File).void)
+        block: T.nilable(T.proc.params(file: File).void)
       ).void
     end
     def initialize(strictness: nil, comments: [], &block)
@@ -172,7 +172,7 @@ module RBI
         name: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(mod: Module).void)
+        block: T.nilable(T.proc.params(node: Module).void)
       ).void
     end
     def initialize(name, loc: nil, comments: [], &block)
@@ -203,7 +203,7 @@ module RBI
         superclass_name: T.nilable(String),
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(klass: Class).void)
+        block: T.nilable(T.proc.params(node: Class).void)
       ).void
     end
     def initialize(name, superclass_name: nil, loc: nil, comments: [], &block)
@@ -227,7 +227,7 @@ module RBI
       params(
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(klass: SingletonClass).void)
+        block: T.nilable(T.proc.params(node: SingletonClass).void)
       ).void
     end
     def initialize(loc: nil, comments: [], &block)
@@ -249,11 +249,20 @@ module RBI
     sig { returns(String) }
     attr_reader :name, :value
 
-    sig { params(name: String, value: String, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
-    def initialize(name, value, loc: nil, comments: [])
+    sig do
+      params(
+        name: String,
+        value: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: Const).void)
+      ).void
+    end
+    def initialize(name, value, loc: nil, comments: [], &block)
       super(loc: loc, comments: comments)
       @name = name
       @value = value
+      block&.call(self)
     end
 
     sig { returns(String) }
@@ -288,14 +297,14 @@ module RBI
     sig do
       params(
         name: Symbol,
-        names: Symbol,
+        names: T::Array[Symbol],
         visibility: Visibility,
         sigs: T::Array[Sig],
         loc: T.nilable(Loc),
         comments: T::Array[Comment]
       ).void
     end
-    def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [])
+    def initialize(name, names, visibility: Public.new, sigs: [], loc: nil, comments: [])
       super(loc: loc, comments: comments)
       @names = T.let([name, *names], T::Array[Symbol])
       @visibility = visibility
@@ -308,6 +317,22 @@ module RBI
 
   class AttrAccessor < Attr
     extend T::Sig
+
+    sig do
+      params(
+        name: Symbol,
+        names: Symbol,
+        visibility: Visibility,
+        sigs: T::Array[Sig],
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: AttrAccessor).void)
+      ).void
+    end
+    def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
+      super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
+      block&.call(self)
+    end
 
     sig { override.returns(T::Array[String]) }
     def fully_qualified_names
@@ -325,6 +350,22 @@ module RBI
   class AttrReader < Attr
     extend T::Sig
 
+    sig do
+      params(
+        name: Symbol,
+        names: Symbol,
+        visibility: Visibility,
+        sigs: T::Array[Sig],
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: AttrReader).void)
+      ).void
+    end
+    def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
+      super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
+      block&.call(self)
+    end
+
     sig { override.returns(T::Array[String]) }
     def fully_qualified_names
       parent_name = parent_scope&.fully_qualified_name
@@ -340,6 +381,22 @@ module RBI
 
   class AttrWriter < Attr
     extend T::Sig
+
+    sig do
+      params(
+        name: Symbol,
+        names: Symbol,
+        visibility: Visibility,
+        sigs: T::Array[Sig],
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: AttrWriter).void)
+      ).void
+    end
+    def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
+      super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
+      block&.call(self)
+    end
 
     sig { override.returns(T::Array[String]) }
     def fully_qualified_names
@@ -383,7 +440,7 @@ module RBI
         sigs: T::Array[Sig],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(mod: Method).void)
+        block: T.nilable(T.proc.params(node: Method).void)
       ).void
     end
     def initialize(
@@ -434,7 +491,13 @@ module RBI
     sig { returns(String) }
     attr_reader :name
 
-    sig { params(name: String, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
+    sig do
+      params(
+        name: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+      ).void
+    end
     def initialize(name, loc: nil, comments: [])
       super(loc: loc, comments: comments)
       @name = name
@@ -449,6 +512,19 @@ module RBI
   class ReqParam < Param
     extend T::Sig
 
+    sig do
+      params(
+        name: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: ReqParam).void)
+      ).void
+    end
+    def initialize(name, loc: nil, comments: [], &block)
+      super(name, loc: loc, comments: comments)
+      block&.call(self)
+    end
+
     sig { params(other: T.nilable(Object)).returns(T::Boolean) }
     def ==(other)
       ReqParam === other && name == other.name
@@ -461,10 +537,19 @@ module RBI
     sig { returns(String) }
     attr_reader :value
 
-    sig { params(name: String, value: String, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
-    def initialize(name, value, loc: nil, comments: [])
+    sig do
+      params(
+        name: String,
+        value: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: OptParam).void)
+      ).void
+    end
+    def initialize(name, value, loc: nil, comments: [], &block)
       super(name, loc: loc, comments: comments)
       @value = value
+      block&.call(self)
     end
 
     sig { params(other: T.nilable(Object)).returns(T::Boolean) }
@@ -475,6 +560,19 @@ module RBI
 
   class RestParam < Param
     extend T::Sig
+
+    sig do
+      params(
+        name: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: RestParam).void)
+      ).void
+    end
+    def initialize(name, loc: nil, comments: [], &block)
+      super(name, loc: loc, comments: comments)
+      block&.call(self)
+    end
 
     sig { override.returns(String) }
     def to_s
@@ -489,6 +587,19 @@ module RBI
 
   class KwParam < Param
     extend T::Sig
+
+    sig do
+      params(
+        name: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: KwParam).void)
+      ).void
+    end
+    def initialize(name, loc: nil, comments: [], &block)
+      super(name, loc: loc, comments: comments)
+      block&.call(self)
+    end
 
     sig { override.returns(String) }
     def to_s
@@ -507,10 +618,19 @@ module RBI
     sig { returns(String) }
     attr_reader :value
 
-    sig { params(name: String, value: String, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
-    def initialize(name, value, loc: nil, comments: [])
+    sig do
+      params(
+        name: String,
+        value: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: KwOptParam).void)
+      ).void
+    end
+    def initialize(name, value, loc: nil, comments: [], &block)
       super(name, loc: loc, comments: comments)
       @value = value
+      block&.call(self)
     end
 
     sig { override.returns(String) }
@@ -527,6 +647,19 @@ module RBI
   class KwRestParam < Param
     extend T::Sig
 
+    sig do
+      params(
+        name: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: KwRestParam).void)
+      ).void
+    end
+    def initialize(name, loc: nil, comments: [], &block)
+      super(name, loc: loc, comments: comments)
+      block&.call(self)
+    end
+
     sig { override.returns(String) }
     def to_s
       "**#{name}:"
@@ -540,6 +673,19 @@ module RBI
 
   class BlockParam < Param
     extend T::Sig
+
+    sig do
+      params(
+        name: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: BlockParam).void)
+      ).void
+    end
+    def initialize(name, loc: nil, comments: [], &block)
+      super(name, loc: loc, comments: comments)
+      block&.call(self)
+    end
 
     sig { override.returns(String) }
     def to_s
@@ -563,8 +709,15 @@ module RBI
     sig { returns(T::Array[String]) }
     attr_accessor :names
 
-    sig { params(name: String, names: String, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
-    def initialize(name, *names, loc: nil, comments: [])
+    sig do
+      params(
+        name: String,
+        names: T::Array[String],
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment]
+      ).void
+    end
+    def initialize(name, names, loc: nil, comments: [])
       super(loc: loc, comments: comments)
       @names = T.let([name, *names], T::Array[String])
     end
@@ -572,6 +725,20 @@ module RBI
 
   class Include < Mixin
     extend T::Sig
+
+    sig do
+      params(
+        name: String,
+        names: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: Include).void)
+      ).void
+    end
+    def initialize(name, *names, loc: nil, comments: [], &block)
+      super(name, names, loc: loc, comments: comments)
+      block&.call(self)
+    end
 
     sig { override.returns(String) }
     def to_s
@@ -581,6 +748,20 @@ module RBI
 
   class Extend < Mixin
     extend T::Sig
+
+    sig do
+      params(
+        name: String,
+        names: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: Extend).void)
+      ).void
+    end
+    def initialize(name, *names, loc: nil, comments: [], &block)
+      super(name, names, loc: loc, comments: comments)
+      block&.call(self)
+    end
 
     sig { override.returns(String) }
     def to_s
@@ -629,27 +810,48 @@ module RBI
   class Public < Visibility
     extend T::Sig
 
-    sig { params(loc: T.nilable(Loc), comments: T::Array[Comment]).void }
-    def initialize(loc: nil, comments: [])
+    sig do
+      params(
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: Public).void)
+      ).void
+    end
+    def initialize(loc: nil, comments: [], &block)
       super(:public, loc: loc, comments: comments)
+      block&.call(self)
     end
   end
 
   class Protected < Visibility
     extend T::Sig
 
-    sig { params(loc: T.nilable(Loc), comments: T::Array[Comment]).void }
-    def initialize(loc: nil, comments: [])
+    sig do
+      params(
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: Protected).void)
+      ).void
+    end
+    def initialize(loc: nil, comments: [], &block)
       super(:protected, loc: loc, comments: comments)
+      block&.call(self)
     end
   end
 
   class Private < Visibility
     extend T::Sig
 
-    sig { params(loc: T.nilable(Loc), comments: T::Array[Comment]).void }
-    def initialize(loc: nil, comments: [])
+    sig do
+      params(
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: Private).void)
+      ).void
+    end
+    def initialize(loc: nil, comments: [], &block)
       super(:private, loc: loc, comments: comments)
+      block&.call(self)
     end
   end
 
@@ -682,7 +884,8 @@ module RBI
         is_overridable: T::Boolean,
         type_params: T::Array[String],
         checked: T.nilable(Symbol),
-        loc: T.nilable(Loc)
+        loc: T.nilable(Loc),
+        block: T.nilable(T.proc.params(node: Sig).void)
       ).void
     end
     def initialize(
@@ -693,7 +896,8 @@ module RBI
       is_overridable: false,
       type_params: [],
       checked: nil,
-      loc: nil
+      loc: nil,
+      &block
     )
       super(loc: loc)
       @params = params
@@ -703,6 +907,7 @@ module RBI
       @is_overridable = is_overridable
       @type_params = type_params
       @checked = checked
+      block&.call(self)
     end
 
     sig { params(param: SigParam).void }
@@ -725,11 +930,20 @@ module RBI
     sig { returns(String) }
     attr_reader :name, :type
 
-    sig { params(name: String, type: String, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
-    def initialize(name, type, loc: nil, comments: [])
+    sig do
+      params(
+        name: String,
+        type: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: SigParam).void)
+      ).void
+    end
+    def initialize(name, type, loc: nil, comments: [], &block)
       super(loc: loc, comments: comments)
       @name = name
       @type = type
+      block&.call(self)
     end
 
     sig { params(other: Object).returns(T::Boolean) }
@@ -792,6 +1006,21 @@ module RBI
   class TStructConst < TStructField
     extend T::Sig
 
+    sig do
+      params(
+        name: String,
+        type: String,
+        default: T.nilable(String),
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: TStructConst).void)
+      ).void
+    end
+    def initialize(name, type, default: nil, loc: nil, comments: [], &block)
+      super(name, type, default: default, loc: loc, comments: comments)
+      block&.call(self)
+    end
+
     sig { override.returns(T::Array[String]) }
     def fully_qualified_names
       parent_name = parent_scope&.fully_qualified_name
@@ -806,6 +1035,21 @@ module RBI
 
   class TStructProp < TStructField
     extend T::Sig
+
+    sig do
+      params(
+        name: String,
+        type: String,
+        default: T.nilable(String),
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: TStructProp).void)
+      ).void
+    end
+    def initialize(name, type, default: nil, loc: nil, comments: [], &block)
+      super(name, type, default: default, loc: loc, comments: comments)
+      block&.call(self)
+    end
 
     sig { override.returns(T::Array[String]) }
     def fully_qualified_names
@@ -844,10 +1088,18 @@ module RBI
     sig { returns(T::Array[String]) }
     attr_reader :names
 
-    sig { params(names: T::Array[String], loc: T.nilable(Loc), comments: T::Array[Comment]).void }
-    def initialize(names = [], loc: nil, comments: [])
+    sig do
+      params(
+        names: T::Array[String],
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: TEnumBlock).void)
+      ).void
+    end
+    def initialize(names = [], loc: nil, comments: [], &block)
       super(loc: loc, comments: comments)
       @names = names
+      block&.call(self)
     end
 
     sig { returns(T::Boolean) }
@@ -874,10 +1126,18 @@ module RBI
     sig { returns(String) }
     attr_reader :name
 
-    sig { params(name: String, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
-    def initialize(name, loc: nil, comments: [])
+    sig do
+      params(
+        name: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: Helper).void)
+      ).void
+    end
+    def initialize(name, loc: nil, comments: [], &block)
       super(loc: loc, comments: comments)
       @name = name
+      block&.call(self)
     end
 
     sig { override.returns(String) }
@@ -892,11 +1152,20 @@ module RBI
     sig { returns(String) }
     attr_reader :name, :value
 
-    sig { params(name: String, value: String, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
-    def initialize(name, value, loc: nil, comments: [])
+    sig do
+      params(
+        name: String,
+        value: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: TypeMember).void)
+      ).void
+    end
+    def initialize(name, value, loc: nil, comments: [], &block)
       super(loc: loc, comments: comments)
       @name = name
       @value = value
+      block&.call(self)
     end
 
     sig { returns(String) }
@@ -913,6 +1182,20 @@ module RBI
 
   class MixesInClassMethods < Mixin
     extend T::Sig
+
+    sig do
+      params(
+        name: String,
+        names: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: MixesInClassMethods).void)
+      ).void
+    end
+    def initialize(name, *names, loc: nil, comments: [], &block)
+      super(name, names, loc: loc, comments: comments)
+      block&.call(self)
+    end
 
     sig { override.returns(String) }
     def to_s

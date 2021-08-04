@@ -5,6 +5,177 @@ require "test_helper"
 
 module RBI
   class ModelTest < Minitest::Test
+    def test_model_block_builders
+      rbi = RBI::File.new do |file|
+        file << RBI::Tree.new do |tree|
+          tree << RBI::Module.new("Foo") do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::Class.new("Bar") do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::SingletonClass.new do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::Const.new("C", "42") do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::AttrAccessor.new(:a1) do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::AttrReader.new(:a2) do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::AttrWriter.new(:a3) do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::Method.new("foo") do |node|
+            node << RBI::ReqParam.new("p1") do |param|
+              param.comments << Comment.new("comment")
+            end
+            node << RBI::OptParam.new("p2", "42") do |param|
+              param.comments << Comment.new("comment")
+            end
+            node << RBI::RestParam.new("p3") do |param|
+              param.comments << Comment.new("comment")
+            end
+            node << RBI::KwParam.new("p4") do |param|
+              param.comments << Comment.new("comment")
+            end
+            node << RBI::KwOptParam.new("p5", "42") do |param|
+              param.comments << Comment.new("comment")
+            end
+            node << RBI::KwRestParam.new("p6") do |param|
+              param.comments << Comment.new("comment")
+            end
+            node << RBI::BlockParam.new("p7") do |param|
+              param.comments << Comment.new("comment")
+            end
+            node.sigs << RBI::Sig.new do |sig|
+              sig << RBI::SigParam.new("x", "T.untyped") do |param|
+                param.comments << Comment.new("comment")
+              end
+            end
+          end
+          tree << RBI::Include.new("FOO") do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::Extend.new("FOO") do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::Public.new do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::Protected.new do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::Private.new do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::TStruct.new("Struct") do |node|
+            node << RBI::TStructConst.new("foo", "Foo") do |field|
+              field.comments << Comment.new("comment")
+            end
+            node << RBI::TStructProp.new("foo", "Foo") do |field|
+              field.comments << Comment.new("comment")
+            end
+          end
+          tree << RBI::TEnum.new("Enum") do |node|
+            node << RBI::TEnumBlock.new(["A", "B"]) do |block|
+              block.comments << Comment.new("comment")
+            end
+          end
+          tree << RBI::Helper.new("foo") do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::TypeMember.new("foo", "type_member") do |node|
+            node.comments << Comment.new("comment")
+          end
+          tree << RBI::MixesInClassMethods.new("FOO") do |node|
+            node.comments << Comment.new("comment")
+          end
+        end
+      end
+
+      assert_equal(<<~RBI, rbi.string)
+        # comment
+        module Foo; end
+
+        # comment
+        class Bar; end
+
+        # comment
+        class << self; end
+
+        # comment
+        C = 42
+
+        # comment
+        attr_accessor :a1
+
+        # comment
+        attr_reader :a2
+
+        # comment
+        attr_writer :a3
+
+        sig do
+          params(
+            x: T.untyped # comment
+          ).void
+        end
+        def foo(
+          p1, # comment
+          p2 = 42, # comment
+          *p3, # comment
+          p4:, # comment
+          p5: 42, # comment
+          **p6, # comment
+          &p7 # comment
+        ); end
+
+        # comment
+        include FOO
+
+        # comment
+        extend FOO
+
+        # comment
+        public
+
+        # comment
+        protected
+
+        # comment
+        private
+
+        class Struct < ::T::Struct
+          # comment
+          const :foo, Foo
+
+          # comment
+          prop :foo, Foo
+        end
+
+        class Enum < ::T::Enum
+          # comment
+          enums do
+            A = new
+            B = new
+          end
+        end
+
+        # comment
+        foo!
+
+        # comment
+        foo = type_member
+
+        # comment
+        mixes_in_class_methods FOO
+      RBI
+    end
+
     def test_model_fully_qualified_names
       mod = RBI::Module.new("Foo")
       assert_equal("::Foo", mod.fully_qualified_name)
