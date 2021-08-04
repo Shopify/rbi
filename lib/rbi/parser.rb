@@ -106,7 +106,11 @@ module RBI
       return unless node.is_a?(AST::Node)
       case node.type
       when :module, :class, :sclass
-        visit_scope(node)
+        scope = parse_scope(node)
+        current_scope << scope
+        @scopes_stack << scope
+        visit_all(node.children)
+        @scopes_stack.pop
       when :casgn
         visit_const_assign(node)
       when :def, :defs
@@ -132,12 +136,12 @@ module RBI
 
     private
 
-    sig { params(node: AST::Node).void }
-    def visit_scope(node)
+    sig { params(node: AST::Node).returns(Scope) }
+    def parse_scope(node)
       loc = node_loc(node)
       comments = node_comments(node)
 
-      scope = case node.type
+      case node.type
       when :module
         name = parse_name(node.children[0])
         Module.new(name, loc: loc, comments: comments)
@@ -150,11 +154,6 @@ module RBI
       else
         raise "Unsupported node #{node.type}"
       end
-      current_scope << scope
-
-      @scopes_stack << scope
-      visit_all(node.children)
-      @scopes_stack.pop
     end
 
     sig { params(node: AST::Node).void }
