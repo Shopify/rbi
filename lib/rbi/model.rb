@@ -295,7 +295,7 @@ module RBI
         comments: T::Array[Comment]
       ).void
     end
-    def initialize(name, *names, visibility: Visibility::Public, sigs: [], loc: nil, comments: [])
+    def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [])
       super(loc: loc, comments: comments)
       @names = T.let([name, *names], T::Array[Symbol])
       @visibility = visibility
@@ -390,7 +390,7 @@ module RBI
       name,
       params: [],
       is_singleton: false,
-      visibility: Visibility::Public,
+      visibility: Public.new,
       sigs: [],
       loc: nil,
       comments: [],
@@ -590,7 +590,7 @@ module RBI
 
   # Visibility
 
-  class Visibility < Node
+  class Visibility < NodeWithComments
     extend T::Sig
     extend T::Helpers
 
@@ -599,9 +599,9 @@ module RBI
     sig { returns(Symbol) }
     attr_reader :visibility
 
-    sig { params(visibility: Symbol, loc: T.nilable(Loc)).void }
-    def initialize(visibility, loc: nil)
-      super(loc: loc)
+    sig { params(visibility: Symbol, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
+    def initialize(visibility, loc: nil, comments: [])
+      super(loc: loc, comments: comments)
       @visibility = visibility
     end
 
@@ -610,9 +610,47 @@ module RBI
       visibility == other.visibility
     end
 
-    Public = T.let(Visibility.new(:public), Visibility)
-    Protected = T.let(Visibility.new(:protected), Visibility)
-    Private = T.let(Visibility.new(:private), Visibility)
+    sig { returns(T::Boolean) }
+    def public?
+      visibility == :public
+    end
+
+    sig { returns(T::Boolean) }
+    def protected?
+      visibility == :protected
+    end
+
+    sig { returns(T::Boolean) }
+    def private?
+      visibility == :private
+    end
+  end
+
+  class Public < Visibility
+    extend T::Sig
+
+    sig { params(loc: T.nilable(Loc), comments: T::Array[Comment]).void }
+    def initialize(loc: nil, comments: [])
+      super(:public, loc: loc, comments: comments)
+    end
+  end
+
+  class Protected < Visibility
+    extend T::Sig
+
+    sig { params(loc: T.nilable(Loc), comments: T::Array[Comment]).void }
+    def initialize(loc: nil, comments: [])
+      super(:protected, loc: loc, comments: comments)
+    end
+  end
+
+  class Private < Visibility
+    extend T::Sig
+
+    sig { params(loc: T.nilable(Loc), comments: T::Array[Comment]).void }
+    def initialize(loc: nil, comments: [])
+      super(:private, loc: loc, comments: comments)
+    end
   end
 
   # Sorbet's sigs

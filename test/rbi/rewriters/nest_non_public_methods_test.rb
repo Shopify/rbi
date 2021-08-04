@@ -8,9 +8,9 @@ module RBI
     def test_nest_non_public_methods_in_tree
       rbi = RBI::Tree.new
       rbi << RBI::Method.new("m1")
-      rbi << RBI::Method.new("m2", visibility: RBI::Visibility::Protected)
-      rbi << RBI::Method.new("m3", visibility: RBI::Visibility::Private)
-      rbi << RBI::Method.new("m4", visibility: RBI::Visibility::Public)
+      rbi << RBI::Method.new("m2", visibility: RBI::Protected.new)
+      rbi << RBI::Method.new("m3", visibility: RBI::Private.new)
+      rbi << RBI::Method.new("m4", visibility: RBI::Public.new)
 
       rbi.nest_non_public_methods!
 
@@ -32,13 +32,13 @@ module RBI
       rbi = RBI::Tree.new
       scope1 = RBI::Module.new("S1")
       scope1 << RBI::Method.new("m1")
-      scope1 << RBI::Method.new("m2", visibility: RBI::Visibility::Protected)
+      scope1 << RBI::Method.new("m2", visibility: RBI::Protected.new)
       scope2 = RBI::Class.new("S2")
       scope2 << RBI::Method.new("m3")
-      scope2 << RBI::Method.new("m4", visibility: RBI::Visibility::Private)
+      scope2 << RBI::Method.new("m4", visibility: RBI::Private.new)
       scope3 = RBI::SingletonClass.new
       scope3 << RBI::Method.new("m5")
-      scope3 << RBI::Method.new("m6", visibility: RBI::Visibility::Protected)
+      scope3 << RBI::Method.new("m6", visibility: RBI::Protected.new)
       rbi << scope1
       scope1 << scope2
       scope2 << scope3
@@ -74,9 +74,9 @@ module RBI
 
     def test_nest_non_public_singleton_methods
       rbi = RBI::Tree.new
-      rbi << RBI::Method.new("m1", is_singleton: true, visibility: RBI::Visibility::Protected)
-      rbi << RBI::Method.new("m2", is_singleton: true, visibility: RBI::Visibility::Private)
-      rbi << RBI::Method.new("m3", is_singleton: true, visibility: RBI::Visibility::Public)
+      rbi << RBI::Method.new("m1", is_singleton: true, visibility: RBI::Protected.new)
+      rbi << RBI::Method.new("m2", is_singleton: true, visibility: RBI::Private.new)
+      rbi << RBI::Method.new("m3", is_singleton: true, visibility: RBI::Public.new)
 
       rbi.nest_non_public_methods!
 

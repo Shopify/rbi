@@ -278,7 +278,7 @@ module RBI
       sigs.each { |sig| v.visit(sig) }
       v.printl("# #{loc}") if loc && v.print_locs
       v.printt
-      unless v.in_visibility_group || visibility == Visibility::Public
+      unless v.in_visibility_group || visibility.public?
         v.print(visibility.visibility.to_s)
         v.print(" ")
       end
@@ -315,7 +315,7 @@ module RBI
       v.visit_all(sigs)
       v.printl("# #{loc}") if loc && v.print_locs
       v.printt
-      unless v.in_visibility_group || visibility == Visibility::Public
+      unless v.in_visibility_group || visibility.public?
         v.print(visibility.visibility.to_s)
         v.print(" ")
       end
@@ -499,7 +499,11 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
+      previous_node = v.previous_node
+      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
+
       v.printl("# #{loc}") if loc && v.print_locs
+      v.visit_all(comments)
       v.printl(visibility.to_s)
     end
   end
@@ -635,14 +639,19 @@ module RBI
     sig { override.params(v: Printer).void }
     def accept_printer(v)
       v.in_visibility_group = true
-      v.printn unless v.previous_node.nil?
-      case visibility
-      when Visibility::Protected, Visibility::Private
+      if visibility.public?
+        v.printn unless v.previous_node.nil?
+      else
         v.visit(visibility)
         v.printn
       end
       v.visit_all(nodes)
       v.in_visibility_group = false
+    end
+
+    sig { override.returns(T::Boolean) }
+    def oneline?
+      false
     end
   end
 end
