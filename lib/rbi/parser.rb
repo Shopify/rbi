@@ -112,7 +112,7 @@ module RBI
         visit_all(node.children)
         @scopes_stack.pop
       when :casgn
-        visit_const_assign(node)
+        current_scope << parse_const_assign(node)
       when :def, :defs
         visit_def(node)
       when :send
@@ -156,14 +156,14 @@ module RBI
       end
     end
 
-    sig { params(node: AST::Node).void }
-    def visit_const_assign(node)
+    sig { params(node: AST::Node).returns(Const) }
+    def parse_const_assign(node)
       name = parse_name(node)
       value = parse_expr(node.children[2])
       loc = node_loc(node)
       comments = node_comments(node)
 
-      current_scope << Const.new(name, value, loc: loc, comments: comments)
+      Const.new(name, value, loc: loc, comments: comments)
     end
 
     sig { params(node: AST::Node).void }
