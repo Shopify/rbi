@@ -601,6 +601,50 @@ module RBI
       RBI
     end
 
+    def test_print_sig_params_inline_comments
+      comments = [RBI::Comment.new("comment")]
+
+      sig = RBI::Sig.new
+      sig << RBI::SigParam.new("a", "Integer", comments: comments)
+      sig << RBI::SigParam.new("b", "String", comments: comments)
+      sig << RBI::SigParam.new("c", "T.untyped", comments: comments)
+
+      assert_equal(<<~RBI, sig.string)
+        sig do
+          params(
+            a: Integer, # comment
+            b: String, # comment
+            c: T.untyped # comment
+          ).void
+        end
+      RBI
+    end
+
+    def test_print_sig_params_multiline_comments
+      comments = [
+        RBI::Comment.new("comment 1"),
+        RBI::Comment.new("comment 2"),
+      ]
+
+      sig = RBI::Sig.new
+      sig << RBI::SigParam.new("a", "Integer", comments: comments)
+      sig << RBI::SigParam.new("b", "String", comments: comments)
+      sig << RBI::SigParam.new("c", "T.untyped", comments: comments)
+
+      assert_equal(<<~RBI, sig.string)
+        sig do
+          params(
+            a: Integer, # comment 1
+                        # comment 2
+            b: String, # comment 1
+                       # comment 2
+            c: T.untyped # comment 1
+                         # comment 2
+          ).void
+        end
+      RBI
+    end
+
     def test_print_new_lines_between_scopes
       rbi = RBI::Tree.new
       scope = RBI::Class.new("Bar")

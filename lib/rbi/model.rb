@@ -719,15 +719,15 @@ module RBI
     end
   end
 
-  class SigParam < Node
+  class SigParam < NodeWithComments
     extend T::Sig
 
     sig { returns(String) }
     attr_reader :name, :type
 
-    sig { params(name: String, type: String, loc: T.nilable(Loc)).void }
-    def initialize(name, type, loc: nil)
-      super(loc: loc)
+    sig { params(name: String, type: String, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
+    def initialize(name, type, loc: nil, comments: [])
+      super(loc: loc, comments: comments)
       @name = name
       @type = type
     end

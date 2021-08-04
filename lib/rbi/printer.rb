@@ -514,7 +514,12 @@ module RBI
     sig { override.params(v: Printer).void }
     def accept_printer(v)
       v.printl("# #{loc}") if loc && v.print_locs
-      v.printt("sig { ")
+      if oneline?
+        v.printt("sig { ")
+      else
+        v.printl("sig do")
+        v.indent
+      end
       v.print("abstract.") if is_abstract
       v.print("override.") if is_override
       v.print("overridable.") if is_overridable
@@ -527,12 +532,33 @@ module RBI
         v.print(").")
       end
       unless params.empty?
-        v.print("params(")
-        params.each_with_index do |param, index|
-          v.visit(param)
-          v.print(", ") if index < params.length - 1
+        if inline_params?
+          v.print("params(")
+          params.each_with_index do |param, index|
+            v.print(", ") if index > 0
+            v.visit(param)
+          end
+          v.print(").")
+        else
+          v.printl("params(")
+          v.indent
+          params.each_with_index do |param, pindex|
+            v.printt
+            v.visit(param)
+            v.print(",") if pindex < params.size - 1
+            param.comments.each_with_index do |comment, cindex|
+              if cindex == 0
+                v.print(" ")
+              else
+                param.print_comment_leading_space(v, last: pindex == params.size - 1)
+              end
+              v.print("# #{comment.text.strip}")
+            end
+            v.printn
+          end
+          v.dedent
+          v.printt(").")
         end
-        v.print(").")
       end
       if return_type && return_type != "void"
         v.print("returns(#{return_type})")
@@ -542,7 +568,23 @@ module RBI
       if checked
         v.print(".checked(:#{checked})")
       end
-      v.printn(" }")
+      if oneline?
+        v.printn(" }")
+      else
+        v.printn
+        v.dedent
+        v.printl("end")
+      end
+    end
+
+    sig { override.returns(T::Boolean) }
+    def oneline?
+      inline_params?
+    end
+
+    sig { returns(T::Boolean) }
+    def inline_params?
+      params.all? { |p| p.comments.empty? }
     end
   end
 
@@ -552,6 +594,14 @@ module RBI
     sig { override.params(v: Printer).void }
     def accept_printer(v)
       v.print("#{name}: #{type}")
+    end
+
+    sig { params(v: Printer, last: T::Boolean).void }
+    def print_comment_leading_space(v, last:)
+      v.printn
+      v.printt
+      v.print(" " * (name.size + type.size + 3))
+      v.print(" ") unless last
     end
   end
 
