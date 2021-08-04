@@ -247,7 +247,7 @@ module RBI
     extend T::Sig
 
     sig { returns(String) }
-    attr_reader :name, :value
+    attr_accessor :name, :value
 
     sig { params(name: String, value: String, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
     def initialize(name, value, loc: nil, comments: [])
