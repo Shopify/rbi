@@ -25,12 +25,32 @@ module RBI
           node.detach
           root << node
           node.name = fully_qualified_name
-          visit_all(node.nodes)
-        when Tree
-          visit_all(node.nodes)
         else
-          return if node.parent_tree
+          move_toplevel_node(node)
         end
+
+        if node.is_a?(Tree)
+          visit_all(node.nodes.dup)
+          clear_empty_tree(node)
+        end
+      end
+
+      sig { params(node: Node).void }
+      def move_toplevel_node(node)
+        return if node.parent_scope
+        return if node.instance_of?(Tree)
+        puts node.to_s
+        node.detach
+        @root << node
+      end
+
+      sig { params(tree: Tree).void }
+      def clear_empty_tree(tree)
+        return unless tree.instance_of?(Tree) ||
+          tree.instance_of?(Group) ||
+          tree.instance_of?(VisibilityGroup)
+        return unless tree.empty?
+        tree.detach
       end
     end
   end
