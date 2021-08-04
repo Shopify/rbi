@@ -497,6 +497,58 @@ module RBI
       RBI
     end
 
+    def test_merge_create_conflict_tree_for_structs
+      rbi1 = RBI::Parser.parse_string(<<~RBI)
+        A = Struct.new(:a) do
+          def m; end
+        end
+
+        B = Struct.new(:b)
+
+        C = Struct.new(:b, keyword_init: true) do
+          def m; end
+        end
+      RBI
+
+      rbi2 = RBI::Parser.parse_string(<<~RBI)
+        A = Struct.new(:a) do
+          def m1; end
+        end
+
+        B = Struct.new(:x) do
+          def m; end
+        end
+
+        C = Struct.new(:b) do
+          def m; end
+        end
+      RBI
+
+      res = rbi1.merge(rbi2)
+      assert_equal(<<~RBI, res.string)
+        A = ::Struct.new(:a) do
+          def m; end
+          def m1; end
+        end
+
+        <<<<<<< left
+        B = ::Struct.new(:b) do
+        =======
+        B = ::Struct.new(:x) do
+        >>>>>>> right
+          def m; end
+        end
+
+        <<<<<<< left
+        C = ::Struct.new(:b, keyword_init: true) do
+        =======
+        C = ::Struct.new(:b) do
+        >>>>>>> right
+          def m; end
+        end
+      RBI
+    end
+
     def test_merge_create_conflict_tree_for_constants
       rbi1 = RBI::Parser.parse_string(<<~RBI)
         class Foo
@@ -698,7 +750,7 @@ module RBI
       RBI
     end
 
-    def test_merge_create_conflict_tree_for_structs
+    def test_merge_create_conflict_tree_for_tstructs
       rbi1 = RBI::Parser.parse_string(<<~RBI)
         class A < T::Struct
           prop :a, Integer

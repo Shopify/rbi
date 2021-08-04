@@ -300,6 +300,8 @@ module RBI
         Module.new(name, loc: loc, comments: comments)
       when Class
         Class.new(name, superclass_name: superclass_name, loc: loc, comments: comments)
+      when Struct
+        Struct.new(name, members: members, keyword_init: keyword_init, loc: loc, comments: comments)
       when SingletonClass
         SingletonClass.new(loc: loc, comments: comments)
       else
@@ -323,6 +325,15 @@ module RBI
     sig { override.params(other: Node).returns(T::Boolean) }
     def compatible_with?(other)
       other.is_a?(Module)
+    end
+  end
+
+  class Struct
+    extend T::Sig
+
+    sig { override.params(other: Node).returns(T::Boolean) }
+    def compatible_with?(other)
+      other.is_a?(Struct) && members == other.members && keyword_init == other.keyword_init
     end
   end
 
