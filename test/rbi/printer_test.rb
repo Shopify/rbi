@@ -72,7 +72,7 @@ module RBI
                 klass3 << RBI::TEnum.new("Enum") do |klass4|
                   klass4 << RBI::SingletonClass.new do |klass5|
                     klass5 << RBI::Method.new("foo") do |method|
-                      method << RBI::Param.new("x")
+                      method << RBI::ReqParam.new("x")
                     end
                   end
                 end
@@ -148,7 +148,7 @@ module RBI
 
     def test_print_methods_with_parameters
       method = RBI::Method.new("foo")
-      method << RBI::Param.new("a")
+      method << RBI::ReqParam.new("a")
       method << RBI::OptParam.new("b", "42")
       method << RBI::RestParam.new("c")
       method << RBI::KwParam.new("d")
@@ -529,7 +529,7 @@ module RBI
       comments = [RBI::Comment.new("comment")]
 
       method = RBI::Method.new("foo", comments: comments)
-      method << RBI::Param.new("a", comments: comments)
+      method << RBI::ReqParam.new("a", comments: comments)
       method << RBI::OptParam.new("b", "42", comments: comments)
       method << RBI::RestParam.new("c", comments: comments)
       method << RBI::KwParam.new("d", comments: comments)
@@ -558,7 +558,7 @@ module RBI
       ]
 
       method = RBI::Method.new("foo", comments: comments)
-      method << RBI::Param.new("a", comments: comments)
+      method << RBI::ReqParam.new("a", comments: comments)
       method << RBI::OptParam.new("b", "42", comments: comments)
       method << RBI::RestParam.new("c", comments: comments)
       method << RBI::KwParam.new("d", comments: comments)

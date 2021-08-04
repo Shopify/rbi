@@ -200,7 +200,7 @@ module RBI
 
       case node.type
       when :arg
-        Param.new(name, loc: loc, comments: comments)
+        ReqParam.new(name, loc: loc, comments: comments)
       when :optarg
         value = visit_expr(node.children[1])
         OptParam.new(name, value, loc: loc, comments: comments)

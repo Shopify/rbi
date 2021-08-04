@@ -118,7 +118,7 @@ module RBI
       assert_equal("::Foo::m2()", m2.to_s)
 
       m3 = RBI::Method.new("m3")
-      m3 << RBI::Param.new("a")
+      m3 << RBI::ReqParam.new("a")
       m3 << RBI::OptParam.new("b", "42")
       m3 << RBI::RestParam.new("c")
       m3 << RBI::KwParam.new("d")

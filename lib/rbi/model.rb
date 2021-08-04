@@ -426,7 +426,10 @@ module RBI
   end
 
   class Param < NodeWithComments
+    extend T::Helpers
     extend T::Sig
+
+    abstract!
 
     sig { returns(String) }
     attr_reader :name
@@ -441,11 +444,14 @@ module RBI
     def to_s
       name
     end
+  end
+
+  class ReqParam < Param
+    extend T::Sig
 
     sig { params(other: T.nilable(Object)).returns(T::Boolean) }
     def ==(other)
-      return false unless other.instance_of?(Param)
-      name == T.cast(other, Param).name
+      ReqParam === other && name == other.name
     end
   end
 
@@ -463,25 +469,21 @@ module RBI
 
     sig { params(other: T.nilable(Object)).returns(T::Boolean) }
     def ==(other)
-      return false unless other.instance_of?(OptParam)
-      other = T.cast(other, OptParam)
-      return false unless name == other.name
-      value == other.value
+      OptParam === other && name == other.name && value == other.value
     end
   end
 
   class RestParam < Param
     extend T::Sig
 
-    sig { params(other: T.nilable(Object)).returns(T::Boolean) }
-    def ==(other)
-      return false unless other.instance_of?(RestParam)
-      name == T.cast(other, RestParam).name
-    end
-
     sig { override.returns(String) }
     def to_s
       "*#{name}"
+    end
+
+    sig { params(other: T.nilable(Object)).returns(T::Boolean) }
+    def ==(other)
+      RestParam === other && name == other.name
     end
   end
 
@@ -495,13 +497,21 @@ module RBI
 
     sig { params(other: T.nilable(Object)).returns(T::Boolean) }
     def ==(other)
-      return false unless other.instance_of?(KwParam)
-      name == T.cast(other, KwParam).name
+      KwParam === other && name == other.name
     end
   end
 
-  class KwOptParam < OptParam
+  class KwOptParam < Param
     extend T::Sig
+
+    sig { returns(String) }
+    attr_reader :value
+
+    sig { params(name: String, value: String, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
+    def initialize(name, value, loc: nil, comments: [])
+      super(name, loc: loc, comments: comments)
+      @value = value
+    end
 
     sig { override.returns(String) }
     def to_s
@@ -510,10 +520,7 @@ module RBI
 
     sig { params(other: T.nilable(Object)).returns(T::Boolean) }
     def ==(other)
-      return false unless other.instance_of?(KwOptParam)
-      other = T.cast(other, KwOptParam)
-      return false unless name == other.name
-      value == other.value
+      KwOptParam === other && name == other.name && value == other.value
     end
   end
 
@@ -527,8 +534,7 @@ module RBI
 
     sig { params(other: T.nilable(Object)).returns(T::Boolean) }
     def ==(other)
-      return false unless other.instance_of?(KwRestParam)
-      name == T.cast(other, KwRestParam).name
+      KwRestParam === other && name == other.name
     end
   end
 
@@ -542,8 +548,7 @@ module RBI
 
     sig { params(other: T.nilable(Object)).returns(T::Boolean) }
     def ==(other)
-      return false unless other.instance_of?(BlockParam)
-      name == T.cast(other, BlockParam).name
+      BlockParam === other && name == other.name
     end
   end
 

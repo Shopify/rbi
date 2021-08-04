@@ -338,7 +338,7 @@ module RBI
             v.print(",") if pindex < params.size - 1
             param.comments.each_with_index do |comment, cindex|
               if cindex > 0
-                param.print_comment_leading_space(v)
+                param.print_comment_leading_space(v, last: pindex == params.size - 1)
               else
                 v.print(" ")
               end
@@ -373,11 +373,12 @@ module RBI
       v.print(name.to_s)
     end
 
-    sig { params(v: Printer).void }
-    def print_comment_leading_space(v)
+    sig { params(v: Printer, last: T::Boolean).void }
+    def print_comment_leading_space(v, last:)
       v.printn
       v.printt
-      v.print(" " * (name.size + 2))
+      v.print(" " * (name.size + 1))
+      v.print(" ") unless last
     end
   end
 
@@ -389,8 +390,8 @@ module RBI
       v.print("#{name} = #{value}")
     end
 
-    sig { override.params(v: Printer).void }
-    def print_comment_leading_space(v)
+    sig { override.params(v: Printer, last: T::Boolean).void }
+    def print_comment_leading_space(v, last:)
       super
       v.print(" " * (value.size + 3))
     end
@@ -404,8 +405,8 @@ module RBI
       v.print("*#{name}")
     end
 
-    sig { override.params(v: Printer).void }
-    def print_comment_leading_space(v)
+    sig { override.params(v: Printer, last: T::Boolean).void }
+    def print_comment_leading_space(v, last:)
       super
       v.print(" ")
     end
@@ -419,8 +420,8 @@ module RBI
       v.print("#{name}:")
     end
 
-    sig { override.params(v: Printer).void }
-    def print_comment_leading_space(v)
+    sig { override.params(v: Printer, last: T::Boolean).void }
+    def print_comment_leading_space(v, last:)
       super
       v.print(" ")
     end
@@ -434,11 +435,9 @@ module RBI
       v.print("#{name}: #{value}")
     end
 
-    sig { override.params(v: Printer).void }
-    def print_comment_leading_space(v)
-      v.printn
-      v.printt
-      v.print(" " * (name.size + 2))
+    sig { override.params(v: Printer, last: T::Boolean).void }
+    def print_comment_leading_space(v, last:)
+      super
       v.print(" " * (value.size + 2))
     end
   end
@@ -451,8 +450,8 @@ module RBI
       v.print("**#{name}")
     end
 
-    sig { override.params(v: Printer).void }
-    def print_comment_leading_space(v)
+    sig { override.params(v: Printer, last: T::Boolean).void }
+    def print_comment_leading_space(v, last:)
       super
       v.print("  ")
     end
@@ -464,6 +463,12 @@ module RBI
     sig { override.params(v: Printer).void }
     def accept_printer(v)
       v.print("&#{name}")
+    end
+
+    sig { override.params(v: Printer, last: T::Boolean).void }
+    def print_comment_leading_space(v, last:)
+      super
+      v.print(" ")
     end
   end
 
