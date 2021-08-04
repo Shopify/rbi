@@ -173,7 +173,7 @@ module RBI
       when :def
         Method.new(
           node.children[0].to_s,
-          params: node.children[1].children.map { |child| visit_param(child) },
+          params: node.children[1].children.map { |child| parse_param(child) },
           sigs: current_sigs,
           loc: node_loc(node),
           comments: node_comments(node)
@@ -181,7 +181,7 @@ module RBI
       when :defs
         Method.new(
           node.children[1].to_s,
-          params: node.children[2].children.map { |child| visit_param(child) },
+          params: node.children[2].children.map { |child| parse_param(child) },
           is_singleton: true,
           sigs: current_sigs,
           loc: node_loc(node),
@@ -193,7 +193,7 @@ module RBI
     end
 
     sig { params(node: AST::Node).returns(Param) }
-    def visit_param(node)
+    def parse_param(node)
       name = node.children[0].to_s
       loc = node_loc(node)
       comments = node_comments(node)
