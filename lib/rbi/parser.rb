@@ -75,7 +75,7 @@ module RBI
     end
 
     sig { params(node: AST::Node).returns(String) }
-    def visit_expr(node)
+    def parse_expr(node)
       Unparser.unparse(node)
     end
   end
@@ -159,8 +159,8 @@ module RBI
 
     sig { params(node: AST::Node).void }
     def visit_const_assign(node)
-      value = visit_expr(node.children[2])
       name = parse_name(node)
+      value = parse_expr(node.children[2])
       loc = node_loc(node)
       comments = node_comments(node)
 
@@ -202,14 +202,14 @@ module RBI
       when :arg
         ReqParam.new(name, loc: loc, comments: comments)
       when :optarg
-        value = visit_expr(node.children[1])
+        value = parse_expr(node.children[1])
         OptParam.new(name, value, loc: loc, comments: comments)
       when :restarg
         RestParam.new(name, loc: loc, comments: comments)
       when :kwarg
         KwParam.new(name, loc: loc, comments: comments)
       when :kwoptarg
-        value = visit_expr(node.children[1])
+        value = parse_expr(node.children[1])
         KwOptParam.new(name, value, loc: loc, comments: comments)
       when :kwrestarg
         KwRestParam.new(name, loc: loc, comments: comments)
@@ -280,13 +280,13 @@ module RBI
     sig { params(node: AST::Node).returns([String, String, T.nilable(String)]) }
     def visit_struct_prop(node)
       name = node.children[2].children[0].to_s
-      type = visit_expr(node.children[3])
+      type = parse_expr(node.children[3])
       has_default = node.children[4]
         &.children&.fetch(0, nil)
         &.children&.fetch(0, nil)
         &.children&.fetch(0, nil) == :default
       default_value = if has_default
-        visit_expr(node.children.fetch(4, nil)
+        parse_expr(node.children.fetch(4, nil)
           &.children&.fetch(0, nil)
           &.children&.fetch(1, nil))
       end
@@ -434,11 +434,11 @@ module RBI
       when :params
         node.children[2].children.each do |child|
           name = child.children[0].children[0].to_s
-          type = visit_expr(child.children[1])
+          type = parse_expr(child.children[1])
           @current << SigParam.new(name, type)
         end
       when :returns
-        @current.return_type = visit_expr(node.children[2])
+        @current.return_type = parse_expr(node.children[2])
       when :void
         @current.return_type = nil
       else
