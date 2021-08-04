@@ -65,7 +65,7 @@ module RBI
       sig { params(node: Node).returns(T.nilable(String)) }
       def node_name(node)
         case node
-        when Module, Class, Const, Method, Helper, TStructField
+        when Module, Class, Struct, Const, Method, Helper, TStructField
           node.name
         end
       end
