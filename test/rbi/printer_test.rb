@@ -63,6 +63,37 @@ module RBI
       RBI
     end
 
+    def test_print_structs
+      rbi = RBI::Tree.new do |tree|
+        tree << RBI::Struct.new("Foo", members: [:foo, :bar])
+        tree << RBI::Struct.new("Bar", members: [:bar], keyword_init: true) do |struct1|
+          struct1 << RBI::Method.new("bar_method")
+        end
+        tree << RBI::Struct.new("Baz", members: [:baz], keyword_init: false) do |struct2|
+          struct2 << RBI::Method.new("baz_method")
+          struct2 << RBI::SingletonClass.new do |singleton_class|
+            singleton_class << RBI::Method.new("baz_class_method")
+          end
+        end
+      end
+
+      assert_equal(<<~RBI, rbi.string)
+        Foo = ::Struct.new(:foo, :bar)
+
+        Bar = ::Struct.new(:bar, keyword_init: true) do
+          def bar_method; end
+        end
+
+        Baz = ::Struct.new(:baz) do
+          def baz_method; end
+
+          class << self
+            def baz_class_method; end
+          end
+        end
+      RBI
+    end
+
     def test_print_constants
       rbi = RBI::Tree.new
       rbi << RBI::Const.new("Foo", "42")
