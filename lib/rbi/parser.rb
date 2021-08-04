@@ -271,7 +271,23 @@ module RBI
         names = node.children[2..-1].map { |child| parse_name(child) }
         MixesInClassMethods.new(*names, loc: loc, comments: comments)
       when :public, :protected, :private
-        Visibility.new(method_name, loc: loc)
+        visibility = Visibility.new(method_name, loc: loc)
+        nested_node = node.children[2]
+        case nested_node&.type
+        when :def, :defs
+          method = parse_def(nested_node)
+          method.visibility = visibility
+          method
+        when :send
+          snode = parse_send(nested_node)
+          raise ParseError.new("Unexpected token `private` before `#{nested_node.type}`", loc) unless snode.is_a?(Attr)
+          snode.visibility = visibility
+          snode
+        when nil
+          visibility
+        else
+          raise ParseError.new("Unexpected token `private` before `#{nested_node.type}`", loc)
+        end
       when :prop
         name, type, default_value = parse_tstruct_prop(node)
         TStructProp.new(name, type, default: default_value, loc: loc, comments: comments)
