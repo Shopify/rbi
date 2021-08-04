@@ -70,12 +70,12 @@ module RBI
     private
 
     sig { params(node: AST::Node).returns(String) }
-    def visit_name(node)
+    def parse_name(node)
       T.must(ConstBuilder.visit(node))
     end
 
     sig { params(node: AST::Node).returns(String) }
-    def visit_expr(node)
+    def parse_expr(node)
       Unparser.unparse(node)
     end
   end
@@ -106,15 +106,25 @@ module RBI
       return unless node.is_a?(AST::Node)
       case node.type
       when :module, :class, :sclass
-        visit_scope(node)
+        scope = parse_scope(node)
+        current_scope << scope
+        @scopes_stack << scope
+        visit_all(node.children)
+        @scopes_stack.pop
       when :casgn
-        visit_const_assign(node)
+        current_scope << parse_const_assign(node)
       when :def, :defs
-        visit_def(node)
+        current_scope << parse_def(node)
       when :send
-        visit_send(node)
+        node = parse_send(node)
+        current_scope << node if node
       when :block
-        visit_block(node)
+        node = parse_block(node)
+        if node.is_a?(Sig)
+          @last_sigs << node
+        elsif node
+          current_scope << node
+        end
       else
         visit_all(node.children)
       end
@@ -132,17 +142,17 @@ module RBI
 
     private
 
-    sig { params(node: AST::Node).void }
-    def visit_scope(node)
+    sig { params(node: AST::Node).returns(Scope) }
+    def parse_scope(node)
       loc = node_loc(node)
       comments = node_comments(node)
 
-      scope = case node.type
+      case node.type
       when :module
-        name = visit_name(node.children[0])
+        name = parse_name(node.children[0])
         Module.new(name, loc: loc, comments: comments)
       when :class
-        name = visit_name(node.children[0])
+        name = parse_name(node.children[0])
         superclass_name = ConstBuilder.visit(node.children[1])
         Class.new(name, superclass_name: superclass_name, loc: loc, comments: comments)
       when :sclass
@@ -150,30 +160,25 @@ module RBI
       else
         raise "Unsupported node #{node.type}"
       end
-      current_scope << scope
-
-      @scopes_stack << scope
-      visit_all(node.children)
-      @scopes_stack.pop
     end
 
-    sig { params(node: AST::Node).void }
-    def visit_const_assign(node)
-      name = visit_name(node)
-      value = visit_expr(node.children[2])
+    sig { params(node: AST::Node).returns(Const) }
+    def parse_const_assign(node)
+      name = parse_name(node)
+      value = parse_expr(node.children[2])
       loc = node_loc(node)
       comments = node_comments(node)
 
-      current_scope << Const.new(name, value, loc: loc, comments: comments)
+      Const.new(name, value, loc: loc, comments: comments)
     end
 
-    sig { params(node: AST::Node).void }
-    def visit_def(node)
-      current_scope << case node.type
+    sig { params(node: AST::Node).returns(Method) }
+    def parse_def(node)
+      case node.type
       when :def
         Method.new(
           node.children[0].to_s,
-          params: node.children[1].children.map { |child| visit_param(child) },
+          params: node.children[1].children.map { |child| parse_param(child) },
           sigs: current_sigs,
           loc: node_loc(node),
           comments: node_comments(node)
@@ -181,7 +186,7 @@ module RBI
       when :defs
         Method.new(
           node.children[1].to_s,
-          params: node.children[2].children.map { |child| visit_param(child) },
+          params: node.children[2].children.map { |child| parse_param(child) },
           is_singleton: true,
           sigs: current_sigs,
           loc: node_loc(node),
@@ -193,7 +198,7 @@ module RBI
     end
 
     sig { params(node: AST::Node).returns(Param) }
-    def visit_param(node)
+    def parse_param(node)
       name = node.children[0].to_s
       loc = node_loc(node)
       comments = node_comments(node)
@@ -202,14 +207,14 @@ module RBI
       when :arg
         ReqParam.new(name, loc: loc, comments: comments)
       when :optarg
-        value = visit_expr(node.children[1])
+        value = parse_expr(node.children[1])
         OptParam.new(name, value, loc: loc, comments: comments)
       when :restarg
         RestParam.new(name, loc: loc, comments: comments)
       when :kwarg
         KwParam.new(name, loc: loc, comments: comments)
       when :kwoptarg
-        value = visit_expr(node.children[1])
+        value = parse_expr(node.children[1])
         KwOptParam.new(name, value, loc: loc, comments: comments)
       when :kwrestarg
         KwRestParam.new(name, loc: loc, comments: comments)
@@ -220,16 +225,16 @@ module RBI
       end
     end
 
-    sig { params(node: AST::Node).void }
-    def visit_send(node)
+    sig { params(node: AST::Node).returns(T.nilable(RBI::Node)) }
+    def parse_send(node)
       recv = node.children[0]
-      return if recv && recv != :self
+      return nil if recv && recv != :self
 
       method_name = node.children[1]
       loc = node_loc(node)
       comments = node_comments(node)
 
-      current_scope << case method_name
+      case method_name
       when :attr_reader
         symbols = node.children[2..-1].map { |child| child.children[0] }
         AttrReader.new(*symbols, sigs: current_sigs, loc: loc, comments: comments)
@@ -240,53 +245,53 @@ module RBI
         symbols = node.children[2..-1].map { |child| child.children[0] }
         AttrAccessor.new(*symbols, sigs: current_sigs, loc: loc, comments: comments)
       when :include
-        names = node.children[2..-1].map { |child| visit_name(child) }
+        names = node.children[2..-1].map { |child| parse_name(child) }
         Include.new(*names, loc: loc, comments: comments)
       when :extend
-        names = node.children[2..-1].map { |child| visit_name(child) }
+        names = node.children[2..-1].map { |child| parse_name(child) }
         Extend.new(*names, loc: loc, comments: comments)
       when :abstract!, :sealed!, :interface!
         Helper.new(method_name.to_s.delete_suffix("!"), loc: loc, comments: comments)
       when :mixes_in_class_methods
-        names = node.children[2..-1].map { |child| visit_name(child) }
+        names = node.children[2..-1].map { |child| parse_name(child) }
         MixesInClassMethods.new(*names, loc: loc, comments: comments)
       when :public, :protected, :private
         Visibility.new(method_name, loc: loc)
       when :prop
-        name, type, default_value = visit_struct_prop(node)
+        name, type, default_value = parse_struct_prop(node)
         TStructProp.new(name, type, default: default_value, loc: loc, comments: comments)
       when :const
-        name, type, default_value = visit_struct_prop(node)
+        name, type, default_value = parse_struct_prop(node)
         TStructConst.new(name, type, default: default_value, loc: loc, comments: comments)
       else
         raise "Unsupported node #{node.type} with name #{method_name}"
       end
     end
 
-    sig { params(node: AST::Node).void }
-    def visit_block(node)
+    sig { params(node: AST::Node).returns(T.nilable(RBI::Node)) }
+    def parse_block(node)
       name = node.children[0].children[1]
 
       case name
       when :sig
-        @last_sigs << visit_sig(node)
+        parse_sig(node)
       when :enums
-        current_scope << visit_enum(node)
+        parse_enum(node)
       else
         raise "Unsupported node #{node.type} with name #{name}"
       end
     end
 
     sig { params(node: AST::Node).returns([String, String, T.nilable(String)]) }
-    def visit_struct_prop(node)
+    def parse_struct_prop(node)
       name = node.children[2].children[0].to_s
-      type = visit_expr(node.children[3])
+      type = parse_expr(node.children[3])
       has_default = node.children[4]
         &.children&.fetch(0, nil)
         &.children&.fetch(0, nil)
         &.children&.fetch(0, nil) == :default
       default_value = if has_default
-        visit_expr(node.children.fetch(4, nil)
+        parse_expr(node.children.fetch(4, nil)
           &.children&.fetch(0, nil)
           &.children&.fetch(1, nil))
       end
@@ -294,17 +299,17 @@ module RBI
     end
 
     sig { params(node: AST::Node).returns(Sig) }
-    def visit_sig(node)
+    def parse_sig(node)
       sig = SigBuilder.build(node)
       sig.loc = node_loc(node)
       sig
     end
 
     sig { params(node: AST::Node).returns(TEnumBlock) }
-    def visit_enum(node)
+    def parse_enum(node)
       enum = TEnumBlock.new
       node.children[2].children.each do |child|
-        enum << visit_name(child)
+        enum << parse_name(child)
       end
       enum.loc = node_loc(node)
       enum
@@ -434,11 +439,11 @@ module RBI
       when :params
         node.children[2].children.each do |child|
           name = child.children[0].children[0].to_s
-          type = visit_expr(child.children[1])
+          type = parse_expr(child.children[1])
           @current << SigParam.new(name, type)
         end
       when :returns
-        @current.return_type = visit_expr(node.children[2])
+        @current.return_type = parse_expr(node.children[2])
       when :void
         @current.return_type = nil
       else
