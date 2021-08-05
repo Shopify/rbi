@@ -641,6 +641,8 @@ module RBI
       RBI
       out = RBI::Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
+        # Orphan comment
+
         module A; end
       RBI
     end

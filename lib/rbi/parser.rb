@@ -141,8 +141,7 @@ module RBI
 
     sig { params(comments: T::Array[::Parser::Source::Comment]).void }
     def assoc_dangling_comments(comments)
-      return unless tree.empty?
-      comments.each do |comment|
+      (comments - @comments.values.flatten).each do |comment|
         text = comment.text[1..-1].strip
         loc = Loc.from_ast_loc(@file, comment.location)
         tree.comments << Comment.new(text, loc: loc)
