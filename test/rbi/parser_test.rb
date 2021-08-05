@@ -560,6 +560,75 @@ module RBI
       RBI
     end
 
+    def test_parse_file_header
+      rbi = <<~RBI
+        # typed: true
+
+        module A; end
+      RBI
+      out = RBI::Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string)
+        # typed: true
+
+        module A; end
+      RBI
+    end
+
+    def test_parse_file_headers
+      rbi = <<~RBI
+        # typed: true
+        # frozen_string_literal: true
+
+        module A; end
+      RBI
+      out = RBI::Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string)
+        # typed: true
+        # frozen_string_literal: true
+
+        module A; end
+      RBI
+    end
+
+    def test_parse_file_header_and_node_comment
+      rbi = <<~RBI
+        # typed: true
+
+        # A comment
+        module A; end
+      RBI
+      out = RBI::Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string)
+        # typed: true
+
+        # A comment
+        module A; end
+      RBI
+    end
+
+    def test_parse_file_header_and_node_comments
+      rbi = <<~RBI
+        # typed: true
+        # frozen_string_literal: true
+
+        # Some header for the file
+
+        # Some comment
+        # for the module
+        module A; end
+      RBI
+      out = RBI::Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string)
+        # typed: true
+        # frozen_string_literal: true
+        # Some header for the file
+
+        # Some comment
+        # for the module
+        module A; end
+      RBI
+    end
+
     def test_parse_header_comments
       rbi = <<~RBI
         # A comment
@@ -626,6 +695,7 @@ module RBI
       assert_equal(<<~RBI, out.string)
         # A comment 1
         # A comment 2
+
         # A comment 3
         module A
           # B comment

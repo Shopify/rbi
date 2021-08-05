@@ -54,6 +54,7 @@ module RBI
       node, comments = Unparser.parse_with_comments(content)
       assoc = ::Parser::Source::Comment.associate_locations(node, comments)
       builder = TreeBuilder.new(file: file, comments: assoc)
+      builder.separate_header_comments
       builder.visit(node)
       builder.assoc_dangling_comments(comments)
       builder.tree
@@ -137,6 +138,28 @@ module RBI
       else
         visit_all(node.children)
       end
+    end
+
+    sig { void }
+    def separate_header_comments
+      return if @comments.empty?
+
+      keep = []
+      node = T.must(@comments.keys.first)
+      comments = T.must(@comments.values.first)
+
+      last_line = T.let(nil, T.nilable(Integer))
+      comments.reverse.each do |comment|
+        comment_line = comment.location.last_line
+
+        break if last_line && comment_line < last_line - 1 ||
+          !last_line && comment_line < node.first_line - 1
+
+        keep << comment
+        last_line = comment_line
+      end
+
+      @comments[node] = keep.reverse
     end
 
     sig { params(comments: T::Array[::Parser::Source::Comment]).void }
