@@ -16,6 +16,8 @@ Gem::Specification.new do |spec|
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
+  spec.bindir        = "exe"
+  spec.executables   = %w{rbi}
   spec.require_paths = ["lib"]
 
   spec.files         = Dir.glob("lib/**/*.rb") + %w(

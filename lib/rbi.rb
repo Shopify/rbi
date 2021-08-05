@@ -21,3 +21,5 @@ require "rbi/rewriters/sort_nodes"
 require "rbi/parser"
 require "rbi/printer"
 require "rbi/version"
+
+require "rbi/cli"
