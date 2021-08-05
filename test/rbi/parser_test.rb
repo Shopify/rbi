@@ -548,15 +548,20 @@ module RBI
         # Some header
         # comments
         # on multiple lines
+
+        # Preserving empty lines
       RBI
 
       out = RBI::Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
         # typed: false
         # frozen_string_literal: true
+
         # Some header
         # comments
         # on multiple lines
+
+        # Preserving empty lines
       RBI
     end
 
@@ -621,6 +626,7 @@ module RBI
       assert_equal(<<~RBI, out.string)
         # typed: true
         # frozen_string_literal: true
+
         # Some header for the file
 
         # Some comment

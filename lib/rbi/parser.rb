@@ -164,10 +164,19 @@ module RBI
 
     sig { params(comments: T::Array[::Parser::Source::Comment]).void }
     def assoc_dangling_comments(comments)
+      last_line = T.let(nil, T.nilable(Integer))
       (comments - @comments.values.flatten).each do |comment|
+        comment_line = comment.location.last_line
         text = comment.text[1..-1].strip
         loc = Loc.from_ast_loc(@file, comment.location)
+
+        if last_line && comment_line > last_line + 1
+          # Preserve empty lines in file headers
+          tree.comments << EmptyComment.new(loc: loc)
+        end
+
         tree.comments << Comment.new(text, loc: loc)
+        last_line = comment_line
       end
     end
 

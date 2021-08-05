@@ -163,6 +163,15 @@ module RBI
     end
   end
 
+  class EmptyComment
+    extend T::Sig
+
+    sig { override.params(v: Printer).void }
+    def accept_printer(v)
+      v.printn
+    end
+  end
+
   class Tree
     extend T::Sig
 

@@ -435,6 +435,7 @@ module RBI
       res = rbi1.merge(rbi2)
       assert_equal(<<~RBI, res.string)
         # typed: true
+
         # Some comments
         # Other comments
       RBI

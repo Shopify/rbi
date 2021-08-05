@@ -48,7 +48,7 @@ module RBI
   end
 
   class Comment < Node
-    extend T::Helpers
+    extend T::Sig
 
     sig { returns(String) }
     attr_accessor :text
@@ -63,6 +63,15 @@ module RBI
     def ==(other)
       return false unless other.is_a?(Comment)
       text == other.text
+    end
+  end
+
+  class EmptyComment < Comment
+    extend T::Sig
+
+    sig { params(loc: T.nilable(Loc)).void }
+    def initialize(loc: nil)
+      super("", loc: loc)
     end
   end
 
