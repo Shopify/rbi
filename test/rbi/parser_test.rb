@@ -127,6 +127,21 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
+    def test_parse_methods_with_visibility
+      rbi = <<~RBI
+        private def m1; end
+        protected def self.m2; end
+        private attr_reader :a
+      RBI
+
+      out = RBI::Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string)
+        private def m1; end
+        protected def self.m2; end
+        private attr_reader :a
+      RBI
+    end
+
     def test_parse_mixins
       rbi = <<~RBI
         class Foo
@@ -675,6 +690,30 @@ module RBI
       end
       assert_equal("Unsupported send node with name `foo`", e.message)
       assert_equal("-:1:0-1:3", e.location.to_s)
+
+      e = assert_raises(RBI::ParseError) do
+        RBI::Parser.parse_string(<<~RBI)
+          private include Foo
+        RBI
+      end
+      assert_equal("Unexpected token `private` before `send`", e.message)
+      assert_equal("-:1:0-1:19", e.location.to_s)
+
+      e = assert_raises(RBI::ParseError) do
+        RBI::Parser.parse_string(<<~RBI)
+          private class Foo; end
+        RBI
+      end
+      assert_equal("Unexpected token `private` before `class`", e.message)
+      assert_equal("-:1:0-1:22", e.location.to_s)
+
+      e = assert_raises(RBI::ParseError) do
+        RBI::Parser.parse_string(<<~RBI)
+          private CST = 42
+        RBI
+      end
+      assert_equal("Unexpected token `private` before `casgn`", e.message)
+      assert_equal("-:1:0-1:16", e.location.to_s)
     end
   end
 end
