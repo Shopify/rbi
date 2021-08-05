@@ -658,5 +658,23 @@ module RBI
         ); end
       RBI
     end
+
+    def test_parse_errors
+      e = assert_raises(RBI::ParseError) do
+        RBI::Parser.parse_string(<<~RBI)
+          def bar
+        RBI
+      end
+      assert_equal("unexpected token $end", e.message)
+      assert_equal("-:2:0-2:0", e.location.to_s)
+
+      e = assert_raises(RBI::ParseError) do
+        RBI::Parser.parse_string(<<~RBI)
+          foo
+        RBI
+      end
+      assert_equal("Unsupported send node with name `foo`", e.message)
+      assert_equal("-:1:0-1:3", e.location.to_s)
+    end
   end
 end

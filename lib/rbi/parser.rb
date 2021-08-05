@@ -4,10 +4,21 @@
 require "unparser"
 
 module RBI
-  class Parser
+  class ParseError < StandardError
     extend T::Sig
 
-    class Error < StandardError; end
+    sig { returns(Loc) }
+    attr_reader :location
+
+    sig { params(message: String, location: Loc).void }
+    def initialize(message, location)
+      super(message)
+      @location = location
+    end
+  end
+
+  class Parser
+    extend T::Sig
 
     # opt-in to most recent AST format
     ::Parser::Builders::Default.emit_lambda               = true
@@ -29,15 +40,11 @@ module RBI
     sig { params(string: String).returns(Tree) }
     def parse_string(string)
       parse(string, file: "-")
-    rescue ::Parser::SyntaxError => e
-      raise Error, e.message
     end
 
     sig { params(path: String).returns(Tree) }
     def parse_file(path)
       parse(::File.read(path), file: path)
-    rescue ::Parser::SyntaxError => e
-      raise Error, e.message
     end
 
     private
@@ -50,6 +57,8 @@ module RBI
       builder.visit(node)
       builder.assoc_dangling_comments(comments)
       builder.tree
+    rescue ::Parser::SyntaxError => e
+      raise ParseError.new(e.message, Loc.from_ast_loc(file, e.diagnostic.location))
     end
   end
 
@@ -135,7 +144,7 @@ module RBI
       return unless tree.empty?
       comments.each do |comment|
         text = comment.text[1..-1].strip
-        loc = ast_to_rbi_loc(comment.location)
+        loc = Loc.from_ast_loc(@file, comment.location)
         tree.comments << Comment.new(text, loc: loc)
       end
     end
@@ -158,7 +167,7 @@ module RBI
       when :sclass
         SingletonClass.new(loc: loc, comments: comments)
       else
-        raise "Unsupported node #{node.type}"
+        raise ParseError.new("Unsupported scope node type `#{node.type}`", loc)
       end
     end
 
@@ -178,13 +187,15 @@ module RBI
 
     sig { params(node: AST::Node).returns(Method) }
     def parse_def(node)
+      loc = node_loc(node)
+
       case node.type
       when :def
         Method.new(
           node.children[0].to_s,
           params: node.children[1].children.map { |child| parse_param(child) },
           sigs: current_sigs,
-          loc: node_loc(node),
+          loc: loc,
           comments: node_comments(node)
         )
       when :defs
@@ -193,11 +204,11 @@ module RBI
           params: node.children[2].children.map { |child| parse_param(child) },
           is_singleton: true,
           sigs: current_sigs,
-          loc: node_loc(node),
+          loc: loc,
           comments: node_comments(node)
         )
       else
-        raise "Unsupported node #{node.type}"
+        raise ParseError.new("Unsupported def node type `#{node.type}`", loc)
       end
     end
 
@@ -225,7 +236,7 @@ module RBI
       when :blockarg
         BlockParam.new(name, loc: loc, comments: comments)
       else
-        raise "Unsupported node #{node.type}"
+        raise ParseError.new("Unsupported param node type `#{node.type}`", loc)
       end
     end
 
@@ -268,7 +279,7 @@ module RBI
         name, type, default_value = parse_tstruct_prop(node)
         TStructConst.new(name, type, default: default_value, loc: loc, comments: comments)
       else
-        raise "Unsupported node #{node.type} with name #{method_name}"
+        raise ParseError.new("Unsupported send node with name `#{method_name}`", loc)
       end
     end
 
@@ -282,7 +293,7 @@ module RBI
       when :enums
         parse_enum(node)
       else
-        raise "Unsupported node #{node.type} with name #{name}"
+        raise ParseError.new("Unsupported block node type `#{name}`", node_loc(node))
       end
     end
 
@@ -366,18 +377,7 @@ module RBI
 
     sig { params(node: AST::Node).returns(Loc) }
     def node_loc(node)
-      ast_to_rbi_loc(node.location)
-    end
-
-    sig { params(ast_loc: ::Parser::Source::Map).returns(Loc) }
-    def ast_to_rbi_loc(ast_loc)
-      Loc.new(
-        file: @file,
-        begin_line: ast_loc.line,
-        begin_column: ast_loc.column,
-        end_line: ast_loc.last_line,
-        end_column: ast_loc.last_column
-      )
+      Loc.from_ast_loc(@file, node.location)
     end
 
     sig { params(node: AST::Node).returns(T::Array[Comment]) }
@@ -387,7 +387,7 @@ module RBI
       return [] unless comments
       comments.map do |comment|
         text = comment.text[1..-1].strip
-        loc = ast_to_rbi_loc(comment.location)
+        loc = Loc.from_ast_loc(@file, comment.location)
         Comment.new(text, loc: loc)
       end
     end
@@ -498,6 +498,19 @@ module RBI
       else
         raise "#{node.location.line}: Unhandled #{name}"
       end
+    end
+  end
+
+  class Loc
+    sig { params(file: String, ast_loc: T.any(::Parser::Source::Map, ::Parser::Source::Range)).returns(Loc) }
+    def self.from_ast_loc(file, ast_loc)
+      Loc.new(
+        file: file,
+        begin_line: ast_loc.line,
+        begin_column: ast_loc.column,
+        end_line: ast_loc.last_line,
+        end_column: ast_loc.last_column
+      )
     end
   end
 end
