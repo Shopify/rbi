@@ -98,10 +98,10 @@ module RBI
     sig do
       params(
         file: String,
-        comments: T.nilable(T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]])
+        comments: T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]]
       ).void
     end
-    def initialize(file:, comments: nil)
+    def initialize(file:, comments: {})
       super()
       @file = file
       @comments = comments
@@ -398,7 +398,6 @@ module RBI
 
     sig { params(node: AST::Node).returns(T::Array[Comment]) }
     def node_comments(node)
-      return [] unless @comments
       comments = @comments[node.location]
       return [] unless comments
       comments.map do |comment|
