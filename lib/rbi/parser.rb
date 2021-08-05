@@ -135,7 +135,7 @@ module RBI
       return unless tree.empty?
       comments.each do |comment|
         text = comment.text[1..-1].strip
-        loc = ast_to_rbi_loc(comment.location)
+        loc = Loc.from_ast_loc(@file, comment.location)
         tree.comments << Comment.new(text, loc: loc)
       end
     end
@@ -366,18 +366,7 @@ module RBI
 
     sig { params(node: AST::Node).returns(Loc) }
     def node_loc(node)
-      ast_to_rbi_loc(node.location)
-    end
-
-    sig { params(ast_loc: ::Parser::Source::Map).returns(Loc) }
-    def ast_to_rbi_loc(ast_loc)
-      Loc.new(
-        file: @file,
-        begin_line: ast_loc.line,
-        begin_column: ast_loc.column,
-        end_line: ast_loc.last_line,
-        end_column: ast_loc.last_column
-      )
+      Loc.from_ast_loc(@file, node.location)
     end
 
     sig { params(node: AST::Node).returns(T::Array[Comment]) }
@@ -387,7 +376,7 @@ module RBI
       return [] unless comments
       comments.map do |comment|
         text = comment.text[1..-1].strip
-        loc = ast_to_rbi_loc(comment.location)
+        loc = Loc.from_ast_loc(@file, comment.location)
         Comment.new(text, loc: loc)
       end
     end
@@ -498,6 +487,19 @@ module RBI
       else
         raise "#{node.location.line}: Unhandled #{name}"
       end
+    end
+  end
+
+  class Loc
+    sig { params(file: String, ast_loc: T.any(::Parser::Source::Map, ::Parser::Source::Range)).returns(Loc) }
+    def self.from_ast_loc(file, ast_loc)
+      Loc.new(
+        file: file,
+        begin_line: ast_loc.line,
+        begin_column: ast_loc.column,
+        end_line: ast_loc.last_line,
+        end_column: ast_loc.last_column
+      )
     end
   end
 end
