@@ -238,6 +238,27 @@ module RBI
     end
   end
 
+  class Struct
+    extend T::Sig
+
+    sig { override.params(v: Printer).void }
+    def print_header(v)
+      v.printt("#{name} = ::Struct.new")
+      if !members.empty? || keyword_init
+        v.print("(")
+        args = members.map { |member| ":#{member}" }
+        args << "keyword_init: true" if keyword_init
+        v.print(args.join(", "))
+        v.print(")")
+      end
+      if empty?
+        v.printn
+      else
+        v.printn(" do")
+      end
+    end
+  end
+
   class SingletonClass
     extend T::Sig
 

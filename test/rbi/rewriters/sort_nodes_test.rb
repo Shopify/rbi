@@ -51,6 +51,21 @@ module RBI
         RBI
       end
 
+      it("sorts structs") do
+        rbi = RBI::Tree.new
+        rbi << RBI::Struct.new("C")
+        rbi << RBI::Struct.new("B")
+        rbi << RBI::Struct.new("A")
+
+        rbi.sort_nodes!
+
+        assert_equal(<<~RBI, rbi.string)
+          A = ::Struct.new
+          B = ::Struct.new
+          C = ::Struct.new
+        RBI
+      end
+
       it("sorts constants and keeps original order in case of conflicts") do
         rbi = RBI::Tree.new
         rbi << RBI::Class.new("B")

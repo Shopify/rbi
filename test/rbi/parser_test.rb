@@ -33,6 +33,43 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
+    def test_parse_structs
+      rbi = <<~RBI
+        A = Struct.new
+        B = Struct.new(:a, :b)
+        C = Struct.new(:a, :b, keyword_init: false)
+        D = Struct.new(:a, :b, keyword_init: true)
+        E = Struct.new(:a, :b, foo: bar)
+        F = Struct.new(:a, :b, keyword_init: true) { def m; end }
+        G = Struct.new do
+          include Foo
+          attr_reader :a
+          def m1; end
+          def m2; end
+        end
+      RBI
+
+      out = RBI::Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string)
+        A = ::Struct.new
+        B = ::Struct.new(:a, :b)
+        C = ::Struct.new(:a, :b)
+        D = ::Struct.new(:a, :b, keyword_init: true)
+        E = ::Struct.new(:a, :b)
+
+        F = ::Struct.new(:a, :b, keyword_init: true) do
+          def m; end
+        end
+
+        G = ::Struct.new do
+          include Foo
+          attr_reader :a
+          def m1; end
+          def m2; end
+        end
+      RBI
+    end
+
     def test_parse_constants
       rbi = <<~RBI
         Foo = 42
@@ -116,7 +153,7 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
-    def test_build_t_struct
+    def test_parse_t_struct
       rbi = <<~RBI
         class Foo < ::T::Struct
           const :a, A
@@ -224,6 +261,26 @@ module RBI
               class << self; end
             end
           end
+        end
+      RBI
+    end
+
+    def test_parse_struct_locations
+      rbi = <<~RBI
+        Foo = Struct.new(:a) do
+          def foo; end
+          class Bar; end
+        end
+      RBI
+
+      out = RBI::Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string(print_locs: true))
+        # -:1:0-4:3
+        Foo = ::Struct.new(:a) do
+          # -:2:2-2:14
+          def foo; end
+          # -:3:2-3:16
+          class Bar; end
         end
       RBI
     end
@@ -520,6 +577,19 @@ module RBI
           # Bar 2
           # Bar 3
           class Bar; end
+        end
+      RBI
+
+      out = RBI::Parser.parse_string(rbi)
+      assert_equal(rbi, out.string)
+    end
+
+    def test_parse_struct_comments
+      rbi = <<~RBI
+        # Foo
+        Foo = ::Struct.new do
+          # Bar
+          def bar; end
         end
       RBI
 
