@@ -21,6 +21,7 @@ PATH
       parser
       rake (~> 13.0)
       sorbet-runtime
+      thor
       unparser
 
 GEM
