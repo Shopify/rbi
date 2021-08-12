@@ -54,6 +54,7 @@ module RBI
       node, comments = Unparser.parse_with_comments(content)
       assoc = ::Parser::Source::Comment.associate_locations(node, comments)
       builder = TreeBuilder.new(file: file, comments: assoc)
+      builder.separate_header_comments
       builder.visit(node)
       builder.assoc_dangling_comments(comments)
       builder.tree
@@ -98,10 +99,10 @@ module RBI
     sig do
       params(
         file: String,
-        comments: T.nilable(T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]])
+        comments: T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]]
       ).void
     end
-    def initialize(file:, comments: nil)
+    def initialize(file:, comments: {})
       super()
       @file = file
       @comments = comments
@@ -139,13 +140,43 @@ module RBI
       end
     end
 
+    sig { void }
+    def separate_header_comments
+      return if @comments.empty?
+
+      keep = []
+      node = T.must(@comments.keys.first)
+      comments = T.must(@comments.values.first)
+
+      last_line = T.let(nil, T.nilable(Integer))
+      comments.reverse.each do |comment|
+        comment_line = comment.location.last_line
+
+        break if last_line && comment_line < last_line - 1 ||
+          !last_line && comment_line < node.first_line - 1
+
+        keep << comment
+        last_line = comment_line
+      end
+
+      @comments[node] = keep.reverse
+    end
+
     sig { params(comments: T::Array[::Parser::Source::Comment]).void }
     def assoc_dangling_comments(comments)
-      return unless tree.empty?
-      comments.each do |comment|
+      last_line = T.let(nil, T.nilable(Integer))
+      (comments - @comments.values.flatten).each do |comment|
+        comment_line = comment.location.last_line
         text = comment.text[1..-1].strip
         loc = Loc.from_ast_loc(@file, comment.location)
+
+        if last_line && comment_line > last_line + 1
+          # Preserve empty lines in file headers
+          tree.comments << EmptyComment.new(loc: loc)
+        end
+
         tree.comments << Comment.new(text, loc: loc)
+        last_line = comment_line
       end
     end
 
@@ -398,7 +429,6 @@ module RBI
 
     sig { params(node: AST::Node).returns(T::Array[Comment]) }
     def node_comments(node)
-      return [] unless @comments
       comments = @comments[node.location]
       return [] unless comments
       comments.map do |comment|
