@@ -878,5 +878,105 @@ module RBI
         Conflicting definitions for `::B`
       STR
     end
+
+    def test_merge_keep_left
+      rbi1 = RBI::Parser.parse_string(<<~RBI)
+        module Foo
+          A = 10
+
+          class Bar
+            def m1; end
+
+            sig { void }
+            def m2; end
+
+            def m3; end
+          end
+        end
+      RBI
+
+      rbi2 = RBI::Parser.parse_string(<<~RBI)
+        module Foo
+          A = 42
+
+          module Bar
+            def m1(x); end
+
+            sig { returns(Integer) }
+            def m2; end
+
+            def m4; end
+          end
+        end
+      RBI
+
+      res = Rewriters::Merge.merge_trees(rbi1, rbi2, keep: Rewriters::Merge::Keep::LEFT)
+
+      assert_equal(<<~RBI, res.string)
+        module Foo
+          A = 10
+
+          class Bar
+            def m1; end
+
+            sig { void }
+            def m2; end
+
+            def m3; end
+            def m4; end
+          end
+        end
+      RBI
+    end
+
+    def test_merge_keep_right
+      rbi1 = RBI::Parser.parse_string(<<~RBI)
+        module Foo
+          A = 10
+
+          class Bar
+            def m1; end
+
+            sig { void }
+            def m2; end
+
+            def m3; end
+          end
+        end
+      RBI
+
+      rbi2 = RBI::Parser.parse_string(<<~RBI)
+        module Foo
+          A = 42
+
+          module Bar
+            def m1(x); end
+
+            sig { returns(Integer) }
+            def m2; end
+
+            def m4; end
+          end
+        end
+      RBI
+
+      res = Rewriters::Merge.merge_trees(rbi1, rbi2, keep: Rewriters::Merge::Keep::RIGHT)
+
+      assert_equal(<<~RBI, res.string)
+        module Foo
+          A = 42
+
+          module Bar
+            def m1(x); end
+
+            sig { returns(Integer) }
+            def m2; end
+
+            def m3; end
+            def m4; end
+          end
+        end
+      RBI
+    end
   end
 end

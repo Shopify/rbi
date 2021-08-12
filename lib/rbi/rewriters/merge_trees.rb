@@ -39,9 +39,17 @@ module RBI
     class Merge
       extend T::Sig
 
-      sig { params(left: Tree, right: Tree, left_name: String, right_name: String).returns(Tree) }
-      def self.merge_trees(left, right, left_name: "left", right_name: "right")
-        rewriter = Rewriters::Merge.new(left_name: left_name, right_name: right_name)
+      class Keep < ::T::Enum
+        enums do
+          NONE = new
+          LEFT = new
+          RIGHT = new
+        end
+      end
+
+      sig { params(left: Tree, right: Tree, left_name: String, right_name: String, keep: Keep).returns(Tree) }
+      def self.merge_trees(left, right, left_name: "left", right_name: "right", keep: Keep::NONE)
+        rewriter = Rewriters::Merge.new(left_name: left_name, right_name: right_name, keep: keep)
         rewriter.merge(left)
         rewriter.merge(right)
         tree = rewriter.tree
@@ -52,17 +60,18 @@ module RBI
       sig { returns(Tree) }
       attr_reader :tree
 
-      sig { params(left_name: String, right_name: String).void }
-      def initialize(left_name: "left", right_name: "right")
+      sig { params(left_name: String, right_name: String, keep: Keep).void }
+      def initialize(left_name: "left", right_name: "right", keep: Keep::NONE)
         @left_name = left_name
         @right_name = right_name
+        @keep = keep
         @tree = T.let(Tree.new, Tree)
         @scope_stack = T.let([@tree], T::Array[Tree])
       end
 
       sig { params(tree: Tree).returns(T::Array[Conflict]) }
       def merge(tree)
-        v = TreeMerger.new(@tree, left_name: @left_name, right_name: @right_name)
+        v = TreeMerger.new(@tree, left_name: @left_name, right_name: @right_name, keep: @keep)
         v.visit(tree)
         v.conflicts
       end
@@ -88,14 +97,15 @@ module RBI
         sig { returns(T::Array[Conflict]) }
         attr_reader :conflicts
 
-        sig { params(output: Tree, left_name: String, right_name: String).void }
-        def initialize(output, left_name: "left", right_name: "right")
+        sig { params(output: Tree, left_name: String, right_name: String, keep: Keep).void }
+        def initialize(output, left_name: "left", right_name: "right", keep: Keep::NONE)
           super()
           @tree = output
           @index = T.let(output.index, Index)
           @scope_stack = T.let([@tree], T::Array[Tree])
           @left_name = left_name
           @right_name = right_name
+          @keep = keep
           @conflicts = T.let([], T::Array[Conflict])
         end
 
@@ -110,6 +120,10 @@ module RBI
             if prev.is_a?(Scope)
               if node.compatible_with?(prev)
                 prev.merge_with(node)
+              elsif @keep == Keep::LEFT
+                # do nothing it's already merged
+              elsif @keep == Keep::RIGHT
+                prev = replace_scope_header(prev, node)
               else
                 make_conflict_scope(prev, node)
               end
@@ -129,6 +143,10 @@ module RBI
             if prev
               if node.compatible_with?(prev)
                 prev.merge_with(node)
+              elsif @keep == Keep::LEFT
+                # do nothing it's already merged
+              elsif @keep == Keep::RIGHT
+                prev.replace(node)
               else
                 make_conflict_tree(prev, node)
               end
@@ -174,6 +192,17 @@ module RBI
             tree.left << left
           end
           tree.right << right
+        end
+
+        sig { params(left: Scope, right: Scope).returns(Scope) }
+        def replace_scope_header(left, right)
+          right_copy = right.dup_empty
+          left.replace(right_copy)
+          left.nodes.each do |node|
+            right_copy << node
+          end
+          @index.index(right_copy)
+          right_copy
         end
       end
 
