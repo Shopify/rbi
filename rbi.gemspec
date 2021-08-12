@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = "rbi"
   spec.version       = RBI::VERSION
   spec.authors       = ["Alexandre Terrasa"]
-  spec.email         = ["alexandre.terrasa@shopify.com"]
+  spec.email         = ["ruby@shopify.com"]
 
   spec.summary       = "RBI generation framework"
   spec.homepage      = "https://github.com/Shopify/rbi"
