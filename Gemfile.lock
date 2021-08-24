@@ -16,7 +16,7 @@ GIT
 PATH
   remote: .
   specs:
-    rbi (0.0.2)
+    rbi (0.0.3)
       ast
       parser
       rake (~> 13.0)
