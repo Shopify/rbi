@@ -49,6 +49,8 @@ module RBI
 
       sig { params(left: Tree, right: Tree, left_name: String, right_name: String, keep: Keep).returns(Tree) }
       def self.merge_trees(left, right, left_name: "left", right_name: "right", keep: Keep::NONE)
+        left.nest_singleton_methods!
+        right.nest_singleton_methods!
         rewriter = Rewriters::Merge.new(left_name: left_name, right_name: right_name, keep: keep)
         rewriter.merge(left)
         rewriter.merge(right)

@@ -978,5 +978,75 @@ module RBI
         end
       RBI
     end
+
+    def test_merge_trees_with_singleton_classes
+      rbi1 = RBI::Parser.parse_string(<<~RBI)
+        module Foo
+          class << self
+            def m1; end
+
+            sig { void }
+            def m2; end
+          end
+        end
+      RBI
+
+      rbi2 = RBI::Parser.parse_string(<<~RBI)
+        module Foo
+          def self.m1(x); end
+
+          sig { returns(Integer) }
+          def self.m2; end
+        end
+      RBI
+
+      res = Rewriters::Merge.merge_trees(rbi1, rbi2, keep: Rewriters::Merge::Keep::RIGHT)
+
+      assert_equal(<<~RBI, res.string)
+        module Foo
+          class << self
+            def m1(x); end
+
+            sig { returns(Integer) }
+            def m2; end
+          end
+        end
+      RBI
+    end
+
+    def test_merge_trees_with_singleton_classes_with_scope
+      rbi1 = RBI::Parser.parse_string(<<~RBI)
+        module Foo
+          def self.m1(x); end
+
+          sig { returns(Integer) }
+          def self.m2; end
+        end
+      RBI
+
+      rbi2 = RBI::Parser.parse_string(<<~RBI)
+        module Foo
+          class << self
+            def m1; end
+
+            sig { void }
+            def m2; end
+          end
+        end
+      RBI
+
+      res = Rewriters::Merge.merge_trees(rbi1, rbi2, keep: Rewriters::Merge::Keep::RIGHT)
+
+      assert_equal(<<~RBI, res.string)
+        module Foo
+          class << self
+            def m1; end
+
+            sig { void }
+            def m2; end
+          end
+        end
+      RBI
+    end
   end
 end
