@@ -19,7 +19,6 @@ PATH
     rbi (0.0.3)
       ast
       parser
-      rake (~> 13.0)
       sorbet-runtime
       unparser
 
@@ -92,6 +91,7 @@ PLATFORMS
 DEPENDENCIES
   byebug
   minitest
+  rake (~> 13.0)
   rbi!
   rubocop (~> 1.7)
   rubocop-shopify
