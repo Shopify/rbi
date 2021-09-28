@@ -1,7 +1,7 @@
 # typed: strict
 # frozen_string_literal: true
 
-require "unparser"
+require "parser"
 
 module RBI
   class ParseError < StandardError
@@ -26,6 +26,12 @@ module RBI
     ::Parser::Builders::Default.emit_encoding             = true
     ::Parser::Builders::Default.emit_index                = true
     ::Parser::Builders::Default.emit_arg_inside_procarg0  = true
+
+    sig { void }
+    def initialize
+      # Delay load unparser and only if it has not been loaded already.
+      require "unparser" unless defined?(::Unparser)
+    end
 
     sig { params(string: String).returns(Tree) }
     def self.parse_string(string)
