@@ -458,6 +458,99 @@ module RBI
       RBI
     end
 
+    def test_print_nodes_with_multiline_comments
+      comments = [RBI::Comment.new("This is a\nmultiline comment")]
+
+      rbi = RBI::Tree.new do |tree|
+        tree << RBI::Module.new("Foo", comments: comments) do |mod|
+          mod << RBI::TypeMember.new("A", "type_member", comments: comments)
+          mod << RBI::Method.new("foo", comments: comments)
+        end
+      end
+
+      rbi << RBI::Method.new("foo", comments: comments) do |method|
+        method << RBI::ReqParam.new("a", comments: comments)
+        method << RBI::OptParam.new("b", "42", comments: comments)
+        method << RBI::RestParam.new("c", comments: comments)
+        method << RBI::KwParam.new("d", comments: comments)
+        method << RBI::KwOptParam.new("e", "'bar'", comments: comments)
+        method << RBI::KwRestParam.new("f", comments: comments)
+        method << RBI::BlockParam.new("g", comments: comments)
+
+        sig = RBI::Sig.new
+        sig << RBI::SigParam.new("a", "Integer", comments: comments)
+        sig << RBI::SigParam.new("b", "String", comments: comments)
+        sig << RBI::SigParam.new("c", "T.untyped", comments: comments)
+        method.sigs << sig
+      end
+
+      assert_equal(<<~RBI, rbi.string)
+        # This is a
+        # multiline comment
+        module Foo
+          # This is a
+          # multiline comment
+          A = type_member
+
+          # This is a
+          # multiline comment
+          def foo; end
+        end
+
+        # This is a
+        # multiline comment
+        sig do
+          params(
+            a: Integer, # This is a
+                        # multiline comment
+            b: String, # This is a
+                       # multiline comment
+            c: T.untyped # This is a
+                         # multiline comment
+          ).void
+        end
+        def foo(
+          a, # This is a
+             # multiline comment
+          b = 42, # This is a
+                  # multiline comment
+          *c, # This is a
+              # multiline comment
+          d:, # This is a
+              # multiline comment
+          e: 'bar', # This is a
+                    # multiline comment
+          **f, # This is a
+               # multiline comment
+          &g # This is a
+             # multiline comment
+        ); end
+      RBI
+    end
+
+    def test_print_nodes_with_heredoc_comments
+      comments = [RBI::Comment.new(<<~COMMENT)]
+        This
+        is
+        a
+        multiline
+        comment
+      COMMENT
+
+      rbi = RBI::Tree.new do |tree|
+        tree << RBI::Module.new("Foo", comments: comments)
+      end
+
+      assert_equal(<<~RBI, rbi.string)
+        # This
+        # is
+        # a
+        # multiline
+        # comment
+        module Foo; end
+      RBI
+    end
+
     def test_print_methods_with_signatures_and_comments
       comments_single = [RBI::Comment.new("This is a single line comment")]
 
