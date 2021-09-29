@@ -156,10 +156,18 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      text = self.text.strip
-      v.printt("#")
-      v.print(" #{text}") unless text.empty?
-      v.printn
+      lines = text.lines
+
+      if lines.empty?
+        v.printl("#")
+      end
+
+      lines.each do |line|
+        text = line.strip
+        v.printt("#")
+        v.print(" #{text}") unless text.empty?
+        v.printn
+      end
     end
   end
 
@@ -366,13 +374,14 @@ module RBI
             v.printt
             v.visit(param)
             v.print(",") if pindex < params.size - 1
-            param.comments.each_with_index do |comment, cindex|
+
+            param.comments_lines.each_with_index do |comment, cindex|
               if cindex > 0
                 param.print_comment_leading_space(v, last: pindex == params.size - 1)
               else
                 v.print(" ")
               end
-              v.print("# #{comment.text.strip}")
+              v.print("# #{comment}")
             end
             v.printn
           end
@@ -409,6 +418,11 @@ module RBI
       v.printt
       v.print(" " * (name.size + 1))
       v.print(" ") unless last
+    end
+
+    sig { returns(T::Array[String]) }
+    def comments_lines
+      comments.flat_map { |comment| comment.text.lines.map(&:strip) }
     end
   end
 
@@ -576,13 +590,13 @@ module RBI
             v.printt
             v.visit(param)
             v.print(",") if pindex < params.size - 1
-            param.comments.each_with_index do |comment, cindex|
+            param.comments_lines.each_with_index do |comment, cindex|
               if cindex == 0
                 v.print(" ")
               else
                 param.print_comment_leading_space(v, last: pindex == params.size - 1)
               end
-              v.print("# #{comment.text.strip}")
+              v.print("# #{comment}")
             end
             v.printn
           end
@@ -632,6 +646,11 @@ module RBI
       v.printt
       v.print(" " * (name.size + type.size + 3))
       v.print(" ") unless last
+    end
+
+    sig { returns(T::Array[String]) }
+    def comments_lines
+      comments.flat_map { |comment| comment.text.lines.map(&:strip) }
     end
   end
 
