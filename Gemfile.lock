@@ -16,7 +16,7 @@ GIT
 PATH
   remote: .
   specs:
-    rbi (0.0.4)
+    rbi (0.0.5)
       ast
       parser
       sorbet-runtime
