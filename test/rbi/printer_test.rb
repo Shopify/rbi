@@ -626,6 +626,17 @@ module RBI
       RBI
     end
 
+    def test_print_empty_trees_with_comments
+      rbi = RBI::File.new(strictness: "true")
+      rbi.root.comments << RBI::Comment.new("foo")
+
+      assert_equal(<<~RBI, rbi.string)
+        # typed: true
+
+        # foo
+      RBI
+    end
+
     def test_print_params_inline_comments
       comments = [RBI::Comment.new("comment")]
 

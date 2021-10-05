@@ -97,7 +97,7 @@ module RBI
         v.visit_all(comments)
       end
 
-      unless root.empty?
+      unless root.empty? && root.comments.empty?
         v.printn if strictness || !comments.empty?
         v.visit(root)
       end
