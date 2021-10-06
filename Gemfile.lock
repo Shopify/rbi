@@ -19,7 +19,7 @@ PATH
     rbi (0.0.5)
       ast
       parser
-      sorbet-runtime
+      sorbet-runtime (>= 0.5.9204)
       unparser
 
 GEM
@@ -66,12 +66,12 @@ GEM
     rubocop-sorbet (0.6.1)
       rubocop
     ruby-progressbar (1.11.0)
-    sorbet (0.5.6482)
-      sorbet-static (= 0.5.6482)
-    sorbet-runtime (0.5.6482)
-    sorbet-static (0.5.6482-universal-darwin-19)
-    sorbet-static (0.5.6482-universal-darwin-20)
-    sorbet-static (0.5.6482-x86_64-linux)
+    sorbet (0.5.9204)
+      sorbet-static (= 0.5.9204)
+    sorbet-runtime (0.5.9204)
+    sorbet-static (0.5.9204-universal-darwin-19)
+    sorbet-static (0.5.9204-universal-darwin-20)
+    sorbet-static (0.5.9204-x86_64-linux)
     spoom (1.1.1)
       colorize
       sorbet (>= 0.5.6347)
@@ -96,7 +96,7 @@ DEPENDENCIES
   rubocop (~> 1.7)
   rubocop-shopify
   rubocop-sorbet
-  sorbet
+  sorbet (>= 0.5.9204)
   tapioca!
 
 BUNDLED WITH
