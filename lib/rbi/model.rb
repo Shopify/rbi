@@ -89,6 +89,13 @@ module RBI
       super(loc: loc)
       @comments = comments
     end
+
+    sig { returns(T::Array[String]) }
+    def annotations
+      comments
+        .select { |comment| comment.text.start_with?("@") }
+        .map { |comment| T.must(comment.text[1..]) }
+    end
   end
 
   class Tree < NodeWithComments
