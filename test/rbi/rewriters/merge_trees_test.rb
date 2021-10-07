@@ -868,11 +868,9 @@ module RBI
         B = 42
       RBI
 
-      rewriter = Rewriters::Merge.new
-      rewriter.merge(rbi1)
-      conflicts = rewriter.merge(rbi2)
+      merged_tree = rbi1.merge(rbi2)
 
-      assert_equal(<<~STR.strip, conflicts.join("\n"))
+      assert_equal(<<~STR.strip, merged_tree.conflicts.join("\n"))
         Conflicting definitions for `::Foo`
         Conflicting definitions for `::Foo::A`
         Conflicting definitions for `::B`
