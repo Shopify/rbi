@@ -5,6 +5,31 @@ require "test_helper"
 
 module RBI
   class ModelTest < Minitest::Test
+    def test_model_empty_file
+      file = File.new
+      assert(file.empty?)
+
+      file.comments << Comment.new("comment")
+      assert(file.empty?)
+
+      file.root.comments << Comment.new("comment")
+      assert(file.empty?)
+
+      file << Module.new("Foo")
+      refute(file.empty?)
+    end
+
+    def test_model_empty_tree
+      tree = Tree.new
+      assert(tree.empty?)
+
+      tree.comments << Comment.new("comment")
+      assert(tree.empty?)
+
+      tree << Module.new("Foo")
+      refute(tree.empty?)
+    end
+
     def test_model_block_builders
       rbi = RBI::File.new do |file|
         file << RBI::Tree.new do |tree|
