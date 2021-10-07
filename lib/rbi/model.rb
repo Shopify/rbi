@@ -136,7 +136,7 @@ module RBI
     attr_accessor :root
 
     sig { returns(T.nilable(String)) }
-    attr_reader :strictness
+    attr_accessor :strictness
 
     sig { returns(T::Array[Comment]) }
     attr_accessor :comments
