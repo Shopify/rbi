@@ -744,6 +744,54 @@ module RBI
       RBI
     end
 
+    def test_print_blank_lines
+      comments = [
+        RBI::Comment.new("comment 1"),
+        BlankLine.new,
+        RBI::Comment.new("comment 2"),
+      ]
+
+      rbi = Module.new("Foo", comments: comments) do |mod|
+        mod << BlankLine.new
+        mod << RBI::Method.new("foo")
+        mod << BlankLine.new
+        mod << BlankLine.new
+        mod << BlankLine.new
+
+        mod << Class.new("Bar") do |cls|
+          cls << RBI::Comment.new("begin")
+          cls << BlankLine.new
+          cls << BlankLine.new
+          cls << RBI::Comment.new("middle")
+          cls << BlankLine.new
+          cls << BlankLine.new
+          cls << RBI::Comment.new("end")
+        end
+      end
+
+      assert_equal(<<~RBI, rbi.string)
+        # comment 1
+
+        # comment 2
+        module Foo
+
+          def foo; end
+
+
+
+          class Bar
+            # begin
+
+
+            # middle
+
+
+            # end
+          end
+        end
+      RBI
+    end
+
     def test_print_new_lines_between_scopes
       rbi = RBI::Tree.new
       scope = RBI::Class.new("Bar")

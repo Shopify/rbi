@@ -140,6 +140,7 @@ module RBI
     def print_blank_line_before(v)
       previous_node = v.previous_node
       return unless previous_node
+      return if previous_node.is_a?(BlankLine)
       return if previous_node.oneline? && oneline?
       v.printn
     end
@@ -179,7 +180,7 @@ module RBI
     end
   end
 
-  class EmptyComment
+  class BlankLine
     extend T::Sig
 
     sig { override.params(v: Printer).void }

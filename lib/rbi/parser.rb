@@ -178,7 +178,7 @@ module RBI
 
         if last_line && comment_line > last_line + 1
           # Preserve empty lines in file headers
-          tree.comments << EmptyComment.new(loc: loc)
+          tree.comments << BlankLine.new(loc: loc)
         end
 
         tree.comments << Comment.new(text, loc: loc)
