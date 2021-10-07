@@ -159,6 +159,11 @@ module RBI
     def <<(node)
       @root << node
     end
+
+    sig { returns(T::Boolean) }
+    def empty?
+      @root.empty?
+    end
   end
 
   # Scopes
