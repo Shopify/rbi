@@ -314,9 +314,9 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { params(other: Tree).returns(MergeTree) }
-    def merge(other)
-      Rewriters::Merge.merge_trees(self, other)
+    sig { params(other: Tree, left_name: String, right_name: String, keep: Rewriters::Merge::Keep).returns(MergeTree) }
+    def merge(other, left_name: "left", right_name: "right", keep: Rewriters::Merge::Keep::NONE)
+      Rewriters::Merge.merge_trees(self, other, left_name: left_name, right_name: right_name, keep: keep)
     end
   end
 

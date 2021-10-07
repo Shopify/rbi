@@ -908,7 +908,7 @@ module RBI
         end
       RBI
 
-      res = Rewriters::Merge.merge_trees(rbi1, rbi2, keep: Rewriters::Merge::Keep::LEFT)
+      res = rbi1.merge(rbi2, keep: Rewriters::Merge::Keep::LEFT)
 
       assert_equal(<<~RBI, res.string)
         module Foo
@@ -958,7 +958,7 @@ module RBI
         end
       RBI
 
-      res = Rewriters::Merge.merge_trees(rbi1, rbi2, keep: Rewriters::Merge::Keep::RIGHT)
+      res = rbi1.merge(rbi2, keep: Rewriters::Merge::Keep::RIGHT)
 
       assert_equal(<<~RBI, res.string)
         module Foo
@@ -998,7 +998,7 @@ module RBI
         end
       RBI
 
-      res = Rewriters::Merge.merge_trees(rbi1, rbi2, keep: Rewriters::Merge::Keep::RIGHT)
+      res = rbi1.merge(rbi2, keep: Rewriters::Merge::Keep::RIGHT)
 
       assert_equal(<<~RBI, res.string)
         module Foo
@@ -1033,7 +1033,7 @@ module RBI
         end
       RBI
 
-      res = Rewriters::Merge.merge_trees(rbi1, rbi2, keep: Rewriters::Merge::Keep::RIGHT)
+      res = rbi1.merge(rbi2, keep: Rewriters::Merge::Keep::RIGHT)
 
       assert_equal(<<~RBI, res.string)
         module Foo
