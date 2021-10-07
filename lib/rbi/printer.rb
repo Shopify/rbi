@@ -136,6 +136,14 @@ module RBI
       out.string
     end
 
+    sig { params(v: Printer).void }
+    def print_blank_line_before(v)
+      previous_node = v.previous_node
+      return unless previous_node
+      return if previous_node.oneline? && oneline?
+      v.printn
+    end
+
     sig { returns(T::Boolean) }
     def oneline?
       true
@@ -201,8 +209,7 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      previous_node = v.previous_node
-      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
+      print_blank_line_before(v)
 
       v.printl("# #{loc}") if loc && v.print_locs
       v.visit_all(comments)
@@ -295,8 +302,7 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      previous_node = v.previous_node
-      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
+      print_blank_line_before(v)
 
       v.printl("# #{loc}") if loc && v.print_locs
       v.visit_all(comments)
@@ -309,8 +315,7 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      previous_node = v.previous_node
-      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
+      print_blank_line_before(v)
 
       v.visit_all(comments)
       sigs.each { |sig| v.visit(sig) }
@@ -346,8 +351,7 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      previous_node = v.previous_node
-      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
+      print_blank_line_before(v)
 
       v.visit_all(comments)
       v.visit_all(sigs)
@@ -521,8 +525,7 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      previous_node = v.previous_node
-      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
+      print_blank_line_before(v)
 
       v.printl("# #{loc}") if loc && v.print_locs
       v.visit_all(comments)
@@ -543,8 +546,7 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      previous_node = v.previous_node
-      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
+      print_blank_line_before(v)
 
       v.printl("# #{loc}") if loc && v.print_locs
       v.visit_all(comments)
@@ -659,8 +661,7 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      previous_node = v.previous_node
-      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
+      print_blank_line_before(v)
 
       v.printl("# #{loc}") if loc && v.print_locs
       v.visit_all(comments)
@@ -699,8 +700,7 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      previous_node = v.previous_node
-      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
+      print_blank_line_before(v)
 
       v.printl("# #{loc}") if loc && v.print_locs
       v.visit_all(comments)
@@ -713,8 +713,7 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
-      previous_node = v.previous_node
-      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
+      print_blank_line_before(v)
 
       v.printl("# #{loc}") if loc && v.print_locs
       v.visit_all(comments)
