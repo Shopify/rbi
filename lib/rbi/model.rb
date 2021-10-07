@@ -133,10 +133,10 @@ module RBI
     extend T::Sig
 
     sig { returns(Tree) }
-    attr_reader :root
+    attr_accessor :root
 
     sig { returns(T.nilable(String)) }
-    attr_reader :strictness
+    attr_accessor :strictness
 
     sig { returns(T::Array[Comment]) }
     attr_accessor :comments
