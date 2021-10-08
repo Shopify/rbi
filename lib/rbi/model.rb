@@ -66,7 +66,8 @@ module RBI
     end
   end
 
-  class EmptyComment < Comment
+  # An arbitrary blank line that can be added both in trees and comments
+  class BlankLine < Comment
     extend T::Sig
 
     sig { params(loc: T.nilable(Loc)).void }
