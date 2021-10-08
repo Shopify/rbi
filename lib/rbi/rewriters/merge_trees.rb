@@ -47,7 +47,7 @@ module RBI
         end
       end
 
-      sig { params(left: Tree, right: Tree, left_name: String, right_name: String, keep: Keep).returns(Tree) }
+      sig { params(left: Tree, right: Tree, left_name: String, right_name: String, keep: Keep).returns(MergeTree) }
       def self.merge_trees(left, right, left_name: "left", right_name: "right", keep: Keep::NONE)
         left.nest_singleton_methods!
         right.nest_singleton_methods!
@@ -59,7 +59,7 @@ module RBI
         tree
       end
 
-      sig { returns(Tree) }
+      sig { returns(MergeTree) }
       attr_reader :tree
 
       sig { params(left_name: String, right_name: String, keep: Keep).void }
@@ -67,15 +67,15 @@ module RBI
         @left_name = left_name
         @right_name = right_name
         @keep = keep
-        @tree = T.let(Tree.new, Tree)
+        @tree = T.let(MergeTree.new, MergeTree)
         @scope_stack = T.let([@tree], T::Array[Tree])
       end
 
-      sig { params(tree: Tree).returns(T::Array[Conflict]) }
+      sig { params(tree: Tree).void }
       def merge(tree)
         v = TreeMerger.new(@tree, left_name: @left_name, right_name: @right_name, keep: @keep)
         v.visit(tree)
-        v.conflicts
+        @tree.conflicts.concat(v.conflicts)
       end
 
       # Used for logging / error displaying purpose
@@ -314,9 +314,31 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { params(other: Tree).returns(Tree) }
-    def merge(other)
-      Rewriters::Merge.merge_trees(self, other)
+    sig { params(other: Tree, left_name: String, right_name: String, keep: Rewriters::Merge::Keep).returns(MergeTree) }
+    def merge(other, left_name: "left", right_name: "right", keep: Rewriters::Merge::Keep::NONE)
+      Rewriters::Merge.merge_trees(self, other, left_name: left_name, right_name: right_name, keep: keep)
+    end
+  end
+
+  # A tree that _might_ contain conflicts
+  class MergeTree < Tree
+    extend T::Sig
+
+    sig { returns(T::Array[Rewriters::Merge::Conflict]) }
+    attr_reader :conflicts
+
+    sig do
+      params(
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        conflicts: T::Array[Rewriters::Merge::Conflict],
+        block: T.nilable(T.proc.params(node: Tree).void)
+      ).void
+    end
+    def initialize(loc: nil, comments: [], conflicts: [], &block)
+      super(loc: loc, comments: comments)
+      @conflicts = conflicts
+      block&.call(self)
     end
   end
 
