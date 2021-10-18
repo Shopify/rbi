@@ -8,14 +8,28 @@ PATH
       unparser
 
 GEM
+  remote: https://oss:aIXdNDSSxs7ciqSM0yCrqkAM4lqoTzA6@gem.mutant.dev/
+  specs:
+    mutant-license (0.1.1.2.1310633056264669049025896512792929666012.1)
+
+GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.2)
     byebug (11.1.3)
     diff-lcs (1.4.4)
     minitest (5.14.4)
+    mutant (0.11.0)
+      diff-lcs (~> 1.3)
+      parser (~> 3.0.0)
+      regexp_parser (~> 2.0, >= 2.0.3)
+      sorbet-runtime (~> 0.5.0)
+      unparser (~> 0.6.0)
+    mutant-minitest (0.11.0)
+      minitest (~> 5.11)
+      mutant (= 0.11.0)
     parallel (1.20.1)
-    parser (3.0.1.1)
+    parser (3.0.2.0)
       ast (~> 2.4.1)
     rainbow (3.0.0)
     rake (13.0.6)
@@ -56,6 +70,8 @@ PLATFORMS
 DEPENDENCIES
   byebug
   minitest
+  mutant-license!
+  mutant-minitest (~> 0.11.0)
   rake (~> 13.0)
   rbi!
   rubocop (~> 1.7)
