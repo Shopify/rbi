@@ -1,0 +1,9 @@
+integration: minitest
+includes:
+- lib
+- test
+requires:
+- rbi
+matcher:
+  subjects:
+  - 'RBI*'
