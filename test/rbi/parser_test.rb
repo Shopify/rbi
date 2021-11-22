@@ -232,6 +232,16 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
+    def test_parse_root_tree_location
+      rbi = <<~RBI
+        module Foo; end
+        class Bar; end
+      RBI
+
+      tree = RBI::Parser.parse_string(rbi)
+      assert_equal("-:1:0-2:14", tree.loc.to_s)
+    end
+
     def test_parse_scopes_locations
       rbi = <<~RBI
         module Foo; end

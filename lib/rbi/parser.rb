@@ -135,6 +135,7 @@ module RBI
     sig { void }
     def post_process
       assoc_dangling_comments
+      set_root_tree_loc
     end
 
     sig { override.params(node: T.nilable(Object)).void }
@@ -474,6 +475,20 @@ module RBI
       end
 
       @nodes_comments_assoc[node] = keep.reverse
+    end
+
+    sig { void }
+    def set_root_tree_loc
+      first_loc = tree.nodes.first&.loc
+      last_loc = tree.nodes.last&.loc
+
+      @tree.loc = Loc.new(
+        file: @file,
+        begin_line: first_loc&.begin_line || 0,
+        begin_column: first_loc&.begin_column || 0,
+        end_line: last_loc&.end_line || 0,
+        end_column: last_loc&.end_column || 0
+      )
     end
   end
 
