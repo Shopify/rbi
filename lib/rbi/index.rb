@@ -29,24 +29,26 @@ module RBI
       @index[id] ||= []
     end
 
-    sig { params(node: T.all(Indexable, Node)).void }
-    def index(node)
-      node.index_ids.each { |id| self[id] << node }
-    end
-
     sig { override.params(node: T.nilable(Node)).void }
     def visit(node)
       return unless node
 
       case node
       when Scope
-        index(node)
+        index_node(node)
         visit_all(node.nodes)
       when Tree
         visit_all(node.nodes)
       when Indexable
-        index(node)
+        index_node(node)
       end
+    end
+
+    private
+
+    sig { params(node: T.all(Indexable, Node)).void }
+    def index_node(node)
+      node.index_ids.each { |id| self[id] << node }
     end
   end
 
