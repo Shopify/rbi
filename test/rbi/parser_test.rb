@@ -793,5 +793,43 @@ module RBI
       assert_equal("Unexpected token `private` before `casgn`", e.message)
       assert_equal("-:1:0-1:16", e.location.to_s)
     end
+
+    def test_parse_real_file
+      path = "test_parse_real_file.rbi"
+
+      ::File.write(path, <<~RBI)
+        class Foo
+          def foo; end
+        end
+      RBI
+
+      rbi = Parser.parse_file(path).string(print_locs: true)
+
+      assert_equal(<<~RBI, rbi)
+        # test_parse_real_file.rbi:1:0-3:3
+        class Foo
+          # test_parse_real_file.rbi:2:2-2:14
+          def foo; end
+        end
+      RBI
+
+      FileUtils.rm_rf(path)
+    end
+
+    def test_parse_real_file_with_error
+      path = "test_parse_real_file_with_error.rbi"
+
+      ::File.write(path, <<~RBI)
+        class Foo
+      RBI
+
+      e = assert_raises(RBI::ParseError) do
+        RBI::Parser.parse_file(path)
+      end
+      assert_equal("unexpected token $end", e.message)
+      assert_equal("test_parse_real_file_with_error.rbi:2:0-2:0", e.location.to_s)
+
+      FileUtils.rm_rf(path)
+    end
   end
 end
