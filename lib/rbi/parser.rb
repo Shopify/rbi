@@ -71,10 +71,9 @@ module RBI
     def parse(content, file:)
       node, comments = Unparser.parse_with_comments(content)
       assoc = ::Parser::Source::Comment.associate_locations(node, comments)
-      builder = TreeBuilder.new(file: file, nodes_comments_assoc: assoc)
-      builder.separate_header_comments
+      builder = TreeBuilder.new(file: file, comments: comments, nodes_comments_assoc: assoc)
       builder.visit(node)
-      builder.assoc_dangling_comments(comments)
+      builder.post_process
       builder.tree
     rescue ::Parser::SyntaxError => e
       raise ParseError.new(e.message, Loc.from_ast_loc(file, e.diagnostic.location))
@@ -117,16 +116,25 @@ module RBI
     sig do
       params(
         file: String,
+        comments: T::Array[::Parser::Source::Comment],
         nodes_comments_assoc: T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]]
       ).void
     end
-    def initialize(file:, nodes_comments_assoc: {})
+    def initialize(file:, comments: [], nodes_comments_assoc: {})
       super()
       @file = file
+      @comments = comments
       @nodes_comments_assoc = nodes_comments_assoc
       @tree = T.let(Tree.new, Tree)
       @scopes_stack = T.let([@tree], T::Array[Tree])
       @last_sigs = T.let([], T::Array[RBI::Sig])
+
+      separate_header_comments
+    end
+
+    sig { void }
+    def post_process
+      assoc_dangling_comments
     end
 
     sig { override.params(node: T.nilable(Object)).void }
@@ -155,46 +163,6 @@ module RBI
         end
       else
         visit_all(node.children)
-      end
-    end
-
-    sig { void }
-    def separate_header_comments
-      return if @nodes_comments_assoc.empty?
-
-      keep = []
-      node = T.must(@nodes_comments_assoc.keys.first)
-      comments = T.must(@nodes_comments_assoc.values.first)
-
-      last_line = T.let(nil, T.nilable(Integer))
-      comments.reverse.each do |comment|
-        comment_line = comment.location.last_line
-
-        break if last_line && comment_line < last_line - 1 ||
-          !last_line && comment_line < node.first_line - 1
-
-        keep << comment
-        last_line = comment_line
-      end
-
-      @nodes_comments_assoc[node] = keep.reverse
-    end
-
-    sig { params(comments: T::Array[::Parser::Source::Comment]).void }
-    def assoc_dangling_comments(comments)
-      last_line = T.let(nil, T.nilable(Integer))
-      (comments - @nodes_comments_assoc.values.flatten).each do |comment|
-        comment_line = comment.location.last_line
-        text = comment.text[1..-1].strip
-        loc = Loc.from_ast_loc(@file, comment.location)
-
-        if last_line && comment_line > last_line + 1
-          # Preserve empty lines in file headers
-          tree.comments << BlankLine.new(loc: loc)
-        end
-
-        tree.comments << Comment.new(text, loc: loc)
-        last_line = comment_line
       end
     end
 
@@ -466,6 +434,46 @@ module RBI
       sigs = @last_sigs.dup
       @last_sigs.clear
       sigs
+    end
+
+    sig { void }
+    def assoc_dangling_comments
+      last_line = T.let(nil, T.nilable(Integer))
+      (@comments - @nodes_comments_assoc.values.flatten).each do |comment|
+        comment_line = comment.location.last_line
+        text = comment.text[1..-1].strip
+        loc = Loc.from_ast_loc(@file, comment.location)
+
+        if last_line && comment_line > last_line + 1
+          # Preserve empty lines in file headers
+          tree.comments << BlankLine.new(loc: loc)
+        end
+
+        tree.comments << Comment.new(text, loc: loc)
+        last_line = comment_line
+      end
+    end
+
+    sig { void }
+    def separate_header_comments
+      return if @nodes_comments_assoc.empty?
+
+      keep = []
+      node = T.must(@nodes_comments_assoc.keys.first)
+      comments = T.must(@nodes_comments_assoc.values.first)
+
+      last_line = T.let(nil, T.nilable(Integer))
+      comments.reverse.each do |comment|
+        comment_line = comment.location.last_line
+
+        break if last_line && comment_line < last_line - 1 ||
+          !last_line && comment_line < node.first_line - 1
+
+        keep << comment
+        last_line = comment_line
+      end
+
+      @nodes_comments_assoc[node] = keep.reverse
     end
   end
 
