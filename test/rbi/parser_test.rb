@@ -844,5 +844,27 @@ module RBI
 
       FileUtils.rm_rf(path)
     end
+
+    def test_parse_real_files
+      path1 = "test_parse_real_files_1.rbi"
+      path2 = "test_parse_real_files_2.rbi"
+
+      ::File.write(path1, "class Foo; end")
+      ::File.write(path2, "class Bar; end")
+
+      trees = Parser.parse_files([path1, path2])
+      rbis = trees.map { |tree| tree.string(print_locs: true) }
+
+      assert_equal(<<~RBI, rbis.join("\n"))
+        # test_parse_real_files_1.rbi:1:0-1:14
+        class Foo; end
+
+        # test_parse_real_files_2.rbi:1:0-1:14
+        class Bar; end
+      RBI
+
+      FileUtils.rm_rf(path1)
+      FileUtils.rm_rf(path2)
+    end
   end
 end

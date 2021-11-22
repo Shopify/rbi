@@ -43,6 +43,12 @@ module RBI
       Parser.new.parse_file(path)
     end
 
+    sig { params(paths: T::Array[String]).returns(T::Array[Tree]) }
+    def self.parse_files(paths)
+      parser = Parser.new
+      paths.map { |path| parser.parse_file(path) }
+    end
+
     sig { params(string: String).returns(Tree) }
     def parse_string(string)
       parse(string, file: "-")
