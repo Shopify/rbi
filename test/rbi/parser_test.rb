@@ -794,6 +794,19 @@ module RBI
       assert_equal("-:1:0-1:16", e.location.to_s)
     end
 
+    def test_parse_strings
+      rbi1 = "class Foo; end"
+      rbi2 = "class Bar; end"
+
+      trees = Parser.parse_strings([rbi1, rbi2])
+
+      assert_equal(<<~RBI, trees.map(&:string).join("\n"))
+        class Foo; end
+
+        class Bar; end
+      RBI
+    end
+
     def test_parse_real_file
       path = "test_parse_real_file.rbi"
 
