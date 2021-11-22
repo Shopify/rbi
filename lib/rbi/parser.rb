@@ -71,7 +71,7 @@ module RBI
     def parse(content, file:)
       node, comments = Unparser.parse_with_comments(content)
       assoc = ::Parser::Source::Comment.associate_locations(node, comments)
-      builder = TreeBuilder.new(file: file, comments: assoc)
+      builder = TreeBuilder.new(file: file, nodes_comments_assoc: assoc)
       builder.separate_header_comments
       builder.visit(node)
       builder.assoc_dangling_comments(comments)
@@ -117,13 +117,13 @@ module RBI
     sig do
       params(
         file: String,
-        comments: T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]]
+        nodes_comments_assoc: T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]]
       ).void
     end
-    def initialize(file:, comments: {})
+    def initialize(file:, nodes_comments_assoc: {})
       super()
       @file = file
-      @comments = comments
+      @nodes_comments_assoc = nodes_comments_assoc
       @tree = T.let(Tree.new, Tree)
       @scopes_stack = T.let([@tree], T::Array[Tree])
       @last_sigs = T.let([], T::Array[RBI::Sig])
@@ -160,11 +160,11 @@ module RBI
 
     sig { void }
     def separate_header_comments
-      return if @comments.empty?
+      return if @nodes_comments_assoc.empty?
 
       keep = []
-      node = T.must(@comments.keys.first)
-      comments = T.must(@comments.values.first)
+      node = T.must(@nodes_comments_assoc.keys.first)
+      comments = T.must(@nodes_comments_assoc.values.first)
 
       last_line = T.let(nil, T.nilable(Integer))
       comments.reverse.each do |comment|
@@ -177,13 +177,13 @@ module RBI
         last_line = comment_line
       end
 
-      @comments[node] = keep.reverse
+      @nodes_comments_assoc[node] = keep.reverse
     end
 
     sig { params(comments: T::Array[::Parser::Source::Comment]).void }
     def assoc_dangling_comments(comments)
       last_line = T.let(nil, T.nilable(Integer))
-      (comments - @comments.values.flatten).each do |comment|
+      (comments - @nodes_comments_assoc.values.flatten).each do |comment|
         comment_line = comment.location.last_line
         text = comment.text[1..-1].strip
         loc = Loc.from_ast_loc(@file, comment.location)
@@ -447,7 +447,7 @@ module RBI
 
     sig { params(node: AST::Node).returns(T::Array[Comment]) }
     def node_comments(node)
-      comments = @comments[node.location]
+      comments = @nodes_comments_assoc[node.location]
       return [] unless comments
       comments.map do |comment|
         text = comment.text[1..-1].strip
