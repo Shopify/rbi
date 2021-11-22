@@ -29,6 +29,11 @@ module RBI
       @index[id] ||= []
     end
 
+    sig { params(nodes: Node).void }
+    def index(*nodes)
+      nodes.each { |node| visit(node) }
+    end
+
     sig { override.params(node: T.nilable(Node)).void }
     def visit(node)
       return unless node

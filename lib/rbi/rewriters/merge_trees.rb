@@ -203,7 +203,7 @@ module RBI
           left.nodes.each do |node|
             right_copy << node
           end
-          @index.visit(right_copy)
+          @index.index(right_copy)
           right_copy
         end
       end
