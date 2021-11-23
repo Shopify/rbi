@@ -35,20 +35,21 @@ module RBI
         when Helper               then 20
         when TypeMember           then 30
         when MixesInClassMethods  then 40
-        when TStructField         then 50
-        when TEnumBlock           then 60
+        when Send                 then 50
+        when TStructField         then 60
+        when TEnumBlock           then 70
         when Method
           if node.name == "initialize"
-            71
+            81
           elsif !node.is_singleton
-            72
+            82
           else
-            73
+            83
           end
-        when SingletonClass       then 80
-        when Scope, Const         then 90
+        when SingletonClass       then 90
+        when Scope, Const         then 100
         else
-          100
+          110
         end
       end
 
@@ -59,12 +60,13 @@ module RBI
         when Group::Kind::Helpers             then 1
         when Group::Kind::TypeMembers         then 2
         when Group::Kind::MixesInClassMethods then 3
-        when Group::Kind::TStructFields       then 4
-        when Group::Kind::TEnums              then 5
-        when Group::Kind::Inits               then 6
-        when Group::Kind::Methods             then 7
-        when Group::Kind::SingletonClasses    then 8
-        when Group::Kind::Consts              then 9
+        when Group::Kind::Sends               then 5
+        when Group::Kind::TStructFields       then 6
+        when Group::Kind::TEnums              then 7
+        when Group::Kind::Inits               then 8
+        when Group::Kind::Methods             then 9
+        when Group::Kind::SingletonClasses    then 10
+        when Group::Kind::Consts              then 11
         else
           T.absurd(kind)
         end

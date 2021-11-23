@@ -55,6 +55,8 @@ module RBI
         Group::Kind::TypeMembers
       when MixesInClassMethods
         Group::Kind::MixesInClassMethods
+      when Send
+        Group::Kind::Sends
       when TStructField
         Group::Kind::TStructFields
       when TEnumBlock
@@ -95,6 +97,7 @@ module RBI
         Helpers             = new
         TypeMembers         = new
         MixesInClassMethods = new
+        Sends               = new
         TStructFields       = new
         TEnums              = new
         Inits               = new
