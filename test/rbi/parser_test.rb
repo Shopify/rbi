@@ -232,6 +232,16 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
+    def test_parse_root_tree_location
+      rbi = <<~RBI
+        module Foo; end
+        class Bar; end
+      RBI
+
+      tree = RBI::Parser.parse_string(rbi)
+      assert_equal("-:1:0-2:14", tree.loc.to_s)
+    end
+
     def test_parse_scopes_locations
       rbi = <<~RBI
         module Foo; end
@@ -792,6 +802,79 @@ module RBI
       end
       assert_equal("Unexpected token `private` before `casgn`", e.message)
       assert_equal("-:1:0-1:16", e.location.to_s)
+    end
+
+    def test_parse_strings
+      rbi1 = "class Foo; end"
+      rbi2 = "class Bar; end"
+
+      trees = Parser.parse_strings([rbi1, rbi2])
+
+      assert_equal(<<~RBI, trees.map(&:string).join("\n"))
+        class Foo; end
+
+        class Bar; end
+      RBI
+    end
+
+    def test_parse_real_file
+      path = "test_parse_real_file.rbi"
+
+      ::File.write(path, <<~RBI)
+        class Foo
+          def foo; end
+        end
+      RBI
+
+      rbi = Parser.parse_file(path).string(print_locs: true)
+
+      assert_equal(<<~RBI, rbi)
+        # test_parse_real_file.rbi:1:0-3:3
+        class Foo
+          # test_parse_real_file.rbi:2:2-2:14
+          def foo; end
+        end
+      RBI
+
+      FileUtils.rm_rf(path)
+    end
+
+    def test_parse_real_file_with_error
+      path = "test_parse_real_file_with_error.rbi"
+
+      ::File.write(path, <<~RBI)
+        class Foo
+      RBI
+
+      e = assert_raises(RBI::ParseError) do
+        RBI::Parser.parse_file(path)
+      end
+      assert_equal("unexpected token $end", e.message)
+      assert_equal("test_parse_real_file_with_error.rbi:2:0-2:0", e.location.to_s)
+
+      FileUtils.rm_rf(path)
+    end
+
+    def test_parse_real_files
+      path1 = "test_parse_real_files_1.rbi"
+      path2 = "test_parse_real_files_2.rbi"
+
+      ::File.write(path1, "class Foo; end")
+      ::File.write(path2, "class Bar; end")
+
+      trees = Parser.parse_files([path1, path2])
+      rbis = trees.map { |tree| tree.string(print_locs: true) }
+
+      assert_equal(<<~RBI, rbis.join("\n"))
+        # test_parse_real_files_1.rbi:1:0-1:14
+        class Foo; end
+
+        # test_parse_real_files_2.rbi:1:0-1:14
+        class Bar; end
+      RBI
+
+      FileUtils.rm_rf(path1)
+      FileUtils.rm_rf(path2)
     end
   end
 end
