@@ -47,12 +47,13 @@ module RBI
           include A, B
           extend T::Sig
           abstract!
+          foo :bar, baz: "baz"
         end
       RBI
 
       index_string = index_string(rbi.index)
       assert_equal(<<~IDX, index_string)
-        ::A: -:1:0-9:3
+        ::A: -:1:0-10:3
         ::A#a: -:2:2-2:20
         ::A#a=: -:3:2-3:20
         ::A#b: -:2:2-2:20
@@ -62,6 +63,7 @@ module RBI
         ::A#foo: -:5:2-5:17
         ::A.abstract!: -:8:2-8:11
         ::A.extend(T::Sig): -:7:2-7:15
+        ::A.foo: -:9:2-9:22
         ::A.include(A): -:6:2-6:14
         ::A.include(B): -:6:2-6:14
       IDX
