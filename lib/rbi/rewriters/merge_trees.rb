@@ -512,6 +512,15 @@ module RBI
     end
   end
 
+  class Send
+    extend T::Sig
+
+    sig { override.params(other: Node).returns(T::Boolean) }
+    def compatible_with?(other)
+      other.is_a?(Send) && method == other.method && args == other.args
+    end
+  end
+
   class TStructField
     extend T::Sig
 
