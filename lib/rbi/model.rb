@@ -914,6 +914,106 @@ module RBI
     end
   end
 
+  # Sends
+
+  class Send < NodeWithComments
+    extend T::Sig
+
+    sig { returns(String) }
+    attr_reader :method
+
+    sig { returns(T::Array[Arg]) }
+    attr_reader :args
+
+    sig do
+      params(
+        method: String,
+        args: T::Array[Arg],
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment],
+        block: T.nilable(T.proc.params(node: Send).void)
+      ).void
+    end
+    def initialize(method, args = [], loc: nil, comments: [], &block)
+      super(loc: loc, comments: comments)
+      @method = method
+      @args = args
+      block&.call(self)
+    end
+
+    sig { params(arg: Arg).void }
+    def <<(arg)
+      @args << arg
+    end
+
+    sig { params(other: T.nilable(Object)).returns(T::Boolean) }
+    def ==(other)
+      Send === other && method == other.method && args == other.args
+    end
+
+    sig { returns(String) }
+    def to_s
+      "#{parent_scope&.fully_qualified_name}.#{method}(#{args.join(", ")})"
+    end
+  end
+
+  class Arg < Node
+    extend T::Sig
+
+    sig { returns(String) }
+    attr_reader :value
+
+    sig do
+      params(
+        value: String,
+        loc: T.nilable(Loc)
+      ).void
+    end
+    def initialize(value, loc: nil)
+      super(loc: loc)
+      @value = value
+    end
+
+    sig { params(other: T.nilable(Object)).returns(T::Boolean) }
+    def ==(other)
+      Arg === other && value == other.value
+    end
+
+    sig { returns(String) }
+    def to_s
+      value
+    end
+  end
+
+  class KwArg < Arg
+    extend T::Sig
+
+    sig { returns(String) }
+    attr_reader :keyword
+
+    sig do
+      params(
+        keyword: String,
+        value: String,
+        loc: T.nilable(Loc)
+      ).void
+    end
+    def initialize(keyword, value, loc: nil)
+      super(value, loc: loc)
+      @keyword = keyword
+    end
+
+    sig { params(other: T.nilable(Object)).returns(T::Boolean) }
+    def ==(other)
+      KwArg === other && value == other.value && keyword == other.keyword
+    end
+
+    sig { returns(String) }
+    def to_s
+      "#{keyword}: #{value}"
+    end
+  end
+
   # Sorbet's sigs
 
   class Sig < Node
