@@ -12,10 +12,16 @@ module RBI
         visit_all(node.nodes)
         original_order = node.nodes.map.with_index.to_h
         node.nodes.sort! do |a, b|
+          # First we try to compare the nodes by their node rank (based on the node type)
           res = node_rank(a) <=> node_rank(b)
-          res = node_name(a) <=> node_name(b) if res == 0
-          res = (original_order[a] || 0) <=> (original_order[b] || 0) if res == 0
-          res || 0
+          next res if res != 0 # we can sort the nodes by their rank, let's stop here
+
+          # Then, if the nodes ranks are the same (res == 0), we try to compare the nodes by their name
+          res = node_name(a) <=> node_name(b)
+          next res if res && res != 0 # we can sort the nodes by their name, let's stop here
+
+          # Finally, if the two nodes have the same rank and the same name or at least one node is anonymous then,
+          T.must(original_order[a]) <=> T.must(original_order[b]) # we keep the original order
         end
       end
 
@@ -39,7 +45,8 @@ module RBI
           else
             73
           end
-        when Scope, Const then 80
+        when SingletonClass       then 80
+        when Scope, Const         then 90
         else
           100
         end
@@ -56,7 +63,8 @@ module RBI
         when Group::Kind::TEnums              then 5
         when Group::Kind::Inits               then 6
         when Group::Kind::Methods             then 7
-        when Group::Kind::Consts              then 8
+        when Group::Kind::SingletonClasses    then 8
+        when Group::Kind::Consts              then 9
         else
           T.absurd(kind)
         end

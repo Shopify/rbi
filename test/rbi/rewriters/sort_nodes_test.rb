@@ -240,15 +240,18 @@ module RBI
       rbi << RBI::Method.new("m1")
       rbi << RBI::MixesInClassMethods.new("MICM")
       rbi << RBI::Module.new("B")
+      rbi << RBI::SingletonClass.new
       rbi << RBI::Include.new("M3")
       rbi << RBI::TStructConst.new("SP2", "T")
       rbi << RBI::Method.new("m2")
       rbi << RBI::TStruct.new("D")
       rbi << RBI::TEnum.new("C")
+      rbi << RBI::SingletonClass.new
       rbi << RBI::Extend.new("M2")
       rbi << RBI::TStructConst.new("SP4", "T")
       rbi << RBI::Include.new("M1")
       rbi << RBI::Helper.new("h")
+      rbi << RBI::SingletonClass.new
       rbi << RBI::Class.new("E")
       rbi << RBI::TStructProp.new("SP1", "T")
       rbi << RBI::Method.new("m3", is_singleton: true)
@@ -270,6 +273,9 @@ module RBI
         def m1; end
         def m2; end
         def self.m3; end
+        class << self; end
+        class << self; end
+        class << self; end
         A = 42
         module B; end
         class C < ::T::Enum; end
