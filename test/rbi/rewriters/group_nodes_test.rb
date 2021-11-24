@@ -20,6 +20,7 @@ module RBI
       rbi << RBI::TStructConst.new("SC", "Type")
       rbi << RBI::TStructProp.new("SP", "Type")
       rbi << RBI::TEnum.new("TE")
+      rbi << RBI::SingletonClass.new
       rbi << RBI::TStruct.new("TS")
 
       rbi.group_nodes!
@@ -44,6 +45,7 @@ module RBI
         class S2; end
         S3 = ::Struct.new
         class TE < ::T::Enum; end
+        class << self; end
         class TS < ::T::Struct; end
       RBI
     end
@@ -58,6 +60,7 @@ module RBI
 
       scope2 = RBI::Module.new("Scope2")
       scope2 << RBI::Const.new("C1", "42")
+      scope2 << RBI::SingletonClass.new
       scope2 << RBI::Const.new("C2", "42")
       scope2 << RBI::Module.new("M1")
 
@@ -82,6 +85,7 @@ module RBI
 
           module Scope2
             C1 = 42
+            class << self; end
             C2 = 42
             module M1; end
 
@@ -101,6 +105,7 @@ module RBI
       rbi << RBI::Const.new("C", "42")
       rbi << RBI::Module.new("S1")
       rbi << RBI::Class.new("S2")
+      rbi << RBI::SingletonClass.new
       rbi << RBI::Struct.new("S3")
       rbi << RBI::Method.new("m1")
       rbi << RBI::Method.new("m2", is_singleton: true)
@@ -133,6 +138,7 @@ module RBI
         C = 42
         module S1; end
         class S2; end
+        class << self; end
         S3 = ::Struct.new
         class TE < ::T::Enum; end
         class TS < ::T::Struct; end
@@ -184,6 +190,7 @@ module RBI
       rbi = RBI::Tree.new
       scope = RBI::Module.new("Scope")
       scope << RBI::Const.new("C", "42")
+      scope << RBI::SingletonClass.new
       scope << RBI::Module.new("S1")
       scope << RBI::Class.new("S2")
       scope << RBI::Struct.new("S3")
@@ -223,6 +230,7 @@ module RBI
           def self.m2; end
 
           C = 42
+          class << self; end
           module S1; end
           class S2; end
           S3 = ::Struct.new
@@ -235,6 +243,7 @@ module RBI
     def test_group_sort_groups_in_tree
       rbi = RBI::Tree.new
       rbi << RBI::Const.new("C2", "42")
+      rbi << RBI::SingletonClass.new
       rbi << RBI::Module.new("S2")
       rbi << RBI::Method.new("m2")
       rbi << RBI::Include.new("I2")
@@ -288,6 +297,7 @@ module RBI
 
         C1 = 42
         C2 = 42
+        class << self; end
         class S1; end
         module S2; end
         S3 = ::Struct.new
