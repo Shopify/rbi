@@ -37,7 +37,7 @@ module RBI
       IDX
     end
 
-    def index_properties
+    def test_index_properties
       rbi = RBI::Parser.parse_string(<<~RBI)
         class A
           attr_reader :a, :b
@@ -67,7 +67,7 @@ module RBI
       IDX
     end
 
-    def index_sorbet_constructs
+    def test_index_sorbet_constructs
       rbi = RBI::Parser.parse_string(<<~RBI)
         class A < T::Struct
           const :a, Integer
@@ -100,7 +100,7 @@ module RBI
       IDX
     end
 
-    def index_multiple_trees
+    def test_index_multiple_trees
       tree1 = RBI::Parser.parse_string(<<~RBI)
         class A
           module B
