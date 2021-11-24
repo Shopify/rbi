@@ -40,12 +40,13 @@ module RBI
         def m1; end
         def self.m2; end
 
+        class << self; end
+
         C = 42
         module S1; end
         class S2; end
         S3 = ::Struct.new
         class TE < ::T::Enum; end
-        class << self; end
         class TS < ::T::Struct; end
       RBI
     end
@@ -84,8 +85,9 @@ module RBI
           def m2; end
 
           module Scope2
-            C1 = 42
             class << self; end
+
+            C1 = 42
             C2 = 42
             module M1; end
 
@@ -135,10 +137,11 @@ module RBI
         def m1; end
         def self.m2; end
 
+        class << self; end
+
         C = 42
         module S1; end
         class S2; end
-        class << self; end
         S3 = ::Struct.new
         class TE < ::T::Enum; end
         class TS < ::T::Struct; end
@@ -229,8 +232,9 @@ module RBI
           def m1; end
           def self.m2; end
 
-          C = 42
           class << self; end
+
+          C = 42
           module S1; end
           class S2; end
           S3 = ::Struct.new
@@ -295,9 +299,10 @@ module RBI
         def m1; end
         def m2; end
 
+        class << self; end
+
         C1 = 42
         C2 = 42
-        class << self; end
         class S1; end
         module S2; end
         S3 = ::Struct.new

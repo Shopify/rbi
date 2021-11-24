@@ -67,6 +67,8 @@ module RBI
         else
           Group::Kind::Methods
         end
+      when SingletonClass
+        Group::Kind::SingletonClasses
       when Scope, Const
         Group::Kind::Consts
       else
@@ -97,6 +99,7 @@ module RBI
         TEnums              = new
         Inits               = new
         Methods             = new
+        SingletonClasses    = new
         Consts              = new
       end
     end

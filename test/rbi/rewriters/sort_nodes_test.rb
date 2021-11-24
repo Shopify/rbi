@@ -273,13 +273,13 @@ module RBI
         def m1; end
         def m2; end
         def self.m3; end
+        class << self; end
+        class << self; end
+        class << self; end
         A = 42
         module B; end
-        class << self; end
         class C < ::T::Enum; end
         class D < ::T::Struct; end
-        class << self; end
-        class << self; end
         class E; end
       RBI
     end

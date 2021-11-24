@@ -45,7 +45,8 @@ module RBI
           else
             73
           end
-        when Scope, Const then 80
+        when SingletonClass       then 80
+        when Scope, Const         then 90
         else
           100
         end
@@ -62,7 +63,8 @@ module RBI
         when Group::Kind::TEnums              then 5
         when Group::Kind::Inits               then 6
         when Group::Kind::Methods             then 7
-        when Group::Kind::Consts              then 8
+        when Group::Kind::SingletonClasses    then 8
+        when Group::Kind::Consts              then 9
         else
           T.absurd(kind)
         end
