@@ -5,7 +5,7 @@ require "test_helper"
 
 module RBI
   class SortNodesSpec < Minitest::Test
-    def sorts_constants_test
+    def test_sorts_constants
       rbi = RBI::Tree.new
       rbi << RBI::Const.new("C", "42")
       rbi << RBI::Const.new("B", "42")
@@ -20,7 +20,7 @@ module RBI
       RBI
     end
 
-    def sort_modules_test
+    def test_sort_modules
       rbi = RBI::Tree.new
       rbi << RBI::Module.new("C")
       rbi << RBI::Module.new("B")
@@ -35,7 +35,7 @@ module RBI
       RBI
     end
 
-    def sort_classes_test
+    def test_sort_classes
       rbi = RBI::Tree.new
       rbi << RBI::Class.new("C")
       rbi << RBI::Class.new("B")
@@ -50,7 +50,7 @@ module RBI
       RBI
     end
 
-    def sort_structs_test
+    def test_sort_structs
       rbi = RBI::Tree.new
       rbi << RBI::Struct.new("C")
       rbi << RBI::Struct.new("B")
@@ -65,7 +65,7 @@ module RBI
       RBI
     end
 
-    def sort_constants_and_keeps_original_order_in_case_of_conflicts_test
+    def test_sort_constants_and_keeps_original_order_in_case_of_conflicts
       rbi = RBI::Tree.new
       rbi << RBI::Class.new("B")
       rbi << RBI::Module.new("B")
@@ -86,7 +86,7 @@ module RBI
       RBI
     end
 
-    def sort_methods_test
+    def test_sort_methods
       rbi = RBI::Tree.new
       rbi << RBI::Method.new("m4")
       rbi << RBI::Method.new("m3", is_singleton: true)
@@ -103,7 +103,7 @@ module RBI
       RBI
     end
 
-    def sort_does_not_sort_mixins_test
+    def test_sort_does_not_sort_mixins
       rbi = RBI::Tree.new
       rbi << RBI::MixesInClassMethods.new("E")
       rbi << RBI::Extend.new("D")
@@ -122,7 +122,7 @@ module RBI
       RBI
     end
 
-    def sort_helpers_test
+    def test_sort_helpers
       rbi = RBI::Tree.new
       rbi << RBI::Helper.new("c")
       rbi << RBI::Helper.new("b")
@@ -137,7 +137,7 @@ module RBI
       RBI
     end
 
-    def sort_struct_properties_test
+    def test_sort_struct_properties
       rbi = RBI::Tree.new
       rbi << RBI::TStructConst.new("d", "T")
       rbi << RBI::TStructProp.new("c", "T")
@@ -154,7 +154,7 @@ module RBI
       RBI
     end
 
-    def sort_tstructs_test
+    def test_sort_tstructs
       rbi = RBI::Tree.new
       rbi << RBI::TStruct.new("D")
       rbi << RBI::TStruct.new("C")
@@ -171,7 +171,7 @@ module RBI
       RBI
     end
 
-    def sort_enums_test
+    def test_sort_enums
       rbi = RBI::Tree.new
       rbi << RBI::TEnum.new("D")
       rbi << RBI::TEnum.new("C")
@@ -188,7 +188,7 @@ module RBI
       RBI
     end
 
-    def sort_does_nothing_if_all_nodes_are_already_sorted_test
+    def test_sort_does_nothing_if_all_nodes_are_already_sorted
       rbi = RBI::Tree.new
       rbi << RBI::Extend.new("M4")
       rbi << RBI::Include.new("M3")
@@ -233,7 +233,7 @@ module RBI
       RBI
     end
 
-    def sort_all_nodes_in_tree_test
+    def test_sort_all_nodes_in_tree
       rbi = RBI::Tree.new
       rbi << RBI::Const.new("A", "42")
       rbi << RBI::Extend.new("M4")
