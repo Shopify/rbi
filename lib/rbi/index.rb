@@ -161,6 +161,16 @@ module RBI
     end
   end
 
+  class Send
+    extend T::Sig
+    include Indexable
+
+    sig { override.returns(T::Array[String]) }
+    def index_ids
+      ["#{parent_scope&.fully_qualified_name}.#{method}"]
+    end
+  end
+
   class TStructConst
     extend T::Sig
     include Indexable

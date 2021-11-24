@@ -257,6 +257,31 @@ module RBI
       RBI
     end
 
+    def test_merge_sends_together
+      rbi1 = RBI::Parser.parse_string(<<~RBI)
+        class A
+          foo :bar, :baz
+          bar
+        end
+      RBI
+
+      rbi2 = RBI::Parser.parse_string(<<~RBI)
+        class A
+          foo :bar, :baz
+          baz
+        end
+      RBI
+
+      res = rbi1.merge(rbi2)
+      assert_equal(<<~RBI, res.string)
+        class A
+          foo :bar, :baz
+          bar
+          baz
+        end
+      RBI
+    end
+
     def test_merge_structs_together
       rbi1 = RBI::Parser.parse_string(<<~RBI)
         class A < T::Struct
@@ -746,6 +771,39 @@ module RBI
           include B
           extend B
           mixes_in_class_methods B
+          >>>>>>> right
+        end
+      RBI
+    end
+
+    def test_merge_create_conflict_tree_for_sends
+      rbi1 = RBI::Parser.parse_string(<<~RBI)
+        class A
+          foo A
+          bar :bar
+          baz
+        end
+      RBI
+
+      rbi2 = RBI::Parser.parse_string(<<~RBI)
+        class A
+          foo B
+          bar "bar"
+          baz x
+        end
+      RBI
+
+      res = rbi1.merge(rbi2)
+      assert_equal(<<~RBI, res.string)
+        class A
+          <<<<<<< left
+          foo A
+          bar :bar
+          baz
+          =======
+          foo B
+          bar "bar"
+          baz x
           >>>>>>> right
         end
       RBI

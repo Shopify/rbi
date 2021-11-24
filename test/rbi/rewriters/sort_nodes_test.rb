@@ -122,7 +122,24 @@ module RBI
       RBI
     end
 
-    def test_sort_helpers
+    def test_does_not_sort_sends
+      rbi = RBI::Tree.new
+      rbi << RBI::Send.new("send4")
+      rbi << RBI::Send.new("send2")
+      rbi << RBI::Send.new("send3")
+      rbi << RBI::Send.new("send1")
+
+      rbi.sort_nodes!
+
+      assert_equal(<<~RBI, rbi.string)
+        send4
+        send2
+        send3
+        send1
+      RBI
+    end
+
+    def test_sort_helpers_test
       rbi = RBI::Tree.new
       rbi << RBI::Helper.new("c")
       rbi << RBI::Helper.new("b")

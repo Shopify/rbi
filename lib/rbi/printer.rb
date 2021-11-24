@@ -555,6 +555,47 @@ module RBI
     end
   end
 
+  class Send
+    extend T::Sig
+
+    sig { override.params(v: Printer).void }
+    def accept_printer(v)
+      print_blank_line_before(v)
+
+      v.printl("# #{loc}") if loc && v.print_locs
+      v.visit_all(comments)
+      v.printt(method)
+      unless args.empty?
+        v.print(" ")
+        args.each_with_index do |arg, index|
+          v.visit(arg)
+          v.print(", ") if index < args.size - 1
+        end
+      end
+      v.printn
+    end
+  end
+
+  class Arg
+    extend T::Sig
+
+    sig { override.params(v: Printer).void }
+    def accept_printer(v)
+      v.print(value)
+    end
+  end
+
+  class KwArg
+    extend T::Sig
+
+    sig { override.params(v: Printer).void }
+    def accept_printer(v)
+      v.print(keyword)
+      v.print(": ")
+      v.print(value)
+    end
+  end
+
   class Sig
     extend T::Sig
 

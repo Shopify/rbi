@@ -253,6 +253,26 @@ module RBI
       RBI
     end
 
+    def test_print_sends
+      tree = RBI::Tree.new
+      tree << RBI::Send.new("class_attribute")
+      tree << RBI::Send.new("class_attribute") do |send|
+        send << RBI::Arg.new(":foo")
+      end
+      tree << RBI::Send.new("class_attribute") do |send|
+        send << RBI::Arg.new(":foo")
+        send << RBI::Arg.new(":bar")
+        send << RBI::KwArg.new("instance_accessor", "false")
+        send << RBI::KwArg.new("default", "\"Bar\"")
+      end
+
+      assert_equal(<<~RBI, tree.string)
+        class_attribute
+        class_attribute :foo
+        class_attribute :foo, :bar, instance_accessor: false, default: "Bar"
+      RBI
+    end
+
     def test_print_t_structs
       struct = RBI::TStruct.new("Foo")
       struct << RBI::TStructConst.new("a", "A")
@@ -377,6 +397,8 @@ module RBI
       rbi << RBI::Protected.new(comments: comments_single)
       rbi << RBI::Private.new(comments: comments_single)
 
+      rbi << RBI::Send.new("foo", comments: comments_single)
+
       struct = RBI::TStruct.new("Foo", comments: comments_single)
       struct << RBI::TStructConst.new("a", "A", comments: comments_multi)
       struct << RBI::TStructProp.new("c", "C", comments: comments_single)
@@ -421,6 +443,9 @@ module RBI
 
         # This is a single line comment
         private
+
+        # This is a single line comment
+        foo
 
         # This is a single line comment
         class Foo < ::T::Struct
@@ -870,6 +895,7 @@ module RBI
       rbi << RBI::Const.new("C", "42", loc: loc)
       rbi << RBI::Extend.new("E", loc: loc)
       rbi << RBI::Include.new("I", loc: loc)
+      rbi << RBI::Send.new("foo", loc: loc)
       rbi << RBI::MixesInClassMethods.new("MICM", loc: loc)
       rbi << RBI::Helper.new("abstract", loc: loc)
       rbi << RBI::TStructConst.new("SC", "Type", loc: loc)
@@ -893,6 +919,8 @@ module RBI
         extend E
         # file.rbi:1:3-2:4
         include I
+        # file.rbi:1:3-2:4
+        foo
         # file.rbi:1:3-2:4
         mixes_in_class_methods MICM
         # file.rbi:1:3-2:4

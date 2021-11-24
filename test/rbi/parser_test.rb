@@ -242,6 +242,18 @@ module RBI
       assert_equal("-:1:0-2:14", tree.loc.to_s)
     end
 
+    def test_parse_arbitrary_sends
+      rbi = <<~RBI
+        class ActiveRecord::Base
+          class_attribute :typed_stores, :store_accessors, instance_accessor: false, default: "Foo"
+          foo bar, "bar", :bar
+        end
+      RBI
+
+      out = RBI::Parser.parse_string(rbi)
+      assert_equal(rbi, out.string)
+    end
+
     def test_parse_scopes_locations
       rbi = <<~RBI
         module Foo; end
@@ -770,14 +782,6 @@ module RBI
       end
       assert_equal("unexpected token $end", e.message)
       assert_equal("-:2:0-2:0", e.location.to_s)
-
-      e = assert_raises(RBI::ParseError) do
-        RBI::Parser.parse_string(<<~RBI)
-          foo
-        RBI
-      end
-      assert_equal("Unsupported send node with name `foo`", e.message)
-      assert_equal("-:1:0-1:3", e.location.to_s)
 
       e = assert_raises(RBI::ParseError) do
         RBI::Parser.parse_string(<<~RBI)

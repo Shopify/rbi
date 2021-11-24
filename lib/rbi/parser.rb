@@ -313,8 +313,26 @@ module RBI
         name, type, default_value = parse_tstruct_prop(node)
         TStructConst.new(name, type, default: default_value, loc: loc, comments: comments)
       else
-        raise ParseError.new("Unsupported send node with name `#{method_name}`", loc)
+        args = parse_send_args(node)
+        Send.new(method_name.to_s, args, loc: loc, comments: comments)
       end
+    end
+
+    sig { params(node: AST::Node).returns(T::Array[Arg]) }
+    def parse_send_args(node)
+      args = T.let([], T::Array[Arg])
+      node.children[2..-1].each do |child|
+        if child.type == :kwargs
+          child.children.each do |pair|
+            keyword = pair.children.first.children.last.to_s
+            value = parse_expr(pair.children.last)
+            args << KwArg.new(keyword, value)
+          end
+        else
+          args << Arg.new(parse_expr(child))
+        end
+      end
+      args
     end
 
     sig { params(node: AST::Node).returns(T.nilable(RBI::Node)) }

@@ -22,6 +22,7 @@ module RBI
       rbi << RBI::TEnum.new("TE")
       rbi << RBI::SingletonClass.new
       rbi << RBI::TStruct.new("TS")
+      rbi << RBI::Send.new("foo")
 
       rbi.group_nodes!
       rbi.sort_nodes!
@@ -33,6 +34,8 @@ module RBI
         h!
 
         mixes_in_class_methods MICM
+
+        foo
 
         const :SC, Type
         prop :SP, Type
@@ -58,6 +61,7 @@ module RBI
       scope1 << RBI::Include.new("I1")
       scope1 << RBI::Method.new("m1")
       scope1 << RBI::Method.new("m2")
+      scope1 << RBI::Send.new("foo")
 
       scope2 = RBI::Module.new("Scope2")
       scope2 << RBI::Const.new("C1", "42")
@@ -80,6 +84,8 @@ module RBI
       assert_equal(<<~RBI, rbi.string)
         class Scope1
           include I1
+
+          foo
 
           def m1; end
           def m2; end
@@ -119,6 +125,7 @@ module RBI
       rbi << RBI::TStructProp.new("SP", "Type")
       rbi << RBI::TEnum.new("TE")
       rbi << RBI::TStruct.new("TS")
+      rbi << RBI::Send.new("foo")
 
       rbi.group_nodes!
       rbi.sort_nodes!
@@ -130,6 +137,8 @@ module RBI
         h!
 
         mixes_in_class_methods MICM
+
+        foo
 
         const :SC, Type
         prop :SP, Type
@@ -171,6 +180,24 @@ module RBI
       RBI
     end
 
+    def test_group_does_not_sort_sends
+      rbi = RBI::Tree.new
+      rbi << RBI::Send.new("send4")
+      rbi << RBI::Send.new("send2")
+      rbi << RBI::Send.new("send3")
+      rbi << RBI::Send.new("send1")
+
+      rbi.group_nodes!
+      rbi.sort_nodes!
+
+      assert_equal(<<~RBI, rbi.string)
+        send4
+        send2
+        send3
+        send1
+      RBI
+    end
+
     def test_group_does_not_sort_type_members
       rbi = RBI::Tree.new
       rbi << RBI::TypeMember.new("T4", "type_member")
@@ -209,6 +236,8 @@ module RBI
       scope << RBI::TStruct.new("TS")
       scope << RBI::TypeMember.new("TM2", "type_template")
       scope << RBI::TypeMember.new("TM1", "type_member")
+      scope << RBI::Send.new("send2")
+      scope << RBI::Send.new("send1")
       rbi << scope
 
       rbi.group_nodes!
@@ -225,6 +254,9 @@ module RBI
           TM1 = type_member
 
           mixes_in_class_methods MICM
+
+          send2
+          send1
 
           const :SC, Type
           prop :SP, Type
