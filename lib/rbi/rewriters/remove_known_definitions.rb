@@ -83,12 +83,12 @@ module RBI
         when RBI::Scope
           visit_all(node.nodes)
           previous = previous_definition_for(node)
-          delete_node(node, previous) if previous && node.empty?
+          delete_node(node, previous) if previous && can_delete_node?(node, previous)
         when RBI::Tree
           visit_all(node.nodes)
         when RBI::Indexable
           previous = previous_definition_for(node)
-          delete_node(node, previous) if previous
+          delete_node(node, previous) if previous && can_delete_node?(node, previous)
         end
       end
 
@@ -101,6 +101,24 @@ module RBI
           return previous if previous
         end
         nil
+      end
+
+      sig { params(node: Node, previous: Node).returns(T::Boolean) }
+      def can_delete_node?(node, previous)
+        return false unless node.class == previous.class
+
+        case node
+        when Scope
+          node.empty?
+        when Attr
+          previous = T.cast(previous, Attr)
+          node.names == previous.names && node.sigs == previous.sigs
+        when Method
+          previous = T.cast(previous, Method)
+          node.params == previous.params && node.sigs == previous.sigs
+        else
+          true
+        end
       end
 
       sig { params(node: RBI::Node, previous: RBI::Node).void }

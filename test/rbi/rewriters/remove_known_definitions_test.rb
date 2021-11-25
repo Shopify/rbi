@@ -60,7 +60,7 @@ module RBI
 
       cleaned, operations = Rewriters::RemoveKnownDefinitions.remove(shim, index)
 
-      assert(cleaned.empty?)
+      assert_empty(cleaned)
 
       assert_equal(<<~RES.rstrip, operations.join("\n"))
         Deleted ::Foo.attr_reader(:foo) at -:2:2-2:18 (duplicate from -:2:2-2:18)
@@ -105,6 +105,39 @@ module RBI
       RES
     end
 
+    def test_remove_known_definitions_keeps_mismatching_definitions
+      tree = Parser.parse_string(<<~RBI)
+        class Foo
+          def foo; end
+        end
+
+        class Bar
+          def foo; end
+        end
+
+        def foo; end
+        attr_writer :bar
+      RBI
+
+      index = Index.index(tree)
+
+      shim = Parser.parse_string(<<~RBI)
+        class Foo
+          def foo(x); end
+        end
+
+        module Bar; end
+
+        attr_reader :foo
+        attr_reader :bar
+      RBI
+
+      cleaned, operations = Rewriters::RemoveKnownDefinitions.remove(shim, index)
+
+      assert_equal(shim.string, cleaned.string)
+      assert_empty(operations)
+    end
+
     def test_remove_known_definitions_removes_empty_scopes
       tree1 = Parser.parse_string(<<~RBI)
         class Foo
@@ -134,7 +167,7 @@ module RBI
 
       cleaned, operations = Rewriters::RemoveKnownDefinitions.remove(shim, index)
 
-      assert(cleaned.empty?)
+      assert_empty(cleaned)
 
       assert_equal(<<~RES.rstrip, operations.join("\n"))
         Deleted ::Foo.attr_reader(:foo) at -:2:2-2:18 (duplicate from -:2:2-2:18)
@@ -176,6 +209,108 @@ module RBI
         Deleted ::Bar#bar() at -:3:2-3:14 (duplicate from -:2:2-2:14)
         Deleted ::Bar at -:2:0-4:3 (duplicate from -:1:0-3:3)
       RES
+    end
+
+    def test_remove_known_definitions_keeps_nodes_defined_with_a_signature
+      tree = Parser.parse_string(<<~RBI)
+        class Foo
+          def foo; end
+          def self.bar; end
+          attr_reader :baz
+        end
+      RBI
+
+      index = Index.index(tree)
+
+      shim = Parser.parse_string(<<~RBI)
+        class Foo
+          sig { void }
+          def foo; end
+
+          sig { void }
+          def self.bar; end
+
+          sig { returns(String) }
+          attr_reader :baz
+        end
+      RBI
+
+      cleaned, operations = Rewriters::RemoveKnownDefinitions.remove(shim, index)
+
+      assert_equal(shim.string, cleaned.string)
+      assert_empty(operations)
+    end
+
+    def test_remove_known_definitions_keeps_multiple_attributes
+      tree = Parser.parse_string(<<~RBI)
+        class Foo
+          attr_reader :foo
+        end
+      RBI
+
+      index = Index.index(tree)
+
+      shim = Parser.parse_string(<<~RBI)
+        class Foo
+          attr_reader :foo, :bar
+        end
+      RBI
+
+      cleaned, operations = Rewriters::RemoveKnownDefinitions.remove(shim, index)
+
+      assert_equal(shim.string, cleaned.string)
+      assert_empty(operations)
+    end
+
+    def test_remove_known_definitions_even_if_the_comments_differ
+      tree = Parser.parse_string(<<~RBI)
+        class Foo
+          def foo; end
+        end
+      RBI
+
+      index = Index.index(tree)
+
+      shim = Parser.parse_string(<<~RBI)
+        class Foo
+          # Some comments
+          def foo; end
+        end
+      RBI
+
+      cleaned, operations = Rewriters::RemoveKnownDefinitions.remove(shim, index)
+
+      assert_empty(cleaned)
+
+      assert_equal(<<~OUT.rstrip, operations.join("\n"))
+        Deleted ::Foo#foo() at -:3:2-3:14 (duplicate from -:2:2-2:14)
+        Deleted ::Foo at -:1:0-4:3 (duplicate from -:1:0-3:3)
+      OUT
+    end
+
+    def test_remove_known_definitions_even_if_the_value_differ
+      tree = Parser.parse_string(<<~RBI)
+        class Foo
+          FOO = 42
+        end
+      RBI
+
+      index = Index.index(tree)
+
+      shim = Parser.parse_string(<<~RBI)
+        class Foo
+          FOO = 24
+        end
+      RBI
+
+      cleaned, operations = Rewriters::RemoveKnownDefinitions.remove(shim, index)
+
+      assert_empty(cleaned)
+
+      assert_equal(<<~OUT.rstrip, operations.join("\n"))
+        Deleted ::Foo::FOO at -:2:2-2:10 (duplicate from -:2:2-2:10)
+        Deleted ::Foo at -:1:0-3:3 (duplicate from -:1:0-3:3)
+      OUT
     end
   end
 end
