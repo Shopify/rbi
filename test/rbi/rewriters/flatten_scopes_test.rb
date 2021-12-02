@@ -167,5 +167,49 @@ module RBI
         end
       RBI
     end
+
+    def test_flatten_duplicated_scopes
+      rbi = RBI::Parser.parse_string(<<~RBI)
+        module A
+          class B; end
+        end
+
+        module A
+          class C; end
+        end
+
+        module A
+          class D; end
+        end
+      RBI
+
+      rbi.flatten_scopes!
+
+      assert_equal(<<~RBI, rbi.string)
+        module A; end
+        module A; end
+        module A; end
+        class A::B; end
+        class A::C; end
+        class A::D; end
+      RBI
+    end
+
+    def test_flatten_nested_trees
+      rbi = Tree.new do |tree1|
+        tree1 << Class.new("Foo") do |cls1|
+          cls1 << Tree.new do |tree2|
+            tree2 << Class.new("Bar") do |cls2|
+              cls2 << Method.new("bar")
+            end
+          end
+        end
+      end
+
+      rbi.flatten_scopes!
+
+      assert_equal(<<~RBI, rbi.string)
+      RBI
+    end
   end
 end
