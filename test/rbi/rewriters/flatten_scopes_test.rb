@@ -102,5 +102,70 @@ module RBI
         module A::B::C::D; end
       RBI
     end
+
+    def test_flatten_scopes_with_t_struct
+      rbi = RBI::Parser.parse_string(<<~RBI)
+        module A
+          class B < T::Struct
+            const :foo, String
+
+            class C
+              module D; end
+            end
+          end
+        end
+
+        module E; end
+      RBI
+
+      rbi.flatten_scopes!
+
+      assert_equal(<<~RBI, rbi.string)
+        module A; end
+        module E; end
+
+        class A::B < T::Struct
+          const :foo, String
+        end
+
+        class A::B::C; end
+        module A::B::C::D; end
+      RBI
+    end
+
+    def test_flatten_scopes_with_t_enum
+      rbi = RBI::Parser.parse_string(<<~RBI)
+        module A
+          class B
+            class C
+              class D < T::Enum
+                enums do
+                  Foo = new
+                  Bar = new
+                end
+              end
+            end
+          end
+        end
+
+        module E; end
+      RBI
+
+      rbi.flatten_scopes!
+
+      assert_equal(<<~RBI, rbi.string)
+        module A; end
+        module E; end
+        class A::B; end
+        class A::B::C; end
+
+        class A::B::C::D < T::Enum
+          enums do
+            Foo = new
+            Bar = new
+          end
+        end
+      RBI
+    end
   end
 end
