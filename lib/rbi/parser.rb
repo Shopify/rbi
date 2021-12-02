@@ -278,10 +278,10 @@ module RBI
         symbols = node.children[2..-1].map { |child| child.children[0] }
         AttrAccessor.new(*symbols, sigs: current_sigs, loc: loc, comments: comments)
       when :include
-        names = node.children[2..-1].map { |child| parse_name(child) }
+        names = node.children[2..-1].map { |child| parse_expr(child) }
         Include.new(*names, loc: loc, comments: comments)
       when :extend
-        names = node.children[2..-1].map { |child| parse_name(child) }
+        names = node.children[2..-1].map { |child| parse_expr(child) }
         Extend.new(*names, loc: loc, comments: comments)
       when :abstract!, :sealed!, :interface!
         Helper.new(method_name.to_s.delete_suffix("!"), loc: loc, comments: comments)

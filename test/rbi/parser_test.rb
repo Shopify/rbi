@@ -147,6 +147,10 @@ module RBI
         class Foo
           include A
           extend A
+          include self
+          extend self
+          include T.class_of(Bar)
+          extend T::Array[Bar]
         end
       RBI
 
