@@ -769,6 +769,36 @@ module RBI
       RBI
     end
 
+    def test_print_sig_params_multiline_comments_with_modifiers
+      comments = [
+        Comment.new("comment 1"),
+        Comment.new("comment 2"),
+      ]
+
+      sig = Sig.new(is_abstract: true, is_overridable: true)
+      sig.type_params << "TP1"
+      sig.type_params << "TP2"
+      sig << SigParam.new("a", "Integer", comments: comments)
+      sig << SigParam.new("b", "String", comments: comments)
+      sig << SigParam.new("c", "T.untyped", comments: comments)
+
+      assert_equal(<<~RBI, sig.string)
+        sig do
+          abstract.
+          overridable.
+          type_parameters(:TP1, :TP2).
+          params(
+            a: Integer, # comment 1
+                        # comment 2
+            b: String, # comment 1
+                       # comment 2
+            c: T.untyped # comment 1
+                         # comment 2
+          ).void
+        end
+      RBI
+    end
+
     def test_print_blank_lines
       comments = [
         Comment.new("comment 1"),

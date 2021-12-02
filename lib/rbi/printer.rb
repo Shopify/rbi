@@ -658,16 +658,16 @@ module RBI
     def print_as_block(v)
       v.printl("sig do")
       v.indent
-      v.print("abstract.") if is_abstract
-      v.print("override.") if is_override
-      v.print("overridable.") if is_overridable
+      v.printl("abstract.") if is_abstract
+      v.printl("override.") if is_override
+      v.printl("overridable.") if is_overridable
       unless type_params.empty?
-        v.print("type_parameters(")
+        v.printt("type_parameters(")
         type_params.each_with_index do |param, index|
           v.print(":#{param}")
           v.print(", ") if index < type_params.length - 1
         end
-        v.print(").")
+        v.printn(").")
       end
       unless params.empty?
         v.printl("params(")
