@@ -603,11 +603,27 @@ module RBI
     def accept_printer(v)
       v.printl("# #{loc}") if loc && v.print_locs
       if oneline?
-        v.printt("sig { ")
+        print_as_line(v)
       else
-        v.printl("sig do")
-        v.indent
+        print_as_block(v)
       end
+    end
+
+    sig { override.returns(T::Boolean) }
+    def oneline?
+      inline_params?
+    end
+
+    sig { returns(T::Boolean) }
+    def inline_params?
+      params.all? { |p| p.comments.empty? }
+    end
+
+    private
+
+    sig { params(v: Printer).void }
+    def print_as_line(v)
+      v.printt("sig { ")
       v.print("abstract.") if is_abstract
       v.print("override.") if is_override
       v.print("overridable.") if is_overridable
@@ -620,33 +636,12 @@ module RBI
         v.print(").")
       end
       unless params.empty?
-        if inline_params?
-          v.print("params(")
-          params.each_with_index do |param, index|
-            v.print(", ") if index > 0
-            v.visit(param)
-          end
-          v.print(").")
-        else
-          v.printl("params(")
-          v.indent
-          params.each_with_index do |param, pindex|
-            v.printt
-            v.visit(param)
-            v.print(",") if pindex < params.size - 1
-            param.comments_lines.each_with_index do |comment, cindex|
-              if cindex == 0
-                v.print(" ")
-              else
-                param.print_comment_leading_space(v, last: pindex == params.size - 1)
-              end
-              v.print("# #{comment}")
-            end
-            v.printn
-          end
-          v.dedent
-          v.printt(").")
+        v.print("params(")
+        params.each_with_index do |param, index|
+          v.print(", ") if index > 0
+          v.visit(param)
         end
+        v.print(").")
       end
       if return_type && return_type != "void"
         v.print("returns(#{return_type})")
@@ -656,23 +651,55 @@ module RBI
       if checked
         v.print(".checked(:#{checked})")
       end
-      if oneline?
-        v.printn(" }")
-      else
-        v.printn
-        v.dedent
-        v.printl("end")
+      v.printn(" }")
+    end
+
+    sig { params(v: Printer).void }
+    def print_as_block(v)
+      v.printl("sig do")
+      v.indent
+      v.print("abstract.") if is_abstract
+      v.print("override.") if is_override
+      v.print("overridable.") if is_overridable
+      unless type_params.empty?
+        v.print("type_parameters(")
+        type_params.each_with_index do |param, index|
+          v.print(":#{param}")
+          v.print(", ") if index < type_params.length - 1
+        end
+        v.print(").")
       end
-    end
-
-    sig { override.returns(T::Boolean) }
-    def oneline?
-      inline_params?
-    end
-
-    sig { returns(T::Boolean) }
-    def inline_params?
-      params.all? { |p| p.comments.empty? }
+      unless params.empty?
+        v.printl("params(")
+        v.indent
+        params.each_with_index do |param, pindex|
+          v.printt
+          v.visit(param)
+          v.print(",") if pindex < params.size - 1
+          param.comments_lines.each_with_index do |comment, cindex|
+            if cindex == 0
+              v.print(" ")
+            else
+              param.print_comment_leading_space(v, last: pindex == params.size - 1)
+            end
+            v.print("# #{comment}")
+          end
+          v.printn
+        end
+        v.dedent
+        v.printt(").")
+      end
+      if return_type && return_type != "void"
+        v.print("returns(#{return_type})")
+      else
+        v.print("void")
+      end
+      if checked
+        v.print(".checked(:#{checked})")
+      end
+      v.printn
+      v.dedent
+      v.printl("end")
     end
   end
 
