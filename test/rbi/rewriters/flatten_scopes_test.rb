@@ -6,17 +6,17 @@ require "test_helper"
 module RBI
   class FlattenScopesTest < Minitest::Test
     def test_flatten_scopes_with_empty_scopes
-      rbi = RBI::Tree.new
-      scope1 = RBI::Module.new("A")
-      scope2 = RBI::Class.new("B")
-      scope3 = RBI::Class.new("C")
-      scope4 = RBI::Module.new("D")
-      scope5 = RBI::Module.new("E")
-      scope3 << scope4
-      scope2 << scope3
-      scope1 << scope2
-      rbi << scope1
-      rbi << scope5
+      rbi = RBI::Parser.parse_string(<<~RBI)
+        module A
+          class B
+            class C
+              module D; end
+            end
+          end
+        end
+
+        module E; end
+      RBI
 
       rbi.flatten_scopes!
 
@@ -30,20 +30,23 @@ module RBI
     end
 
     def test_flatten_scopes_with_nonempty_scopes
-      rbi = RBI::Tree.new
-      scope1 = RBI::Module.new("A")
-      scope1 << RBI::Const.new("A1", "42")
-      scope2 = RBI::Class.new("B")
-      scope3 = RBI::Class.new("C")
-      scope3 << RBI::Const.new("C1", "42")
-      scope4 = RBI::Module.new("D")
-      scope5 = RBI::Module.new("E")
-      scope5 << RBI::Const.new("E1", "42")
-      scope3 << scope4
-      scope2 << scope3
-      scope1 << scope2
-      rbi << scope1
-      rbi << scope5
+      rbi = RBI::Parser.parse_string(<<~RBI)
+        module A
+          A1 = 42
+
+          class B
+            class C
+              C1 = 42
+
+              module D; end
+            end
+          end
+        end
+
+        module E
+          E1 = 42
+        end
+      RBI
 
       rbi.flatten_scopes!
 
@@ -67,20 +70,21 @@ module RBI
     end
 
     def test_flatten_scopes_with_singleton_classes
-      rbi = RBI::Tree.new
-      scope1 = RBI::Module.new("A")
-      scope2 = RBI::Class.new("B")
-      scope3 = RBI::Class.new("C")
-      scope3_singleton = RBI::SingletonClass.new
-      scope3_singleton << RBI::Method.new("m1")
-      scope4 = RBI::Module.new("D")
-      scope5 = RBI::Module.new("E")
-      scope3 << scope4
-      scope3 << scope3_singleton
-      scope2 << scope3
-      scope1 << scope2
-      rbi << scope1
-      rbi << scope5
+      rbi = RBI::Parser.parse_string(<<~RBI)
+        module A
+          class B
+            class C
+              module D; end
+
+              class << self
+                def m1; end
+              end
+            end
+          end
+        end
+
+        module E; end
+      RBI
 
       rbi.flatten_scopes!
 
