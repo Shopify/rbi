@@ -6,10 +6,10 @@ require "test_helper"
 module RBI
   class SortNodesSpec < Minitest::Test
     def test_sorts_constants
-      rbi = RBI::Tree.new
-      rbi << RBI::Const.new("C", "42")
-      rbi << RBI::Const.new("B", "42")
-      rbi << RBI::Const.new("A", "42")
+      rbi = Tree.new
+      rbi << Const.new("C", "42")
+      rbi << Const.new("B", "42")
+      rbi << Const.new("A", "42")
 
       rbi.sort_nodes!
 
@@ -21,10 +21,10 @@ module RBI
     end
 
     def test_sort_modules
-      rbi = RBI::Tree.new
-      rbi << RBI::Module.new("C")
-      rbi << RBI::Module.new("B")
-      rbi << RBI::Module.new("A")
+      rbi = Tree.new
+      rbi << Module.new("C")
+      rbi << Module.new("B")
+      rbi << Module.new("A")
 
       rbi.sort_nodes!
 
@@ -36,10 +36,10 @@ module RBI
     end
 
     def test_sort_classes
-      rbi = RBI::Tree.new
-      rbi << RBI::Class.new("C")
-      rbi << RBI::Class.new("B")
-      rbi << RBI::Class.new("A")
+      rbi = Tree.new
+      rbi << Class.new("C")
+      rbi << Class.new("B")
+      rbi << Class.new("A")
 
       rbi.sort_nodes!
 
@@ -51,10 +51,10 @@ module RBI
     end
 
     def test_sort_structs
-      rbi = RBI::Tree.new
-      rbi << RBI::Struct.new("C")
-      rbi << RBI::Struct.new("B")
-      rbi << RBI::Struct.new("A")
+      rbi = Tree.new
+      rbi << Struct.new("C")
+      rbi << Struct.new("B")
+      rbi << Struct.new("A")
 
       rbi.sort_nodes!
 
@@ -66,13 +66,13 @@ module RBI
     end
 
     def test_sort_constants_and_keeps_original_order_in_case_of_conflicts
-      rbi = RBI::Tree.new
-      rbi << RBI::Class.new("B")
-      rbi << RBI::Module.new("B")
-      rbi << RBI::Const.new("B", "42")
-      rbi << RBI::Const.new("A", "42")
-      rbi << RBI::Module.new("A")
-      rbi << RBI::Class.new("A")
+      rbi = Tree.new
+      rbi << Class.new("B")
+      rbi << Module.new("B")
+      rbi << Const.new("B", "42")
+      rbi << Const.new("A", "42")
+      rbi << Module.new("A")
+      rbi << Class.new("A")
 
       rbi.sort_nodes!
 
@@ -87,11 +87,11 @@ module RBI
     end
 
     def test_sort_methods
-      rbi = RBI::Tree.new
-      rbi << RBI::Method.new("m4")
-      rbi << RBI::Method.new("m3", is_singleton: true)
-      rbi << RBI::Method.new("m2", is_singleton: true)
-      rbi << RBI::Method.new("m1")
+      rbi = Tree.new
+      rbi << Method.new("m4")
+      rbi << Method.new("m3", is_singleton: true)
+      rbi << Method.new("m2", is_singleton: true)
+      rbi << Method.new("m1")
 
       rbi.sort_nodes!
 
@@ -104,12 +104,12 @@ module RBI
     end
 
     def test_sort_does_not_sort_mixins
-      rbi = RBI::Tree.new
-      rbi << RBI::MixesInClassMethods.new("E")
-      rbi << RBI::Extend.new("D")
-      rbi << RBI::Include.new("C")
-      rbi << RBI::Extend.new("B")
-      rbi << RBI::Include.new("A")
+      rbi = Tree.new
+      rbi << MixesInClassMethods.new("E")
+      rbi << Extend.new("D")
+      rbi << Include.new("C")
+      rbi << Extend.new("B")
+      rbi << Include.new("A")
 
       rbi.sort_nodes!
 
@@ -123,11 +123,11 @@ module RBI
     end
 
     def test_does_not_sort_sends
-      rbi = RBI::Tree.new
-      rbi << RBI::Send.new("send4")
-      rbi << RBI::Send.new("send2")
-      rbi << RBI::Send.new("send3")
-      rbi << RBI::Send.new("send1")
+      rbi = Tree.new
+      rbi << Send.new("send4")
+      rbi << Send.new("send2")
+      rbi << Send.new("send3")
+      rbi << Send.new("send1")
 
       rbi.sort_nodes!
 
@@ -140,10 +140,10 @@ module RBI
     end
 
     def test_sort_helpers_test
-      rbi = RBI::Tree.new
-      rbi << RBI::Helper.new("c")
-      rbi << RBI::Helper.new("b")
-      rbi << RBI::Helper.new("a")
+      rbi = Tree.new
+      rbi << Helper.new("c")
+      rbi << Helper.new("b")
+      rbi << Helper.new("a")
 
       rbi.sort_nodes!
 
@@ -155,11 +155,11 @@ module RBI
     end
 
     def test_sort_struct_properties
-      rbi = RBI::Tree.new
-      rbi << RBI::TStructConst.new("d", "T")
-      rbi << RBI::TStructProp.new("c", "T")
-      rbi << RBI::TStructConst.new("b", "T")
-      rbi << RBI::TStructProp.new("a", "T")
+      rbi = Tree.new
+      rbi << TStructConst.new("d", "T")
+      rbi << TStructProp.new("c", "T")
+      rbi << TStructConst.new("b", "T")
+      rbi << TStructProp.new("a", "T")
 
       rbi.sort_nodes!
 
@@ -172,11 +172,11 @@ module RBI
     end
 
     def test_sort_tstructs
-      rbi = RBI::Tree.new
-      rbi << RBI::TStruct.new("D")
-      rbi << RBI::TStruct.new("C")
-      rbi << RBI::TStruct.new("B")
-      rbi << RBI::TStruct.new("A")
+      rbi = Tree.new
+      rbi << TStruct.new("D")
+      rbi << TStruct.new("C")
+      rbi << TStruct.new("B")
+      rbi << TStruct.new("A")
 
       rbi.sort_nodes!
 
@@ -189,11 +189,11 @@ module RBI
     end
 
     def test_sort_enums
-      rbi = RBI::Tree.new
-      rbi << RBI::TEnum.new("D")
-      rbi << RBI::TEnum.new("C")
-      rbi << RBI::TEnum.new("B")
-      rbi << RBI::TEnum.new("A")
+      rbi = Tree.new
+      rbi << TEnum.new("D")
+      rbi << TEnum.new("C")
+      rbi << TEnum.new("B")
+      rbi << TEnum.new("A")
 
       rbi.sort_nodes!
 
@@ -206,25 +206,25 @@ module RBI
     end
 
     def test_sort_does_nothing_if_all_nodes_are_already_sorted
-      rbi = RBI::Tree.new
-      rbi << RBI::Extend.new("M4")
-      rbi << RBI::Include.new("M3")
-      rbi << RBI::Extend.new("M2")
-      rbi << RBI::Include.new("M1")
-      rbi << RBI::Helper.new("h")
-      rbi << RBI::MixesInClassMethods.new("MICM")
-      rbi << RBI::TStructProp.new("SP1", "T")
-      rbi << RBI::TStructConst.new("SP2", "T")
-      rbi << RBI::TStructProp.new("SP3", "T")
-      rbi << RBI::TStructConst.new("SP4", "T")
-      rbi << RBI::Method.new("m1")
-      rbi << RBI::Method.new("m2")
-      rbi << RBI::Method.new("m3", is_singleton: true)
-      rbi << RBI::Const.new("A", "42")
-      rbi << RBI::Module.new("B")
-      rbi << RBI::TEnum.new("C")
-      rbi << RBI::TStruct.new("D")
-      rbi << RBI::Class.new("E")
+      rbi = Tree.new
+      rbi << Extend.new("M4")
+      rbi << Include.new("M3")
+      rbi << Extend.new("M2")
+      rbi << Include.new("M1")
+      rbi << Helper.new("h")
+      rbi << MixesInClassMethods.new("MICM")
+      rbi << TStructProp.new("SP1", "T")
+      rbi << TStructConst.new("SP2", "T")
+      rbi << TStructProp.new("SP3", "T")
+      rbi << TStructConst.new("SP4", "T")
+      rbi << Method.new("m1")
+      rbi << Method.new("m2")
+      rbi << Method.new("m3", is_singleton: true)
+      rbi << Const.new("A", "42")
+      rbi << Module.new("B")
+      rbi << TEnum.new("C")
+      rbi << TStruct.new("D")
+      rbi << Class.new("E")
 
       rbi.sort_nodes!
 
@@ -251,28 +251,28 @@ module RBI
     end
 
     def test_sort_all_nodes_in_tree
-      rbi = RBI::Tree.new
-      rbi << RBI::Const.new("A", "42")
-      rbi << RBI::Extend.new("M4")
-      rbi << RBI::Method.new("m1")
-      rbi << RBI::MixesInClassMethods.new("MICM")
-      rbi << RBI::Module.new("B")
-      rbi << RBI::SingletonClass.new
-      rbi << RBI::Include.new("M3")
-      rbi << RBI::TStructConst.new("SP2", "T")
-      rbi << RBI::Method.new("m2")
-      rbi << RBI::TStruct.new("D")
-      rbi << RBI::TEnum.new("C")
-      rbi << RBI::SingletonClass.new
-      rbi << RBI::Extend.new("M2")
-      rbi << RBI::TStructConst.new("SP4", "T")
-      rbi << RBI::Include.new("M1")
-      rbi << RBI::Helper.new("h")
-      rbi << RBI::SingletonClass.new
-      rbi << RBI::Class.new("E")
-      rbi << RBI::TStructProp.new("SP1", "T")
-      rbi << RBI::Method.new("m3", is_singleton: true)
-      rbi << RBI::TStructProp.new("SP3", "T")
+      rbi = Tree.new
+      rbi << Const.new("A", "42")
+      rbi << Extend.new("M4")
+      rbi << Method.new("m1")
+      rbi << MixesInClassMethods.new("MICM")
+      rbi << Module.new("B")
+      rbi << SingletonClass.new
+      rbi << Include.new("M3")
+      rbi << TStructConst.new("SP2", "T")
+      rbi << Method.new("m2")
+      rbi << TStruct.new("D")
+      rbi << TEnum.new("C")
+      rbi << SingletonClass.new
+      rbi << Extend.new("M2")
+      rbi << TStructConst.new("SP4", "T")
+      rbi << Include.new("M1")
+      rbi << Helper.new("h")
+      rbi << SingletonClass.new
+      rbi << Class.new("E")
+      rbi << TStructProp.new("SP1", "T")
+      rbi << Method.new("m3", is_singleton: true)
+      rbi << TStructProp.new("SP3", "T")
 
       rbi.sort_nodes!
 

@@ -6,13 +6,13 @@ require "test_helper"
 module RBI
   class AddSigTemplatesTest < Minitest::Test
     def test_do_not_add_sig_if_already_one
-      rbi = RBI::Tree.new
+      rbi = Tree.new
 
-      rbi << RBI::AttrReader.new(:a) do |attr|
+      rbi << AttrReader.new(:a) do |attr|
         attr.sigs << Sig.new(return_type: "Integer")
       end
 
-      rbi << RBI::Method.new("m") do |meth|
+      rbi << Method.new("m") do |meth|
         meth.sigs << Sig.new(return_type: "Integer")
       end
 
@@ -28,10 +28,10 @@ module RBI
     end
 
     def test_add_empty_sigs_to_attributes
-      rbi = RBI::Tree.new
-      rbi << RBI::AttrReader.new(:a1)
-      rbi << RBI::AttrWriter.new(:a2)
-      rbi << RBI::AttrAccessor.new(:a3)
+      rbi = Tree.new
+      rbi << AttrReader.new(:a1)
+      rbi << AttrWriter.new(:a2)
+      rbi << AttrAccessor.new(:a3)
 
       rbi.add_sig_templates!(with_todo_comment: false)
 
@@ -48,10 +48,10 @@ module RBI
     end
 
     def test_add_empty_sigs_and_todo_comment_to_attributes
-      rbi = RBI::Tree.new
-      rbi << RBI::AttrReader.new(:a1)
-      rbi << RBI::AttrWriter.new(:a2)
-      rbi << RBI::AttrAccessor.new(:a3)
+      rbi = Tree.new
+      rbi << AttrReader.new(:a1)
+      rbi << AttrWriter.new(:a2)
+      rbi << AttrAccessor.new(:a3)
 
       rbi.add_sig_templates!(with_todo_comment: true)
 
@@ -71,15 +71,15 @@ module RBI
     end
 
     def test_add_empty_sigs_to_methods
-      rbi = RBI::Tree.new
-      rbi << RBI::Method.new("m1")
-      rbi << RBI::Method.new("m2") do |meth|
-        meth << RBI::Param.new("x")
+      rbi = Tree.new
+      rbi << Method.new("m1")
+      rbi << Method.new("m2") do |meth|
+        meth << Param.new("x")
       end
-      rbi << RBI::Method.new("m3", is_singleton: true) do |meth|
-        meth << RBI::Param.new("x")
-        meth << RBI::OptParam.new("y", "42")
-        meth << RBI::KwRestParam.new("z")
+      rbi << Method.new("m3", is_singleton: true) do |meth|
+        meth << Param.new("x")
+        meth << OptParam.new("y", "42")
+        meth << KwRestParam.new("z")
       end
 
       rbi.add_sig_templates!(with_todo_comment: false)
@@ -97,15 +97,15 @@ module RBI
     end
 
     def test_add_empty_sigs_and_todo_comment_to_methods
-      rbi = RBI::Tree.new
-      rbi << RBI::Method.new("m1")
-      rbi << RBI::Method.new("m2") do |meth|
-        meth << RBI::Param.new("x")
+      rbi = Tree.new
+      rbi << Method.new("m1")
+      rbi << Method.new("m2") do |meth|
+        meth << Param.new("x")
       end
-      rbi << RBI::Method.new("m3", is_singleton: true) do |meth|
-        meth << RBI::Param.new("x")
-        meth << RBI::OptParam.new("y", "42")
-        meth << RBI::KwRestParam.new("z")
+      rbi << Method.new("m3", is_singleton: true) do |meth|
+        meth << Param.new("x")
+        meth << OptParam.new("y", "42")
+        meth << KwRestParam.new("z")
       end
 
       rbi.add_sig_templates!(with_todo_comment: true)

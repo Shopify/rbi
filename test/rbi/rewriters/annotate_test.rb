@@ -6,7 +6,7 @@ require "test_helper"
 module RBI
   class AnnotateTest < Minitest::Test
     def test_add_annotation_to_root_nodes
-      rbi = RBI::Parser.parse_string(<<~RBI)
+      rbi = Parser.parse_string(<<~RBI)
         module A
           class B
             def m; end
@@ -36,7 +36,7 @@ module RBI
     end
 
     def test_add_annotation_to_all_scopes
-      rbi = RBI::Parser.parse_string(<<~RBI)
+      rbi = Parser.parse_string(<<~RBI)
         module A
           FOO = type_member
 
@@ -78,7 +78,7 @@ module RBI
     end
 
     def test_add_annotation_to_all_properties
-      rbi = RBI::Parser.parse_string(<<~RBI)
+      rbi = Parser.parse_string(<<~RBI)
         # Root scope are always annotated
         module A
           FOO = type_member
@@ -132,7 +132,7 @@ module RBI
     end
 
     def test_add_annotation_to_all_nodes
-      rbi = RBI::Parser.parse_string(<<~RBI)
+      rbi = Parser.parse_string(<<~RBI)
         module A
           FOO = type_member
 
@@ -183,7 +183,7 @@ module RBI
     end
 
     def test_does_not_reannotate_already_annotated_nodes
-      rbi = RBI::Parser.parse_string(<<~RBI)
+      rbi = Parser.parse_string(<<~RBI)
         # @test
         module A
           # @test
@@ -209,7 +209,7 @@ module RBI
     end
 
     def test_add_different_annotation_to_nodes
-      rbi = RBI::Parser.parse_string(<<~RBI)
+      rbi = Parser.parse_string(<<~RBI)
         # @test
         module A
           # @test

@@ -6,18 +6,18 @@ require "test_helper"
 module RBI
   class MergeTest < Minitest::Test
     def test_merge_empty_trees
-      rbi1 = RBI::Tree.new
-      rbi2 = RBI::Tree.new
+      rbi1 = Tree.new
+      rbi2 = Tree.new
       res = rbi1.merge(rbi2)
       assert_equal("", res.string)
     end
 
     def test_merge_empty_tree_into_tree
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class Foo; end
       RBI
 
-      rbi2 = RBI::Tree.new
+      rbi2 = Tree.new
 
       res = rbi1.merge(rbi2)
       assert_equal(<<~RBI, res.string)
@@ -26,9 +26,9 @@ module RBI
     end
 
     def test_merge_tree_into_empty_tree
-      rbi1 = RBI::Tree.new
+      rbi1 = Tree.new
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class Foo; end
       RBI
 
@@ -39,12 +39,12 @@ module RBI
     end
 
     def test_merge_scopes_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A; end
         class B; end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class C; end
         class D; end
       RBI
@@ -59,13 +59,13 @@ module RBI
     end
 
     def test_merge_nested_scopes_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A
           class B; end
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class C
           class D; end
         end
@@ -84,13 +84,13 @@ module RBI
     end
 
     def test_merge_same_scopes_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A
           class B; end
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A
           class B; end
           class C; end
@@ -107,14 +107,14 @@ module RBI
     end
 
     def test_merge_constants_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A
           A = 42
         end
         B = 42
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A
           A = 42
           B = 42
@@ -134,7 +134,7 @@ module RBI
     end
 
     def test_merge_attributes_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A
           attr_reader :a
           attr_writer :a
@@ -144,7 +144,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A
           attr_reader :a
           attr_writer :a
@@ -168,7 +168,7 @@ module RBI
     end
 
     def test_merge_methods_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A
           def a; end
           def b; end
@@ -177,7 +177,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A
           def a; end
           def b; end
@@ -199,7 +199,7 @@ module RBI
     end
 
     def test_merge_mixins_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A
           include A
           extend B
@@ -209,7 +209,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A
           include A
           extend B
@@ -233,14 +233,14 @@ module RBI
     end
 
     def test_merge_helpers_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A
           abstract!
           interface!
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A
           interface!
           sealed!
@@ -258,14 +258,14 @@ module RBI
     end
 
     def test_merge_sends_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A
           foo :bar, :baz
           bar
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A
           foo :bar, :baz
           baz
@@ -283,14 +283,14 @@ module RBI
     end
 
     def test_merge_structs_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A < T::Struct
           prop :a, Integer
           const :b, Integer
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A < T::Struct
           const :b, Integer
           prop :c, Integer
@@ -308,7 +308,7 @@ module RBI
     end
 
     def test_merge_enums_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A < T::Enum
           enums do
             A = new
@@ -317,7 +317,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A < T::Enum
           enums do
             B = new
@@ -339,7 +339,7 @@ module RBI
     end
 
     def test_merge_signatures
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A
           def m1; end
 
@@ -359,7 +359,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A
           sig { returns(Integer) }
           def m1; end
@@ -404,7 +404,7 @@ module RBI
     end
 
     def test_merge_comments
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         # Comment A1
         class A
           # Comment a1
@@ -414,7 +414,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         # Comment A1
         # Comment A2
         # Comment A3
@@ -445,13 +445,13 @@ module RBI
     end
 
     def test_merge_tree_comments_together
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         # typed: true
 
         # Some comments
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         # typed: true
 
         # Other comments
@@ -467,7 +467,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_scopes
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class Foo
           A = 10
         end
@@ -481,7 +481,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         module Foo
           A = 10
         end
@@ -524,7 +524,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_structs
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         A = Struct.new(:a) do
           def m; end
         end
@@ -536,7 +536,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         A = Struct.new(:a) do
           def m1; end
         end
@@ -576,14 +576,14 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_constants
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class Foo
           A = 10
         end
         B = 10
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class Foo
           A = 42
         end
@@ -608,7 +608,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_constants_and_scopes
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A; end
         module B; end
         module C; end
@@ -618,7 +618,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         module A; end
         class B; end
         C = 42
@@ -656,7 +656,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_attributes
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class Foo
           attr_accessor :a
           attr_accessor :b
@@ -664,7 +664,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class Foo
           attr_reader :a
           attr_writer :b
@@ -691,7 +691,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_methods
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class Foo
           def m1; end
           def m2(a); end
@@ -704,7 +704,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class Foo
           def m1(a); end
           def m2; end
@@ -744,7 +744,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_mixins
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A
           include A, B
           extend A, B
@@ -752,7 +752,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A
           include B
           extend B
@@ -777,7 +777,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_sends
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A
           foo A
           bar :bar
@@ -785,7 +785,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A
           foo B
           bar "bar"
@@ -810,7 +810,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_tstructs
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class A < T::Struct
           prop :a, Integer
           const :b, Integer
@@ -819,7 +819,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class A < T::Struct
           const :a, Integer
           prop :b, Integer
@@ -847,7 +847,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_signatures
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class Foo
           sig { returns(Integer) }
           attr_reader :a
@@ -863,7 +863,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         class Foo
           sig { returns(String) }
           attr_reader :a
@@ -912,14 +912,14 @@ module RBI
     end
 
     def test_merge_return_the_list_of_conflicts
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         class Foo
           A = 10
         end
         B = 10
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         module Foo
           A = 42
         end
@@ -936,7 +936,7 @@ module RBI
     end
 
     def test_merge_keep_left
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         module Foo
           A = 10
 
@@ -951,7 +951,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         module Foo
           A = 42
 
@@ -986,7 +986,7 @@ module RBI
     end
 
     def test_merge_keep_right
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         module Foo
           A = 10
 
@@ -1001,7 +1001,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         module Foo
           A = 42
 
@@ -1036,7 +1036,7 @@ module RBI
     end
 
     def test_merge_trees_with_singleton_classes
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         module Foo
           class << self
             def m1; end
@@ -1047,7 +1047,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         module Foo
           def self.m1(x); end
 
@@ -1071,7 +1071,7 @@ module RBI
     end
 
     def test_merge_trees_with_singleton_classes_with_scope
-      rbi1 = RBI::Parser.parse_string(<<~RBI)
+      rbi1 = Parser.parse_string(<<~RBI)
         module Foo
           def self.m1(x); end
 
@@ -1080,7 +1080,7 @@ module RBI
         end
       RBI
 
-      rbi2 = RBI::Parser.parse_string(<<~RBI)
+      rbi2 = Parser.parse_string(<<~RBI)
         module Foo
           class << self
             def m1; end

@@ -6,23 +6,23 @@ require "test_helper"
 module RBI
   class GroupNodesTest < Minitest::Test
     def test_group_nodes_in_tree
-      rbi = RBI::Tree.new
-      rbi << RBI::Const.new("C", "42")
-      rbi << RBI::Module.new("S1")
-      rbi << RBI::Class.new("S2")
-      rbi << RBI::Struct.new("S3")
-      rbi << RBI::Method.new("m1")
-      rbi << RBI::Method.new("m2", is_singleton: true)
-      rbi << RBI::Extend.new("E")
-      rbi << RBI::Include.new("I")
-      rbi << RBI::MixesInClassMethods.new("MICM")
-      rbi << RBI::Helper.new("h")
-      rbi << RBI::TStructConst.new("SC", "Type")
-      rbi << RBI::TStructProp.new("SP", "Type")
-      rbi << RBI::TEnum.new("TE")
-      rbi << RBI::SingletonClass.new
-      rbi << RBI::TStruct.new("TS")
-      rbi << RBI::Send.new("foo")
+      rbi = Tree.new
+      rbi << Const.new("C", "42")
+      rbi << Module.new("S1")
+      rbi << Class.new("S2")
+      rbi << Struct.new("S3")
+      rbi << Method.new("m1")
+      rbi << Method.new("m2", is_singleton: true)
+      rbi << Extend.new("E")
+      rbi << Include.new("I")
+      rbi << MixesInClassMethods.new("MICM")
+      rbi << Helper.new("h")
+      rbi << TStructConst.new("SC", "Type")
+      rbi << TStructProp.new("SP", "Type")
+      rbi << TEnum.new("TE")
+      rbi << SingletonClass.new
+      rbi << TStruct.new("TS")
+      rbi << Send.new("foo")
 
       rbi.group_nodes!
       rbi.sort_nodes!
@@ -55,24 +55,24 @@ module RBI
     end
 
     def test_group_nested_nodes
-      rbi = RBI::Tree.new
+      rbi = Tree.new
 
-      scope1 = RBI::Class.new("Scope1")
-      scope1 << RBI::Include.new("I1")
-      scope1 << RBI::Method.new("m1")
-      scope1 << RBI::Method.new("m2")
-      scope1 << RBI::Send.new("foo")
+      scope1 = Class.new("Scope1")
+      scope1 << Include.new("I1")
+      scope1 << Method.new("m1")
+      scope1 << Method.new("m2")
+      scope1 << Send.new("foo")
 
-      scope2 = RBI::Module.new("Scope2")
-      scope2 << RBI::Const.new("C1", "42")
-      scope2 << RBI::SingletonClass.new
-      scope2 << RBI::Const.new("C2", "42")
-      scope2 << RBI::Module.new("M1")
+      scope2 = Module.new("Scope2")
+      scope2 << Const.new("C1", "42")
+      scope2 << SingletonClass.new
+      scope2 << Const.new("C2", "42")
+      scope2 << Module.new("M1")
 
-      scope3 = RBI::Struct.new("Scope3")
-      scope3 << RBI::Extend.new("E1")
-      scope3 << RBI::Extend.new("E2")
-      scope3 << RBI::MixesInClassMethods.new("MICM1")
+      scope3 = Struct.new("Scope3")
+      scope3 << Extend.new("E1")
+      scope3 << Extend.new("E2")
+      scope3 << MixesInClassMethods.new("MICM1")
 
       rbi << scope1
       scope1 << scope2
@@ -109,23 +109,23 @@ module RBI
     end
 
     def test_group_sort_nodes_in_groups
-      rbi = RBI::Tree.new
-      rbi << RBI::Const.new("C", "42")
-      rbi << RBI::Module.new("S1")
-      rbi << RBI::Class.new("S2")
-      rbi << RBI::SingletonClass.new
-      rbi << RBI::Struct.new("S3")
-      rbi << RBI::Method.new("m1")
-      rbi << RBI::Method.new("m2", is_singleton: true)
-      rbi << RBI::Extend.new("E")
-      rbi << RBI::Include.new("I")
-      rbi << RBI::MixesInClassMethods.new("MICM")
-      rbi << RBI::Helper.new("h")
-      rbi << RBI::TStructConst.new("SC", "Type")
-      rbi << RBI::TStructProp.new("SP", "Type")
-      rbi << RBI::TEnum.new("TE")
-      rbi << RBI::TStruct.new("TS")
-      rbi << RBI::Send.new("foo")
+      rbi = Tree.new
+      rbi << Const.new("C", "42")
+      rbi << Module.new("S1")
+      rbi << Class.new("S2")
+      rbi << SingletonClass.new
+      rbi << Struct.new("S3")
+      rbi << Method.new("m1")
+      rbi << Method.new("m2", is_singleton: true)
+      rbi << Extend.new("E")
+      rbi << Include.new("I")
+      rbi << MixesInClassMethods.new("MICM")
+      rbi << Helper.new("h")
+      rbi << TStructConst.new("SC", "Type")
+      rbi << TStructProp.new("SP", "Type")
+      rbi << TEnum.new("TE")
+      rbi << TStruct.new("TS")
+      rbi << Send.new("foo")
 
       rbi.group_nodes!
       rbi.sort_nodes!
@@ -158,13 +158,13 @@ module RBI
     end
 
     def test_group_does_not_sort_mixins
-      rbi = RBI::Tree.new
-      rbi << RBI::Include.new("I2")
-      rbi << RBI::Extend.new("E2")
-      rbi << RBI::MixesInClassMethods.new("M2")
-      rbi << RBI::Include.new("I1")
-      rbi << RBI::Extend.new("E1")
-      rbi << RBI::MixesInClassMethods.new("M1")
+      rbi = Tree.new
+      rbi << Include.new("I2")
+      rbi << Extend.new("E2")
+      rbi << MixesInClassMethods.new("M2")
+      rbi << Include.new("I1")
+      rbi << Extend.new("E1")
+      rbi << MixesInClassMethods.new("M1")
 
       rbi.group_nodes!
       rbi.sort_nodes!
@@ -181,11 +181,11 @@ module RBI
     end
 
     def test_group_does_not_sort_sends
-      rbi = RBI::Tree.new
-      rbi << RBI::Send.new("send4")
-      rbi << RBI::Send.new("send2")
-      rbi << RBI::Send.new("send3")
-      rbi << RBI::Send.new("send1")
+      rbi = Tree.new
+      rbi << Send.new("send4")
+      rbi << Send.new("send2")
+      rbi << Send.new("send3")
+      rbi << Send.new("send1")
 
       rbi.group_nodes!
       rbi.sort_nodes!
@@ -199,11 +199,11 @@ module RBI
     end
 
     def test_group_does_not_sort_type_members
-      rbi = RBI::Tree.new
-      rbi << RBI::TypeMember.new("T4", "type_member")
-      rbi << RBI::TypeMember.new("T3", "type_template")
-      rbi << RBI::TypeMember.new("T2", "type_member")
-      rbi << RBI::TypeMember.new("T1", "type_template")
+      rbi = Tree.new
+      rbi << TypeMember.new("T4", "type_member")
+      rbi << TypeMember.new("T3", "type_template")
+      rbi << TypeMember.new("T2", "type_member")
+      rbi << TypeMember.new("T1", "type_template")
 
       rbi.group_nodes!
       rbi.sort_nodes!
@@ -217,27 +217,27 @@ module RBI
     end
 
     def test_group_sort_nodes_in_scope
-      rbi = RBI::Tree.new
-      scope = RBI::Module.new("Scope")
-      scope << RBI::Const.new("C", "42")
-      scope << RBI::SingletonClass.new
-      scope << RBI::Module.new("S1")
-      scope << RBI::Class.new("S2")
-      scope << RBI::Struct.new("S3")
-      scope << RBI::Method.new("m1")
-      scope << RBI::Method.new("m2", is_singleton: true)
-      scope << RBI::Include.new("I")
-      scope << RBI::Extend.new("E")
-      scope << RBI::MixesInClassMethods.new("MICM")
-      scope << RBI::Helper.new("h")
-      scope << RBI::TStructProp.new("SP", "Type")
-      scope << RBI::TStructConst.new("SC", "Type")
-      scope << RBI::TEnum.new("TE")
-      scope << RBI::TStruct.new("TS")
-      scope << RBI::TypeMember.new("TM2", "type_template")
-      scope << RBI::TypeMember.new("TM1", "type_member")
-      scope << RBI::Send.new("send2")
-      scope << RBI::Send.new("send1")
+      rbi = Tree.new
+      scope = Module.new("Scope")
+      scope << Const.new("C", "42")
+      scope << SingletonClass.new
+      scope << Module.new("S1")
+      scope << Class.new("S2")
+      scope << Struct.new("S3")
+      scope << Method.new("m1")
+      scope << Method.new("m2", is_singleton: true)
+      scope << Include.new("I")
+      scope << Extend.new("E")
+      scope << MixesInClassMethods.new("MICM")
+      scope << Helper.new("h")
+      scope << TStructProp.new("SP", "Type")
+      scope << TStructConst.new("SC", "Type")
+      scope << TEnum.new("TE")
+      scope << TStruct.new("TS")
+      scope << TypeMember.new("TM2", "type_template")
+      scope << TypeMember.new("TM1", "type_member")
+      scope << Send.new("send2")
+      scope << Send.new("send1")
       rbi << scope
 
       rbi.group_nodes!
@@ -277,33 +277,33 @@ module RBI
     end
 
     def test_group_sort_groups_in_tree
-      rbi = RBI::Tree.new
-      rbi << RBI::Const.new("C2", "42")
-      rbi << RBI::SingletonClass.new
-      rbi << RBI::Module.new("S2")
-      rbi << RBI::Method.new("m2")
-      rbi << RBI::Include.new("I2")
-      rbi << RBI::Extend.new("E2")
-      rbi << RBI::MixesInClassMethods.new("MICM2")
-      rbi << RBI::Helper.new("h2")
-      rbi << RBI::TStructProp.new("SP2", "Type")
-      rbi << RBI::TStructConst.new("SC2", "Type")
-      rbi << RBI::TEnum.new("TE2")
-      rbi << RBI::TStruct.new("TS2")
-      rbi << RBI::Const.new("C1", "42")
-      rbi << RBI::Class.new("S1")
-      rbi << RBI::Method.new("m1")
-      rbi << RBI::Include.new("I1")
-      rbi << RBI::Extend.new("E1")
-      rbi << RBI::MixesInClassMethods.new("MICM1")
-      rbi << RBI::Helper.new("h1")
-      rbi << RBI::TStructProp.new("SP1", "Type")
-      rbi << RBI::TStructConst.new("SC1", "Type")
-      rbi << RBI::TEnum.new("TE1")
-      rbi << RBI::TStruct.new("TS1")
-      rbi << RBI::Struct.new("S3")
-      rbi << RBI::TypeMember.new("TM2", "type_template")
-      rbi << RBI::TypeMember.new("TM1", "type_member")
+      rbi = Tree.new
+      rbi << Const.new("C2", "42")
+      rbi << SingletonClass.new
+      rbi << Module.new("S2")
+      rbi << Method.new("m2")
+      rbi << Include.new("I2")
+      rbi << Extend.new("E2")
+      rbi << MixesInClassMethods.new("MICM2")
+      rbi << Helper.new("h2")
+      rbi << TStructProp.new("SP2", "Type")
+      rbi << TStructConst.new("SC2", "Type")
+      rbi << TEnum.new("TE2")
+      rbi << TStruct.new("TS2")
+      rbi << Const.new("C1", "42")
+      rbi << Class.new("S1")
+      rbi << Method.new("m1")
+      rbi << Include.new("I1")
+      rbi << Extend.new("E1")
+      rbi << MixesInClassMethods.new("MICM1")
+      rbi << Helper.new("h1")
+      rbi << TStructProp.new("SP1", "Type")
+      rbi << TStructConst.new("SC1", "Type")
+      rbi << TEnum.new("TE1")
+      rbi << TStruct.new("TS1")
+      rbi << Struct.new("S3")
+      rbi << TypeMember.new("TM2", "type_template")
+      rbi << TypeMember.new("TM1", "type_member")
 
       rbi.group_nodes!
       rbi.sort_nodes!
@@ -346,90 +346,90 @@ module RBI
     end
 
     def test_group_sort_nested_groups
-      rbi = RBI::Tree.new
+      rbi = Tree.new
 
-      sscope = RBI::Class.new("Scope2.1")
-      sscope << RBI::Const.new("C2", "42")
-      sscope << RBI::Module.new("S2")
-      sscope << RBI::Method.new("m2")
-      sscope << RBI::Include.new("I2")
-      sscope << RBI::Extend.new("E2")
-      sscope << RBI::MixesInClassMethods.new("MICM2")
-      sscope << RBI::Helper.new("h2")
-      sscope << RBI::TStructProp.new("SP2", "Type")
-      sscope << RBI::TStructConst.new("SC2", "Type")
-      sscope << RBI::TEnum.new("TE2")
-      sscope << RBI::TStruct.new("TS2")
-      sscope << RBI::Const.new("C1", "42")
-      sscope << RBI::Class.new("S1")
-      sscope << RBI::Method.new("m1")
-      sscope << RBI::Include.new("I1")
-      sscope << RBI::Extend.new("E1")
-      sscope << RBI::MixesInClassMethods.new("MICM1")
-      sscope << RBI::Helper.new("h1")
-      sscope << RBI::TStructProp.new("SP1", "Type")
-      sscope << RBI::TStructConst.new("SC1", "Type")
-      sscope << RBI::TEnum.new("TE1")
-      sscope << RBI::TStruct.new("TS1")
-      sscope << RBI::Struct.new("S3")
-      sscope << RBI::TypeMember.new("TM2", "type_template")
-      sscope << RBI::TypeMember.new("TM1", "type_member")
+      sscope = Class.new("Scope2.1")
+      sscope << Const.new("C2", "42")
+      sscope << Module.new("S2")
+      sscope << Method.new("m2")
+      sscope << Include.new("I2")
+      sscope << Extend.new("E2")
+      sscope << MixesInClassMethods.new("MICM2")
+      sscope << Helper.new("h2")
+      sscope << TStructProp.new("SP2", "Type")
+      sscope << TStructConst.new("SC2", "Type")
+      sscope << TEnum.new("TE2")
+      sscope << TStruct.new("TS2")
+      sscope << Const.new("C1", "42")
+      sscope << Class.new("S1")
+      sscope << Method.new("m1")
+      sscope << Include.new("I1")
+      sscope << Extend.new("E1")
+      sscope << MixesInClassMethods.new("MICM1")
+      sscope << Helper.new("h1")
+      sscope << TStructProp.new("SP1", "Type")
+      sscope << TStructConst.new("SC1", "Type")
+      sscope << TEnum.new("TE1")
+      sscope << TStruct.new("TS1")
+      sscope << Struct.new("S3")
+      sscope << TypeMember.new("TM2", "type_template")
+      sscope << TypeMember.new("TM1", "type_member")
 
-      scope = RBI::Class.new("Scope2")
+      scope = Class.new("Scope2")
       scope << sscope
-      scope << RBI::Const.new("C2", "42")
-      scope << RBI::Module.new("S2")
-      scope << RBI::Method.new("m2")
-      scope << RBI::Include.new("I2")
-      scope << RBI::Extend.new("E2")
-      scope << RBI::MixesInClassMethods.new("MICM2")
-      scope << RBI::Helper.new("h2")
-      scope << RBI::TStructProp.new("SP2", "Type")
-      scope << RBI::TStructConst.new("SC2", "Type")
-      scope << RBI::TEnum.new("TE2")
-      scope << RBI::TStruct.new("TS2")
-      scope << RBI::Const.new("C1", "42")
-      scope << RBI::Class.new("S1")
-      scope << RBI::Method.new("m1")
-      scope << RBI::Include.new("I1")
-      scope << RBI::Extend.new("E1")
-      scope << RBI::MixesInClassMethods.new("MICM1")
-      scope << RBI::Helper.new("h1")
-      scope << RBI::TStructProp.new("SP1", "Type")
-      scope << RBI::TStructConst.new("SC1", "Type")
-      scope << RBI::TEnum.new("TE1")
-      scope << RBI::TStruct.new("TS1")
-      scope << RBI::Struct.new("S3")
-      scope << RBI::TypeMember.new("TM2", "type_template")
-      scope << RBI::TypeMember.new("TM1", "type_member")
+      scope << Const.new("C2", "42")
+      scope << Module.new("S2")
+      scope << Method.new("m2")
+      scope << Include.new("I2")
+      scope << Extend.new("E2")
+      scope << MixesInClassMethods.new("MICM2")
+      scope << Helper.new("h2")
+      scope << TStructProp.new("SP2", "Type")
+      scope << TStructConst.new("SC2", "Type")
+      scope << TEnum.new("TE2")
+      scope << TStruct.new("TS2")
+      scope << Const.new("C1", "42")
+      scope << Class.new("S1")
+      scope << Method.new("m1")
+      scope << Include.new("I1")
+      scope << Extend.new("E1")
+      scope << MixesInClassMethods.new("MICM1")
+      scope << Helper.new("h1")
+      scope << TStructProp.new("SP1", "Type")
+      scope << TStructConst.new("SC1", "Type")
+      scope << TEnum.new("TE1")
+      scope << TStruct.new("TS1")
+      scope << Struct.new("S3")
+      scope << TypeMember.new("TM2", "type_template")
+      scope << TypeMember.new("TM1", "type_member")
       rbi << scope
 
-      scope = RBI::Class.new("Scope1")
-      scope << RBI::Const.new("C2", "42")
-      scope << RBI::Module.new("S2")
-      scope << RBI::Method.new("m2")
-      scope << RBI::Include.new("I2")
-      scope << RBI::Extend.new("E2")
-      scope << RBI::MixesInClassMethods.new("MICM2")
-      scope << RBI::Helper.new("h2")
-      scope << RBI::TStructProp.new("SP2", "Type")
-      scope << RBI::TStructConst.new("SC2", "Type")
-      scope << RBI::TEnum.new("TE2")
-      scope << RBI::TStruct.new("TS2")
-      scope << RBI::Const.new("C1", "42")
-      scope << RBI::Class.new("S1")
-      scope << RBI::Method.new("m1")
-      scope << RBI::Include.new("I1")
-      scope << RBI::Extend.new("E1")
-      scope << RBI::MixesInClassMethods.new("MICM1")
-      scope << RBI::Helper.new("h1")
-      scope << RBI::TStructProp.new("SP1", "Type")
-      scope << RBI::TStructConst.new("SC1", "Type")
-      scope << RBI::TEnum.new("TE1")
-      scope << RBI::TStruct.new("TS1")
-      scope << RBI::Struct.new("S3")
-      scope << RBI::TypeMember.new("TM2", "type_template")
-      scope << RBI::TypeMember.new("TM1", "type_member")
+      scope = Class.new("Scope1")
+      scope << Const.new("C2", "42")
+      scope << Module.new("S2")
+      scope << Method.new("m2")
+      scope << Include.new("I2")
+      scope << Extend.new("E2")
+      scope << MixesInClassMethods.new("MICM2")
+      scope << Helper.new("h2")
+      scope << TStructProp.new("SP2", "Type")
+      scope << TStructConst.new("SC2", "Type")
+      scope << TEnum.new("TE2")
+      scope << TStruct.new("TS2")
+      scope << Const.new("C1", "42")
+      scope << Class.new("S1")
+      scope << Method.new("m1")
+      scope << Include.new("I1")
+      scope << Extend.new("E1")
+      scope << MixesInClassMethods.new("MICM1")
+      scope << Helper.new("h1")
+      scope << TStructProp.new("SP1", "Type")
+      scope << TStructConst.new("SC1", "Type")
+      scope << TEnum.new("TE1")
+      scope << TStruct.new("TS1")
+      scope << Struct.new("S3")
+      scope << TypeMember.new("TM2", "type_template")
+      scope << TypeMember.new("TM1", "type_member")
       rbi << scope
 
       rbi.group_nodes!

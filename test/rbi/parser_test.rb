@@ -14,7 +14,7 @@ module RBI
         class << self; end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -29,7 +29,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -49,7 +49,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
         A = ::Struct.new
         B = ::Struct.new(:a, :b)
@@ -82,7 +82,7 @@ module RBI
         A::B::C = Foo
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -99,7 +99,7 @@ module RBI
         attr_accessor :a, :b, :c
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -123,7 +123,7 @@ module RBI
         def m4; end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -134,7 +134,7 @@ module RBI
         private attr_reader :a
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
         private def m1; end
         protected def self.m2; end
@@ -150,7 +150,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -164,7 +164,7 @@ module RBI
         def m3; end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -179,7 +179,7 @@ module RBI
         end
         RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -195,7 +195,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -209,7 +209,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -228,7 +228,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -238,7 +238,7 @@ module RBI
         class Bar; end
       RBI
 
-      tree = RBI::Parser.parse_string(rbi)
+      tree = Parser.parse_string(rbi)
       assert_equal("-:1:0-2:14", tree.loc.to_s)
     end
 
@@ -250,7 +250,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -262,7 +262,7 @@ module RBI
         class << self; end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-1:15
         module Foo; end
@@ -286,7 +286,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-7:3
         module Foo
@@ -310,7 +310,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-4:3
         Foo = ::Struct.new(:a) do
@@ -330,7 +330,7 @@ module RBI
         A::B::C = Foo
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-1:8
         Foo = 42
@@ -356,7 +356,7 @@ module RBI
         attr_accessor :a, :b, :c
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-1:14
         attr_reader :a
@@ -390,7 +390,7 @@ module RBI
         def m4; end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-1:11
         def m1; end
@@ -420,7 +420,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-4:3
         class Foo
@@ -442,7 +442,7 @@ module RBI
         def m3; end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-1:6
         public
@@ -470,7 +470,7 @@ module RBI
         end
         RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-7:3
         class Foo < ::T::Struct
@@ -500,7 +500,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-8:3
         class Foo < ::T::Enum
@@ -526,7 +526,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-6:3
         class Foo
@@ -550,7 +550,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-4:3
         class Foo
@@ -574,7 +574,7 @@ module RBI
         # Preserving empty lines
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
         # typed: false
         # frozen_string_literal: true
@@ -593,7 +593,7 @@ module RBI
 
         module A; end
       RBI
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
         # typed: true
 
@@ -608,7 +608,7 @@ module RBI
 
         module A; end
       RBI
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
         # typed: true
         # frozen_string_literal: true
@@ -624,7 +624,7 @@ module RBI
         # A comment
         module A; end
       RBI
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
         # typed: true
 
@@ -644,7 +644,7 @@ module RBI
         # for the module
         module A; end
       RBI
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
         # typed: true
         # frozen_string_literal: true
@@ -675,7 +675,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -692,7 +692,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -705,7 +705,7 @@ module RBI
         end
       RBI
 
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -719,7 +719,7 @@ module RBI
           # A comment 3
         end
       RBI
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
         # A comment 1
         # A comment 2
@@ -737,7 +737,7 @@ module RBI
         module A; end
         # Orphan comment
       RBI
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
         # Orphan comment
 
@@ -758,7 +758,7 @@ module RBI
           e: _
         ); end
       RBI
-      out = RBI::Parser.parse_string(rbi)
+      out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
         def bar; end
 
@@ -775,32 +775,32 @@ module RBI
     end
 
     def test_parse_errors
-      e = assert_raises(RBI::ParseError) do
-        RBI::Parser.parse_string(<<~RBI)
+      e = assert_raises(ParseError) do
+        Parser.parse_string(<<~RBI)
           def bar
         RBI
       end
       assert_equal("unexpected token $end", e.message)
       assert_equal("-:2:0-2:0", e.location.to_s)
 
-      e = assert_raises(RBI::ParseError) do
-        RBI::Parser.parse_string(<<~RBI)
+      e = assert_raises(ParseError) do
+        Parser.parse_string(<<~RBI)
           private include Foo
         RBI
       end
       assert_equal("Unexpected token `private` before `send`", e.message)
       assert_equal("-:1:0-1:19", e.location.to_s)
 
-      e = assert_raises(RBI::ParseError) do
-        RBI::Parser.parse_string(<<~RBI)
+      e = assert_raises(ParseError) do
+        Parser.parse_string(<<~RBI)
           private class Foo; end
         RBI
       end
       assert_equal("Unexpected token `private` before `class`", e.message)
       assert_equal("-:1:0-1:22", e.location.to_s)
 
-      e = assert_raises(RBI::ParseError) do
-        RBI::Parser.parse_string(<<~RBI)
+      e = assert_raises(ParseError) do
+        Parser.parse_string(<<~RBI)
           private CST = 42
         RBI
       end
@@ -850,8 +850,8 @@ module RBI
         class Foo
       RBI
 
-      e = assert_raises(RBI::ParseError) do
-        RBI::Parser.parse_file(path)
+      e = assert_raises(ParseError) do
+        Parser.parse_file(path)
       end
       assert_equal("unexpected token $end", e.message)
       assert_equal("test_parse_real_file_with_error.rbi:2:0-2:0", e.location.to_s)

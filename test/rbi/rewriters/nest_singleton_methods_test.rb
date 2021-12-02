@@ -6,11 +6,11 @@ require "test_helper"
 module RBI
   class NestSingletonMethodsTest < Minitest::Test
     def test_nest_singleton_methods_in_trees
-      rbi = RBI::Tree.new
-      rbi << RBI::Method.new("m1")
-      rbi << RBI::Method.new("m2", is_singleton: true)
-      rbi << RBI::Method.new("m3")
-      rbi << RBI::Method.new("m4", is_singleton: true)
+      rbi = Tree.new
+      rbi << Method.new("m1")
+      rbi << Method.new("m2", is_singleton: true)
+      rbi << Method.new("m3")
+      rbi << Method.new("m4", is_singleton: true)
 
       rbi.nest_singleton_methods!
 
@@ -26,13 +26,13 @@ module RBI
     end
 
     def test_nest_singleton_methods_in_scopes
-      rbi = RBI::Tree.new
-      scope1 = RBI::Module.new("Foo")
-      scope1 << RBI::Method.new("m1")
-      scope1 << RBI::Method.new("m2", is_singleton: true)
-      scope2 = RBI::Class.new("Bar")
-      scope2 << RBI::Method.new("m3")
-      scope2 << RBI::Method.new("m4", is_singleton: true)
+      rbi = Tree.new
+      scope1 = Module.new("Foo")
+      scope1 << Method.new("m1")
+      scope1 << Method.new("m2", is_singleton: true)
+      scope2 = Class.new("Bar")
+      scope2 << Method.new("m3")
+      scope2 << Method.new("m4", is_singleton: true)
       rbi << scope1
       rbi << scope2
 
@@ -58,11 +58,11 @@ module RBI
     end
 
     def test_nest_singleton_methods_in_singleton_classes
-      rbi = RBI::Tree.new
-      scope1 = RBI::SingletonClass.new
-      scope1 << RBI::Method.new("m1", is_singleton: true)
-      scope2 = RBI::SingletonClass.new
-      scope2 << RBI::Method.new("m2", is_singleton: true)
+      rbi = Tree.new
+      scope1 = SingletonClass.new
+      scope1 << Method.new("m1", is_singleton: true)
+      scope2 = SingletonClass.new
+      scope2 << Method.new("m2", is_singleton: true)
       scope1 << scope2
       rbi << scope1
 
@@ -84,14 +84,14 @@ module RBI
     end
 
     def test_nest_does_not_nest_other_nodes
-      rbi = RBI::Tree.new
-      scope1 = RBI::Module.new("Foo")
-      scope1 << RBI::Const.new("C1", "42")
-      scope1 << RBI::Module.new("M1")
-      scope1 << RBI::Helper.new("h1")
-      scope2 = RBI::Class.new("Bar")
-      scope2 << RBI::Include.new("I1")
-      scope2 << RBI::Extend.new("E1")
+      rbi = Tree.new
+      scope1 = Module.new("Foo")
+      scope1 << Const.new("C1", "42")
+      scope1 << Module.new("M1")
+      scope1 << Helper.new("h1")
+      scope2 = Class.new("Bar")
+      scope2 << Include.new("I1")
+      scope2 << Extend.new("E1")
       rbi << scope1
       rbi << scope2
 

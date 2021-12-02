@@ -8,13 +8,13 @@ module RBI
     extend T::Sig
 
     def test_index_empty_trees
-      rbi = RBI::Tree.new
+      rbi = Tree.new
       index_string = index_string(rbi.index)
       assert_empty(index_string)
     end
 
     def test_index_scopes_and_consts
-      rbi = RBI::Parser.parse_string(<<~RBI)
+      rbi = Parser.parse_string(<<~RBI)
         class A
           module B
             module ::C; end
@@ -38,7 +38,7 @@ module RBI
     end
 
     def test_index_properties
-      rbi = RBI::Parser.parse_string(<<~RBI)
+      rbi = Parser.parse_string(<<~RBI)
         class A
           attr_reader :a, :b
           attr_writer :a, :b
@@ -70,7 +70,7 @@ module RBI
     end
 
     def test_index_sorbet_constructs
-      rbi = RBI::Parser.parse_string(<<~RBI)
+      rbi = Parser.parse_string(<<~RBI)
         class A < T::Struct
           const :a, Integer
           prop :b, String
@@ -103,7 +103,7 @@ module RBI
     end
 
     def test_index_multiple_trees
-      tree1 = RBI::Parser.parse_string(<<~RBI)
+      tree1 = Parser.parse_string(<<~RBI)
         class A
           module B
             module ::C; end
@@ -111,7 +111,7 @@ module RBI
         end
       RBI
 
-      tree2 = RBI::Parser.parse_string(<<~RBI)
+      tree2 = Parser.parse_string(<<~RBI)
         class A
           module B
             module ::C; end
@@ -128,7 +128,7 @@ module RBI
       IDX
     end
 
-    sig { params(index: RBI::Index).returns(String) }
+    sig { params(index: Index).returns(String) }
     def index_string(index)
       io = StringIO.new
       index.keys.sort.each do |key|
