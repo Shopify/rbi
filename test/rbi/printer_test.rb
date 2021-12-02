@@ -799,6 +799,62 @@ module RBI
       RBI
     end
 
+    def test_print_sig_under_max_line_length
+      rbi = Tree.new do |tree|
+        tree << Class.new("Foo") do |cls|
+          cls << Sig.new(is_abstract: true, is_overridable: true) do |sig|
+            sig << SigParam.new("a", "Integer")
+            sig << SigParam.new("b", "String")
+            sig << SigParam.new("c", "T.untyped")
+          end
+          cls << Method.new("foo") do |method|
+            method << Param.new("a")
+            method << Param.new("b")
+            method << Param.new("c")
+          end
+        end
+      end
+
+      assert_equal(<<~RBI, rbi.string(max_line_length: 80))
+        class Foo
+          sig { abstract.overridable.params(a: Integer, b: String, c: T.untyped).void }
+          def foo(a, b, c); end
+        end
+      RBI
+    end
+
+    def test_print_sig_over_max_line_length
+      rbi = Tree.new do |tree|
+        tree << Class.new("Foo") do |cls|
+          cls << Sig.new(is_abstract: true, is_overridable: true) do |sig|
+            sig << SigParam.new("a", "Integer")
+            sig << SigParam.new("b", "Integer")
+            sig << SigParam.new("c", "T.untyped")
+          end
+          cls << Method.new("foo") do |method|
+            method << Param.new("a")
+            method << Param.new("b")
+            method << Param.new("c")
+          end
+        end
+      end
+
+      assert_equal(<<~RBI, rbi.string(max_line_length: 80))
+        class Foo
+          sig do
+            abstract.
+            overridable.
+            params(
+              a: Integer,
+              b: Integer,
+              c: T.untyped
+            ).void
+          end
+          def foo(a, b, c); end
+        end
+      RBI
+    end
+
     def test_print_blank_lines
       comments = [
         Comment.new("comment 1"),

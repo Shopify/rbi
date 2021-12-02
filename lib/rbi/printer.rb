@@ -11,14 +11,28 @@ module RBI
     sig { returns(T.nilable(Node)) }
     attr_reader :previous_node
 
-    sig { params(out: T.any(IO, StringIO), indent: Integer, print_locs: T::Boolean).void }
-    def initialize(out: $stdout, indent: 0, print_locs: false)
+    sig { returns(Integer) }
+    attr_reader :current_indent
+
+    sig { returns(T.nilable(Integer)) }
+    attr_reader :max_line_length
+
+    sig do
+      params(
+        out: T.any(IO, StringIO),
+        indent: Integer,
+        print_locs: T::Boolean,
+        max_line_length: T.nilable(Integer)
+      ).void
+    end
+    def initialize(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
       super()
       @out = out
       @current_indent = indent
       @print_locs = print_locs
       @in_visibility_group = T.let(false, T::Boolean)
       @previous_node = T.let(nil, T.nilable(Node))
+      @max_line_length = max_line_length
     end
 
     # Printing
@@ -123,16 +137,23 @@ module RBI
     sig { abstract.params(v: Printer).void }
     def accept_printer(v); end
 
-    sig { params(out: T.any(IO, StringIO), indent: Integer, print_locs: T::Boolean).void }
-    def print(out: $stdout, indent: 0, print_locs: false)
-      p = Printer.new(out: out, indent: indent, print_locs: print_locs)
+    sig do
+      params(
+        out: T.any(IO, StringIO),
+        indent: Integer,
+        print_locs: T::Boolean,
+        max_line_length: T.nilable(Integer)
+      ).void
+    end
+    def print(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
+      p = Printer.new(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
       p.visit(self)
     end
 
-    sig { params(indent: Integer, print_locs: T::Boolean).returns(String) }
-    def string(indent: 0, print_locs: false)
+    sig { params(indent: Integer, print_locs: T::Boolean, max_line_length: T.nilable(Integer)).returns(String) }
+    def string(indent: 0, print_locs: false, max_line_length: nil)
       out = StringIO.new
-      print(out: out, indent: indent, print_locs: print_locs)
+      print(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
       out.string
     end
 
@@ -602,8 +623,16 @@ module RBI
     sig { override.params(v: Printer).void }
     def accept_printer(v)
       v.printl("# #{loc}") if loc && v.print_locs
-      if oneline?
+      max_line_length = v.max_line_length
+      if oneline? && max_line_length.nil?
         print_as_line(v)
+      elsif max_line_length
+        line = string(indent: v.current_indent)
+        if line.length <= max_line_length
+          v.print(line)
+        else
+          print_as_block(v)
+        end
       else
         print_as_block(v)
       end
