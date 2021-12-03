@@ -6,11 +6,11 @@ require "test_helper"
 module RBI
   class NestNonPublicMethodsTest < Minitest::Test
     def test_nest_non_public_methods_in_tree
-      rbi = RBI::Tree.new
-      rbi << RBI::Method.new("m1")
-      rbi << RBI::Method.new("m2", visibility: RBI::Protected.new)
-      rbi << RBI::Method.new("m3", visibility: RBI::Private.new)
-      rbi << RBI::Method.new("m4", visibility: RBI::Public.new)
+      rbi = Tree.new
+      rbi << Method.new("m1")
+      rbi << Method.new("m2", visibility: Protected.new)
+      rbi << Method.new("m3", visibility: Private.new)
+      rbi << Method.new("m4", visibility: Public.new)
 
       rbi.nest_non_public_methods!
 
@@ -29,16 +29,16 @@ module RBI
     end
 
     def test_nest_non_public_methods_in_scopes
-      rbi = RBI::Tree.new
-      scope1 = RBI::Module.new("S1")
-      scope1 << RBI::Method.new("m1")
-      scope1 << RBI::Method.new("m2", visibility: RBI::Protected.new)
-      scope2 = RBI::Class.new("S2")
-      scope2 << RBI::Method.new("m3")
-      scope2 << RBI::Method.new("m4", visibility: RBI::Private.new)
-      scope3 = RBI::SingletonClass.new
-      scope3 << RBI::Method.new("m5")
-      scope3 << RBI::Method.new("m6", visibility: RBI::Protected.new)
+      rbi = Tree.new
+      scope1 = Module.new("S1")
+      scope1 << Method.new("m1")
+      scope1 << Method.new("m2", visibility: Protected.new)
+      scope2 = Class.new("S2")
+      scope2 << Method.new("m3")
+      scope2 << Method.new("m4", visibility: Private.new)
+      scope3 = SingletonClass.new
+      scope3 << Method.new("m5")
+      scope3 << Method.new("m6", visibility: Protected.new)
       rbi << scope1
       scope1 << scope2
       scope2 << scope3
@@ -73,10 +73,10 @@ module RBI
     end
 
     def test_nest_non_public_singleton_methods
-      rbi = RBI::Tree.new
-      rbi << RBI::Method.new("m1", is_singleton: true, visibility: RBI::Protected.new)
-      rbi << RBI::Method.new("m2", is_singleton: true, visibility: RBI::Private.new)
-      rbi << RBI::Method.new("m3", is_singleton: true, visibility: RBI::Public.new)
+      rbi = Tree.new
+      rbi << Method.new("m1", is_singleton: true, visibility: Protected.new)
+      rbi << Method.new("m2", is_singleton: true, visibility: Private.new)
+      rbi << Method.new("m3", is_singleton: true, visibility: Public.new)
 
       rbi.nest_non_public_methods!
 

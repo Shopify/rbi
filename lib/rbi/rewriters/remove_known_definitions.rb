@@ -50,9 +50,9 @@ module RBI
 
       sig do
         params(
-          tree: RBI::Tree,
-          index: RBI::Index
-        ).returns([RBI::Tree, T::Array[Operation]])
+          tree: Tree,
+          index: Index
+        ).returns([Tree, T::Array[Operation]])
       end
       def self.remove(tree, index)
         v = RemoveKnownDefinitions.new(index)
@@ -63,30 +63,30 @@ module RBI
       sig { returns(T::Array[Operation]) }
       attr_reader :operations
 
-      sig { params(index: RBI::Index).void }
+      sig { params(index: Index).void }
       def initialize(index)
         super()
         @index = index
         @operations = T.let([], T::Array[Operation])
       end
 
-      sig { params(nodes: T::Array[RBI::Node]).void }
+      sig { params(nodes: T::Array[Node]).void }
       def visit_all(nodes)
         nodes.dup.each { |node| visit(node) }
       end
 
-      sig { override.params(node: T.nilable(RBI::Node)).void }
+      sig { override.params(node: T.nilable(Node)).void }
       def visit(node)
         return unless node
 
         case node
-        when RBI::Scope
+        when Scope
           visit_all(node.nodes)
           previous = previous_definition_for(node)
           delete_node(node, previous) if previous && can_delete_node?(node, previous)
-        when RBI::Tree
+        when Tree
           visit_all(node.nodes)
-        when RBI::Indexable
+        when Indexable
           previous = previous_definition_for(node)
           delete_node(node, previous) if previous && can_delete_node?(node, previous)
         end
@@ -94,7 +94,7 @@ module RBI
 
       private
 
-      sig { params(node: RBI::Indexable).returns(T.nilable(RBI::Node)) }
+      sig { params(node: Indexable).returns(T.nilable(Node)) }
       def previous_definition_for(node)
         node.index_ids.each do |id|
           previous = @index[id].first
@@ -121,7 +121,7 @@ module RBI
         end
       end
 
-      sig { params(node: RBI::Node, previous: RBI::Node).void }
+      sig { params(node: Node, previous: Node).void }
       def delete_node(node, previous)
         node.detach
         @operations << Operation.new(deleted_node: node, duplicate_of: previous)
@@ -130,8 +130,8 @@ module RBI
       class Operation < T::Struct
         extend T::Sig
 
-        const :deleted_node, RBI::Node
-        const :duplicate_of, RBI::Node
+        const :deleted_node, Node
+        const :duplicate_of, Node
 
         sig { returns(String) }
         def to_s
