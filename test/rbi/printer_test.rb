@@ -215,7 +215,7 @@ module RBI
       assert_equal(<<~RBI, method.string)
         sig { void }
         sig { params(a: A, b: T.nilable(B), b: T.proc.void).returns(R) }
-        sig { abstract.override.overridable.void.checked(:never) }
+        sig { abstract.override.overridable.checked(:never).void }
         sig { type_parameters(:U, :V).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)) }
         def foo; end
       RBI

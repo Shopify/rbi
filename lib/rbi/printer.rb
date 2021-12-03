@@ -650,19 +650,22 @@ module RBI
 
     private
 
+    sig { returns(T::Array[String]) }
+    def sig_modifiers
+      modifiers = T.let([], T::Array[String])
+      modifiers << "abstract" if is_abstract
+      modifiers << "override" if is_override
+      modifiers << "overridable" if is_overridable
+      modifiers << "type_parameters(#{type_params.map { |type| ":#{type}" }.join(", ")})" if type_params.any?
+      modifiers << "checked(:#{checked})" if checked
+      modifiers
+    end
+
     sig { params(v: Printer).void }
     def print_as_line(v)
       v.printt("sig { ")
-      v.print("abstract.") if is_abstract
-      v.print("override.") if is_override
-      v.print("overridable.") if is_overridable
-      unless type_params.empty?
-        v.print("type_parameters(")
-        type_params.each_with_index do |param, index|
-          v.print(":#{param}")
-          v.print(", ") if index < type_params.length - 1
-        end
-        v.print(").")
+      sig_modifiers.each do |modifier|
+        v.print("#{modifier}.")
       end
       unless params.empty?
         v.print("params(")
@@ -677,20 +680,12 @@ module RBI
       else
         v.print("void")
       end
-      if checked
-        v.print(".checked(:#{checked})")
-      end
       v.printn(" }")
     end
 
     sig { params(v: Printer).void }
     def print_as_block(v)
-      modifiers = T.let([], T::Array[String])
-      modifiers << "abstract" if is_abstract
-      modifiers << "override" if is_override
-      modifiers << "overridable" if is_overridable
-      modifiers << "type_parameters(#{type_params.map { |type| ":#{type}"}.join(", ")})" if type_params.any?
-      modifiers << "checked(:#{checked})" if checked
+      modifiers = sig_modifiers
 
       v.printl("sig do")
       v.indent
