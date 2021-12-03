@@ -685,21 +685,27 @@ module RBI
 
     sig { params(v: Printer).void }
     def print_as_block(v)
+      modifiers = T.let([], T::Array[String])
+      modifiers << "abstract" if is_abstract
+      modifiers << "override" if is_override
+      modifiers << "overridable" if is_overridable
+      modifiers << "type_parameters(#{type_params.map { |type| ":#{type}"}.join(", ")})" if type_params.any?
+      modifiers << "checked(:#{checked})" if checked
+
       v.printl("sig do")
       v.indent
-      v.printl("abstract.") if is_abstract
-      v.printl("override.") if is_override
-      v.printl("overridable.") if is_overridable
-      unless type_params.empty?
-        v.printt("type_parameters(")
-        type_params.each_with_index do |param, index|
-          v.print(":#{param}")
-          v.print(", ") if index < type_params.length - 1
+      if modifiers.any?
+        v.printl(T.must(modifiers.first))
+        v.indent
+        modifiers[1..]&.each do |modifier|
+          v.printl(".#{modifier}")
         end
-        v.printn(").")
       end
-      unless params.empty?
-        v.printl("params(")
+
+      if params.any?
+        v.printt
+        v.print(".") if modifiers.any?
+        v.printn("params(")
         v.indent
         params.each_with_index do |param, pindex|
           v.printt
@@ -716,18 +722,18 @@ module RBI
           v.printn
         end
         v.dedent
-        v.printt(").")
+        v.printt(")")
       end
+      v.printt if params.empty?
+      v.print(".") if modifiers.any? || params.any?
       if return_type && return_type != "void"
         v.print("returns(#{return_type})")
       else
         v.print("void")
       end
-      if checked
-        v.print(".checked(:#{checked})")
-      end
       v.printn
       v.dedent
+      v.dedent if modifiers.any?
       v.printl("end")
     end
   end

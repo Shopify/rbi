@@ -775,7 +775,7 @@ module RBI
         Comment.new("comment 2"),
       ]
 
-      sig = Sig.new(is_abstract: true, is_overridable: true)
+      sig = Sig.new(is_abstract: true, is_override: true, is_overridable: true, checked: :always, return_type: "A")
       sig.type_params << "TP1"
       sig.type_params << "TP2"
       sig << SigParam.new("a", "Integer", comments: comments)
@@ -784,17 +784,19 @@ module RBI
 
       assert_equal(<<~RBI, sig.string)
         sig do
-          abstract.
-          overridable.
-          type_parameters(:TP1, :TP2).
-          params(
-            a: Integer, # comment 1
-                        # comment 2
-            b: String, # comment 1
-                       # comment 2
-            c: T.untyped # comment 1
+          abstract
+            .override
+            .overridable
+            .type_parameters(:TP1, :TP2)
+            .checked(:always)
+            .params(
+              a: Integer, # comment 1
+                          # comment 2
+              b: String, # comment 1
                          # comment 2
-          ).void
+              c: T.untyped # comment 1
+                           # comment 2
+            ).returns(A)
         end
       RBI
     end
@@ -842,15 +844,97 @@ module RBI
       assert_equal(<<~RBI, rbi.string(max_line_length: 80))
         class Foo
           sig do
-            abstract.
-            overridable.
-            params(
-              a: Integer,
-              b: Integer,
-              c: T.untyped
-            ).void
+            abstract
+              .overridable
+              .params(
+                a: Integer,
+                b: Integer,
+                c: T.untyped
+              ).void
           end
           def foo(a, b, c); end
+        end
+      RBI
+    end
+
+    def test_print_sig_over_max_line_length_with_all_modifiers
+      sig = Sig.new
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          void
+        end
+      RBI
+
+      sig = Sig.new(is_abstract: true)
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          abstract
+            .void
+        end
+      RBI
+
+      sig = Sig.new(is_override: true)
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          override
+            .void
+        end
+      RBI
+
+      sig = Sig.new(is_abstract: true, is_override: true)
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          abstract
+            .override
+            .void
+        end
+      RBI
+
+      sig = Sig.new
+      sig << SigParam.new("a", "Integer")
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          params(
+            a: Integer
+          ).void
+        end
+      RBI
+
+      sig = Sig.new(is_overridable: true)
+      sig << SigParam.new("a", "Integer")
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          overridable
+            .params(
+              a: Integer
+            ).void
+        end
+      RBI
+
+      sig = Sig.new(checked: :never)
+      sig << SigParam.new("a", "Integer")
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          checked(:never)
+            .params(
+              a: Integer
+            ).void
+        end
+      RBI
+
+      sig = Sig.new(type_params: ["A", "B", "C"])
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          type_parameters(:A, :B, :C)
+            .void
         end
       RBI
     end
