@@ -113,7 +113,7 @@ module RBI
         sig { returns(String) }
         sig { params(a: T.untyped, b: T::Array[String]).returns(T::Hash[String, Integer]) }
         sig { abstract.params(a: Integer).void }
-        sig { returns(T::Array[String]).checked(:never) }
+        sig { checked(:never).returns(T::Array[String]) }
         sig { override.params(printer: Spoom::LSP::SymbolPrinter).void }
         sig { returns(T.nilable(String)) }
         sig { params(requested_generators: T::Array[String]).returns(T.proc.params(klass: Class).returns(T::Boolean)) }
@@ -390,7 +390,7 @@ module RBI
         sig { void }
         sig { params(a: A, b: T.nilable(B), b: T.proc.void).returns(R) }
         sig { abstract.override.overridable.void }
-        sig { type_parameters(:U, :V).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)).checked(:never) }
+        sig { type_parameters(:U, :V).checked(:never).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)) }
         def m4; end
       RBI
 
@@ -410,7 +410,7 @@ module RBI
         # -:7:0-7:42
         sig { abstract.override.overridable.void }
         # -:8:0-8:109
-        sig { type_parameters(:U, :V).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)).checked(:never) }
+        sig { type_parameters(:U, :V).checked(:never).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)) }
         # -:9:0-9:11
         def m4; end
       RBI

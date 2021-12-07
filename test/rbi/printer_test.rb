@@ -215,7 +215,7 @@ module RBI
       assert_equal(<<~RBI, method.string)
         sig { void }
         sig { params(a: A, b: T.nilable(B), b: T.proc.void).returns(R) }
-        sig { abstract.override.overridable.void.checked(:never) }
+        sig { abstract.override.overridable.checked(:never).void }
         sig { type_parameters(:U, :V).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)) }
         def foo; end
       RBI
@@ -765,6 +765,176 @@ module RBI
             c: T.untyped # comment 1
                          # comment 2
           ).void
+        end
+      RBI
+    end
+
+    def test_print_sig_params_multiline_comments_with_modifiers
+      comments = [
+        Comment.new("comment 1"),
+        Comment.new("comment 2"),
+      ]
+
+      sig = Sig.new(is_abstract: true, is_override: true, is_overridable: true, checked: :always, return_type: "A")
+      sig.type_params << "TP1"
+      sig.type_params << "TP2"
+      sig << SigParam.new("a", "Integer", comments: comments)
+      sig << SigParam.new("b", "String", comments: comments)
+      sig << SigParam.new("c", "T.untyped", comments: comments)
+
+      assert_equal(<<~RBI, sig.string)
+        sig do
+          abstract
+            .override
+            .overridable
+            .type_parameters(:TP1, :TP2)
+            .checked(:always)
+            .params(
+              a: Integer, # comment 1
+                          # comment 2
+              b: String, # comment 1
+                         # comment 2
+              c: T.untyped # comment 1
+                           # comment 2
+            ).returns(A)
+        end
+      RBI
+    end
+
+    def test_print_sig_under_max_line_length
+      rbi = Tree.new do |tree|
+        tree << Class.new("Foo") do |cls|
+          cls << Sig.new(is_abstract: true, is_overridable: true) do |sig|
+            sig << SigParam.new("a", "Integer")
+            sig << SigParam.new("b", "String")
+            sig << SigParam.new("c", "T.untyped")
+          end
+          cls << Method.new("foo") do |method|
+            method << Param.new("a")
+            method << Param.new("b")
+            method << Param.new("c")
+          end
+        end
+      end
+
+      assert_equal(<<~RBI, rbi.string(max_line_length: 80))
+        class Foo
+          sig { abstract.overridable.params(a: Integer, b: String, c: T.untyped).void }
+          def foo(a, b, c); end
+        end
+      RBI
+    end
+
+    def test_print_sig_over_max_line_length
+      rbi = Tree.new do |tree|
+        tree << Class.new("Foo") do |cls|
+          cls << Sig.new(is_abstract: true, is_overridable: true) do |sig|
+            sig << SigParam.new("a", "Integer")
+            sig << SigParam.new("b", "Integer")
+            sig << SigParam.new("c", "T.untyped")
+          end
+          cls << Method.new("foo") do |method|
+            method << Param.new("a")
+            method << Param.new("b")
+            method << Param.new("c")
+          end
+        end
+      end
+
+      assert_equal(<<~RBI, rbi.string(max_line_length: 80))
+        class Foo
+          sig do
+            abstract
+              .overridable
+              .params(
+                a: Integer,
+                b: Integer,
+                c: T.untyped
+              ).void
+          end
+          def foo(a, b, c); end
+        end
+      RBI
+    end
+
+    def test_print_sig_over_max_line_length_with_all_modifiers
+      sig = Sig.new
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          void
+        end
+      RBI
+
+      sig = Sig.new(is_abstract: true)
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          abstract
+            .void
+        end
+      RBI
+
+      sig = Sig.new(is_override: true)
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          override
+            .void
+        end
+      RBI
+
+      sig = Sig.new(is_abstract: true, is_override: true)
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          abstract
+            .override
+            .void
+        end
+      RBI
+
+      sig = Sig.new
+      sig << SigParam.new("a", "Integer")
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          params(
+            a: Integer
+          ).void
+        end
+      RBI
+
+      sig = Sig.new(is_overridable: true)
+      sig << SigParam.new("a", "Integer")
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          overridable
+            .params(
+              a: Integer
+            ).void
+        end
+      RBI
+
+      sig = Sig.new(checked: :never)
+      sig << SigParam.new("a", "Integer")
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          checked(:never)
+            .params(
+              a: Integer
+            ).void
+        end
+      RBI
+
+      sig = Sig.new(type_params: ["A", "B", "C"])
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          type_parameters(:A, :B, :C)
+            .void
         end
       RBI
     end

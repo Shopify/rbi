@@ -11,14 +11,28 @@ module RBI
     sig { returns(T.nilable(Node)) }
     attr_reader :previous_node
 
-    sig { params(out: T.any(IO, StringIO), indent: Integer, print_locs: T::Boolean).void }
-    def initialize(out: $stdout, indent: 0, print_locs: false)
+    sig { returns(Integer) }
+    attr_reader :current_indent
+
+    sig { returns(T.nilable(Integer)) }
+    attr_reader :max_line_length
+
+    sig do
+      params(
+        out: T.any(IO, StringIO),
+        indent: Integer,
+        print_locs: T::Boolean,
+        max_line_length: T.nilable(Integer)
+      ).void
+    end
+    def initialize(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
       super()
       @out = out
       @current_indent = indent
       @print_locs = print_locs
       @in_visibility_group = T.let(false, T::Boolean)
       @previous_node = T.let(nil, T.nilable(Node))
+      @max_line_length = max_line_length
     end
 
     # Printing
@@ -123,16 +137,23 @@ module RBI
     sig { abstract.params(v: Printer).void }
     def accept_printer(v); end
 
-    sig { params(out: T.any(IO, StringIO), indent: Integer, print_locs: T::Boolean).void }
-    def print(out: $stdout, indent: 0, print_locs: false)
-      p = Printer.new(out: out, indent: indent, print_locs: print_locs)
+    sig do
+      params(
+        out: T.any(IO, StringIO),
+        indent: Integer,
+        print_locs: T::Boolean,
+        max_line_length: T.nilable(Integer)
+      ).void
+    end
+    def print(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
+      p = Printer.new(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
       p.visit(self)
     end
 
-    sig { params(indent: Integer, print_locs: T::Boolean).returns(String) }
-    def string(indent: 0, print_locs: false)
+    sig { params(indent: Integer, print_locs: T::Boolean, max_line_length: T.nilable(Integer)).returns(String) }
+    def string(indent: 0, print_locs: false, max_line_length: nil)
       out = StringIO.new
-      print(out: out, indent: indent, print_locs: print_locs)
+      print(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
       out.string
     end
 
@@ -602,66 +623,18 @@ module RBI
     sig { override.params(v: Printer).void }
     def accept_printer(v)
       v.printl("# #{loc}") if loc && v.print_locs
-      if oneline?
-        v.printt("sig { ")
-      else
-        v.printl("sig do")
-        v.indent
-      end
-      v.print("abstract.") if is_abstract
-      v.print("override.") if is_override
-      v.print("overridable.") if is_overridable
-      unless type_params.empty?
-        v.print("type_parameters(")
-        type_params.each_with_index do |param, index|
-          v.print(":#{param}")
-          v.print(", ") if index < type_params.length - 1
-        end
-        v.print(").")
-      end
-      unless params.empty?
-        if inline_params?
-          v.print("params(")
-          params.each_with_index do |param, index|
-            v.print(", ") if index > 0
-            v.visit(param)
-          end
-          v.print(").")
+      max_line_length = v.max_line_length
+      if oneline? && max_line_length.nil?
+        print_as_line(v)
+      elsif max_line_length
+        line = string(indent: v.current_indent)
+        if line.length <= max_line_length
+          v.print(line)
         else
-          v.printl("params(")
-          v.indent
-          params.each_with_index do |param, pindex|
-            v.printt
-            v.visit(param)
-            v.print(",") if pindex < params.size - 1
-            param.comments_lines.each_with_index do |comment, cindex|
-              if cindex == 0
-                v.print(" ")
-              else
-                param.print_comment_leading_space(v, last: pindex == params.size - 1)
-              end
-              v.print("# #{comment}")
-            end
-            v.printn
-          end
-          v.dedent
-          v.printt(").")
+          print_as_block(v)
         end
-      end
-      if return_type && return_type != "void"
-        v.print("returns(#{return_type})")
       else
-        v.print("void")
-      end
-      if checked
-        v.print(".checked(:#{checked})")
-      end
-      if oneline?
-        v.printn(" }")
-      else
-        v.printn
-        v.dedent
-        v.printl("end")
+        print_as_block(v)
       end
     end
 
@@ -673,6 +646,90 @@ module RBI
     sig { returns(T::Boolean) }
     def inline_params?
       params.all? { |p| p.comments.empty? }
+    end
+
+    private
+
+    sig { returns(T::Array[String]) }
+    def sig_modifiers
+      modifiers = T.let([], T::Array[String])
+      modifiers << "abstract" if is_abstract
+      modifiers << "override" if is_override
+      modifiers << "overridable" if is_overridable
+      modifiers << "type_parameters(#{type_params.map { |type| ":#{type}" }.join(", ")})" if type_params.any?
+      modifiers << "checked(:#{checked})" if checked
+      modifiers
+    end
+
+    sig { params(v: Printer).void }
+    def print_as_line(v)
+      v.printt("sig { ")
+      sig_modifiers.each do |modifier|
+        v.print("#{modifier}.")
+      end
+      unless params.empty?
+        v.print("params(")
+        params.each_with_index do |param, index|
+          v.print(", ") if index > 0
+          v.visit(param)
+        end
+        v.print(").")
+      end
+      if return_type && return_type != "void"
+        v.print("returns(#{return_type})")
+      else
+        v.print("void")
+      end
+      v.printn(" }")
+    end
+
+    sig { params(v: Printer).void }
+    def print_as_block(v)
+      modifiers = sig_modifiers
+
+      v.printl("sig do")
+      v.indent
+      if modifiers.any?
+        v.printl(T.must(modifiers.first))
+        v.indent
+        modifiers[1..]&.each do |modifier|
+          v.printl(".#{modifier}")
+        end
+      end
+
+      if params.any?
+        v.printt
+        v.print(".") if modifiers.any?
+        v.printn("params(")
+        v.indent
+        params.each_with_index do |param, pindex|
+          v.printt
+          v.visit(param)
+          v.print(",") if pindex < params.size - 1
+          param.comments_lines.each_with_index do |comment, cindex|
+            if cindex == 0
+              v.print(" ")
+            else
+              param.print_comment_leading_space(v, last: pindex == params.size - 1)
+            end
+            v.print("# #{comment}")
+          end
+          v.printn
+        end
+        v.dedent
+        v.printt(")")
+      end
+      v.printt if params.empty?
+      v.print(".") if modifiers.any? || params.any?
+      if return_type && return_type != "void"
+        v.print("returns(#{return_type})")
+      else
+        v.print("void")
+      end
+      v.printn
+      v.dedent
+      v.dedent if modifiers.any?
+      v.printl("end")
     end
   end
 
