@@ -57,6 +57,8 @@ module RBI
         Group::Kind::MixesInClassMethods
       when Send
         Group::Kind::Sends
+      when AttrAccessor, AttrReader, AttrWriter
+        Group::Kind::Attrs
       when TStructField
         Group::Kind::TStructFields
       when TEnumBlock
@@ -98,6 +100,7 @@ module RBI
         TypeMembers         = new
         MixesInClassMethods = new
         Sends               = new
+        Attrs               = new
         TStructFields       = new
         TEnums              = new
         Inits               = new

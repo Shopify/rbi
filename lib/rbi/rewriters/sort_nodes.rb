@@ -38,6 +38,9 @@ module RBI
         when Send                 then 50
         when TStructField         then 60
         when TEnumBlock           then 70
+        when AttrAccessor         then 71
+        when AttrReader           then 72
+        when AttrWriter           then 73
         when Method
           if node.name == "initialize"
             81
@@ -63,10 +66,11 @@ module RBI
         when Group::Kind::Sends               then 5
         when Group::Kind::TStructFields       then 6
         when Group::Kind::TEnums              then 7
-        when Group::Kind::Inits               then 8
-        when Group::Kind::Methods             then 9
-        when Group::Kind::SingletonClasses    then 10
-        when Group::Kind::Consts              then 11
+        when Group::Kind::Attrs               then 8
+        when Group::Kind::Inits               then 9
+        when Group::Kind::Methods             then 10
+        when Group::Kind::SingletonClasses    then 11
+        when Group::Kind::Consts              then 12
         else
           T.absurd(kind)
         end
