@@ -13,6 +13,7 @@ module RBI
       rbi << Struct.new("S3")
       rbi << Method.new("m1")
       rbi << Method.new("m2", is_singleton: true)
+      rbi << Method.new("initialize")
       rbi << Extend.new("E")
       rbi << Include.new("I")
       rbi << MixesInClassMethods.new("MICM")
@@ -23,6 +24,9 @@ module RBI
       rbi << SingletonClass.new
       rbi << TStruct.new("TS")
       rbi << Send.new("foo")
+      rbi << AttrWriter.new(:baz)
+      rbi << AttrReader.new(:bar)
+      rbi << AttrAccessor.new(:foo)
 
       rbi.group_nodes!
       rbi.sort_nodes!
@@ -39,6 +43,12 @@ module RBI
 
         const :SC, Type
         prop :SP, Type
+
+        attr_accessor :foo
+        attr_reader :bar
+        attr_writer :baz
+
+        def initialize; end
 
         def m1; end
         def self.m2; end
