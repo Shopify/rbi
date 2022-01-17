@@ -8,6 +8,7 @@ module RBI
 
       sig { override.params(node: T.nilable(Node)).void }
       def visit(node)
+        sort_node!(node) if node
         return unless node.is_a?(Tree)
         visit_all(node.nodes)
         original_order = node.nodes.map.with_index.to_h
@@ -38,9 +39,7 @@ module RBI
         when Send                 then 50
         when TStructField         then 60
         when TEnumBlock           then 70
-        when AttrAccessor         then 71
-        when AttrReader           then 72
-        when AttrWriter           then 73
+        when Attr                 then 75
         when Method
           if node.name == "initialize"
             81
@@ -81,6 +80,16 @@ module RBI
         case node
         when Module, Class, Struct, Const, Method, Helper, TStructField
           node.name
+        when Attr
+          node.names.first.to_s
+        end
+      end
+
+      sig { params(node: Node).void }
+      def sort_node!(node)
+        case node
+        when Attr
+          node.names.sort!
         end
       end
     end

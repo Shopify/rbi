@@ -24,9 +24,9 @@ module RBI
       rbi << SingletonClass.new
       rbi << TStruct.new("TS")
       rbi << Send.new("foo")
-      rbi << AttrWriter.new(:baz)
+      rbi << AttrWriter.new(:baz, :b)
       rbi << AttrReader.new(:bar)
-      rbi << AttrAccessor.new(:foo)
+      rbi << AttrAccessor.new(:foo, :a, :z)
 
       rbi.group_nodes!
       rbi.sort_nodes!
@@ -44,9 +44,9 @@ module RBI
         const :SC, Type
         prop :SP, Type
 
-        attr_accessor :foo
+        attr_accessor :a, :foo, :z
+        attr_writer :b, :baz
         attr_reader :bar
-        attr_writer :baz
 
         def initialize; end
 
