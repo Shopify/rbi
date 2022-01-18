@@ -273,6 +273,9 @@ module RBI
       rbi << TStructProp.new("SP1", "T")
       rbi << Method.new("m3", is_singleton: true)
       rbi << TStructProp.new("SP3", "T")
+      rbi << AttrWriter.new(:baz, :b)
+      rbi << AttrReader.new(:bar)
+      rbi << AttrAccessor.new(:foo, :a, :z)
 
       rbi.sort_nodes!
 
@@ -287,6 +290,9 @@ module RBI
         const :SP2, T
         prop :SP3, T
         const :SP4, T
+        attr_accessor :a, :foo, :z
+        attr_writer :b, :baz
+        attr_reader :bar
         def m1; end
         def m2; end
         def self.m3; end
