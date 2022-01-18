@@ -8,7 +8,8 @@ module RBI
 
       sig { override.params(node: T.nilable(Node)).void }
       def visit(node)
-        sort_node!(node) if node
+        sort_node_names!(node) if node
+
         return unless node.is_a?(Tree)
         visit_all(node.nodes)
         original_order = node.nodes.map.with_index.to_h
@@ -86,7 +87,7 @@ module RBI
       end
 
       sig { params(node: Node).void }
-      def sort_node!(node)
+      def sort_node_names!(node)
         case node
         when Attr
           node.names.sort!

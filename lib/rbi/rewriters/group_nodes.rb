@@ -57,7 +57,7 @@ module RBI
         Group::Kind::MixesInClassMethods
       when Send
         Group::Kind::Sends
-      when AttrAccessor, AttrReader, AttrWriter
+      when Attr
         Group::Kind::Attrs
       when TStructField
         Group::Kind::TStructFields
