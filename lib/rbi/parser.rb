@@ -344,6 +344,8 @@ module RBI
         parse_sig(node)
       when :enums
         parse_enum(node)
+      when :requires_ancestor
+        parse_requires_ancestor(node)
       else
         raise ParseError.new("Unsupported block node type `#{name}`", node_loc(node))
       end
@@ -425,6 +427,14 @@ module RBI
       end
       enum.loc = node_loc(node)
       enum
+    end
+
+    sig { params(node: AST::Node).returns(RequiresAncestor) }
+    def parse_requires_ancestor(node)
+      name = parse_name(node.children[2])
+      ra = RequiresAncestor.new(name)
+      ra.loc = node_loc(node)
+      ra
     end
 
     sig { params(node: AST::Node).returns(Loc) }

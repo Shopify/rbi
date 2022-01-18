@@ -210,6 +210,7 @@ module RBI
           sealed!
           interface!
           mixes_in_class_methods A
+          requires_ancestor { A }
         end
       RBI
 
@@ -527,12 +528,13 @@ module RBI
           sealed!
           interface!
           mixes_in_class_methods A
+          requires_ancestor { A }
         end
       RBI
 
       out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
-        # -:1:0-6:3
+        # -:1:0-7:3
         class Foo
           # -:2:2-2:11
           abstract!
@@ -542,6 +544,8 @@ module RBI
           interface!
           # -:5:2-5:26
           mixes_in_class_methods A
+          # -:6:2-6:25
+          requires_ancestor { A }
         end
       RBI
     end
