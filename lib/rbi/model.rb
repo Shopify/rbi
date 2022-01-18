@@ -1361,4 +1361,28 @@ module RBI
       "#{parent_scope&.fully_qualified_name}.mixes_in_class_methods(#{names.join(", ")})"
     end
   end
+
+  class RequiresAncestor < NodeWithComments
+    extend T::Sig
+
+    sig { returns(String) }
+    attr_reader :name
+
+    sig do
+      params(
+        name: String,
+        loc: T.nilable(Loc),
+        comments: T::Array[Comment]
+      ).void
+    end
+    def initialize(name, loc: nil, comments: [])
+      super(loc: loc, comments: comments)
+      @name = name
+    end
+
+    sig { override.returns(String) }
+    def to_s
+      "#{parent_scope&.fully_qualified_name}.requires_ancestor(#{name})"
+    end
+  end
 end

@@ -370,6 +370,10 @@ module RBI
       mod << micm
       assert_equal("::Foo.mixes_in_class_methods(A)", micm.to_s)
 
+      ra = RequiresAncestor.new("A")
+      mod << ra
+      assert_equal("::Foo.requires_ancestor(A)", ra.to_s)
+
       helper = Helper.new("foo")
       mod << helper
       assert_equal("::Foo.foo!", helper.to_s)
