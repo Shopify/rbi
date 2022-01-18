@@ -27,6 +27,7 @@ module RBI
       rbi << AttrWriter.new(:baz, :b)
       rbi << AttrReader.new(:bar)
       rbi << AttrAccessor.new(:foo, :a, :z)
+      rbi << RequiresAncestor.new("RA")
 
       rbi.group_nodes!
       rbi.sort_nodes!
@@ -34,6 +35,8 @@ module RBI
       assert_equal(<<~RBI, rbi.string)
         extend E
         include I
+
+        requires_ancestor { RA }
 
         h!
 
@@ -83,6 +86,7 @@ module RBI
       scope3 << Extend.new("E1")
       scope3 << Extend.new("E2")
       scope3 << MixesInClassMethods.new("MICM1")
+      scope3 << RequiresAncestor.new("RA1")
 
       rbi << scope1
       scope1 << scope2
@@ -111,6 +115,8 @@ module RBI
               extend E1
               extend E2
 
+              requires_ancestor { RA1 }
+
               mixes_in_class_methods MICM1
             end
           end
@@ -130,6 +136,7 @@ module RBI
       rbi << Extend.new("E")
       rbi << Include.new("I")
       rbi << MixesInClassMethods.new("MICM")
+      rbi << RequiresAncestor.new("RA")
       rbi << Helper.new("h")
       rbi << TStructConst.new("SC", "Type")
       rbi << TStructProp.new("SP", "Type")
@@ -143,6 +150,8 @@ module RBI
       assert_equal(<<~RBI, rbi.string)
         extend E
         include I
+
+        requires_ancestor { RA }
 
         h!
 
@@ -239,6 +248,7 @@ module RBI
       scope << Include.new("I")
       scope << Extend.new("E")
       scope << MixesInClassMethods.new("MICM")
+      scope << RequiresAncestor.new("RA")
       scope << Helper.new("h")
       scope << TStructProp.new("SP", "Type")
       scope << TStructConst.new("SC", "Type")
@@ -257,6 +267,8 @@ module RBI
         module Scope
           include I
           extend E
+
+          requires_ancestor { RA }
 
           h!
 
@@ -295,6 +307,7 @@ module RBI
       rbi << Include.new("I2")
       rbi << Extend.new("E2")
       rbi << MixesInClassMethods.new("MICM2")
+      rbi << RequiresAncestor.new("RA2")
       rbi << Helper.new("h2")
       rbi << TStructProp.new("SP2", "Type")
       rbi << TStructConst.new("SC2", "Type")
@@ -306,6 +319,7 @@ module RBI
       rbi << Include.new("I1")
       rbi << Extend.new("E1")
       rbi << MixesInClassMethods.new("MICM1")
+      rbi << RequiresAncestor.new("RA1")
       rbi << Helper.new("h1")
       rbi << TStructProp.new("SP1", "Type")
       rbi << TStructConst.new("SC1", "Type")
@@ -323,6 +337,9 @@ module RBI
         extend E2
         include I1
         extend E1
+
+        requires_ancestor { RA1 }
+        requires_ancestor { RA2 }
 
         h1!
         h2!
@@ -365,6 +382,7 @@ module RBI
       sscope << Include.new("I2")
       sscope << Extend.new("E2")
       sscope << MixesInClassMethods.new("MICM2")
+      sscope << RequiresAncestor.new("RA2")
       sscope << Helper.new("h2")
       sscope << TStructProp.new("SP2", "Type")
       sscope << TStructConst.new("SC2", "Type")
@@ -376,6 +394,7 @@ module RBI
       sscope << Include.new("I1")
       sscope << Extend.new("E1")
       sscope << MixesInClassMethods.new("MICM1")
+      sscope << RequiresAncestor.new("RA1")
       sscope << Helper.new("h1")
       sscope << TStructProp.new("SP1", "Type")
       sscope << TStructConst.new("SC1", "Type")
@@ -393,6 +412,7 @@ module RBI
       scope << Include.new("I2")
       scope << Extend.new("E2")
       scope << MixesInClassMethods.new("MICM2")
+      scope << RequiresAncestor.new("RA2")
       scope << Helper.new("h2")
       scope << TStructProp.new("SP2", "Type")
       scope << TStructConst.new("SC2", "Type")
@@ -404,6 +424,7 @@ module RBI
       scope << Include.new("I1")
       scope << Extend.new("E1")
       scope << MixesInClassMethods.new("MICM1")
+      scope << RequiresAncestor.new("RA1")
       scope << Helper.new("h1")
       scope << TStructProp.new("SP1", "Type")
       scope << TStructConst.new("SC1", "Type")
@@ -421,6 +442,7 @@ module RBI
       scope << Include.new("I2")
       scope << Extend.new("E2")
       scope << MixesInClassMethods.new("MICM2")
+      scope << RequiresAncestor.new("RA2")
       scope << Helper.new("h2")
       scope << TStructProp.new("SP2", "Type")
       scope << TStructConst.new("SC2", "Type")
@@ -432,6 +454,7 @@ module RBI
       scope << Include.new("I1")
       scope << Extend.new("E1")
       scope << MixesInClassMethods.new("MICM1")
+      scope << RequiresAncestor.new("RA1")
       scope << Helper.new("h1")
       scope << TStructProp.new("SP1", "Type")
       scope << TStructConst.new("SC1", "Type")
@@ -451,6 +474,9 @@ module RBI
           extend E2
           include I1
           extend E1
+
+          requires_ancestor { RA1 }
+          requires_ancestor { RA2 }
 
           h1!
           h2!
@@ -486,6 +512,9 @@ module RBI
           include I1
           extend E1
 
+          requires_ancestor { RA1 }
+          requires_ancestor { RA2 }
+
           h1!
           h2!
 
@@ -514,6 +543,9 @@ module RBI
             extend E2
             include I1
             extend E1
+
+            requires_ancestor { RA1 }
+            requires_ancestor { RA2 }
 
             h1!
             h2!
