@@ -84,6 +84,7 @@ module RBI
         end
 
         mixes_in_class_methods A
+        requires_ancestor { A }
         C = type_member
         D = type_template
       RBI
@@ -91,14 +92,15 @@ module RBI
       index_string = index_string(rbi.index)
       assert_equal(<<~IDX, index_string)
         .mixes_in_class_method(A): -:13:0-13:24
+        .requires_ancestor(A): -:14:0-14:23
         ::A: -:1:0-4:3
         ::A#a: -:2:2-2:19
         ::A#b: -:3:2-3:17
         ::A#b=: -:3:2-3:17
         ::B: -:6:0-11:3
         ::B.enums: -:7:2-10:5
-        ::C: -:14:0-14:15
-        ::D: -:15:0-15:17
+        ::C: -:15:0-15:15
+        ::D: -:16:0-16:17
       IDX
     end
 
