@@ -110,6 +110,7 @@ module RBI
       rbi << Include.new("C")
       rbi << Extend.new("B")
       rbi << Include.new("A")
+      rbi << RequiresAncestor.new("A")
 
       rbi.sort_nodes!
 
@@ -118,6 +119,7 @@ module RBI
         include C
         extend B
         include A
+        requires_ancestor { A }
         mixes_in_class_methods E
       RBI
     end
@@ -276,6 +278,7 @@ module RBI
       rbi << AttrWriter.new(:baz, :b)
       rbi << AttrReader.new(:bar)
       rbi << AttrAccessor.new(:foo, :a, :z)
+      rbi << RequiresAncestor.new("RA")
 
       rbi.sort_nodes!
 
@@ -284,6 +287,7 @@ module RBI
         include M3
         extend M2
         include M1
+        requires_ancestor { RA }
         h!
         mixes_in_class_methods MICM
         prop :SP1, T
