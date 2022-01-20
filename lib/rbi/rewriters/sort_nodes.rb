@@ -34,6 +34,7 @@ module RBI
         case node
         when Group                then group_rank(node.kind)
         when Include, Extend      then 10
+        when RequiresAncestor     then 15
         when Helper               then 20
         when TypeMember           then 30
         when MixesInClassMethods  then 40
@@ -60,9 +61,10 @@ module RBI
       def group_rank(kind)
         case kind
         when Group::Kind::Mixins              then 0
-        when Group::Kind::Helpers             then 1
-        when Group::Kind::TypeMembers         then 2
-        when Group::Kind::MixesInClassMethods then 3
+        when Group::Kind::RequiredAncestors   then 1
+        when Group::Kind::Helpers             then 2
+        when Group::Kind::TypeMembers         then 3
+        when Group::Kind::MixesInClassMethods then 4
         when Group::Kind::Sends               then 5
         when Group::Kind::TStructFields       then 6
         when Group::Kind::TEnums              then 7
@@ -79,7 +81,7 @@ module RBI
       sig { params(node: Node).returns(T.nilable(String)) }
       def node_name(node)
         case node
-        when Module, Class, Struct, Const, Method, Helper, TStructField
+        when Module, Class, Struct, Const, Method, Helper, TStructField, RequiresAncestor
           node.name
         when Attr
           node.names.first.to_s

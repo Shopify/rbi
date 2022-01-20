@@ -317,6 +317,7 @@ module RBI
       rbi << Helper.new("sealed")
       rbi << Helper.new("interface")
       rbi << MixesInClassMethods.new("A")
+      rbi << RequiresAncestor.new("A")
 
       assert_equal(<<~RBI, rbi.string)
         class Foo
@@ -324,6 +325,7 @@ module RBI
           sealed!
           interface!
           mixes_in_class_methods A
+          requires_ancestor { A }
         end
       RBI
     end

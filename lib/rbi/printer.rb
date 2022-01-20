@@ -851,4 +851,17 @@ module RBI
       false
     end
   end
+
+  class RequiresAncestor
+    extend T::Sig
+
+    sig { override.params(v: Printer).void }
+    def accept_printer(v)
+      print_blank_line_before(v)
+
+      v.printl("# #{loc}") if loc && v.print_locs
+      v.visit_all(comments)
+      v.printl("requires_ancestor { #{name} }")
+    end
+  end
 end

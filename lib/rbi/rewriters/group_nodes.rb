@@ -49,6 +49,8 @@ module RBI
       case self
       when Include, Extend
         Group::Kind::Mixins
+      when RequiresAncestor
+        Group::Kind::RequiredAncestors
       when Helper
         Group::Kind::Helpers
       when TypeMember
@@ -96,6 +98,7 @@ module RBI
     class Kind < T::Enum
       enums do
         Mixins              = new
+        RequiredAncestors   = new
         Helpers             = new
         TypeMembers         = new
         MixesInClassMethods = new

@@ -151,6 +151,16 @@ module RBI
     end
   end
 
+  class RequiresAncestor
+    extend T::Sig
+    include Indexable
+
+    sig { override.returns(T::Array[String]) }
+    def index_ids
+      [to_s]
+    end
+  end
+
   class Helper
     extend T::Sig
     include Indexable
