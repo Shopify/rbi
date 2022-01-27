@@ -828,8 +828,8 @@ module RBI
     end
 
     def test_print_sig_over_max_line_length
-      rbi = Tree.new do |tree|
-        tree << Class.new("Foo") do |cls|
+      rbi = File.new do |file|
+        file << Class.new("Foo") do |cls|
           cls << Sig.new(is_abstract: true, is_overridable: true) do |sig|
             sig << SigParam.new("a", "Integer")
             sig << SigParam.new("b", "Integer")
