@@ -582,5 +582,34 @@ module RBI
         end
       RBI
     end
+
+    def test_group_groups
+      rbi = Tree.new
+      rbi << Method.new("m")
+      rbi << Include.new("I")
+      rbi << AttrWriter.new(:a)
+
+      rbi.group_nodes!
+      rbi.sort_nodes!
+
+      assert_equal(<<~RBI, rbi.string)
+        include I
+
+        attr_writer :a
+
+        def m; end
+      RBI
+
+      rbi.group_nodes!
+      rbi.sort_nodes!
+
+      assert_equal(<<~RBI, rbi.string)
+        include I
+
+        attr_writer :a
+
+        def m; end
+      RBI
+    end
   end
 end
