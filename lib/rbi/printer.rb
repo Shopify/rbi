@@ -117,16 +117,23 @@ module RBI
       end
     end
 
-    sig { params(out: T.any(IO, StringIO), indent: Integer, print_locs: T::Boolean).void }
-    def print(out: $stdout, indent: 0, print_locs: false)
-      p = Printer.new(out: out, indent: indent, print_locs: print_locs)
+    sig do
+      params(
+        out: T.any(IO, StringIO),
+        indent: Integer,
+        print_locs: T::Boolean,
+        max_line_length: T.nilable(Integer)
+      ).void
+    end
+    def print(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
+      p = Printer.new(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
       p.visit_file(self)
     end
 
-    sig { params(indent: Integer, print_locs: T::Boolean).returns(String) }
-    def string(indent: 0, print_locs: false)
+    sig { params(indent: Integer, print_locs: T::Boolean, max_line_length: T.nilable(Integer)).returns(String) }
+    def string(indent: 0, print_locs: false, max_line_length: nil)
       out = StringIO.new
-      print(out: out, indent: indent, print_locs: print_locs)
+      print(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
       out.string
     end
   end
