@@ -289,7 +289,14 @@ module RBI
         names = node.children[2..-1].map { |child| parse_name(child) }
         MixesInClassMethods.new(*names, loc: loc, comments: comments)
       when :public, :protected, :private
-        visibility = Visibility.new(method_name, loc: loc)
+        visibility = case method_name
+        when :protected
+          Protected.new(loc: loc)
+        when :private
+          Private.new(loc: loc)
+        else
+          Public.new(loc: loc)
+        end
         nested_node = node.children[2]
         case nested_node&.type
         when :def, :defs
