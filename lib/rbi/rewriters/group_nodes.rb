@@ -47,6 +47,8 @@ module RBI
     sig { returns(Group::Kind) }
     def group_kind
       case self
+      when Group
+        kind
       when Include, Extend
         Group::Kind::Mixins
       when RequiresAncestor
