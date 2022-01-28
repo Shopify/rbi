@@ -110,6 +110,7 @@ module RBI
         def m3(a, b = 42, *c, d:, e: "bar", **f, &g); end
 
         sig { void }
+        sig(:final) { void }
         sig { returns(String) }
         sig { params(a: T.untyped, b: T::Array[String]).returns(T::Hash[String, Integer]) }
         sig { abstract.params(a: Integer).void }

@@ -1026,7 +1026,7 @@ module RBI
     attr_accessor :return_type
 
     sig { returns(T::Boolean) }
-    attr_accessor :is_abstract, :is_override, :is_overridable
+    attr_accessor :is_abstract, :is_override, :is_overridable, :is_final
 
     sig { returns(T::Array[String]) }
     attr_reader :type_params
@@ -1041,6 +1041,7 @@ module RBI
         is_abstract: T::Boolean,
         is_override: T::Boolean,
         is_overridable: T::Boolean,
+        is_final: T::Boolean,
         type_params: T::Array[String],
         checked: T.nilable(Symbol),
         loc: T.nilable(Loc),
@@ -1053,6 +1054,7 @@ module RBI
       is_abstract: false,
       is_override: false,
       is_overridable: false,
+      is_final: false,
       type_params: [],
       checked: nil,
       loc: nil,
@@ -1064,6 +1066,7 @@ module RBI
       @is_abstract = is_abstract
       @is_override = is_override
       @is_overridable = is_overridable
+      @is_final = is_final
       @type_params = type_params
       @checked = checked
       block&.call(self)
@@ -1078,7 +1081,7 @@ module RBI
     def ==(other)
       return false unless other.is_a?(Sig)
       params == other.params && return_type == other.return_type && is_abstract == other.is_abstract &&
-        is_override == other.is_override && is_overridable == other.is_overridable &&
+        is_override == other.is_override && is_overridable == other.is_overridable && is_final == other.is_final &&
         type_params == other.type_params && checked == other.checked
     end
   end
