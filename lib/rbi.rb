@@ -23,4 +23,11 @@ require "rbi/rewriters/remove_known_definitions"
 require "rbi/rewriters/sort_nodes"
 require "rbi/parser"
 require "rbi/printer"
+
+require "rbi/validators/base"
+require "rbi/validators/names"
+require "rbi/validators/types"
+require "rbi/validators/sigs"
+require "rbi/validators/values"
+
 require "rbi/version"
