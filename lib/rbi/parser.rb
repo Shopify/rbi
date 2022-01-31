@@ -568,7 +568,7 @@ module RBI
     sig { params(node: AST::Node).returns(Sig) }
     def self.build(node)
       v = SigBuilder.new
-      v.visit_all(node.children[2..-1])
+      v.visit_all(node.children)
       v.current
     end
 
@@ -595,6 +595,9 @@ module RBI
       visit(node.children[0]) if node.children[0]
       name = node.children[1]
       case name
+      when :sig
+        arg = node.children[2]
+        @current.is_final = arg && arg.children[0] == :final
       when :abstract
         @current.is_abstract = true
       when :override

@@ -670,7 +670,9 @@ module RBI
 
     sig { params(v: Printer).void }
     def print_as_line(v)
-      v.printt("sig { ")
+      v.printt("sig")
+      v.print("(:final)") if is_final
+      v.print(" { ")
       sig_modifiers.each do |modifier|
         v.print("#{modifier}.")
       end
