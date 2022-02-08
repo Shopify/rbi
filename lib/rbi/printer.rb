@@ -200,7 +200,7 @@ module RBI
       end
 
       lines.each do |line|
-        text = line.strip
+        text = line.rstrip
         v.printt("#")
         v.print(" #{text}") unless text.empty?
         v.printn
@@ -455,7 +455,7 @@ module RBI
 
     sig { returns(T::Array[String]) }
     def comments_lines
-      comments.flat_map { |comment| comment.text.lines.map(&:strip) }
+      comments.flat_map { |comment| comment.text.lines.map(&:rstrip) }
     end
   end
 
@@ -760,7 +760,7 @@ module RBI
 
     sig { returns(T::Array[String]) }
     def comments_lines
-      comments.flat_map { |comment| comment.text.lines.map(&:strip) }
+      comments.flat_map { |comment| comment.text.lines.map(&:rstrip) }
     end
   end
 

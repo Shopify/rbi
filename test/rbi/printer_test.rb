@@ -486,7 +486,7 @@ module RBI
     end
 
     def test_print_nodes_with_multiline_comments
-      comments = [Comment.new("This is a\nmultiline comment")]
+      comments = [Comment.new("This is a\nmultiline\n  comment")]
 
       rbi = Tree.new do |tree|
         tree << Module.new("Foo", comments: comments) do |mod|
@@ -513,44 +513,58 @@ module RBI
 
       assert_equal(<<~RBI, rbi.string)
         # This is a
-        # multiline comment
+        # multiline
+        #   comment
         module Foo
           # This is a
-          # multiline comment
+          # multiline
+          #   comment
           A = type_member
 
           # This is a
-          # multiline comment
+          # multiline
+          #   comment
           def foo; end
         end
 
         # This is a
-        # multiline comment
+        # multiline
+        #   comment
         sig do
           params(
             a: Integer, # This is a
-                        # multiline comment
+                        # multiline
+                        #   comment
             b: String, # This is a
-                       # multiline comment
+                       # multiline
+                       #   comment
             c: T.untyped # This is a
-                         # multiline comment
+                         # multiline
+                         #   comment
           ).void
         end
         def foo(
           a, # This is a
-             # multiline comment
+             # multiline
+             #   comment
           b = 42, # This is a
-                  # multiline comment
+                  # multiline
+                  #   comment
           *c, # This is a
-              # multiline comment
+              # multiline
+              #   comment
           d:, # This is a
-              # multiline comment
+              # multiline
+              #   comment
           e: 'bar', # This is a
-                    # multiline comment
+                    # multiline
+                    #   comment
           **f, # This is a
-               # multiline comment
+               # multiline
+               #   comment
           &g # This is a
-             # multiline comment
+             # multiline
+             #   comment
         ); end
       RBI
     end
