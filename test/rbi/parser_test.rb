@@ -180,6 +180,10 @@ module RBI
           const :b, B, default: B.new
           prop :c, C
           prop :d, D, default: D.new
+          const :e, E, factory: -> { 1 }
+          prop :f, F, factory: -> { 1 }
+          const :g, G, immutable: true, default: G.new, some_other_option: true
+          prop :h, H, immutable: true, default: H.new, some_other_option: true
           def foo; end
         end
         RBI
