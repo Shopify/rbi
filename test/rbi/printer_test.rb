@@ -276,9 +276,9 @@ module RBI
     def test_print_t_structs
       struct = TStruct.new("Foo")
       struct << TStructConst.new("a", "A")
-      struct << TStructConst.new("b", "B", default: "B.new")
+      struct << TStructConst.new("b", "B", options: { default: "B.new" })
       struct << TStructProp.new("c", "C")
-      struct << TStructProp.new("d", "D", default: "D.new")
+      struct << TStructProp.new("d", "D", options: { default: "D.new" })
       struct << Method.new("foo")
 
       assert_equal(<<~RBI, struct.string)

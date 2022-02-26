@@ -780,8 +780,9 @@ module RBI
         v.printt("const")
       end
       v.print(" :#{name}, #{type}")
-      default = self.default
-      v.print(", default: #{default}") if default
+      options.each do |key, value|
+        v.print(", #{key}: #{value}")
+      end
       v.printn
     end
   end

@@ -1142,23 +1142,23 @@ module RBI
     sig { returns(String) }
     attr_accessor :name, :type
 
-    sig { returns(T.nilable(String)) }
-    attr_accessor :default
+    sig { returns(T::Hash[Symbol, String]) }
+    attr_accessor :options
 
     sig do
       params(
         name: String,
         type: String,
-        default: T.nilable(String),
+        options: T::Hash[Symbol, String],
         loc: T.nilable(Loc),
         comments: T::Array[Comment]
       ).void
     end
-    def initialize(name, type, default: nil, loc: nil, comments: [])
+    def initialize(name, type, options: {}, loc: nil, comments: [])
       super(loc: loc, comments: comments)
       @name = name
       @type = type
-      @default = default
+      @options = options
     end
 
     sig { abstract.returns(T::Array[String]) }
@@ -1172,14 +1172,14 @@ module RBI
       params(
         name: String,
         type: String,
-        default: T.nilable(String),
+        options: T::Hash[Symbol, String],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
         block: T.nilable(T.proc.params(node: TStructConst).void)
       ).void
     end
-    def initialize(name, type, default: nil, loc: nil, comments: [], &block)
-      super(name, type, default: default, loc: loc, comments: comments)
+    def initialize(name, type, options: {}, loc: nil, comments: [], &block)
+      super(name, type, options: options, loc: loc, comments: comments)
       block&.call(self)
     end
 
@@ -1202,14 +1202,14 @@ module RBI
       params(
         name: String,
         type: String,
-        default: T.nilable(String),
+        options: T::Hash[Symbol, String],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
         block: T.nilable(T.proc.params(node: TStructProp).void)
       ).void
     end
-    def initialize(name, type, default: nil, loc: nil, comments: [], &block)
-      super(name, type, default: default, loc: loc, comments: comments)
+    def initialize(name, type, options: {}, loc: nil, comments: [], &block)
+      super(name, type, options: options, loc: loc, comments: comments)
       block&.call(self)
     end
 

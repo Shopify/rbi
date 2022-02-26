@@ -314,11 +314,11 @@ module RBI
           raise ParseError.new("Unexpected token `private` before `#{nested_node.type}`", loc)
         end
       when :prop
-        name, type, default_value = parse_tstruct_prop(node)
-        TStructProp.new(name, type, default: default_value, loc: loc, comments: comments)
+        name, type, options = parse_tstruct_prop(node)
+        TStructProp.new(name, type, options: options, loc: loc, comments: comments)
       when :const
-        name, type, default_value = parse_tstruct_prop(node)
-        TStructConst.new(name, type, default: default_value, loc: loc, comments: comments)
+        name, type, options = parse_tstruct_prop(node)
+        TStructConst.new(name, type, options: options, loc: loc, comments: comments)
       else
         args = parse_send_args(node)
         Send.new(method_name.to_s, args, loc: loc, comments: comments)
@@ -403,20 +403,21 @@ module RBI
       struct
     end
 
-    sig { params(node: AST::Node).returns([String, String, T.nilable(String)]) }
+    sig { params(node: AST::Node).returns([String, String, T::Hash[Symbol, String]]) }
     def parse_tstruct_prop(node)
       name = node.children[2].children[0].to_s
       type = parse_expr(node.children[3])
-      has_default = node.children[4]
-        &.children&.fetch(0, nil)
-        &.children&.fetch(0, nil)
-        &.children&.fetch(0, nil) == :default
-      default_value = if has_default
-        parse_expr(node.children.fetch(4, nil)
-          &.children&.fetch(0, nil)
-          &.children&.fetch(1, nil))
+      options = node.children[4]
+      option_values = {}
+
+      if options&.type == :kwargs
+        options.children.each do |pair|
+          keyword = pair.children.first.children.last
+          option_values[keyword] = parse_expr(pair.children.last)
+        end
       end
-      [name, type, default_value]
+
+      [name, type, option_values]
     end
 
     sig { params(node: AST::Node).returns(Sig) }
