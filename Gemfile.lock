@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rbi (0.0.12)
+    rbi (0.0.13)
       ast
       parser
       sorbet-runtime (>= 0.5.9204)
