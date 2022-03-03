@@ -429,7 +429,14 @@ module RBI
     sig { params(node: AST::Node).returns(TEnumBlock) }
     def parse_enum(node)
       enum = TEnumBlock.new
-      node.children[2].children.each do |child|
+
+      body = if node.children[2].type == :begin
+        node.children[2].children
+      else
+        [node.children[2]]
+      end
+
+      body.each do |child|
         enum << parse_name(child)
       end
       enum.loc = node_loc(node)
