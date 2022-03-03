@@ -204,6 +204,20 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
+    def test_parse_t_enums_with_one_value
+      rbi = <<~RBI
+        class Foo < ::T::Enum
+          enums do
+            A = new
+          end
+          def baz; end
+        end
+      RBI
+
+      out = Parser.parse_string(rbi)
+      assert_equal(rbi, out.string)
+    end
+
     def test_parse_sorbet_helpers
       rbi = <<~RBI
         class Foo
