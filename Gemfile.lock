@@ -3,7 +3,7 @@ PATH
   specs:
     rbi (0.0.13)
       ast
-      parser
+      parser (>= 2.6.4.0)
       sorbet-runtime (>= 0.5.9204)
       unparser
 

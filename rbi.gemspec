@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   )
 
   spec.add_dependency("ast")
-  spec.add_dependency("parser")
+  spec.add_dependency("parser", ">= 2.6.4.0")
   spec.add_dependency("sorbet-runtime", ">= 0.5.9204")
   spec.add_dependency("unparser")
 end
