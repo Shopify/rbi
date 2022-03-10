@@ -17,6 +17,39 @@ module RBI
     end
   end
 
+  class UnexpectedParserError < StandardError
+    extend T::Sig
+
+    sig { returns(Loc) }
+    attr_reader :last_location
+
+    sig { params(parent_exception: Exception, last_location: Loc).void }
+    def initialize(parent_exception, last_location)
+      super(parent_exception)
+      set_backtrace(parent_exception.backtrace)
+      @last_location = last_location
+    end
+
+    sig { params(io: T.any(IO, StringIO)).void }
+    def print_debug(io: $stderr)
+      io.puts ""
+      io.puts "##################################"
+      io.puts "### RBI::Parser internal error ###"
+      io.puts "##################################"
+      io.puts ""
+      io.puts "There was an internal parser error while processing this source."
+      io.puts ""
+      io.puts "Error: #{message} while parsing #{last_location}:"
+      io.puts ""
+      io.puts last_location.source || "<no source>"
+      io.puts ""
+      io.puts "Please open an issue at https://github.com/Shopify/rbi/issues/new."
+      io.puts ""
+      io.puts "##################################"
+      io.puts ""
+    end
+  end
+
   class Parser
     extend T::Sig
 
@@ -77,6 +110,19 @@ module RBI
       builder.tree
     rescue ::Parser::SyntaxError => e
       raise ParseError.new(e.message, Loc.from_ast_loc(file, e.diagnostic.location))
+    rescue ParseError => e
+      raise e
+    rescue => e
+      last_node = builder&.last_node
+      last_location = if last_node
+        Loc.from_ast_loc(file, last_node.location)
+      else
+        Loc.new(file: file)
+      end
+
+      exception = UnexpectedParserError.new(e, last_location)
+      exception.print_debug
+      raise exception
     end
   end
 
@@ -113,6 +159,9 @@ module RBI
     sig { returns(Tree) }
     attr_reader :tree
 
+    sig { returns(T.nilable(::AST::Node)) }
+    attr_reader :last_node
+
     sig do
       params(
         file: String,
@@ -127,6 +176,7 @@ module RBI
       @nodes_comments_assoc = nodes_comments_assoc
       @tree = T.let(Tree.new, Tree)
       @scopes_stack = T.let([@tree], T::Array[Tree])
+      @last_node = T.let(nil, T.nilable(::AST::Node))
       @last_sigs = T.let([], T::Array[RBI::Sig])
 
       separate_header_comments
@@ -141,6 +191,8 @@ module RBI
     sig { override.params(node: T.nilable(Object)).void }
     def visit(node)
       return unless node.is_a?(AST::Node)
+      @last_node = node
+
       case node.type
       when :module, :class, :sclass
         scope = parse_scope(node)
@@ -165,6 +217,8 @@ module RBI
       else
         visit_all(node.children)
       end
+
+      @last_node = nil
     end
 
     private
