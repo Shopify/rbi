@@ -32,5 +32,20 @@ module RBI
     def to_s
       "#{file}:#{begin_line}:#{begin_column}-#{end_line}:#{end_column}"
     end
+
+    sig { returns(T.nilable(String)) }
+    def source
+      file = self.file
+      return nil unless file
+      return nil unless ::File.file?(file)
+
+      return ::File.read(file) unless begin_line && end_line
+
+      string = String.new
+      ::File.foreach(file).with_index do |line, line_number|
+        string << line if line_number + 1 >= begin_line && line_number + 1 <= end_line
+      end
+      string
+    end
   end
 end
