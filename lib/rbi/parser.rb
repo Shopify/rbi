@@ -666,19 +666,25 @@ module RBI
       when :overridable
         @current.is_overridable = true
       when :checked
-        @current.checked = node.children[2].children[0]
+        if node.children.length >= 3
+          @current.checked = node.children[2].children[0]
+        end
       when :type_parameters
         node.children[2..-1].each do |child|
           @current.type_params << child.children[0].to_s
         end
       when :params
-        node.children[2].children.each do |child|
-          name = child.children[0].children[0].to_s
-          type = parse_expr(child.children[1])
-          @current << SigParam.new(name, type)
+        if node.children.length >= 3
+          node.children[2].children.each do |child|
+            name = child.children[0].children[0].to_s
+            type = parse_expr(child.children[1])
+            @current << SigParam.new(name, type)
+          end
         end
       when :returns
-        @current.return_type = parse_expr(node.children[2])
+        if node.children.length >= 3
+          @current.return_type = parse_expr(node.children[2])
+        end
       when :void
         @current.return_type = nil
       else
