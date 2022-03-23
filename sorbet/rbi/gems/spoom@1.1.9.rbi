@@ -6,7 +6,7 @@
 
 module Spoom
   class << self
-    sig { params(cmd: String, arg: String, path: String, capture_err: T::Boolean).returns([String, T::Boolean]) }
+    sig { params(cmd: String, arg: String, path: String, capture_err: T::Boolean).returns(Spoom::ExecResult) }
     def exec(cmd, *arg, path: T.unsafe(nil), capture_err: T.unsafe(nil)); end
   end
 end
@@ -56,11 +56,17 @@ module Spoom::Cli::Helper
   sig { params(string: String).returns(String) }
   def blue(string); end
 
+  sig { params(exit_code: Integer, block: T.nilable(T.proc.void)).void }
+  def check_sorbet_segfault(exit_code, &block); end
+
   sig { returns(T::Boolean) }
   def color?; end
 
   sig { params(string: String, color: Spoom::Color).returns(String) }
   def colorize(string, *color); end
+
+  sig { params(string: String).returns(String) }
+  def cyan(string); end
 
   sig { returns(String) }
   def exec_path; end
@@ -663,6 +669,17 @@ end
 
 class Spoom::Error < ::StandardError; end
 
+class Spoom::ExecResult < ::T::Struct
+  const :err, String
+  const :exit_code, Integer
+  const :out, String
+  const :status, T::Boolean
+
+  class << self
+    def inherited(s); end
+  end
+end
+
 class Spoom::FileTree
   sig { params(paths: T::Enumerable[String], strip_prefix: T.nilable(String)).void }
   def initialize(paths = T.unsafe(nil), strip_prefix: T.unsafe(nil)); end
@@ -734,7 +751,7 @@ end
 
 module Spoom::Git
   class << self
-    sig { params(arg: String, path: String).returns([String, String, T::Boolean]) }
+    sig { params(arg: String, path: String).returns(Spoom::ExecResult) }
     def checkout(*arg, path: T.unsafe(nil)); end
 
     sig { params(sha: String, path: String).returns(T.nilable(Time)) }
@@ -746,25 +763,25 @@ module Spoom::Git
     sig { params(path: String).returns(T.nilable(String)) }
     def current_branch(path: T.unsafe(nil)); end
 
-    sig { params(arg: String, path: String).returns([String, String, T::Boolean]) }
+    sig { params(arg: String, path: String).returns(Spoom::ExecResult) }
     def diff(*arg, path: T.unsafe(nil)); end
 
     sig { params(timestamp: String).returns(Time) }
     def epoch_to_time(timestamp); end
 
-    sig { params(command: String, arg: String, path: String).returns([String, String, T::Boolean]) }
+    sig { params(command: String, arg: String, path: String).returns(Spoom::ExecResult) }
     def exec(command, *arg, path: T.unsafe(nil)); end
 
     sig { params(path: String).returns(T.nilable(String)) }
     def last_commit(path: T.unsafe(nil)); end
 
-    sig { params(arg: String, path: String).returns([String, String, T::Boolean]) }
+    sig { params(arg: String, path: String).returns(Spoom::ExecResult) }
     def log(*arg, path: T.unsafe(nil)); end
 
-    sig { params(arg: String, path: String).returns([String, String, T::Boolean]) }
+    sig { params(arg: String, path: String).returns(Spoom::ExecResult) }
     def rev_parse(*arg, path: T.unsafe(nil)); end
 
-    sig { params(arg: String, path: String).returns([String, String, T::Boolean]) }
+    sig { params(arg: String, path: String).returns(Spoom::ExecResult) }
     def show(*arg, path: T.unsafe(nil)); end
 
     sig { params(path: String).returns(T.nilable(String)) }
@@ -781,21 +798,49 @@ end
 module Spoom::LSP; end
 
 class Spoom::LSP::Client
+  sig { params(sorbet_bin: String, sorbet_args: String, path: String).void }
   def initialize(sorbet_bin, *sorbet_args, path: T.unsafe(nil)); end
 
+  sig { void }
   def close; end
+
+  sig { params(uri: String, line: Integer, column: Integer).returns(T::Array[Spoom::LSP::Location]) }
   def definitions(uri, line, column); end
+
+  sig { params(uri: String).returns(T::Array[Spoom::LSP::DocumentSymbol]) }
   def document_symbols(uri); end
+
+  sig { params(uri: String, line: Integer, column: Integer).returns(T.nilable(Spoom::LSP::Hover)) }
   def hover(uri, line, column); end
+
+  sig { returns(Integer) }
   def next_id; end
+
+  sig { params(workspace_path: String).void }
   def open(workspace_path); end
+
+  sig { returns(T.nilable(T::Hash[T.untyped, T.untyped])) }
   def read; end
+
+  sig { returns(T.nilable(String)) }
   def read_raw; end
+
+  sig { params(uri: String, line: Integer, column: Integer, include_decl: T::Boolean).returns(T::Array[Spoom::LSP::Location]) }
   def references(uri, line, column, include_decl = T.unsafe(nil)); end
+
+  sig { params(message: Spoom::LSP::Message).returns(T.nilable(T::Hash[T.untyped, T.untyped])) }
   def send(message); end
+
+  sig { params(json_string: String).void }
   def send_raw(json_string); end
+
+  sig { params(uri: String, line: Integer, column: Integer).returns(T::Array[Spoom::LSP::SignatureHelp]) }
   def signatures(uri, line, column); end
+
+  sig { params(query: String).returns(T::Array[Spoom::LSP::DocumentSymbol]) }
   def symbols(query); end
+
+  sig { params(uri: String, line: Integer, column: Integer).returns(T::Array[Spoom::LSP::Location]) }
   def type_definitions(uri, line, column); end
 end
 
@@ -810,10 +855,13 @@ class Spoom::LSP::Diagnostic < ::T::Struct
   sig { override.params(printer: Spoom::LSP::SymbolPrinter).void }
   def accept_printer(printer); end
 
+  sig { returns(String) }
   def to_s; end
 
   class << self
+    sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Spoom::LSP::Diagnostic) }
     def from_json(json); end
+
     def inherited(s); end
   end
 end
@@ -831,11 +879,16 @@ class Spoom::LSP::DocumentSymbol < ::T::Struct
   sig { override.params(printer: Spoom::LSP::SymbolPrinter).void }
   def accept_printer(printer); end
 
+  sig { returns(String) }
   def kind_string; end
+
+  sig { returns(String) }
   def to_s; end
 
   class << self
+    sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Spoom::LSP::DocumentSymbol) }
     def from_json(json); end
+
     def inherited(s); end
   end
 end
@@ -846,12 +899,17 @@ class Spoom::LSP::Error::AlreadyOpen < ::Spoom::LSP::Error; end
 class Spoom::LSP::Error::BadHeaders < ::Spoom::LSP::Error; end
 
 class Spoom::LSP::Error::Diagnostics < ::Spoom::LSP::Error
+  sig { params(uri: String, diagnostics: T::Array[Spoom::LSP::Diagnostic]).void }
   def initialize(uri, diagnostics); end
 
+  sig { returns(T::Array[Spoom::LSP::Diagnostic]) }
   def diagnostics; end
+
+  sig { returns(String) }
   def uri; end
 
   class << self
+    sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Spoom::LSP::Error::Diagnostics) }
     def from_json(json); end
   end
 end
@@ -865,10 +923,13 @@ class Spoom::LSP::Hover < ::T::Struct
   sig { override.params(printer: Spoom::LSP::SymbolPrinter).void }
   def accept_printer(printer); end
 
+  sig { returns(String) }
   def to_s; end
 
   class << self
+    sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Spoom::LSP::Hover) }
     def from_json(json); end
+
     def inherited(s); end
   end
 end
@@ -882,26 +943,39 @@ class Spoom::LSP::Location < ::T::Struct
   sig { override.params(printer: Spoom::LSP::SymbolPrinter).void }
   def accept_printer(printer); end
 
+  sig { returns(String) }
   def to_s; end
 
   class << self
+    sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Spoom::LSP::Location) }
     def from_json(json); end
+
     def inherited(s); end
   end
 end
 
 class Spoom::LSP::Message
+  sig { void }
   def initialize; end
 
+  sig { returns(T::Hash[T.untyped, T.untyped]) }
   def as_json; end
+
+  sig { returns(String) }
   def jsonrpc; end
+
+  sig { params(args: T.untyped).returns(String) }
   def to_json(*args); end
 end
 
 class Spoom::LSP::Notification < ::Spoom::LSP::Message
+  sig { params(method: String, params: T::Hash[T.untyped, T.untyped]).void }
   def initialize(method, params); end
 
+  sig { returns(String) }
   def method; end
+
+  sig { returns(T::Hash[T.untyped, T.untyped]) }
   def params; end
 end
 
@@ -914,10 +988,13 @@ class Spoom::LSP::Position < ::T::Struct
   sig { override.params(printer: Spoom::LSP::SymbolPrinter).void }
   def accept_printer(printer); end
 
+  sig { returns(String) }
   def to_s; end
 
   class << self
+    sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Spoom::LSP::Position) }
     def from_json(json); end
+
     def inherited(s); end
   end
 end
@@ -938,30 +1015,46 @@ class Spoom::LSP::Range < ::T::Struct
   sig { override.params(printer: Spoom::LSP::SymbolPrinter).void }
   def accept_printer(printer); end
 
+  sig { returns(String) }
   def to_s; end
 
   class << self
+    sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Spoom::LSP::Range) }
     def from_json(json); end
+
     def inherited(s); end
   end
 end
 
 class Spoom::LSP::Request < ::Spoom::LSP::Message
+  sig { params(id: Integer, method: String, params: T::Hash[T.untyped, T.untyped]).void }
   def initialize(id, method, params); end
 
+  sig { returns(Integer) }
   def id; end
+
+  sig { returns(String) }
   def method; end
+
+  sig { returns(T::Hash[T.untyped, T.untyped]) }
   def params; end
 end
 
 class Spoom::LSP::ResponseError < ::Spoom::LSP::Error
+  sig { params(code: Integer, message: String, data: T::Hash[T.untyped, T.untyped]).void }
   def initialize(code, message, data); end
 
+  sig { returns(Integer) }
   def code; end
+
+  sig { returns(T::Hash[T.untyped, T.untyped]) }
   def data; end
+
+  sig { returns(String) }
   def message; end
 
   class << self
+    sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Spoom::LSP::ResponseError) }
     def from_json(json); end
   end
 end
@@ -976,10 +1069,13 @@ class Spoom::LSP::SignatureHelp < ::T::Struct
   sig { override.params(printer: Spoom::LSP::SymbolPrinter).void }
   def accept_printer(printer); end
 
+  sig { returns(String) }
   def to_s; end
 
   class << self
+    sig { params(json: T::Hash[T.untyped, T.untyped]).returns(Spoom::LSP::SignatureHelp) }
     def from_json(json); end
+
     def inherited(s); end
   end
 end
@@ -991,7 +1087,9 @@ class Spoom::LSP::SymbolPrinter < ::Spoom::Printer
   sig { params(uri: String).returns(String) }
   def clean_uri(uri); end
 
+  sig { returns(T.nilable(String)) }
   def prefix; end
+
   def prefix=(_arg0); end
 
   sig { params(objects: T::Array[Spoom::LSP::PrintableSymbol]).void }
@@ -1003,7 +1101,9 @@ class Spoom::LSP::SymbolPrinter < ::Spoom::Printer
   sig { params(objects: T::Array[Spoom::LSP::PrintableSymbol]).void }
   def print_objects(objects); end
 
+  sig { returns(T::Set[Integer]) }
   def seen; end
+
   def seen=(_arg0); end
 end
 
@@ -1049,7 +1149,7 @@ Spoom::SPOOM_PATH = T.let(T.unsafe(nil), String)
 
 module Spoom::Sorbet
   class << self
-    sig { params(arg: String, path: String, capture_err: T::Boolean, sorbet_bin: T.nilable(String)).returns([String, T::Boolean]) }
+    sig { params(arg: String, path: String, capture_err: T::Boolean, sorbet_bin: T.nilable(String)).returns(Spoom::ExecResult) }
     def srb(*arg, path: T.unsafe(nil), capture_err: T.unsafe(nil), sorbet_bin: T.unsafe(nil)); end
 
     sig { params(config: Spoom::Sorbet::Config, path: String).returns(T::Array[String]) }
@@ -1058,7 +1158,7 @@ module Spoom::Sorbet
     sig { params(arg: String, path: String, capture_err: T::Boolean, sorbet_bin: T.nilable(String)).returns(T.nilable(T::Hash[String, Integer])) }
     def srb_metrics(*arg, path: T.unsafe(nil), capture_err: T.unsafe(nil), sorbet_bin: T.unsafe(nil)); end
 
-    sig { params(arg: String, path: String, capture_err: T::Boolean, sorbet_bin: T.nilable(String)).returns([String, T::Boolean]) }
+    sig { params(arg: String, path: String, capture_err: T::Boolean, sorbet_bin: T.nilable(String)).returns(Spoom::ExecResult) }
     def srb_tc(*arg, path: T.unsafe(nil), capture_err: T.unsafe(nil), sorbet_bin: T.unsafe(nil)); end
 
     sig { params(arg: String, path: String, capture_err: T::Boolean, sorbet_bin: T.nilable(String)).returns(T.nilable(String)) }
@@ -1115,6 +1215,8 @@ module Spoom::Sorbet::Errors
   end
 end
 
+Spoom::Sorbet::Errors::DEFAULT_ERROR_URL_BASE = T.let(T.unsafe(nil), String)
+
 class Spoom::Sorbet::Errors::Error
   include ::Comparable
 
@@ -1142,8 +1244,8 @@ class Spoom::Sorbet::Errors::Error
 end
 
 class Spoom::Sorbet::Errors::Parser
-  sig { void }
-  def initialize; end
+  sig { params(error_url_base: String).void }
+  def initialize(error_url_base: T.unsafe(nil)); end
 
   sig { params(output: String).returns(T::Array[Spoom::Sorbet::Errors::Error]) }
   def parse(output); end
@@ -1156,6 +1258,9 @@ class Spoom::Sorbet::Errors::Parser
   sig { void }
   def close_error; end
 
+  sig { params(error_url_base: String).returns(Regexp) }
+  def error_line_match_regexp(error_url_base); end
+
   sig { params(line: String).returns(T.nilable(Spoom::Sorbet::Errors::Error)) }
   def match_error_line(line); end
 
@@ -1163,12 +1268,11 @@ class Spoom::Sorbet::Errors::Parser
   def open_error(error); end
 
   class << self
-    sig { params(output: String).returns(T::Array[Spoom::Sorbet::Errors::Error]) }
-    def parse_string(output); end
+    sig { params(output: String, error_url_base: String).returns(T::Array[Spoom::Sorbet::Errors::Error]) }
+    def parse_string(output, error_url_base: T.unsafe(nil)); end
   end
 end
 
-Spoom::Sorbet::Errors::Parser::ERROR_LINE_MATCH_REGEX = T.let(T.unsafe(nil), Regexp)
 Spoom::Sorbet::Errors::Parser::HEADER = T.let(T.unsafe(nil), Array)
 Spoom::Sorbet::GEM_PATH = T.let(T.unsafe(nil), String)
 
@@ -1186,6 +1290,7 @@ module Spoom::Sorbet::MetricsParser
 end
 
 Spoom::Sorbet::MetricsParser::DEFAULT_PREFIX = T.let(T.unsafe(nil), String)
+Spoom::Sorbet::SEGFAULT_CODE = T.let(T.unsafe(nil), Integer)
 
 module Spoom::Sorbet::Sigils
   class << self
