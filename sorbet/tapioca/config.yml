@@ -1,3 +1,5 @@
 ---
 gem:
   doc: true
+  typed_overrides:
+    "syntax_tree": "false"
