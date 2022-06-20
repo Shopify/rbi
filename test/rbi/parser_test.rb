@@ -379,7 +379,7 @@ module RBI
       rbi = <<~RBI
         Foo = 42
         Bar = "foo"
-        Baz = Bar
+        ::Baz = Bar
         A::B::C = Foo
       RBI
 
@@ -389,8 +389,8 @@ module RBI
         Foo = 42
         # -:2:0-2:11
         Bar = "foo"
-        # -:3:0-3:9
-        Baz = Bar
+        # -:3:0-3:11
+        ::Baz = Bar
         # -:4:0-4:13
         A::B::C = Foo
       RBI
