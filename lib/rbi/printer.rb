@@ -193,6 +193,8 @@ module RBI
 
     sig { override.params(v: Printer).void }
     def accept_printer(v)
+      print_blank_line_before(v)
+
       lines = text.lines
 
       if lines.empty?
@@ -205,6 +207,20 @@ module RBI
         v.print(" #{text}") unless text.empty?
         v.printn
       end
+    end
+
+    sig { override.params(v: Printer).void }
+    def print_blank_line_before(v)
+      previous_node = v.previous_node
+      return unless previous_node
+      return if previous_node.is_a?(Comment)
+      return if previous_node.is_a?(BlankLine)
+      v.printn
+    end
+
+    sig { override.returns(T::Boolean) }
+    def oneline?
+      text.lines.size <= 1
     end
   end
 

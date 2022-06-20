@@ -1,7 +1,7 @@
 # typed: strict
 # frozen_string_literal: true
 
-require "parser"
+require "syntax_tree"
 
 module RBI
   class ParseError < StandardError
@@ -53,19 +53,6 @@ module RBI
   class Parser
     extend T::Sig
 
-    # opt-in to most recent AST format
-    ::Parser::Builders::Default.emit_lambda               = true
-    ::Parser::Builders::Default.emit_procarg0             = true
-    ::Parser::Builders::Default.emit_encoding             = true
-    ::Parser::Builders::Default.emit_index                = true
-    ::Parser::Builders::Default.emit_arg_inside_procarg0  = true
-
-    sig { void }
-    def initialize
-      # Delay load unparser and only if it has not been loaded already.
-      require "unparser" unless defined?(::Unparser)
-    end
-
     sig { params(string: String).returns(Tree) }
     def self.parse_string(string)
       Parser.new.parse_string(string)
@@ -102,20 +89,18 @@ module RBI
 
     sig { params(content: String, file: String).returns(Tree) }
     def parse(content, file:)
-      node, comments = Unparser.parse_with_comments(content)
-      assoc = ::Parser::Source::Comment.associate_locations(node, comments)
-      builder = TreeBuilder.new(file: file, comments: comments, nodes_comments_assoc: assoc)
-      builder.visit(node)
-      builder.post_process
+      builder = TreeBuilder.new(file: file, source: content)
+      builder.visit(SyntaxTree::Parser.new(content).parse)
       builder.tree
-    rescue ::Parser::SyntaxError => e
-      raise ParseError.new(e.message, Loc.from_ast_loc(file, e.diagnostic.location))
+    rescue SyntaxTree::Parser::ParseError => e
+      loc = Loc.new(file: file, begin_line: e.lineno, begin_column: e.column, end_line: e.lineno, end_column: e.column)
+      raise ParseError.new(e.message, loc)
     rescue ParseError => e
       raise e
     rescue => e
       last_node = builder&.last_node
       last_location = if last_node
-        Loc.from_ast_loc(file, last_node.location)
+        Loc.from_syntax_tree_loc(file, last_node.location)
       else
         Loc.new(file: file)
       end
@@ -124,584 +109,700 @@ module RBI
       exception.print_debug
       raise exception
     end
-  end
 
-  class ASTVisitor
-    extend T::Helpers
-    extend T::Sig
-
-    abstract!
-
-    sig { params(nodes: T::Array[AST::Node]).void }
-    def visit_all(nodes)
-      nodes.each { |node| visit(node) }
+    class DefNode < T::Struct
+      const :node, T.any(SyntaxTree::Def, SyntaxTree::DefEndless, SyntaxTree::Defs)
+      const :is_singleton, T::Boolean
     end
 
-    sig { abstract.params(node: T.nilable(AST::Node)).void }
-    def visit(node); end
-
-    private
-
-    sig { params(node: AST::Node).returns(String) }
-    def parse_name(node)
-      T.must(ConstBuilder.visit(node))
+    class SendNode < T::Struct
+      const :node, T.any(
+        SyntaxTree::Call,
+        SyntaxTree::Command,
+        SyntaxTree::FCall,
+        SyntaxTree::VCall,
+        SyntaxTree::MethodAddBlock
+      )
+      const :name, String
+      const :args, T::Array[SyntaxTree::Node], default: []
+      const :block_statements, T.nilable(SyntaxTree::Statements)
     end
 
-    sig { params(node: AST::Node).returns(String) }
-    def parse_expr(node)
-      Unparser.unparse(node)
+    class Visitor < SyntaxTree::Visitor
+      extend T::Sig
+
+      sig { params(node: DefNode).void }
+      def visit_method_def(node)
+      end
+
+      sig { override.params(node: SyntaxTree::Def).void }
+      def visit_def(node)
+        visit_method_def(DefNode.new(node: node, is_singleton: false))
+      end
+
+      sig { override.params(node: SyntaxTree::DefEndless).void }
+      def visit_def_endless(node)
+        visit_method_def(DefNode.new(node: node, is_singleton: false))
+      end
+
+      sig { override.params(node: SyntaxTree::Defs).void }
+      def visit_defs(node)
+        visit_method_def(DefNode.new(node: node, is_singleton: true))
+      end
+
+      sig { params(node: SendNode).void }
+      def visit_send(node)
+      end
+
+      sig { override.params(node: SyntaxTree::Command).void }
+      def visit_command(node)
+        args_node = node.arguments
+        args_node = args_node.arguments if args_node.is_a?(SyntaxTree::ArgParen)
+        visit_send(SendNode.new(node: node, name: node.message.value, args: args_node.parts))
+      end
+
+      sig { override.params(node: SyntaxTree::FCall).void }
+      def visit_fcall(node)
+        args_node = node.arguments
+        args_node = args_node.arguments if args_node.is_a?(SyntaxTree::ArgParen)
+        visit_send(SendNode.new(node: node, name: node.value.value, args: args_node.parts))
+      end
+
+      sig { override.params(node: SyntaxTree::VCall).void }
+      def visit_vcall(node)
+        visit_send(SendNode.new(node: node, name: node.value.value))
+      end
+
+      sig { override.params(node: SyntaxTree::MethodAddBlock).void }
+      def visit_method_add_block(node)
+        args_node = node.call.arguments
+        args_node = args_node.arguments if args_node.is_a?(SyntaxTree::ArgParen)
+
+        block_node = node.block
+        statements = case block_node
+        when SyntaxTree::BraceBlock
+          block_node.statements
+        when SyntaxTree::DoBlock
+          block_node.bodystmt.statements
+        end
+
+        visit_send(
+          SendNode.new(node: node, name: node.call.value.value, args: args_node.parts, block_statements: statements)
+        )
+      end
     end
-  end
 
-  class TreeBuilder < ASTVisitor
-    extend T::Sig
+    class TreeBuilder < Visitor
+      extend T::Sig
 
-    sig { returns(Tree) }
-    attr_reader :tree
+      sig { returns(Tree) }
+      attr_reader :tree
 
-    sig { returns(T.nilable(::AST::Node)) }
-    attr_reader :last_node
+      sig { returns(String) }
+      attr_reader :source
 
-    sig do
-      params(
-        file: String,
-        comments: T::Array[::Parser::Source::Comment],
-        nodes_comments_assoc: T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]]
-      ).void
-    end
-    def initialize(file:, comments: [], nodes_comments_assoc: {})
-      super()
-      @file = file
-      @comments = comments
-      @nodes_comments_assoc = nodes_comments_assoc
-      @tree = T.let(Tree.new, Tree)
-      @scopes_stack = T.let([@tree], T::Array[Tree])
-      @last_node = T.let(nil, T.nilable(::AST::Node))
-      @last_sigs = T.let([], T::Array[RBI::Sig])
+      sig { returns(T.nilable(SyntaxTree::Node)) }
+      attr_reader :last_node
 
-      separate_header_comments
-    end
+      sig { params(file: String, source: String).void }
+      def initialize(file:, source:)
+        super()
+        @file = file
+        @source = source
+        @tree = T.let(Tree.new, Tree)
+        @scopes_stack = T.let([@tree], T::Array[Tree])
+        @last_node = T.let(nil, T.nilable(SyntaxTree::Node))
+        @last_comments = T.let([], T::Array[Comment])
+        @last_sigs = T.let([], T::Array[Sig])
+      end
 
-    sig { void }
-    def post_process
-      assoc_dangling_comments
-      set_root_tree_loc
-    end
+      sig { override.params(node: T.nilable(SyntaxTree::Node)).void }
+      def visit(node)
+        return unless node
 
-    sig { override.params(node: T.nilable(Object)).void }
-    def visit(node)
-      return unless node.is_a?(AST::Node)
-      @last_node = node
+        @last_node = node
+        super
+        @last_node = nil
+      end
 
-      case node.type
-      when :module, :class, :sclass
-        scope = parse_scope(node)
+      sig { override.params(node: SyntaxTree::Program).void }
+      def visit_program(node)
+        current_scope.loc = node_loc(node)
+        super
+
+        collect_dangling_comments
+        separate_header_comments
+      end
+
+      sig { override.params(node: SyntaxTree::Comment).void }
+      def visit_comment(node)
+        @last_comments << parse_comment(node)
+      end
+
+      sig { override.params(node: SyntaxTree::ClassDeclaration).void }
+      def visit_class(node)
+        scope = Class.new(
+          T.must(node_string(node.constant)),
+          superclass_name: node_string(node.superclass),
+          loc: node_loc(node),
+          comments: node_comments(node)
+        )
         current_scope << scope
         @scopes_stack << scope
-        visit_all(node.children)
+        super
+        collect_dangling_comments
         @scopes_stack.pop
-      when :casgn
-        current_scope << parse_const_assign(node)
-      when :def, :defs
-        current_scope << parse_def(node)
-      when :send
-        node = parse_send(node)
-        current_scope << node if node
-      when :block
-        node = parse_block(node)
-        if node.is_a?(Sig)
-          @last_sigs << node
-        elsif node
-          current_scope << node
+      end
+
+      sig { override.params(node: SyntaxTree::ModuleDeclaration).void }
+      def visit_module(node)
+        scope = Module.new(
+          T.must(node_string(node.constant)),
+          loc: node_loc(node),
+          comments: node_comments(node)
+        )
+        current_scope << scope
+        @scopes_stack << scope
+        super
+        collect_dangling_comments
+        @scopes_stack.pop
+      end
+
+      sig { override.params(node: SyntaxTree::SClass).void }
+      def visit_sclass(node)
+        scope = SingletonClass.new(
+          loc: node_loc(node),
+          comments: node_comments(node)
+        )
+        current_scope << scope
+        @scopes_stack << scope
+        super
+        collect_dangling_comments
+        @scopes_stack.pop
+      end
+
+      sig { override.params(node: SyntaxTree::Assign).void }
+      def visit_assign(node)
+        target = node.target
+
+        return unless target.is_a?(SyntaxTree::ConstPathField) || target.is_a?(SyntaxTree::TopConstField) ||
+          (target.is_a?(SyntaxTree::VarField) && target.value.is_a?(SyntaxTree::Const))
+
+        current_scope << if struct_new?(node.value)
+          parse_struct(node)
+        else
+          Const.new(
+            T.must(node_string(target)),
+            T.must(node_string(node.value)),
+            loc: node_loc(node),
+            comments: node_comments(node)
+          )
         end
-      else
-        visit_all(node.children)
       end
 
-      @last_node = nil
-    end
+      sig { params(node: SyntaxTree::Node).returns(T::Boolean) }
+      def struct_new?(node)
+        call = case node
+        when SyntaxTree::Call
+          node
+        when SyntaxTree::MethodAddBlock
+          block_call = node.call
+          case block_call
+          when SyntaxTree::Call
+            block_call
+          else
+            return false
+          end
+        else
+          return false
+        end
 
-    private
+        return false unless node_string(call.receiver) =~ /(::)?Struct/
 
-    sig { params(node: AST::Node).returns(Scope) }
-    def parse_scope(node)
-      loc = node_loc(node)
-      comments = node_comments(node)
+        method_name = call.message&.value
+        return false unless method_name == "new"
 
-      case node.type
-      when :module
-        name = parse_name(node.children[0])
-        Module.new(name, loc: loc, comments: comments)
-      when :class
-        name = parse_name(node.children[0])
-        superclass_name = ConstBuilder.visit(node.children[1])
-        Class.new(name, superclass_name: superclass_name, loc: loc, comments: comments)
-      when :sclass
-        SingletonClass.new(loc: loc, comments: comments)
-      else
-        raise ParseError.new("Unsupported scope node type `#{node.type}`", loc)
+        true
       end
-    end
 
-    sig { params(node: AST::Node).returns(RBI::Node) }
-    def parse_const_assign(node)
-      node_value = node.children[2]
-      if struct_definition?(node_value)
-        parse_struct(node)
-      else
-        name = parse_name(node)
-        value = parse_expr(node_value)
+      sig { override.params(node: DefNode).void }
+      def visit_method_def(node)
+        current_scope << Method.new(
+          node.node.name.value,
+          params: parse_params(node.node),
+          sigs: current_sigs,
+          loc: node_loc(node.node),
+          comments: node_comments(node.node),
+          is_singleton: node.is_singleton
+        )
+      end
+
+      sig { override.params(node: SendNode).void }
+      def visit_send(node)
+        method_name = node.name
+        case method_name
+        when "attr_reader"
+          current_scope << AttrReader.new(
+            *T.unsafe(node.args.map { |arg| T.must(T.must(node_string(arg))[1..-1]).to_sym }),
+            sigs: current_sigs,
+            loc: node_loc(node.node),
+            comments: node_comments(node.node)
+          )
+        when "attr_writer"
+          current_scope << AttrWriter.new(
+            *T.unsafe(node.args.map { |arg| T.must(T.must(node_string(arg))[1..-1]).to_sym }),
+            sigs: current_sigs,
+            loc: node_loc(node.node),
+            comments: node_comments(node.node)
+          )
+        when "attr_accessor"
+          current_scope << AttrAccessor.new(
+            *T.unsafe(node.args.map { |arg| T.must(T.must(node_string(arg))[1..-1]).to_sym }),
+            sigs: current_sigs,
+            loc: node_loc(node.node),
+            comments: node_comments(node.node)
+          )
+        when "include"
+          current_scope << Include.new(
+            *T.unsafe(node.args.map { |arg| T.must(node_string(arg)) }),
+            loc: node_loc(node.node),
+            comments: node_comments(node.node)
+          )
+        when "extend"
+          current_scope << Extend.new(
+            *T.unsafe(node.args.map { |arg| T.must(node_string(arg)) }),
+            loc: node_loc(node.node),
+            comments: node_comments(node.node)
+          )
+        when "mixes_in_class_methods"
+          current_scope << MixesInClassMethods.new(
+            *T.unsafe(node.args.map { |arg| T.must(node_string(arg)) }),
+            loc: node_loc(node.node),
+            comments: node_comments(node.node)
+          )
+        when "private", "protected", "public"
+          case node.node
+          when SyntaxTree::VCall
+            current_scope << parse_visibility(node.name, node.node)
+          when SyntaxTree::Command
+            visit_all(node.args)
+            last_node = @scopes_stack.last&.nodes&.last
+            case last_node
+            when Method, Attr
+              last_node.visibility = parse_visibility(node.name, node.node)
+            else
+              raise ParseError.new("Unexpected token `#{node.name}`", node_loc(node.node))
+            end
+          end
+        when "abstract!", "sealed!", "interface!"
+          current_scope << Helper.new(
+            method_name.delete_suffix("!"),
+            loc: node_loc(node.node),
+            comments: node_comments(node.node)
+          )
+        when "prop", "const"
+          current_scope << parse_tstruct_field(node.node, method_name, node.args)
+        when "sig"
+          @last_sigs << SigBuilder.build(self, node.node)
+        when "enums"
+          current_scope << TEnumBlock.new(
+            node.block_statements&.body&.map { |stmt| T.must(node_string(stmt.target)) },
+            loc: node_loc(node.node),
+            comments: node_comments(node.node)
+          )
+        when "requires_ancestor"
+          current_scope << RequiresAncestor.new(
+            T.must(node_string(node.block_statements&.body&.first)),
+            loc: node_loc(node.node),
+            comments: node_comments(node.node)
+          )
+        else
+          current_scope << Send.new(
+            method_name,
+            parse_send_args(node.args),
+            loc: node_loc(node.node),
+            comments: node_comments(node.node)
+          )
+        end
+      end
+
+      sig { params(name: String, node: SyntaxTree::Node).returns(Visibility) }
+      def parse_visibility(name, node)
+        case name
+        when "public"
+          Public.new(loc: node_loc(node))
+        when "protected"
+          Protected.new(loc: node_loc(node))
+        when "private"
+          Private.new(loc: node_loc(node))
+        else
+          raise ParseError.new("Unexpected visibility `#{name}`", node_loc(node))
+        end
+      end
+
+      sig { params(node: SyntaxTree::Node).returns(Loc) }
+      def node_loc(node)
+        Loc.from_syntax_tree_loc(@file, node.location)
+      end
+
+      sig { params(node: SyntaxTree::Node).returns(T::Array[Comment]) }
+      def node_comments(node)
+        node_comments = []
+        unless @last_comments.empty?
+          current_line = node.location.start_line
+          @last_comments.reverse.each do |comment|
+            comment_loc = T.must(comment.loc)
+            if comment_loc.end_line == current_line - 1
+              node_comments << @last_comments.pop
+              current_line = comment_loc.end_line
+            end
+          end
+        end
+
+        collect_dangling_comments
+
+        node_comments.reverse!
+        T.unsafe(node).comments.each do |comment_node|
+          node_comments << parse_comment(comment_node)
+        end
+        node_comments
+      end
+
+      sig { params(node: T.nilable(SyntaxTree::Node)).returns(T.nilable(String)) }
+      def node_string(node)
+        return nil unless node
+
+        @source[node.location.start_char...node.location.end_char]
+      end
+
+      private
+
+      sig { void }
+      def separate_header_comments
+        current_scope.nodes.dup.each do |child_node|
+          break unless child_node.is_a?(Comment) || child_node.is_a?(BlankLine)
+
+          current_scope.comments << child_node
+          child_node.detach
+        end
+      end
+
+      sig { void }
+      def collect_dangling_comments
+        last_line = T.let(nil, T.nilable(Integer))
+
+        @last_comments.each do |comment|
+          comment_line = T.must(comment.loc&.begin_line)
+
+          if last_line && comment_line > last_line + 1
+            # Preserve empty lines in file headers
+            current_scope << BlankLine.new(loc: comment.loc)
+          end
+
+          current_scope << comment
+
+          last_line = T.must(comment.loc&.end_line)
+        end
+        @last_comments.clear
+      end
+
+      sig { params(node: SyntaxTree::Comment).returns(Comment) }
+      def parse_comment(node)
+        Comment.new(node.value.gsub(/^# ?/, ""), loc: node_loc(node))
+      end
+
+      sig { params(node: T.any(SyntaxTree::Def, SyntaxTree::DefEndless, SyntaxTree::Defs)).returns(T::Array[Param]) }
+      def parse_params(node)
+        v = ParamsBuilder.new(self)
+        v.visit(node)
+        v.params
+      end
+
+      sig { params(nodes: T::Array[SyntaxTree::Node]).returns(T::Array[Arg]) }
+      def parse_send_args(nodes)
+        args = T.let([], T::Array[Arg])
+        nodes.each do |child|
+          case child
+          when SyntaxTree::BareAssocHash
+            child.assocs.each do |assoc|
+              keyword = assoc.key.value[0..-2]
+              value = T.must(node_string(assoc.value))
+              args << KwArg.new(keyword, value)
+            end
+          else
+            args << Arg.new(T.must(node_string(child)))
+          end
+        end
+        args
+      end
+
+      sig { params(node: SyntaxTree::Assign).returns(RBI::Struct) }
+      def parse_struct(node)
+        name = T.must(node_string(node.target))
         loc = node_loc(node)
         comments = node_comments(node)
-        Const.new(name, value, loc: loc, comments: comments)
-      end
-    end
 
-    sig { params(node: AST::Node).returns(Method) }
-    def parse_def(node)
-      loc = node_loc(node)
+        block = T.let(nil, T.nilable(SyntaxTree::Node))
+        call = T.let(case node.value
+               when SyntaxTree::Call
+                 node.value
+               when SyntaxTree::MethodAddBlock
+                 block = node.value.block
+                 node.value.call
+               else
+                 raise ParseError.new("Unexpected node type `#{node.value.class}`", loc)
+               end, SyntaxTree::Call)
 
-      case node.type
-      when :def
-        Method.new(
-          node.children[0].to_s,
-          params: node.children[1].children.map { |child| parse_param(child) },
-          sigs: current_sigs,
-          loc: loc,
-          comments: node_comments(node)
-        )
-      when :defs
-        Method.new(
-          node.children[1].to_s,
-          params: node.children[2].children.map { |child| parse_param(child) },
-          is_singleton: true,
-          sigs: current_sigs,
-          loc: loc,
-          comments: node_comments(node)
-        )
-      else
-        raise ParseError.new("Unsupported def node type `#{node.type}`", loc)
-      end
-    end
+        members = []
+        keyword_init = T.let(false, T::Boolean)
 
-    sig { params(node: AST::Node).returns(Param) }
-    def parse_param(node)
-      name = node.children[0].to_s
-      loc = node_loc(node)
-      comments = node_comments(node)
-
-      case node.type
-      when :arg
-        ReqParam.new(name, loc: loc, comments: comments)
-      when :optarg
-        value = parse_expr(node.children[1])
-        OptParam.new(name, value, loc: loc, comments: comments)
-      when :restarg
-        RestParam.new(name, loc: loc, comments: comments)
-      when :kwarg
-        KwParam.new(name, loc: loc, comments: comments)
-      when :kwoptarg
-        value = parse_expr(node.children[1])
-        KwOptParam.new(name, value, loc: loc, comments: comments)
-      when :kwrestarg
-        KwRestParam.new(name, loc: loc, comments: comments)
-      when :blockarg
-        BlockParam.new(name, loc: loc, comments: comments)
-      else
-        raise ParseError.new("Unsupported param node type `#{node.type}`", loc)
-      end
-    end
-
-    sig { params(node: AST::Node).returns(T.nilable(RBI::Node)) }
-    def parse_send(node)
-      recv = node.children[0]
-      return nil if recv && recv != :self
-
-      method_name = node.children[1]
-      loc = node_loc(node)
-      comments = node_comments(node)
-
-      case method_name
-      when :attr_reader
-        symbols = node.children[2..-1].map { |child| child.children[0] }
-        AttrReader.new(*symbols, sigs: current_sigs, loc: loc, comments: comments)
-      when :attr_writer
-        symbols = node.children[2..-1].map { |child| child.children[0] }
-        AttrWriter.new(*symbols, sigs: current_sigs, loc: loc, comments: comments)
-      when :attr_accessor
-        symbols = node.children[2..-1].map { |child| child.children[0] }
-        AttrAccessor.new(*symbols, sigs: current_sigs, loc: loc, comments: comments)
-      when :include
-        names = node.children[2..-1].map { |child| parse_expr(child) }
-        Include.new(*names, loc: loc, comments: comments)
-      when :extend
-        names = node.children[2..-1].map { |child| parse_expr(child) }
-        Extend.new(*names, loc: loc, comments: comments)
-      when :abstract!, :sealed!, :interface!
-        Helper.new(method_name.to_s.delete_suffix("!"), loc: loc, comments: comments)
-      when :mixes_in_class_methods
-        names = node.children[2..-1].map { |child| parse_name(child) }
-        MixesInClassMethods.new(*names, loc: loc, comments: comments)
-      when :public, :protected, :private
-        visibility = case method_name
-        when :protected
-          Protected.new(loc: loc)
-        when :private
-          Private.new(loc: loc)
-        else
-          Public.new(loc: loc)
-        end
-        nested_node = node.children[2]
-        case nested_node&.type
-        when :def, :defs
-          method = parse_def(nested_node)
-          method.visibility = visibility
-          method
-        when :send
-          snode = parse_send(nested_node)
-          raise ParseError.new("Unexpected token `private` before `#{nested_node.type}`", loc) unless snode.is_a?(Attr)
-          snode.visibility = visibility
-          snode
-        when nil
-          visibility
-        else
-          raise ParseError.new("Unexpected token `private` before `#{nested_node.type}`", loc)
-        end
-      when :prop
-        name, type, default_value = parse_tstruct_prop(node)
-        TStructProp.new(name, type, default: default_value, loc: loc, comments: comments)
-      when :const
-        name, type, default_value = parse_tstruct_prop(node)
-        TStructConst.new(name, type, default: default_value, loc: loc, comments: comments)
-      else
-        args = parse_send_args(node)
-        Send.new(method_name.to_s, args, loc: loc, comments: comments)
-      end
-    end
-
-    sig { params(node: AST::Node).returns(T::Array[Arg]) }
-    def parse_send_args(node)
-      args = T.let([], T::Array[Arg])
-      node.children[2..-1].each do |child|
-        if child.type == :kwargs
-          child.children.each do |pair|
-            keyword = pair.children.first.children.last.to_s
-            value = parse_expr(pair.children.last)
-            args << KwArg.new(keyword, value)
-          end
-        else
-          args << Arg.new(parse_expr(child))
-        end
-      end
-      args
-    end
-
-    sig { params(node: AST::Node).returns(T.nilable(RBI::Node)) }
-    def parse_block(node)
-      name = node.children[0].children[1]
-
-      case name
-      when :sig
-        parse_sig(node)
-      when :enums
-        parse_enum(node)
-      when :requires_ancestor
-        parse_requires_ancestor(node)
-      else
-        raise ParseError.new("Unsupported block node type `#{name}`", node_loc(node))
-      end
-    end
-
-    sig { params(node: AST::Node).returns(T::Boolean) }
-    def struct_definition?(node)
-      (node.type == :send && node.children[0]&.type == :const && node.children[0].children[1] == :Struct) ||
-        (node.type == :block && struct_definition?(node.children[0]))
-    end
-
-    sig { params(node: AST::Node).returns(RBI::Struct) }
-    def parse_struct(node)
-      name = parse_name(node)
-      loc = node_loc(node)
-      comments = node_comments(node)
-
-      send = node.children[2]
-      body = []
-
-      if send.type == :block
-        if send.children[2].type == :begin
-          body = send.children[2].children
-        else
-          body << send.children[2]
-        end
-        send = send.children[0]
-      end
-
-      members = []
-      keyword_init = T.let(false, T::Boolean)
-      send.children[2..].each do |child|
-        if child.type == :sym
-          members << child.children[0]
-        elsif child.type == :kwargs
-          pair = child.children[0]
-          if pair.children[0].children[0] == :keyword_init
-            keyword_init = true if pair.children[1].type == :true
+        call.arguments&.arguments&.parts&.each do |arg|
+          case arg
+          when SyntaxTree::SymbolLiteral
+            members << arg.value.value
+          when SyntaxTree::BareAssocHash
+            arg.assocs.each do |assoc|
+              case assoc.key.value[0..-2]
+              when "keyword_init"
+                keyword_init = T.must(node_string(assoc.value)) == "true"
+              end
+            end
+          else
+            raise ParseError.new("Unexpected node type `#{arg.class}`", node_loc(arg))
           end
         end
+
+        struct = Struct.new(name, members: members, keyword_init: keyword_init, loc: loc, comments: comments)
+        @scopes_stack << struct
+        visit(block)
+        @scopes_stack.pop
+        struct
       end
 
-      struct = Struct.new(name, members: members, keyword_init: keyword_init, loc: loc, comments: comments)
-      @scopes_stack << struct
-      visit_all(body)
-      @scopes_stack.pop
-
-      struct
-    end
-
-    sig { params(node: AST::Node).returns([String, String, T.nilable(String)]) }
-    def parse_tstruct_prop(node)
-      name = node.children[2].children[0].to_s
-      type = parse_expr(node.children[3])
-      has_default = node.children[4]
-        &.children&.fetch(0, nil)
-        &.children&.fetch(0, nil)
-        &.children&.fetch(0, nil) == :default
-      default_value = if has_default
-        parse_expr(node.children.fetch(4, nil)
-          &.children&.fetch(0, nil)
-          &.children&.fetch(1, nil))
+      sig do
+        params(
+          node: SyntaxTree::Node,
+          method_name: String,
+          args: T::Array[SyntaxTree::Node]
+        ).returns(TStructField)
       end
-      [name, type, default_value]
-    end
+      def parse_tstruct_field(node, method_name, args)
+        name = T.must(T.must(node_string(args.first))[1..-1])
+        type = T.must(node_string(args[1]))
+        default_value = T.let(nil, T.nilable(String))
+        loc = node_loc(node)
+        comments = node_comments(node)
 
-    sig { params(node: AST::Node).returns(Sig) }
-    def parse_sig(node)
-      sig = SigBuilder.build(node)
-      sig.loc = node_loc(node)
-      sig
-    end
+        if args.size > 2
+          options_hash = args[2]
+          raise ParseError.new("Unexpected struct field args", loc) unless options_hash.is_a?(SyntaxTree::BareAssocHash)
 
-    sig { params(node: AST::Node).returns(TEnumBlock) }
-    def parse_enum(node)
-      enum = TEnumBlock.new
-
-      body = if node.children[2].type == :begin
-        node.children[2].children
-      else
-        [node.children[2]]
-      end
-
-      body.each do |child|
-        enum << parse_name(child)
-      end
-      enum.loc = node_loc(node)
-      enum
-    end
-
-    sig { params(node: AST::Node).returns(RequiresAncestor) }
-    def parse_requires_ancestor(node)
-      name = parse_name(node.children[2])
-      ra = RequiresAncestor.new(name)
-      ra.loc = node_loc(node)
-      ra
-    end
-
-    sig { params(node: AST::Node).returns(Loc) }
-    def node_loc(node)
-      Loc.from_ast_loc(@file, node.location)
-    end
-
-    sig { params(node: AST::Node).returns(T::Array[Comment]) }
-    def node_comments(node)
-      comments = @nodes_comments_assoc[node.location]
-      return [] unless comments
-      comments.map do |comment|
-        text = comment.text[1..-1].strip
-        loc = Loc.from_ast_loc(@file, comment.location)
-        Comment.new(text, loc: loc)
-      end
-    end
-
-    sig { returns(Tree) }
-    def current_scope
-      T.must(@scopes_stack.last) # Should never be nil since we create a Tree as the root
-    end
-
-    sig { returns(T::Array[Sig]) }
-    def current_sigs
-      sigs = @last_sigs.dup
-      @last_sigs.clear
-      sigs
-    end
-
-    sig { void }
-    def assoc_dangling_comments
-      last_line = T.let(nil, T.nilable(Integer))
-      (@comments - @nodes_comments_assoc.values.flatten).each do |comment|
-        comment_line = comment.location.last_line
-        text = comment.text[1..-1].strip
-        loc = Loc.from_ast_loc(@file, comment.location)
-
-        if last_line && comment_line > last_line + 1
-          # Preserve empty lines in file headers
-          tree.comments << BlankLine.new(loc: loc)
-        end
-
-        tree.comments << Comment.new(text, loc: loc)
-        last_line = comment_line
-      end
-    end
-
-    sig { void }
-    def separate_header_comments
-      return if @nodes_comments_assoc.empty?
-
-      keep = []
-      node = T.must(@nodes_comments_assoc.keys.first)
-      comments = T.must(@nodes_comments_assoc.values.first)
-
-      last_line = T.let(nil, T.nilable(Integer))
-      comments.reverse.each do |comment|
-        comment_line = comment.location.last_line
-
-        break if last_line && comment_line < last_line - 1 ||
-          !last_line && comment_line < node.first_line - 1
-
-        keep << comment
-        last_line = comment_line
-      end
-
-      @nodes_comments_assoc[node] = keep.reverse
-    end
-
-    sig { void }
-    def set_root_tree_loc
-      first_loc = tree.nodes.first&.loc
-      last_loc = tree.nodes.last&.loc
-
-      @tree.loc = Loc.new(
-        file: @file,
-        begin_line: first_loc&.begin_line || 0,
-        begin_column: first_loc&.begin_column || 0,
-        end_line: last_loc&.end_line || 0,
-        end_column: last_loc&.end_column || 0
-      )
-    end
-  end
-
-  class ConstBuilder < ASTVisitor
-    extend T::Sig
-
-    sig { params(node: T.nilable(AST::Node)).returns(T.nilable(String)) }
-    def self.visit(node)
-      v = ConstBuilder.new
-      v.visit(node)
-      return nil if v.names.empty?
-      v.names.join("::")
-    end
-
-    sig { returns(T::Array[String]) }
-    attr_accessor :names
-
-    sig { void }
-    def initialize
-      super
-      @names = T.let([], T::Array[String])
-    end
-
-    sig { override.params(node: T.nilable(AST::Node)).void }
-    def visit(node)
-      return unless node
-      case node.type
-      when :const, :casgn
-        visit(node.children[0])
-        @names << node.children[1].to_s
-      when :cbase
-        @names << ""
-      when :sym
-        @names << ":#{node.children[0]}"
-      end
-    end
-  end
-
-  class SigBuilder < ASTVisitor
-    extend T::Sig
-
-    sig { params(node: AST::Node).returns(Sig) }
-    def self.build(node)
-      v = SigBuilder.new
-      v.visit_all(node.children)
-      v.current
-    end
-
-    sig { returns(Sig) }
-    attr_accessor :current
-
-    sig { void }
-    def initialize
-      super
-      @current = T.let(Sig.new, Sig)
-    end
-
-    sig { override.params(node: T.nilable(AST::Node)).void }
-    def visit(node)
-      return unless node
-      case node.type
-      when :send
-        visit_send(node)
-      end
-    end
-
-    sig { params(node: AST::Node).void }
-    def visit_send(node)
-      visit(node.children[0]) if node.children[0]
-      name = node.children[1]
-      case name
-      when :sig
-        arg = node.children[2]
-        @current.is_final = arg && arg.children[0] == :final
-      when :abstract
-        @current.is_abstract = true
-      when :override
-        @current.is_override = true
-      when :overridable
-        @current.is_overridable = true
-      when :checked
-        if node.children.length >= 3
-          @current.checked = node.children[2].children[0]
-        end
-      when :type_parameters
-        node.children[2..-1].each do |child|
-          @current.type_params << child.children[0].to_s
-        end
-      when :params
-        if node.children.length >= 3
-          node.children[2].children.each do |child|
-            name = child.children[0].children[0].to_s
-            type = parse_expr(child.children[1])
-            @current << SigParam.new(name, type)
+          options_hash.assocs.each do |assoc|
+            case assoc.key.value[0..-2]
+            when "default"
+              default_value = T.must(node_string(assoc.value))
+            else
+              raise ParseError.new("Unexpected struct field option #{assoc.key.value}", loc)
+            end
           end
         end
-      when :returns
-        if node.children.length >= 3
-          @current.return_type = parse_expr(node.children[2])
+
+        case method_name
+        when "const"
+          TStructConst.new(name, type, default: default_value, loc: loc, comments: comments)
+        when "prop"
+          TStructProp.new(name, type, default: default_value, loc: loc, comments: comments)
+        else
+          raise ParseError.new("Unexpected #{method_name} command for TStructField", loc)
         end
-      when :void
-        @current.return_type = nil
-      else
-        raise "#{node.location.line}: Unhandled #{name}"
+      end
+
+      sig { returns(Tree) }
+      def current_scope
+        T.must(@scopes_stack.last) # Should never be nil since we create a Tree as the root
+      end
+
+      sig { returns(T::Array[Sig]) }
+      def current_sigs
+        sigs = @last_sigs.dup
+        @last_sigs.clear
+        sigs
+      end
+    end
+
+    class SigBuilder < SyntaxTree::Visitor
+      extend T::Sig
+
+      sig { params(builder: TreeBuilder, node: SyntaxTree::Node).returns(Sig) }
+      def self.build(builder, node)
+        v = SigBuilder.new(builder)
+        v.current.loc = builder.node_loc(node)
+        v.visit(node)
+        v.current
+      end
+
+      sig { returns(Sig) }
+      attr_accessor :current
+
+      sig { params(builder: TreeBuilder).void }
+      def initialize(builder)
+        super()
+        @builder = builder
+        @current = T.let(Sig.new, Sig)
+      end
+
+      sig { params(node: T.nilable(SyntaxTree::Node)).void }
+      def visit(node)
+        return unless node
+
+        case node
+        when SyntaxTree::Call
+          arguments = node_arguments(node)
+          add_sig_builder(node.message.value, arguments)
+          visit(node.receiver)
+        when SyntaxTree::FCall
+          arguments = node_arguments(node)
+          add_sig_builder(node.value.value, arguments)
+        when SyntaxTree::Ident
+          add_sig_builder(node.value, nil)
+        else
+          super
+        end
+      end
+
+      sig { params(name: String, arguments: T.nilable(SyntaxTree::Args)).void }
+      def add_sig_builder(name, arguments)
+        case name
+        when "sig"
+          arguments&.parts&.each do |argument|
+            @current.is_final = @builder.node_string(argument) == ":final"
+          end
+        when "abstract"
+          @current.is_abstract = true
+        when "override"
+          @current.is_override = true
+        when "overridable"
+          @current.is_overridable = true
+        when "checked"
+          arg = @builder.node_string(arguments)
+          @current.checked = arg ? arg[1..-1]&.to_sym : nil
+        when "params"
+          visit(arguments)
+        when "returns"
+          @current.return_type = T.must(@builder.node_string(arguments)) if arguments
+        when "type_parameters"
+          arguments&.parts&.each do |argument|
+            @current.type_params << T.must(T.must(@builder.node_string(argument))[1..-1])
+          end
+        when "void"
+          @current.return_type = nil
+        end
+      end
+
+      sig { params(node: SyntaxTree::BareAssocHash).void }
+      def visit_bare_assoc_hash(node)
+        node.assocs.each do |assoc|
+          @current.params << SigParam.new(
+            T.must(T.must(@builder.node_string(assoc.key))[0..-2]),
+            T.must(@builder.node_string(assoc.value))
+          )
+        end
+      end
+
+      sig { params(node: T.any(SyntaxTree::Call, SyntaxTree::FCall)).returns(T.nilable(SyntaxTree::Args)) }
+      def node_arguments(node)
+        arguments = node.arguments
+        arguments.is_a?(SyntaxTree::ArgParen) ? arguments.arguments : arguments
+      end
+    end
+
+    class ParamsBuilder < SyntaxTree::Visitor
+      extend T::Sig
+
+      sig { params(builder: TreeBuilder, node: T.nilable(SyntaxTree::Node)).returns(T::Array[Param]) }
+      def self.visit(builder, node)
+        v = ParamsBuilder.new(builder)
+        v.visit(node)
+        v.params
+      end
+
+      sig { returns(T::Array[Param]) }
+      attr_accessor :params
+
+      sig { params(builder: TreeBuilder).void }
+      def initialize(builder)
+        super()
+        @builder = builder
+        @params = T.let([], T::Array[Param])
+      end
+
+      sig { override.params(node: SyntaxTree::Params).void }
+      def visit_params(node)
+        node.requireds.each do |ident|
+          @params << ReqParam.new(
+            ident.value,
+            loc: @builder.node_loc(ident),
+            comments: @builder.node_comments(ident)
+          )
+        end
+        node.optionals.each do |(ident, value)|
+          @params << OptParam.new(
+            ident.value,
+            T.must(@builder.node_string(value)),
+            loc: @builder.node_loc(ident),
+            comments: @builder.node_comments(ident)
+          )
+        end
+        if node.rest
+          @params << RestParam.new(
+            node.rest.name&.value || "",
+            loc: @builder.node_loc(node.rest),
+            comments: @builder.node_comments(node.rest)
+          )
+        end
+        node.keywords.each do |(ident, value)|
+          @params << if value
+            KwOptParam.new(
+              ident.value[0..-2],
+              T.must(@builder.node_string(value)),
+              loc: @builder.node_loc(ident),
+              comments: @builder.node_comments(ident)
+            )
+          else
+            KwParam.new(
+              ident.value[0..-2],
+              loc: @builder.node_loc(ident),
+              comments: @builder.node_comments(ident)
+            )
+          end
+        end
+        if node.keyword_rest
+          @params << KwRestParam.new(
+            node.keyword_rest.name.value,
+            loc: @builder.node_loc(node.keyword_rest),
+            comments: @builder.node_comments(node.keyword_rest)
+          )
+        end
+        if node.block
+          @params << BlockParam.new(
+            node.block.name.value,
+            loc: @builder.node_loc(node.block),
+            comments: @builder.node_comments(node.block)
+          )
+        end
       end
     end
   end
 
   class Loc
-    sig { params(file: String, ast_loc: T.any(::Parser::Source::Map, ::Parser::Source::Range)).returns(Loc) }
-    def self.from_ast_loc(file, ast_loc)
+    sig { params(file: String, syntax_tree_loc: SyntaxTree::Location).returns(Loc) }
+    def self.from_syntax_tree_loc(file, syntax_tree_loc)
       Loc.new(
         file: file,
-        begin_line: ast_loc.line,
-        begin_column: ast_loc.column,
-        end_line: ast_loc.last_line,
-        end_column: ast_loc.last_column
+        begin_line: syntax_tree_loc.start_line,
+        begin_column: syntax_tree_loc.start_column,
+        end_line: syntax_tree_loc.end_line,
+        end_column: syntax_tree_loc.end_column
       )
     end
   end

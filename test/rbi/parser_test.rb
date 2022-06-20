@@ -41,6 +41,7 @@ module RBI
         D = Struct.new(:a, :b, keyword_init: true)
         E = ::Struct.new(:a, :b, foo: bar)
         F = Struct.new(:a, :b, keyword_init: true) { def m; end }
+
         G = Struct.new do
           include Foo
           attr_reader :a
@@ -108,6 +109,7 @@ module RBI
         def m1; end
         def self.m2; end
         def m3(a, b = 42, *c, d:, e: "bar", **f, &g); end
+        def m4(*); end
       RBI
 
       out = Parser.parse_string(rbi)
@@ -278,6 +280,7 @@ module RBI
           G = type_template
           H = type_template(:in)
           I = type_template(:out, lower: A)
+          J = type_member { { fixed: Foo } }
         end
       RBI
 
@@ -292,7 +295,7 @@ module RBI
       RBI
 
       tree = Parser.parse_string(rbi)
-      assert_equal("-:1:0-2:14", tree.loc.to_s)
+      assert_equal("-:1:0-2:15", tree.loc.to_s)
     end
 
     def test_parse_arbitrary_sends
@@ -300,7 +303,11 @@ module RBI
         class ActiveRecord::Base
           class_attribute :typed_stores, :store_accessors, instance_accessor: false, default: "Foo"
           foo bar, "bar", :bar
+          bar
         end
+
+        foo bar, "bar", :bar
+        bar
       RBI
 
       out = Parser.parse_string(rbi)
@@ -765,40 +772,31 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
-    def test_parse_trailing_comments_and_moves_them_in_header
+    def test_parse_trailing_comments
       rbi = <<~RBI
         # A comment 1
         # A comment 2
         module A
           # B comment
           class B; end
+
           # A comment 3
         end
       RBI
-      out = Parser.parse_string(rbi)
-      assert_equal(<<~RBI, out.string)
-        # A comment 1
-        # A comment 2
 
-        # A comment 3
-        module A
-          # B comment
-          class B; end
-        end
-      RBI
+      out = Parser.parse_string(rbi)
+      assert_equal(rbi, out.string)
     end
 
-    def test_parse_comments_and_discard_orphans
+    def test_parse_orphans_comments
       rbi = <<~RBI
         module A; end
-        # Orphan comment
-      RBI
-      out = Parser.parse_string(rbi)
-      assert_equal(<<~RBI, out.string)
-        # Orphan comment
 
-        module A; end
+        # Orphan comment
       RBI
+
+      out = Parser.parse_string(rbi)
+      assert_equal(rbi, out.string)
     end
 
     def test_parse_params_comments
@@ -830,21 +828,52 @@ module RBI
       RBI
     end
 
+    def test_parse_dangling_comments
+      rbi = <<~RBI
+        # Tree comment 1
+        # Tree comment 2
+
+        # Tree comment 3
+
+        # Module A comment 1
+        # Module A comment 2
+        module A
+          # Module A comment 3
+
+          # Module A comment 4
+
+          # Def foo comment
+          def foo; end
+
+          # Def bar comment
+          def bar; end
+
+          # Module A comment 5
+        end
+
+        # Tree comment 4
+      RBI
+
+      out = Parser.parse_string(rbi)
+      # puts out.string
+      assert_equal(rbi, out.string)
+    end
+
     def test_parse_errors
       e = assert_raises(ParseError) do
         Parser.parse_string(<<~RBI)
           def bar
         RBI
       end
-      assert_equal("unexpected token $end", e.message)
-      assert_equal("-:2:0-2:0", e.location.to_s)
+      assert_equal("syntax error, unexpected end-of-input", e.message)
+      assert_equal("-:1:8-1:8", e.location.to_s)
 
       e = assert_raises(ParseError) do
         Parser.parse_string(<<~RBI)
           private include Foo
         RBI
       end
-      assert_equal("Unexpected token `private` before `send`", e.message)
+      assert_equal("Unexpected token `private`", e.message)
       assert_equal("-:1:0-1:19", e.location.to_s)
 
       e = assert_raises(ParseError) do
@@ -852,7 +881,7 @@ module RBI
           private class Foo; end
         RBI
       end
-      assert_equal("Unexpected token `private` before `class`", e.message)
+      assert_equal("Unexpected token `private`", e.message)
       assert_equal("-:1:0-1:22", e.location.to_s)
 
       e = assert_raises(ParseError) do
@@ -860,7 +889,7 @@ module RBI
           private CST = 42
         RBI
       end
-      assert_equal("Unexpected token `private` before `casgn`", e.message)
+      assert_equal("Unexpected token `private`", e.message)
       assert_equal("-:1:0-1:16", e.location.to_s)
     end
 
@@ -909,8 +938,8 @@ module RBI
       e = assert_raises(ParseError) do
         Parser.parse_file(path)
       end
-      assert_equal("unexpected token $end", e.message)
-      assert_equal("test_parse_real_file_with_error.rbi:2:0-2:0", e.location.to_s)
+      assert_equal("syntax error, unexpected end-of-input, expecting `end'", e.message)
+      assert_equal("test_parse_real_file_with_error.rbi:1:10-1:10", e.location.to_s)
 
       FileUtils.rm_rf(path)
     end
