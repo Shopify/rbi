@@ -39,7 +39,7 @@ module RBI
         B = Struct.new(:a, :b)
         C = Struct.new(:a, :b, keyword_init: false)
         D = Struct.new(:a, :b, keyword_init: true)
-        E = Struct.new(:a, :b, foo: bar)
+        E = ::Struct.new(:a, :b, foo: bar)
         F = Struct.new(:a, :b, keyword_init: true) { def m; end }
         G = Struct.new do
           include Foo
