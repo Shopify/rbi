@@ -204,13 +204,21 @@ module RBI
           const :a, A
           const :b, B, default: B.new
           prop :c, C
+          prop(:d, D, default: D.new)
+          def foo; end
+        end
+      RBI
+
+      out = Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string)
+        class Foo < ::T::Struct
+          const :a, A
+          const :b, B, default: B.new
+          prop :c, C
           prop :d, D, default: D.new
           def foo; end
         end
-        RBI
-
-      out = Parser.parse_string(rbi)
-      assert_equal(rbi, out.string)
+      RBI
     end
 
     def test_parse_t_enums
