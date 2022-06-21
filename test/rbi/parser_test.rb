@@ -39,7 +39,7 @@ module RBI
         B = Struct.new(:a, :b)
         C = Struct.new(:a, :b, keyword_init: false)
         D = Struct.new(:a, :b, keyword_init: true)
-        E = Struct.new(:a, :b, foo: bar)
+        E = ::Struct.new(:a, :b, foo: bar)
         F = Struct.new(:a, :b, keyword_init: true) { def m; end }
         G = Struct.new do
           include Foo
@@ -204,13 +204,21 @@ module RBI
           const :a, A
           const :b, B, default: B.new
           prop :c, C
+          prop(:d, D, default: D.new)
+          def foo; end
+        end
+      RBI
+
+      out = Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string)
+        class Foo < ::T::Struct
+          const :a, A
+          const :b, B, default: B.new
+          prop :c, C
           prop :d, D, default: D.new
           def foo; end
         end
-        RBI
-
-      out = Parser.parse_string(rbi)
-      assert_equal(rbi, out.string)
+      RBI
     end
 
     def test_parse_t_enums
@@ -371,7 +379,7 @@ module RBI
       rbi = <<~RBI
         Foo = 42
         Bar = "foo"
-        Baz = Bar
+        ::Baz = Bar
         A::B::C = Foo
       RBI
 
@@ -381,8 +389,8 @@ module RBI
         Foo = 42
         # -:2:0-2:11
         Bar = "foo"
-        # -:3:0-3:9
-        Baz = Bar
+        # -:3:0-3:11
+        ::Baz = Bar
         # -:4:0-4:13
         A::B::C = Foo
       RBI
