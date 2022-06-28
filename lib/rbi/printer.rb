@@ -208,6 +208,26 @@ module RBI
     end
   end
 
+  class Annotation
+    extend T::Sig
+
+    sig { override.params(v: Printer).void }
+    def accept_printer(v)
+      lines = text.lines
+
+      if lines.empty?
+        v.printl("#")
+      end
+
+      lines.each do |line|
+        text = line.rstrip
+        v.printt("#")
+        v.print(" #{text}") unless text.empty?
+        v.printn
+      end
+    end
+  end
+
   class BlankLine
     extend T::Sig
 

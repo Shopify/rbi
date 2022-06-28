@@ -29,8 +29,8 @@ module RBI
 
       sig { params(node: NodeWithComments).void }
       def annotate_node(node)
-        return if node.annotations.one?(@annotation)
-        node.comments << Comment.new("@#{@annotation}")
+        return if node.annotations.one? { |annotation| annotation.tag == @annotation }
+        node.comments << Annotation.new(@annotation, nil)
       end
 
       sig { params(node: Node).returns(T::Boolean) }

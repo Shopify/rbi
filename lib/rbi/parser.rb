@@ -538,7 +538,7 @@ module RBI
       last_line = T.let(nil, T.nilable(Integer))
       (@comments - @nodes_comments_assoc.values.flatten).each do |comment|
         comment_line = comment.location.last_line
-        text = comment.text[1..-1].strip
+        text = T.let(comment.text[1..-1].strip, String)
         loc = Loc.from_ast_loc(@file, comment.location)
 
         if last_line && comment_line > last_line + 1
@@ -546,7 +546,12 @@ module RBI
           tree.comments << BlankLine.new(loc: loc)
         end
 
-        tree.comments << Comment.new(text, loc: loc)
+        if text.start_with?('@')
+          tag, value = text.split(/\s/, 2)
+          tree.comments << Annotation.new(T.must(tag), value, loc: loc)
+        else
+          tree.comments << Comment.new(text, loc: loc)
+        end
         last_line = comment_line
       end
     end

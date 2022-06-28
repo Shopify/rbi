@@ -66,6 +66,30 @@ module RBI
     end
   end
 
+  class Annotation < Comment
+    extend T::Sig
+
+    sig { returns(String) }
+    def tag
+      text
+    end
+
+    sig { returns(T.nilable(String)) }
+    attr_accessor :value
+
+    sig { params(tag: String, value: T.nilable(String), loc: T.nilable(Loc)).void }
+    def initialize(tag, value, loc: nil)
+      super(tag, loc: loc)
+      @value = value
+    end
+
+    sig { params(other: Object).returns(T::Boolean) }
+    def ==(other)
+      return false unless other.is_a?(Annotation)
+      tag == other.tag && text == other.text
+    end
+  end
+
   # An arbitrary blank line that can be added both in trees and comments
   class BlankLine < Comment
     extend T::Sig
@@ -91,11 +115,9 @@ module RBI
       @comments = comments
     end
 
-    sig { returns(T::Array[String]) }
+    sig { returns(T::Array[Annotation]) }
     def annotations
-      comments
-        .select { |comment| comment.text.start_with?("@") }
-        .map { |comment| T.must(comment.text[1..]) }
+      T.cast(comments.select { |comment| comment.is_a?(Annotation) }, T::Array[Annotation])
     end
   end
 
