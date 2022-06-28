@@ -178,6 +178,7 @@ module RBI
       @scopes_stack = T.let([@tree], T::Array[Tree])
       @last_node = T.let(nil, T.nilable(::AST::Node))
       @last_sigs = T.let([], T::Array[RBI::Sig])
+      @last_sigs_comments = T.let([], T::Array[Comment])
 
       separate_header_comments
     end
@@ -208,11 +209,12 @@ module RBI
         node = parse_send(node)
         current_scope << node if node
       when :block
-        node = parse_block(node)
-        if node.is_a?(Sig)
-          @last_sigs << node
-        elsif node
-          current_scope << node
+        rbi_node = parse_block(node)
+        if rbi_node.is_a?(Sig)
+          @last_sigs << rbi_node
+          @last_sigs_comments.concat(node_comments(node))
+        elsif rbi_node
+          current_scope << rbi_node
         end
       else
         visit_all(node.children)
@@ -268,7 +270,7 @@ module RBI
           params: node.children[1].children.map { |child| parse_param(child) },
           sigs: current_sigs,
           loc: loc,
-          comments: node_comments(node)
+          comments: current_sigs_comments + node_comments(node)
         )
       when :defs
         Method.new(
@@ -277,7 +279,7 @@ module RBI
           is_singleton: true,
           sigs: current_sigs,
           loc: loc,
-          comments: node_comments(node)
+          comments: current_sigs_comments + node_comments(node)
         )
       else
         raise ParseError.new("Unsupported def node type `#{node.type}`", loc)
@@ -324,13 +326,13 @@ module RBI
       case method_name
       when :attr_reader
         symbols = node.children[2..-1].map { |child| child.children[0] }
-        AttrReader.new(*symbols, sigs: current_sigs, loc: loc, comments: comments)
+        AttrReader.new(*symbols, sigs: current_sigs, loc: loc, comments: current_sigs_comments + comments)
       when :attr_writer
         symbols = node.children[2..-1].map { |child| child.children[0] }
-        AttrWriter.new(*symbols, sigs: current_sigs, loc: loc, comments: comments)
+        AttrWriter.new(*symbols, sigs: current_sigs, loc: loc, comments: current_sigs_comments + comments)
       when :attr_accessor
         symbols = node.children[2..-1].map { |child| child.children[0] }
-        AttrAccessor.new(*symbols, sigs: current_sigs, loc: loc, comments: comments)
+        AttrAccessor.new(*symbols, sigs: current_sigs, loc: loc, comments: current_sigs_comments + comments)
       when :include
         names = node.children[2..-1].map { |child| parse_expr(child) }
         Include.new(*names, loc: loc, comments: comments)
@@ -531,6 +533,13 @@ module RBI
       sigs = @last_sigs.dup
       @last_sigs.clear
       sigs
+    end
+
+    sig { returns(T::Array[Comment]) }
+    def current_sigs_comments
+      comments = @last_sigs_comments.dup
+      @last_sigs_comments.clear
+      comments
     end
 
     sig { void }

@@ -735,6 +735,41 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
+    def test_parse_comments_with_sigs
+      rbi = <<~RBI
+        module A
+          # foo comment
+          sig { void }
+          def foo; end
+
+          # bar comment
+          sig { returns(String) }
+          attr_reader :bar
+
+          sig { void }
+          # baz comment
+          def baz; end
+        end
+      RBI
+
+      out = Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string)
+        module A
+          # foo comment
+          sig { void }
+          def foo; end
+
+          # bar comment
+          sig { returns(String) }
+          attr_reader :bar
+
+          # baz comment
+          sig { void }
+          def baz; end
+        end
+      RBI
+    end
+
     def test_parse_multiline_comments
       rbi = <<~RBI
         # Foo 1
