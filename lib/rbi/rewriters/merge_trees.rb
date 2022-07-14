@@ -39,19 +39,11 @@ module RBI
     class Merge
       extend T::Sig
 
-      class Keep < ::T::Enum
-        enums do
-          NONE = new
-          LEFT = new
-          RIGHT = new
-        end
-      end
-
-      sig { params(left: Tree, right: Tree, left_name: String, right_name: String, keep: Keep).returns(MergeTree) }
-      def self.merge_trees(left, right, left_name: "left", right_name: "right", keep: Keep::NONE)
+      sig { params(left: Tree, right: Tree, left_name: String, right_name: String).returns(MergeTree) }
+      def self.merge_trees(left, right, left_name: "left", right_name: "right")
         left.nest_singleton_methods!
         right.nest_singleton_methods!
-        rewriter = Rewriters::Merge.new(left_name: left_name, right_name: right_name, keep: keep)
+        rewriter = Rewriters::Merge.new(left_name: left_name, right_name: right_name)
         rewriter.merge(left)
         rewriter.merge(right)
         tree = rewriter.tree
@@ -62,18 +54,17 @@ module RBI
       sig { returns(MergeTree) }
       attr_reader :tree
 
-      sig { params(left_name: String, right_name: String, keep: Keep).void }
-      def initialize(left_name: "left", right_name: "right", keep: Keep::NONE)
+      sig { params(left_name: String, right_name: String).void }
+      def initialize(left_name: "left", right_name: "right")
         @left_name = left_name
         @right_name = right_name
-        @keep = keep
         @tree = T.let(MergeTree.new, MergeTree)
         @scope_stack = T.let([@tree], T::Array[Tree])
       end
 
       sig { params(tree: Tree).void }
       def merge(tree)
-        v = TreeMerger.new(@tree, left_name: @left_name, right_name: @right_name, keep: @keep)
+        v = TreeMerger.new(@tree, left_name: @left_name, right_name: @right_name)
         v.visit(tree)
         @tree.conflicts.concat(v.conflicts)
       end
@@ -99,15 +90,14 @@ module RBI
         sig { returns(T::Array[Conflict]) }
         attr_reader :conflicts
 
-        sig { params(output: Tree, left_name: String, right_name: String, keep: Keep).void }
-        def initialize(output, left_name: "left", right_name: "right", keep: Keep::NONE)
+        sig { params(output: Tree, left_name: String, right_name: String).void }
+        def initialize(output, left_name: "left", right_name: "right")
           super()
           @tree = output
           @index = T.let(output.index, Index)
           @scope_stack = T.let([@tree], T::Array[Tree])
           @left_name = left_name
           @right_name = right_name
-          @keep = keep
           @conflicts = T.let([], T::Array[Conflict])
         end
 
@@ -122,10 +112,6 @@ module RBI
             if prev.is_a?(Scope)
               if node.compatible_with?(prev)
                 prev.merge_with(node)
-              elsif @keep == Keep::LEFT
-                # do nothing it's already merged
-              elsif @keep == Keep::RIGHT
-                prev = replace_scope_header(prev, node)
               else
                 make_conflict_scope(prev, node)
               end
@@ -145,10 +131,6 @@ module RBI
             if prev
               if node.compatible_with?(prev)
                 prev.merge_with(node)
-              elsif @keep == Keep::LEFT
-                # do nothing it's already merged
-              elsif @keep == Keep::RIGHT
-                prev.replace(node)
               else
                 make_conflict_tree(prev, node)
               end
@@ -314,9 +296,9 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { params(other: Tree, left_name: String, right_name: String, keep: Rewriters::Merge::Keep).returns(MergeTree) }
-    def merge(other, left_name: "left", right_name: "right", keep: Rewriters::Merge::Keep::NONE)
-      Rewriters::Merge.merge_trees(self, other, left_name: left_name, right_name: right_name, keep: keep)
+    sig { params(other: Tree, left_name: String, right_name: String).returns(MergeTree) }
+    def merge(other, left_name: "left", right_name: "right")
+      Rewriters::Merge.merge_trees(self, other, left_name: left_name, right_name: right_name)
     end
   end
 
@@ -558,103 +540,6 @@ module RBI
     sig { override.params(other: Node).returns(T::Boolean) }
     def compatible_with?(other)
       other.is_a?(TStructProp) && super
-    end
-  end
-
-  # A tree showing incompatibles nodes
-  #
-  # Is rendered as a merge conflict between `left` and` right`:
-  # ~~~rb
-  # class Foo
-  #   <<<<<<< left
-  #   def m1; end
-  #   def m2(a); end
-  #   =======
-  #   def m1(a); end
-  #   def m2; end
-  #   >>>>>>> right
-  # end
-  # ~~~
-  class ConflictTree < Tree
-    extend T::Sig
-
-    sig { returns(Tree) }
-    attr_reader :left, :right
-
-    sig { params(left_name: String, right_name: String).void }
-    def initialize(left_name: "left", right_name: "right")
-      super()
-      @left_name = left_name
-      @right_name = right_name
-      @left = T.let(Tree.new, Tree)
-      @left.parent_tree = self
-      @right = T.let(Tree.new, Tree)
-      @right.parent_tree = self
-    end
-
-    sig { override.params(v: Printer).void }
-    def accept_printer(v)
-      v.printl("<<<<<<< #{@left_name}")
-      v.visit(left)
-      v.printl("=======")
-      v.visit(right)
-      v.printl(">>>>>>> #{@right_name}")
-    end
-  end
-
-  # A conflict between two scope headers
-  #
-  # Is rendered as a merge conflict between `left` and` right` for scope definitions:
-  # ~~~rb
-  # <<<<<<< left
-  # class Foo
-  # =======
-  # module Foo
-  # >>>>>>> right
-  #   def m1; end
-  # end
-  # ~~~
-  class ScopeConflict < Tree
-    extend T::Sig
-
-    sig { returns(Scope) }
-    attr_reader :left, :right
-
-    sig do
-      params(
-        left: Scope,
-        right: Scope,
-        left_name: String,
-        right_name: String
-      ).void
-    end
-    def initialize(left:, right:, left_name: "left", right_name: "right")
-      super()
-      @left = left
-      @right = right
-      @left_name = left_name
-      @right_name = right_name
-    end
-
-    sig { override.params(v: Printer).void }
-    def accept_printer(v)
-      previous_node = v.previous_node
-      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
-
-      v.printl("# #{loc}") if loc && v.print_locs
-      v.visit_all(comments)
-
-      v.printl("<<<<<<< #{@left_name}")
-      left.print_header(v)
-      v.printl("=======")
-      right.print_header(v)
-      v.printl(">>>>>>> #{@right_name}")
-      left.print_body(v)
-    end
-
-    sig { override.returns(T::Boolean) }
-    def oneline?
-      left.oneline?
     end
   end
 end
