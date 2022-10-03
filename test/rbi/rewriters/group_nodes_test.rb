@@ -280,8 +280,8 @@ module RBI
           send2
           send1
 
-          const :SC, Type
           prop :SP, Type
+          const :SC, Type
 
           def m1; end
           def self.m2; end
@@ -350,10 +350,10 @@ module RBI
         mixes_in_class_methods MICM2
         mixes_in_class_methods MICM1
 
-        const :SC1, Type
+        prop :SP2, Type
         const :SC2, Type
         prop :SP1, Type
-        prop :SP2, Type
+        const :SC1, Type
 
         def m1; end
         def m2; end
@@ -487,10 +487,10 @@ module RBI
           mixes_in_class_methods MICM2
           mixes_in_class_methods MICM1
 
-          const :SC1, Type
+          prop :SP2, Type
           const :SC2, Type
           prop :SP1, Type
-          prop :SP2, Type
+          const :SC1, Type
 
           def m1; end
           def m2; end
@@ -524,10 +524,10 @@ module RBI
           mixes_in_class_methods MICM2
           mixes_in_class_methods MICM1
 
-          const :SC1, Type
+          prop :SP2, Type
           const :SC2, Type
           prop :SP1, Type
-          prop :SP2, Type
+          const :SC1, Type
 
           def m1; end
           def m2; end
@@ -556,10 +556,10 @@ module RBI
             mixes_in_class_methods MICM2
             mixes_in_class_methods MICM1
 
-            const :SC1, Type
+            prop :SP2, Type
             const :SC2, Type
             prop :SP1, Type
-            prop :SP2, Type
+            const :SC1, Type
 
             def m1; end
             def m2; end

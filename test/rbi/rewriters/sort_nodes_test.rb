@@ -166,10 +166,10 @@ module RBI
       rbi.sort_nodes!
 
       assert_equal(<<~RBI, rbi.string)
-        prop :a, T
-        const :b, T
-        prop :c, T
         const :d, T
+        prop :c, T
+        const :b, T
+        prop :a, T
       RBI
     end
 
@@ -290,10 +290,10 @@ module RBI
         requires_ancestor { RA }
         h!
         mixes_in_class_methods MICM
-        prop :SP1, T
         const :SP2, T
-        prop :SP3, T
         const :SP4, T
+        prop :SP1, T
+        prop :SP3, T
         attr_accessor :a, :foo, :z
         attr_writer :b, :baz
         attr_reader :bar
