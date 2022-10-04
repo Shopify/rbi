@@ -81,10 +81,12 @@ module RBI
       sig { params(node: Node).returns(T.nilable(String)) }
       def node_name(node)
         case node
-        when Module, Class, Struct, Const, Method, Helper, TStructField, RequiresAncestor
+        when Module, Class, Struct, Const, Method, Helper, RequiresAncestor
           node.name
         when Attr
           node.names.first.to_s
+        when TStructField, Mixin
+          nil # we never want to sort these nodes by their name
         end
       end
 
