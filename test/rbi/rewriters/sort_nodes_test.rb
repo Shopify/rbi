@@ -310,5 +310,30 @@ module RBI
         class E; end
       RBI
     end
+
+    def test_sort_doesnt_change_privacy
+      rbi = Tree.new
+      rbi << Public.new
+      rbi << Method.new("c") # 0
+      rbi << Private.new     # 1
+      rbi << Method.new("a") # 2
+      rbi << Protected.new   # 3
+      rbi << Method.new("b") # 4
+      rbi << Public.new
+      rbi << Method.new("aa")
+
+      rbi.sort_nodes!
+
+      assert_equal(<<~RBI, rbi.string)
+        public
+        def c; end
+        private
+        def a; end
+        protected
+        def b; end
+        public
+        def aa; end
+      RBI
+    end
   end
 end
