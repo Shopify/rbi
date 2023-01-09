@@ -12,7 +12,6 @@ module RBI
 
         return unless node.is_a?(Tree)
         visit_all(node.nodes)
-        original_order = node.nodes.map.with_index.to_h
 
         # The child nodes could contain private/protected markers. If so, they should not be moved in the file.
         # Otherwise, some methods could see their privacy change. To avoid that problem, divide the array of child
@@ -21,24 +20,31 @@ module RBI
         sorted_nodes = node.nodes.chunk do |n|
           n.is_a?(Visibility)
         end.flat_map do |_, nodes|
-          nodes.sort! do |a, b|
-            # First we try to compare the nodes by their node rank (based on the node type)
-            res = node_rank(a) <=> node_rank(b)
-            next res if res != 0 # we can sort the nodes by their rank, let's stop here
-
-            # Then, if the nodes ranks are the same (res == 0), we try to compare the nodes by their name
-            res = node_name(a) <=> node_name(b)
-            next res if res && res != 0 # we can sort the nodes by their name, let's stop here
-
-            # Finally, if the two nodes have the same rank and the same name or at least one node is anonymous then,
-            T.must(original_order[a]) <=> T.must(original_order[b]) # we keep the original order
-          end
+          sort_nodes(nodes)
         end
 
         node.nodes.replace(sorted_nodes)
       end
 
       private
+
+      sig { params(nodes: T::Array[Node]).returns(T::Array[Node]) }
+      def sort_nodes(nodes)
+        original_order = nodes.map.with_index.to_h
+
+        nodes.sort! do |a, b|
+          # First we try to compare the nodes by their node rank (based on the node type)
+          res = node_rank(a) <=> node_rank(b)
+          next res if res != 0 # we can sort the nodes by their rank, let's stop here
+
+          # Then, if the nodes ranks are the same (res == 0), we try to compare the nodes by their name
+          res = node_name(a) <=> node_name(b)
+          next res if res && res != 0 # we can sort the nodes by their name, let's stop here
+
+          # Finally, if the two nodes have the same rank and the same name or at least one node is anonymous then,
+          T.must(original_order[a]) <=> T.must(original_order[b]) # we keep the original order
+        end
+      end
 
       sig { params(node: Node).returns(Integer) }
       def node_rank(node)
