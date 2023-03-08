@@ -14,7 +14,12 @@ class Bar
   def baz2; end
 end
 
+# @version >= 2.0.0
+class Class1; end
+
 # @version > 1.0.0
 class Bar
   def baz; end
 end
+
+class Class2; end

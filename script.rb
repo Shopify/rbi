@@ -12,6 +12,11 @@ class VersionVisitor < RBI::Visitor
     @version = version
   end
 
+  sig { params(nodes: T::Array[RBI::Node]).void }
+  def visit_all(nodes)
+    nodes.dup.each { |node| visit(node) }
+  end
+
   sig { override.params(node: T.nilable(RBI::Node)).void }
   def visit(node)
     return unless node
