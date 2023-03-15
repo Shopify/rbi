@@ -12,58 +12,29 @@ class VersionVisitor < RBI::Visitor
     @version = version
   end
 
-  sig { params(nodes: T::Array[RBI::Node]).void }
-  def visit_all(nodes)
-    nodes.dup.each { |node| visit(node) }
-  end
-
   sig { override.params(node: T.nilable(RBI::Node)).void }
   def visit(node)
     return unless node
-    puts node
 
     if node.is_a?(RBI::NodeWithComments)
-      annotations = node.annotations.select do |annotation|
+      requirements = node.annotations.select do |annotation|
         annotation.start_with?("version")
       end.map do |annotation|
-        annotation.delete_prefix("version ")
+        versions = annotation.delete_prefix("version ").split(/, */)
+        Gem::Requirement.new(versions)
       end
 
-      to_detach = T.let(false, T::Boolean)
-
-      annotations.each do |annotation|
-        operator, version_str = annotation.split(" ")
-        version = Gem::Version.new(version_str)
-
-        case operator
-        when ">"
-          puts "#{@version} > #{version}"
-          to_detach = true unless @version > version
-        when ">="
-          puts "#{@version}>= #{version}"
-          to_detach = true unless @version >= version
-        when "<="
-          puts "#{@version}<=#{version}"
-          to_detach = true unless @version <= version
-        when "<"
-          puts "#{@version}< #{version}"
-          to_detach = true unless @version < version
-        end
-      end
-
-      if to_detach
+      if !requirements.empty? && requirements.none? { |req| req.satisfied_by?(@version) }
         node.detach
-      else
-        visit_all(node.nodes) if node.is_a?(RBI::Tree)
         return
       end
     end
 
-    visit_all(node.nodes) if node.is_a?(RBI::Tree)
+    visit_all(node.nodes.dup) if node.is_a?(RBI::Tree)
   end
 end
 
 ast = RBI::Parser.parse_file('foo.rbi')
-v = VersionVisitor.new(Gem::Version.new("0.9.0"))
+v = VersionVisitor.new(Gem::Version.new(ARGV.first))
 v.visit(ast)
 puts ast.string
