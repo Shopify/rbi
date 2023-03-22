@@ -6,6 +6,14 @@ module RBI
     class FilterVersions < Visitor
       extend T::Sig
 
+      VERSION_PREFIX = "version "
+
+      sig { params(tree: Tree, version: Gem::Version).void }
+      def self.filter(tree, version)
+        v = new(version)
+        v.visit(tree)
+      end
+
       sig { params(version: Gem::Version).void }
       def initialize(version)
         super()
@@ -40,10 +48,9 @@ module RBI
     sig { returns(T::Array[Gem::Requirement]) }
     def version_requirements
       annotations.select do |annotation|
-        annotation.start_with?("version")
-        # TODO: check that annotation has the correct format (operator x.y.z)
+        annotation.start_with?(Rewriters::FilterVersions::VERSION_PREFIX)
       end.map do |annotation|
-        versions = annotation.delete_prefix("version ").split(/, */)
+        versions = annotation.delete_prefix(Rewriters::FilterVersions::VERSION_PREFIX).split(/, */)
         Gem::Requirement.new(versions)
       end
     end
