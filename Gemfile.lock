@@ -51,10 +51,10 @@ GEM
     rubocop-sorbet (0.6.1)
       rubocop
     ruby-progressbar (1.13.0)
-    sorbet (0.5.9818)
-      sorbet-static (= 0.5.9818)
+    sorbet (0.5.10741)
+      sorbet-static (= 0.5.10741)
     sorbet-runtime (0.5.10741)
-    sorbet-static (0.5.9818-x86_64-linux)
+    sorbet-static (0.5.10741-x86_64-linux)
     spoom (1.1.13)
       sorbet (>= 0.5.9204)
       sorbet-runtime (>= 0.5.9204)
