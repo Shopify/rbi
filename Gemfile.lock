@@ -18,7 +18,7 @@ GEM
     diff-lcs (1.5.0)
     json (2.6.3)
     method_source (1.0.0)
-    minitest (5.14.4)
+    minitest (5.18.0)
     minitest-reporters (1.4.3)
       ansi
       builder
@@ -54,14 +54,6 @@ GEM
     sorbet (0.5.9818)
       sorbet-static (= 0.5.9818)
     sorbet-runtime (0.5.9818)
-    sorbet-static (0.5.9818-universal-darwin-14)
-    sorbet-static (0.5.9818-universal-darwin-15)
-    sorbet-static (0.5.9818-universal-darwin-16)
-    sorbet-static (0.5.9818-universal-darwin-17)
-    sorbet-static (0.5.9818-universal-darwin-18)
-    sorbet-static (0.5.9818-universal-darwin-19)
-    sorbet-static (0.5.9818-universal-darwin-20)
-    sorbet-static (0.5.9818-universal-darwin-21)
     sorbet-static (0.5.9818-x86_64-linux)
     spoom (1.1.9)
       sorbet (>= 0.5.9204)
@@ -89,7 +81,7 @@ GEM
       yard (>= 0.9)
 
 PLATFORMS
-  ruby
+  x86_64-linux
 
 DEPENDENCIES
   byebug
