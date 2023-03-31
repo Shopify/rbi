@@ -11,6 +11,7 @@ module RBI
         sort_node_names!(node) if node
 
         return unless node.is_a?(Tree)
+
         visit_all(node.nodes)
         original_order = node.nodes.map.with_index.to_h
 

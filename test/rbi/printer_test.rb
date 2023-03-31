@@ -289,7 +289,7 @@ module RBI
           prop :d, D, default: D.new
           def foo; end
         end
-        RBI
+      RBI
     end
 
     def test_print_t_enums

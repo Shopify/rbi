@@ -6,11 +6,15 @@ module RBI
     extend T::Sig
     include T::Enumerable
 
-    sig { params(node: Node).returns(Index) }
-    def self.index(*node)
-      index = Index.new
-      index.visit_all(node)
-      index
+    class << self
+      extend T::Sig
+
+      sig { params(node: Node).returns(Index) }
+      def index(*node)
+        index = Index.new
+        index.visit_all(node)
+        index
+      end
     end
 
     sig { void }

@@ -22,7 +22,7 @@ module RBI
         out: T.any(IO, StringIO),
         indent: Integer,
         print_locs: T::Boolean,
-        max_line_length: T.nilable(Integer)
+        max_line_length: T.nilable(Integer),
       ).void
     end
     def initialize(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
@@ -82,6 +82,7 @@ module RBI
     sig { override.params(node: T.nilable(Node)).void }
     def visit(node)
       return unless node
+
       node.accept_printer(self)
     end
 
@@ -122,7 +123,7 @@ module RBI
         out: T.any(IO, StringIO),
         indent: Integer,
         print_locs: T::Boolean,
-        max_line_length: T.nilable(Integer)
+        max_line_length: T.nilable(Integer),
       ).void
     end
     def print(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
@@ -149,7 +150,7 @@ module RBI
         out: T.any(IO, StringIO),
         indent: Integer,
         print_locs: T::Boolean,
-        max_line_length: T.nilable(Integer)
+        max_line_length: T.nilable(Integer),
       ).void
     end
     def print(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
@@ -170,6 +171,7 @@ module RBI
       return unless previous_node
       return if previous_node.is_a?(BlankLine)
       return if previous_node.oneline? && oneline?
+
       v.printn
     end
 

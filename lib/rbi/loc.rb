@@ -17,7 +17,7 @@ module RBI
         begin_line: T.nilable(Integer),
         end_line: T.nilable(Integer),
         begin_column: T.nilable(Integer),
-        end_column: T.nilable(Integer)
+        end_column: T.nilable(Integer),
       ).void
     end
     def initialize(file: nil, begin_line: nil, end_line: nil, begin_column: nil, end_column: nil)

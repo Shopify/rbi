@@ -30,6 +30,7 @@ module RBI
       sig { params(node: NodeWithComments).void }
       def annotate_node(node)
         return if node.annotations.one?(@annotation)
+
         node.comments << Comment.new("@#{@annotation}")
       end
 
@@ -49,7 +50,7 @@ module RBI
       visitor = Rewriters::Annotate.new(
         annotation,
         annotate_scopes: annotate_scopes,
-        annotate_properties: annotate_properties
+        annotate_properties: annotate_properties,
       )
       visitor.visit(self)
     end

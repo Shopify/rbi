@@ -19,6 +19,7 @@ module RBI
           node.nodes.dup.each do |child|
             visit(child)
             next unless child.is_a?(Method)
+
             child.detach
             case child.visibility
             when Protected

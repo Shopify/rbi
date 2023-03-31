@@ -26,6 +26,7 @@ module RBI
       sig { params(node: NodeWithComments).void }
       def deannotate_node(node)
         return unless node.annotations.one?(@annotation)
+
         node.comments.reject! do |comment|
           comment.text == "@#{@annotation}"
         end

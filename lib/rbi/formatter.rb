@@ -18,7 +18,7 @@ module RBI
         max_line_length: T.nilable(Integer),
         nest_singleton_methods: T::Boolean,
         nest_non_public_methods: T::Boolean,
-        sort_nodes: T::Boolean
+        sort_nodes: T::Boolean,
       ).void
     end
     def initialize(

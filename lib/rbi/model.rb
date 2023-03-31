@@ -24,6 +24,7 @@ module RBI
     def detach
       tree = parent_tree
       return unless tree
+
       tree.nodes.delete(self)
       self.parent_tree = nil
     end
@@ -32,8 +33,10 @@ module RBI
     def replace(node)
       tree = parent_tree
       raise unless tree
+
       index = tree.nodes.index(self)
       raise unless index
+
       tree.nodes[index] = node
       node.parent_tree = tree
       self.parent_tree = nil
@@ -62,6 +65,7 @@ module RBI
     sig { params(other: Object).returns(T::Boolean) }
     def ==(other)
       return false unless other.is_a?(Comment)
+
       text == other.text
     end
   end
@@ -109,7 +113,7 @@ module RBI
       params(
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Tree).void)
+        block: T.nilable(T.proc.params(node: Tree).void),
       ).void
     end
     def initialize(loc: nil, comments: [], &block)
@@ -146,7 +150,7 @@ module RBI
       params(
         strictness: T.nilable(String),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(file: File).void)
+        block: T.nilable(T.proc.params(file: File).void),
       ).void
     end
     def initialize(strictness: nil, comments: [], &block)
@@ -194,7 +198,7 @@ module RBI
         name: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Module).void)
+        block: T.nilable(T.proc.params(node: Module).void),
       ).void
     end
     def initialize(name, loc: nil, comments: [], &block)
@@ -206,6 +210,7 @@ module RBI
     sig { override.returns(String) }
     def fully_qualified_name
       return name if name.start_with?("::")
+
       "#{parent_scope&.fully_qualified_name}::#{name}"
     end
   end
@@ -225,7 +230,7 @@ module RBI
         superclass_name: T.nilable(String),
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Class).void)
+        block: T.nilable(T.proc.params(node: Class).void),
       ).void
     end
     def initialize(name, superclass_name: nil, loc: nil, comments: [], &block)
@@ -238,6 +243,7 @@ module RBI
     sig { override.returns(String) }
     def fully_qualified_name
       return name if name.start_with?("::")
+
       "#{parent_scope&.fully_qualified_name}::#{name}"
     end
   end
@@ -249,7 +255,7 @@ module RBI
       params(
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: SingletonClass).void)
+        block: T.nilable(T.proc.params(node: SingletonClass).void),
       ).void
     end
     def initialize(loc: nil, comments: [], &block)
@@ -282,7 +288,7 @@ module RBI
         keyword_init: T::Boolean,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(struct: Struct).void)
+        block: T.nilable(T.proc.params(struct: Struct).void),
       ).void
     end
     def initialize(name, members: [], keyword_init: false, loc: nil, comments: [], &block)
@@ -296,6 +302,7 @@ module RBI
     sig { override.returns(String) }
     def fully_qualified_name
       return name if name.start_with?("::")
+
       "#{parent_scope&.fully_qualified_name}::#{name}"
     end
   end
@@ -314,7 +321,7 @@ module RBI
         value: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Const).void)
+        block: T.nilable(T.proc.params(node: Const).void),
       ).void
     end
     def initialize(name, value, loc: nil, comments: [], &block)
@@ -327,6 +334,7 @@ module RBI
     sig { returns(String) }
     def fully_qualified_name
       return name if name.start_with?("::")
+
       "#{parent_scope&.fully_qualified_name}::#{name}"
     end
 
@@ -360,7 +368,7 @@ module RBI
         visibility: Visibility,
         sigs: T::Array[Sig],
         loc: T.nilable(Loc),
-        comments: T::Array[Comment]
+        comments: T::Array[Comment],
       ).void
     end
     def initialize(name, names, visibility: Public.new, sigs: [], loc: nil, comments: [])
@@ -385,7 +393,7 @@ module RBI
         sigs: T::Array[Sig],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: AttrAccessor).void)
+        block: T.nilable(T.proc.params(node: AttrAccessor).void),
       ).void
     end
     def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
@@ -417,7 +425,7 @@ module RBI
         sigs: T::Array[Sig],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: AttrReader).void)
+        block: T.nilable(T.proc.params(node: AttrReader).void),
       ).void
     end
     def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
@@ -449,7 +457,7 @@ module RBI
         sigs: T::Array[Sig],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: AttrWriter).void)
+        block: T.nilable(T.proc.params(node: AttrWriter).void),
       ).void
     end
     def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
@@ -499,7 +507,7 @@ module RBI
         sigs: T::Array[Sig],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Method).void)
+        block: T.nilable(T.proc.params(node: Method).void),
       ).void
     end
     def initialize(
@@ -576,7 +584,7 @@ module RBI
         name: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: ReqParam).void)
+        block: T.nilable(T.proc.params(node: ReqParam).void),
       ).void
     end
     def initialize(name, loc: nil, comments: [], &block)
@@ -602,7 +610,7 @@ module RBI
         value: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: OptParam).void)
+        block: T.nilable(T.proc.params(node: OptParam).void),
       ).void
     end
     def initialize(name, value, loc: nil, comments: [], &block)
@@ -625,7 +633,7 @@ module RBI
         name: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: RestParam).void)
+        block: T.nilable(T.proc.params(node: RestParam).void),
       ).void
     end
     def initialize(name, loc: nil, comments: [], &block)
@@ -652,7 +660,7 @@ module RBI
         name: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: KwParam).void)
+        block: T.nilable(T.proc.params(node: KwParam).void),
       ).void
     end
     def initialize(name, loc: nil, comments: [], &block)
@@ -683,7 +691,7 @@ module RBI
         value: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: KwOptParam).void)
+        block: T.nilable(T.proc.params(node: KwOptParam).void),
       ).void
     end
     def initialize(name, value, loc: nil, comments: [], &block)
@@ -711,7 +719,7 @@ module RBI
         name: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: KwRestParam).void)
+        block: T.nilable(T.proc.params(node: KwRestParam).void),
       ).void
     end
     def initialize(name, loc: nil, comments: [], &block)
@@ -738,7 +746,7 @@ module RBI
         name: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: BlockParam).void)
+        block: T.nilable(T.proc.params(node: BlockParam).void),
       ).void
     end
     def initialize(name, loc: nil, comments: [], &block)
@@ -773,7 +781,7 @@ module RBI
         name: String,
         names: T::Array[String],
         loc: T.nilable(Loc),
-        comments: T::Array[Comment]
+        comments: T::Array[Comment],
       ).void
     end
     def initialize(name, names, loc: nil, comments: [])
@@ -791,7 +799,7 @@ module RBI
         names: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Include).void)
+        block: T.nilable(T.proc.params(node: Include).void),
       ).void
     end
     def initialize(name, *names, loc: nil, comments: [], &block)
@@ -814,7 +822,7 @@ module RBI
         names: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Extend).void)
+        block: T.nilable(T.proc.params(node: Extend).void),
       ).void
     end
     def initialize(name, *names, loc: nil, comments: [], &block)
@@ -873,7 +881,7 @@ module RBI
       params(
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Public).void)
+        block: T.nilable(T.proc.params(node: Public).void),
       ).void
     end
     def initialize(loc: nil, comments: [], &block)
@@ -889,7 +897,7 @@ module RBI
       params(
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Protected).void)
+        block: T.nilable(T.proc.params(node: Protected).void),
       ).void
     end
     def initialize(loc: nil, comments: [], &block)
@@ -905,7 +913,7 @@ module RBI
       params(
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Private).void)
+        block: T.nilable(T.proc.params(node: Private).void),
       ).void
     end
     def initialize(loc: nil, comments: [], &block)
@@ -931,7 +939,7 @@ module RBI
         args: T::Array[Arg],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Send).void)
+        block: T.nilable(T.proc.params(node: Send).void),
       ).void
     end
     def initialize(method, args = [], loc: nil, comments: [], &block)
@@ -966,7 +974,7 @@ module RBI
     sig do
       params(
         value: String,
-        loc: T.nilable(Loc)
+        loc: T.nilable(Loc),
       ).void
     end
     def initialize(value, loc: nil)
@@ -995,7 +1003,7 @@ module RBI
       params(
         keyword: String,
         value: String,
-        loc: T.nilable(Loc)
+        loc: T.nilable(Loc),
       ).void
     end
     def initialize(keyword, value, loc: nil)
@@ -1045,7 +1053,7 @@ module RBI
         type_params: T::Array[String],
         checked: T.nilable(Symbol),
         loc: T.nilable(Loc),
-        block: T.nilable(T.proc.params(node: Sig).void)
+        block: T.nilable(T.proc.params(node: Sig).void),
       ).void
     end
     def initialize(
@@ -1080,6 +1088,7 @@ module RBI
     sig { params(other: Object).returns(T::Boolean) }
     def ==(other)
       return false unless other.is_a?(Sig)
+
       params == other.params && return_type == other.return_type && is_abstract == other.is_abstract &&
         is_override == other.is_override && is_overridable == other.is_overridable && is_final == other.is_final &&
         type_params == other.type_params && checked == other.checked
@@ -1098,7 +1107,7 @@ module RBI
         type: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: SigParam).void)
+        block: T.nilable(T.proc.params(node: SigParam).void),
       ).void
     end
     def initialize(name, type, loc: nil, comments: [], &block)
@@ -1124,7 +1133,7 @@ module RBI
         name: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(klass: TStruct).void)
+        block: T.nilable(T.proc.params(klass: TStruct).void),
       ).void
     end
     def initialize(name, loc: nil, comments: [], &block)
@@ -1151,7 +1160,7 @@ module RBI
         type: String,
         default: T.nilable(String),
         loc: T.nilable(Loc),
-        comments: T::Array[Comment]
+        comments: T::Array[Comment],
       ).void
     end
     def initialize(name, type, default: nil, loc: nil, comments: [])
@@ -1175,7 +1184,7 @@ module RBI
         default: T.nilable(String),
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: TStructConst).void)
+        block: T.nilable(T.proc.params(node: TStructConst).void),
       ).void
     end
     def initialize(name, type, default: nil, loc: nil, comments: [], &block)
@@ -1205,7 +1214,7 @@ module RBI
         default: T.nilable(String),
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: TStructProp).void)
+        block: T.nilable(T.proc.params(node: TStructProp).void),
       ).void
     end
     def initialize(name, type, default: nil, loc: nil, comments: [], &block)
@@ -1235,7 +1244,7 @@ module RBI
         name: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(klass: TEnum).void)
+        block: T.nilable(T.proc.params(klass: TEnum).void),
       ).void
     end
     def initialize(name, loc: nil, comments: [], &block)
@@ -1255,7 +1264,7 @@ module RBI
         names: T::Array[String],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: TEnumBlock).void)
+        block: T.nilable(T.proc.params(node: TEnumBlock).void),
       ).void
     end
     def initialize(names = [], loc: nil, comments: [], &block)
@@ -1293,7 +1302,7 @@ module RBI
         name: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: Helper).void)
+        block: T.nilable(T.proc.params(node: Helper).void),
       ).void
     end
     def initialize(name, loc: nil, comments: [], &block)
@@ -1320,7 +1329,7 @@ module RBI
         value: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: TypeMember).void)
+        block: T.nilable(T.proc.params(node: TypeMember).void),
       ).void
     end
     def initialize(name, value, loc: nil, comments: [], &block)
@@ -1333,6 +1342,7 @@ module RBI
     sig { returns(String) }
     def fully_qualified_name
       return name if name.start_with?("::")
+
       "#{parent_scope&.fully_qualified_name}::#{name}"
     end
 
@@ -1351,7 +1361,7 @@ module RBI
         names: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
-        block: T.nilable(T.proc.params(node: MixesInClassMethods).void)
+        block: T.nilable(T.proc.params(node: MixesInClassMethods).void),
       ).void
     end
     def initialize(name, *names, loc: nil, comments: [], &block)
@@ -1375,7 +1385,7 @@ module RBI
       params(
         name: String,
         loc: T.nilable(Loc),
-        comments: T::Array[Comment]
+        comments: T::Array[Comment],
       ).void
     end
     def initialize(name, loc: nil, comments: [])

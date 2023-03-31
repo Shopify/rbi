@@ -66,31 +66,35 @@ module RBI
       require "unparser" unless defined?(::Unparser)
     end
 
-    sig { params(string: String).returns(Tree) }
-    def self.parse_string(string)
-      Parser.new.parse_string(string)
-    end
+    class << self
+      extend T::Sig
 
-    sig { params(path: String).returns(Tree) }
-    def self.parse_file(path)
-      Parser.new.parse_file(path)
-    end
+      sig { params(string: String).returns(Tree) }
+      def parse_string(string)
+        Parser.new.parse_string(string)
+      end
 
-    sig { params(paths: T::Array[String]).returns(T::Array[Tree]) }
-    def self.parse_files(paths)
-      parser = Parser.new
-      paths.map { |path| parser.parse_file(path) }
+      sig { params(path: String).returns(Tree) }
+      def parse_file(path)
+        Parser.new.parse_file(path)
+      end
+
+      sig { params(paths: T::Array[String]).returns(T::Array[Tree]) }
+      def parse_files(paths)
+        parser = Parser.new
+        paths.map { |path| parser.parse_file(path) }
+      end
+
+      sig { params(strings: T::Array[String]).returns(T::Array[Tree]) }
+      def parse_strings(strings)
+        parser = Parser.new
+        strings.map { |string| parser.parse_string(string) }
+      end
     end
 
     sig { params(string: String).returns(Tree) }
     def parse_string(string)
       parse(string, file: "-")
-    end
-
-    sig { params(strings: T::Array[String]).returns(T::Array[Tree]) }
-    def self.parse_strings(strings)
-      parser = Parser.new
-      strings.map { |string| parser.parse_string(string) }
     end
 
     sig { params(path: String).returns(Tree) }
@@ -166,7 +170,7 @@ module RBI
       params(
         file: String,
         comments: T::Array[::Parser::Source::Comment],
-        nodes_comments_assoc: T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]]
+        nodes_comments_assoc: T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]],
       ).void
     end
     def initialize(file:, comments: [], nodes_comments_assoc: {})
@@ -192,6 +196,7 @@ module RBI
     sig { override.params(node: T.nilable(Object)).void }
     def visit(node)
       return unless node.is_a?(AST::Node)
+
       @last_node = node
 
       case node.type
@@ -270,7 +275,7 @@ module RBI
           params: node.children[1].children.map { |child| parse_param(child) },
           sigs: current_sigs,
           loc: loc,
-          comments: current_sigs_comments + node_comments(node)
+          comments: current_sigs_comments + node_comments(node),
         )
       when :defs
         Method.new(
@@ -279,7 +284,7 @@ module RBI
           is_singleton: true,
           sigs: current_sigs,
           loc: loc,
-          comments: current_sigs_comments + node_comments(node)
+          comments: current_sigs_comments + node_comments(node),
         )
       else
         raise ParseError.new("Unsupported def node type `#{node.type}`", loc)
@@ -362,6 +367,7 @@ module RBI
         when :send
           snode = parse_send(nested_node)
           raise ParseError.new("Unexpected token `private` before `#{nested_node.type}`", loc) unless snode.is_a?(Attr)
+
           snode.visibility = visibility
           snode
         when nil
@@ -516,6 +522,7 @@ module RBI
     def node_comments(node)
       comments = @nodes_comments_assoc[node.location]
       return [] unless comments
+
       comments.map do |comment|
         text = comment.text[1..-1].strip
         loc = Loc.from_ast_loc(@file, comment.location)
@@ -592,21 +599,13 @@ module RBI
         begin_line: first_loc&.begin_line || 0,
         begin_column: first_loc&.begin_column || 0,
         end_line: last_loc&.end_line || 0,
-        end_column: last_loc&.end_column || 0
+        end_column: last_loc&.end_column || 0,
       )
     end
   end
 
   class ConstBuilder < ASTVisitor
     extend T::Sig
-
-    sig { params(node: T.nilable(AST::Node)).returns(T.nilable(String)) }
-    def self.visit(node)
-      v = ConstBuilder.new
-      v.visit(node)
-      return nil if v.names.empty?
-      v.names.join("::")
-    end
 
     sig { returns(T::Array[String]) }
     attr_accessor :names
@@ -617,9 +616,23 @@ module RBI
       @names = T.let([], T::Array[String])
     end
 
+    class << self
+      extend T::Sig
+
+      sig { params(node: T.nilable(AST::Node)).returns(T.nilable(String)) }
+      def visit(node)
+        v = ConstBuilder.new
+        v.visit(node)
+        return nil if v.names.empty?
+
+        v.names.join("::")
+      end
+    end
+
     sig { override.params(node: T.nilable(AST::Node)).void }
     def visit(node)
       return unless node
+
       case node.type
       when :const, :casgn
         visit(node.children[0])
@@ -635,13 +648,6 @@ module RBI
   class SigBuilder < ASTVisitor
     extend T::Sig
 
-    sig { params(node: AST::Node).returns(Sig) }
-    def self.build(node)
-      v = SigBuilder.new
-      v.visit_all(node.children)
-      v.current
-    end
-
     sig { returns(Sig) }
     attr_accessor :current
 
@@ -651,9 +657,21 @@ module RBI
       @current = T.let(Sig.new, Sig)
     end
 
+    class << self
+      extend T::Sig
+
+      sig { params(node: AST::Node).returns(Sig) }
+      def build(node)
+        v = SigBuilder.new
+        v.visit_all(node.children)
+        v.current
+      end
+    end
+
     sig { override.params(node: T.nilable(AST::Node)).void }
     def visit(node)
       return unless node
+
       case node.type
       when :send
         visit_send(node)
@@ -703,15 +721,19 @@ module RBI
   end
 
   class Loc
-    sig { params(file: String, ast_loc: T.any(::Parser::Source::Map, ::Parser::Source::Range)).returns(Loc) }
-    def self.from_ast_loc(file, ast_loc)
-      Loc.new(
-        file: file,
-        begin_line: ast_loc.line,
-        begin_column: ast_loc.column,
-        end_line: ast_loc.last_line,
-        end_column: ast_loc.last_column
-      )
+    class << self
+      extend T::Sig
+
+      sig { params(file: String, ast_loc: T.any(::Parser::Source::Map, ::Parser::Source::Range)).returns(Loc) }
+      def from_ast_loc(file, ast_loc)
+        Loc.new(
+          file: file,
+          begin_line: ast_loc.line,
+          begin_column: ast_loc.column,
+          end_line: ast_loc.last_line,
+          end_column: ast_loc.last_column,
+        )
+      end
     end
   end
 end
