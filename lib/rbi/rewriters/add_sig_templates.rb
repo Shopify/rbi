@@ -36,7 +36,7 @@ module RBI
 
         attr.sigs << Sig.new(
           params: params,
-          return_type: "T.untyped"
+          return_type: "T.untyped",
         )
         add_todo_comment(attr)
       end
@@ -47,7 +47,7 @@ module RBI
 
         method.sigs << Sig.new(
           params: method.params.map { |param| SigParam.new(param.name, "T.untyped") },
-          return_type: "T.untyped"
+          return_type: "T.untyped",
         )
         add_todo_comment(method)
       end

@@ -48,18 +48,6 @@ module RBI
     class RemoveKnownDefinitions < Visitor
       extend T::Sig
 
-      sig do
-        params(
-          tree: Tree,
-          index: Index
-        ).returns([Tree, T::Array[Operation]])
-      end
-      def self.remove(tree, index)
-        v = RemoveKnownDefinitions.new(index)
-        v.visit(tree)
-        [tree, v.operations]
-      end
-
       sig { returns(T::Array[Operation]) }
       attr_reader :operations
 
@@ -68,6 +56,22 @@ module RBI
         super()
         @index = index
         @operations = T.let([], T::Array[Operation])
+      end
+
+      class << self
+        extend T::Sig
+
+        sig do
+          params(
+            tree: Tree,
+            index: Index,
+          ).returns([Tree, T::Array[Operation]])
+        end
+        def remove(tree, index)
+          v = RemoveKnownDefinitions.new(index)
+          v.visit(tree)
+          [tree, v.operations]
+        end
       end
 
       sig { params(nodes: T::Array[Node]).void }

@@ -521,7 +521,7 @@ module RBI
           prop :d, D, default: D.new
           def foo; end
         end
-        RBI
+      RBI
 
       out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))

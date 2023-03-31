@@ -47,16 +47,20 @@ module RBI
         end
       end
 
-      sig { params(left: Tree, right: Tree, left_name: String, right_name: String, keep: Keep).returns(MergeTree) }
-      def self.merge_trees(left, right, left_name: "left", right_name: "right", keep: Keep::NONE)
-        left.nest_singleton_methods!
-        right.nest_singleton_methods!
-        rewriter = Rewriters::Merge.new(left_name: left_name, right_name: right_name, keep: keep)
-        rewriter.merge(left)
-        rewriter.merge(right)
-        tree = rewriter.tree
-        ConflictTreeMerger.new.visit(tree)
-        tree
+      class << self
+        extend T::Sig
+
+        sig { params(left: Tree, right: Tree, left_name: String, right_name: String, keep: Keep).returns(MergeTree) }
+        def merge_trees(left, right, left_name: "left", right_name: "right", keep: Keep::NONE)
+          left.nest_singleton_methods!
+          right.nest_singleton_methods!
+          rewriter = Rewriters::Merge.new(left_name: left_name, right_name: right_name, keep: keep)
+          rewriter.merge(left)
+          rewriter.merge(right)
+          tree = rewriter.tree
+          ConflictTreeMerger.new.visit(tree)
+          tree
+        end
       end
 
       sig { returns(MergeTree) }
@@ -293,6 +297,7 @@ module RBI
       parent = T.let(parent_tree, T.nilable(Node))
       while parent
         return parent if parent.is_a?(ConflictTree)
+
         parent = parent.parent_tree
       end
       nil
@@ -305,6 +310,7 @@ module RBI
     sig { override.params(other: Node).void }
     def merge_with(other)
       return unless other.is_a?(NodeWithComments)
+
       other.comments.each do |comment|
         comments << comment unless comments.include?(comment)
       end
@@ -332,7 +338,7 @@ module RBI
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
         conflicts: T::Array[Rewriters::Merge::Conflict],
-        block: T.nilable(T.proc.params(node: Tree).void)
+        block: T.nilable(T.proc.params(node: Tree).void),
       ).void
     end
     def initialize(loc: nil, comments: [], conflicts: [], &block)
@@ -406,12 +412,14 @@ module RBI
     def compatible_with?(other)
       return false unless other.is_a?(Attr)
       return false unless names == other.names
+
       sigs.empty? || other.sigs.empty? || sigs == other.sigs
     end
 
     sig { override.params(other: Node).void }
     def merge_with(other)
       return unless other.is_a?(Attr)
+
       super
       other.sigs.each do |sig|
         sigs << sig unless sigs.include?(sig)
@@ -454,12 +462,14 @@ module RBI
       return false unless other.is_a?(Method)
       return false unless name == other.name
       return false unless params == other.params
+
       sigs.empty? || other.sigs.empty? || sigs == other.sigs
     end
 
     sig { override.params(other: Node).void }
     def merge_with(other)
       return unless other.is_a?(Method)
+
       super
       other.sigs.each do |sig|
         sigs << sig unless sigs.include?(sig)
@@ -545,6 +555,7 @@ module RBI
     sig { override.params(other: Node).void }
     def merge_with(other)
       return unless other.is_a?(TEnumBlock)
+
       super
       other.names.each do |name|
         names << name unless names.include?(name)
@@ -625,7 +636,7 @@ module RBI
         left: Scope,
         right: Scope,
         left_name: String,
-        right_name: String
+        right_name: String,
       ).void
     end
     def initialize(left:, right:, left_name: "left", right_name: "right")

@@ -18,11 +18,11 @@ Gem::Specification.new do |spec|
 
   spec.require_paths = ["lib"]
 
-  spec.files         = Dir.glob("lib/**/*.rb") + %w(
-    README.md
-    Gemfile
-    Rakefile
-  )
+  spec.files         = Dir.glob("lib/**/*.rb") + [
+    "README.md",
+    "Gemfile",
+    "Rakefile",
+  ]
 
   spec.add_dependency("ast")
   spec.add_dependency("parser", ">= 2.6.4.0")
