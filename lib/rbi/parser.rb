@@ -291,7 +291,7 @@ module RBI
       end
     end
 
-    sig { params(node: AST::Node).returns(Param) }
+    sig { params(node: AST::Node).returns(AbstractParam) }
     def parse_param(node)
       name = node.children[0].to_s
       loc = node_loc(node)
