@@ -439,7 +439,7 @@ module RBI
     end
   end
 
-  class Param
+  class AbstractParam
     extend T::Sig
 
     sig { override.params(v: Printer).void }
@@ -459,6 +459,10 @@ module RBI
     def comments_lines
       comments.flat_map { |comment| comment.text.lines.map(&:rstrip) }
     end
+  end
+
+  class Param
+    extend T::Sig
   end
 
   class OptParam

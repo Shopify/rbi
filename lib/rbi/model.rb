@@ -486,7 +486,7 @@ module RBI
     sig { returns(String) }
     attr_accessor :name
 
-    sig { returns(T::Array[Param]) }
+    sig { returns(T::Array[AbstractParam]) }
     attr_reader :params
 
     sig { returns(T::Boolean) }
@@ -501,7 +501,7 @@ module RBI
     sig do
       params(
         name: String,
-        params: T::Array[Param],
+        params: T::Array[AbstractParam],
         is_singleton: T::Boolean,
         visibility: Visibility,
         sigs: T::Array[Sig],
@@ -529,7 +529,7 @@ module RBI
       block&.call(self)
     end
 
-    sig { params(param: Param).void }
+    sig { params(param: AbstractParam).void }
     def <<(param)
       @params << param
     end
@@ -549,7 +549,7 @@ module RBI
     end
   end
 
-  class Param < NodeWithComments
+  class AbstractParam < NodeWithComments
     extend T::Helpers
     extend T::Sig
 
@@ -576,7 +576,11 @@ module RBI
     end
   end
 
-  class ReqParam < Param
+  class Param < AbstractParam
+    extend T::Sig
+  end
+
+  class ReqParam < AbstractParam
     extend T::Sig
 
     sig do
@@ -598,7 +602,7 @@ module RBI
     end
   end
 
-  class OptParam < Param
+  class OptParam < AbstractParam
     extend T::Sig
 
     sig { returns(String) }
@@ -625,7 +629,7 @@ module RBI
     end
   end
 
-  class RestParam < Param
+  class RestParam < AbstractParam
     extend T::Sig
 
     sig do
@@ -652,7 +656,7 @@ module RBI
     end
   end
 
-  class KwParam < Param
+  class KwParam < AbstractParam
     extend T::Sig
 
     sig do
@@ -679,7 +683,7 @@ module RBI
     end
   end
 
-  class KwOptParam < Param
+  class KwOptParam < AbstractParam
     extend T::Sig
 
     sig { returns(String) }
@@ -711,7 +715,7 @@ module RBI
     end
   end
 
-  class KwRestParam < Param
+  class KwRestParam < AbstractParam
     extend T::Sig
 
     sig do
@@ -738,7 +742,7 @@ module RBI
     end
   end
 
-  class BlockParam < Param
+  class BlockParam < AbstractParam
     extend T::Sig
 
     sig do
