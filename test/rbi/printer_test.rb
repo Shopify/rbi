@@ -826,9 +826,9 @@ module RBI
             sig << SigParam.new("c", "T.untyped")
           end
           cls << Method.new("foo") do |method|
-            method << Param.new("a")
-            method << Param.new("b")
-            method << Param.new("c")
+            method << ReqParam.new("a")
+            method << ReqParam.new("b")
+            method << ReqParam.new("c")
           end
         end
       end
@@ -850,9 +850,9 @@ module RBI
             sig << SigParam.new("c", "T.untyped")
           end
           cls << Method.new("foo") do |method|
-            method << Param.new("a")
-            method << Param.new("b")
-            method << Param.new("c")
+            method << ReqParam.new("a")
+            method << ReqParam.new("b")
+            method << ReqParam.new("c")
           end
         end
       end

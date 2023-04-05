@@ -74,10 +74,10 @@ module RBI
       rbi = Tree.new
       rbi << Method.new("m1")
       rbi << Method.new("m2") do |meth|
-        meth << Param.new("x")
+        meth << ReqParam.new("x")
       end
       rbi << Method.new("m3", is_singleton: true) do |meth|
-        meth << Param.new("x")
+        meth << ReqParam.new("x")
         meth << OptParam.new("y", "42")
         meth << KwRestParam.new("z")
       end
@@ -100,10 +100,10 @@ module RBI
       rbi = Tree.new
       rbi << Method.new("m1")
       rbi << Method.new("m2") do |meth|
-        meth << Param.new("x")
+        meth << ReqParam.new("x")
       end
       rbi << Method.new("m3", is_singleton: true) do |meth|
-        meth << Param.new("x")
+        meth << ReqParam.new("x")
         meth << OptParam.new("y", "42")
         meth << KwRestParam.new("z")
       end
