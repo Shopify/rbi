@@ -3,9 +3,9 @@ PATH
   specs:
     rbi (0.0.16)
       ast
-      parser (>= 2.6.4.0)
+      parser (>= 3.0.0)
       sorbet-runtime (>= 0.5.9204)
-      unparser
+      unparser (>= 0.5.6)
 
 GEM
   remote: https://rubygems.org/
