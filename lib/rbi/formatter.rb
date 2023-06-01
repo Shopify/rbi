@@ -43,12 +43,6 @@ module RBI
       file.string(max_line_length: @max_line_length)
     end
 
-    sig { params(tree: RBI::Tree).returns(String) }
-    def print_tree(tree)
-      format_tree(tree)
-      tree.string(max_line_length: @max_line_length)
-    end
-
     sig { params(file: RBI::File).void }
     def format_file(file)
       format_tree(file.root)
