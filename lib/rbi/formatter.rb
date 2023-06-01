@@ -6,7 +6,10 @@ module RBI
     extend T::Sig
 
     sig { returns(T::Boolean) }
-    attr_accessor :nest_singleton_methods, :sort_nodes
+    attr_accessor :nest_singleton_methods
+
+    sig { params(sort_nodes: T::Boolean).returns(T::Boolean) }
+    attr_writer :sort_nodes
 
     sig { params(add_sig_templates: T::Boolean).returns(T::Boolean) }
     attr_writer :add_sig_templates
