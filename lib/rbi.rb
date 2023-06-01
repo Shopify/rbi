@@ -3,10 +3,6 @@
 
 require "sorbet-runtime"
 require "stringio"
-
-module RBI
-end
-
 require "rbi/loc"
 require "rbi/model"
 require "rbi/visitor"
