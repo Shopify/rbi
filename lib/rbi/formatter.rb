@@ -6,7 +6,10 @@ module RBI
     extend T::Sig
 
     sig { returns(T::Boolean) }
-    attr_accessor :add_sig_templates, :group_nodes, :nest_singleton_methods, :nest_non_public_methods, :sort_nodes
+    attr_accessor :add_sig_templates, :nest_singleton_methods, :nest_non_public_methods, :sort_nodes
+
+    sig { params(group_nodes: T::Boolean).returns(T::Boolean) }
+    attr_writer :group_nodes
 
     sig { returns(T.nilable(Integer)) }
     attr_accessor :max_line_length
