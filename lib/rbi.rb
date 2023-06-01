@@ -5,7 +5,6 @@ require "sorbet-runtime"
 require "stringio"
 
 module RBI
-  class Error < StandardError; end
 end
 
 require "rbi/loc"
