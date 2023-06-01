@@ -8,7 +8,7 @@ module RBI
     sig { returns(T::Boolean) }
     attr_accessor :add_sig_templates, :nest_singleton_methods, :nest_non_public_methods, :sort_nodes
 
-    sig { returns(T::Boolean) }
+    sig { params(group_nodes: T::Boolean).returns(T::Boolean) }
     attr_writer :group_nodes
 
     sig { returns(T.nilable(Integer)) }
