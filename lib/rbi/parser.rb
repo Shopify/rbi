@@ -649,7 +649,7 @@ module RBI
     extend T::Sig
 
     sig { returns(Sig) }
-    attr_accessor :current
+    attr_reader :current
 
     sig { void }
     def initialize
