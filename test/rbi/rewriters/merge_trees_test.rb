@@ -174,6 +174,7 @@ module RBI
           def b; end
           def c(a, b:, &d); end
           def d(a); end
+          def x(a = T.unsafe(nil), b: T.unsafe(nil)); end
         end
       RBI
 
@@ -183,6 +184,7 @@ module RBI
           def b; end
           def c(a, b:, &d); end
           def e(a); end
+          def x(a = false, b: "foo"); end
         end
       RBI
 
@@ -193,6 +195,7 @@ module RBI
           def b; end
           def c(a, b:, &d); end
           def d(a); end
+          def x(a = T.unsafe(nil), b: T.unsafe(nil)); end
           def e(a); end
         end
       RBI
