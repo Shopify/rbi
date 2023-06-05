@@ -174,6 +174,7 @@ module RBI
           def b; end
           def c(a, b:, &d); end
           def d(a); end
+          def x(a = T.unsafe(nil), b: T.unsafe(nil)); end
         end
       RBI
 
@@ -183,6 +184,7 @@ module RBI
           def b; end
           def c(a, b:, &d); end
           def e(a); end
+          def x(a = false, b: "foo"); end
         end
       RBI
 
@@ -193,6 +195,7 @@ module RBI
           def b; end
           def c(a, b:, &d); end
           def d(a); end
+          def x(a = T.unsafe(nil), b: T.unsafe(nil)); end
           def e(a); end
         end
       RBI
@@ -728,7 +731,6 @@ module RBI
           def m5(a = 10); end
           def m6(a); end
           def m7(&a); end
-          def m8(a: nil); end
           =======
           def m1(a); end
           def m2; end
@@ -737,8 +739,32 @@ module RBI
           def m5(a); end
           def m6(a:); end
           def m7(a); end
-          def m8(a: 10); end
           >>>>>>> right
+          def m8(a: nil); end
+        end
+      RBI
+
+      res = rbi2.merge(rbi1)
+      assert_equal(<<~RBI, res.string)
+        class Foo
+          <<<<<<< left
+          def m1(a); end
+          def m2; end
+          def m3(b); end
+          def m4(c, b, a); end
+          def m5(a); end
+          def m6(a:); end
+          def m7(a); end
+          =======
+          def m1; end
+          def m2(a); end
+          def m3(a); end
+          def m4(a, b, c); end
+          def m5(a = 10); end
+          def m6(a); end
+          def m7(&a); end
+          >>>>>>> right
+          def m8(a: 10); end
         end
       RBI
     end
