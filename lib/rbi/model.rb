@@ -621,7 +621,7 @@ module RBI
 
     sig { params(other: T.nilable(Object)).returns(T::Boolean) }
     def ==(other)
-      OptParam === other && name == other.name && value == other.value
+      OptParam === other && name == other.name
     end
   end
 
@@ -707,7 +707,7 @@ module RBI
 
     sig { params(other: T.nilable(Object)).returns(T::Boolean) }
     def ==(other)
-      KwOptParam === other && name == other.name && value == other.value
+      KwOptParam === other && name == other.name
     end
   end
 
