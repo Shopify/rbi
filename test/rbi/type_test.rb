@@ -231,6 +231,15 @@ module RBI
       assert_equal("T.nilable(T::Boolean)", type.to_rbi)
     end
 
+    def test_build_type_tuple
+      type = Type.tuple(
+        Type.simple("String"),
+        Type.simple("Integer"),
+      )
+      refute_predicate(type, :nilable?)
+      assert_equal("[String, Integer]", type.to_rbi)
+    end
+
     def test_build_type_generic
       type = Type.generic("T::Array", Type.simple("String"))
       refute_predicate(type, :nilable?)

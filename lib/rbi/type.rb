@@ -183,6 +183,15 @@ module RBI
       end
     end
 
+    class Tuple < Composite
+      extend T::Sig
+
+      sig { override.returns(String) }
+      def to_rbi
+        "[#{@types.map(&:to_rbi).join(", ")}]"
+      end
+    end
+
     class << self
       extend T::Sig
 
@@ -246,6 +255,11 @@ module RBI
       sig { params(type: Simple).returns(ClassOf) }
       def class_of(type)
         ClassOf.new(type)
+      end
+
+      sig { params(types: Type).returns(Tuple) }
+      def tuple(*types)
+        T.unsafe(Tuple).new(*types)
       end
 
       # Since we transform types such as `T.all(String, String)` into `String`, this method may return something else
