@@ -31,6 +31,15 @@ module RBI
       end
     end
 
+    class Boolean < Type
+      extend T::Sig
+
+      sig { override.returns(String) }
+      def to_rbi
+        "T::Boolean"
+      end
+    end
+
     class Verbatim < Type
       extend T::Sig
 
@@ -239,6 +248,11 @@ module RBI
         AttachedClass.new
       end
 
+      sig { returns(Boolean) }
+      def boolean
+        Boolean.new
+      end
+
       # Since we transform types such as `T.nilable(T.untyped)` into `T.untyped`, this method may return something else
       # than a `Nilable`.
       sig { params(type: Type).returns(Type) }
@@ -319,7 +333,7 @@ module RBI
 
         if has_true_class && has_false_class
           types = types.reject { |type| type.is_a?(Simple) && (type.name == "TrueClass" || type.name == "FalseClass") }
-          types << simple("T::Boolean")
+          types << boolean
         end
 
         type = if types.size == 1

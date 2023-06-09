@@ -109,8 +109,8 @@ module RBI
         Type.simple("Integer"),
         Type.all(
           Type.simple("Numeric"),
-          Type.simple("Integer")
-        )
+          Type.simple("Integer"),
+        ),
       )
       assert_instance_of(Type::All, type)
       assert_equal("T.all(String, Integer, Numeric)", type.to_rbi)
@@ -128,7 +128,7 @@ module RBI
     def test_build_type_any
       type = Type.any(
         Type.simple("String"),
-        Type.simple("Integer")
+        Type.simple("Integer"),
       )
       refute_predicate(type, :nilable?)
       assert_equal("T.any(String, Integer)", type.to_rbi)
@@ -137,7 +137,7 @@ module RBI
         Type.simple("String"),
         Type.simple("String"),
         Type.simple("Integer"),
-        Type.simple("Integer")
+        Type.simple("Integer"),
       )
       refute_predicate(type, :nilable?)
       assert_equal("T.any(String, Integer)", type.to_rbi)
@@ -147,12 +147,12 @@ module RBI
       type = Type.any(
         Type.any(
           Type.simple("String"),
-          Type.simple("Integer")
+          Type.simple("Integer"),
         ),
         Type.any(
           Type.simple("String"),
-          Type.simple("Symbol")
-        )
+          Type.simple("Symbol"),
+        ),
       )
 
       assert_instance_of(Type::Any, type)
@@ -163,15 +163,15 @@ module RBI
       type = Type.any(
         Type.any(
           Type.simple("String"),
-          Type.simple("Integer")
+          Type.simple("Integer"),
         ),
         Type.any(
           Type.simple("Numeric"),
           Type.any(
             Type.simple("String"),
-            Type.simple("Symbol")
-          )
-        )
+            Type.simple("Symbol"),
+          ),
+        ),
       )
 
       assert_instance_of(Type::Any, type)
@@ -200,7 +200,7 @@ module RBI
     def test_build_type_any_of_nilclass
       type = Type.any(
         Type.simple("String"),
-        Type.simple("NilClass")
+        Type.simple("NilClass"),
       )
       assert_predicate(type, :nilable?)
       assert_equal("T.nilable(String)", type.to_rbi)
@@ -219,7 +219,7 @@ module RBI
       type = Type.any(
         Type.simple("TrueClass"),
         Type.simple("String"),
-        Type.simple("FalseClass")
+        Type.simple("FalseClass"),
       )
       assert_equal("T.any(String, T::Boolean)", type.to_rbi)
     end
@@ -228,7 +228,7 @@ module RBI
       type = Type.any(
         Type.simple("TrueClass"),
         Type.simple("NilClass"),
-        Type.simple("FalseClass")
+        Type.simple("FalseClass"),
       )
       assert_predicate(type, :nilable?)
       assert_equal("T.nilable(T::Boolean)", type.to_rbi)
@@ -237,7 +237,7 @@ module RBI
     def test_build_type_any_of_trueclass_and_falseclass_with_nilable
       type = Type.any(
         Type.simple("TrueClass"),
-        Type.nilable(Type.simple("FalseClass"))
+        Type.nilable(Type.simple("FalseClass")),
       )
       assert_predicate(type, :nilable?)
       assert_equal("T.nilable(T::Boolean)", type.to_rbi)
