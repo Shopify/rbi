@@ -82,6 +82,18 @@ module RBI
       assert_equal("T.nilable(String)", type.to_rbi)
     end
 
+    def test_build_non_nilable_of_simple_type
+      type = Type.simple("String").non_nilable
+      refute_predicate(type, :nilable?)
+      assert_equal("String", type.to_rbi)
+    end
+
+    def test_build_non_nilable_of_nilable_type
+      type = Type.simple("String").nilable.non_nilable
+      refute_predicate(type, :nilable?)
+      assert_equal("String", type.to_rbi)
+    end
+
     def test_build_type_all
       type = Type.all(
         Type.simple("String"),

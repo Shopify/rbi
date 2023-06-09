@@ -349,6 +349,16 @@ module RBI
       Type.nilable(self)
     end
 
+    sig { returns(Type) }
+    def non_nilable
+      case self
+      when Nilable
+        type
+      else
+        self
+      end
+    end
+
     sig { returns(T::Boolean) }
     def nilable?
       is_a?(Nilable)
