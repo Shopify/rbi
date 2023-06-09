@@ -236,7 +236,11 @@ module RBI
       def nilable(type)
         return type if type.is_a?(Untyped)
 
-        Nilable.new(type)
+        if type.nilable?
+          type
+        else
+          Nilable.new(type)
+        end
       end
 
       sig { params(type: Simple).returns(ClassOf) }
