@@ -31,6 +31,21 @@ module RBI
       end
     end
 
+    class Verbatim < Type
+      extend T::Sig
+
+      sig { params(rbi_string: String).void }
+      def initialize(rbi_string)
+        super()
+        @rbi_string = rbi_string
+      end
+
+      sig { override.returns(String) }
+      def to_rbi
+        @rbi_string
+      end
+    end
+
     class Generic < Type
       extend T::Sig
 
@@ -178,6 +193,11 @@ module RBI
         Simple.new(name)
       rescue SyntaxError
         raise NameError, "Invalid type name: #{name}"
+      end
+
+      sig { params(rbi_string: String).returns(RBI::Type::Verbatim) }
+      def verbatim(rbi_string)
+        Verbatim.new(rbi_string)
       end
 
       sig { params(name: String, params: Type).returns(Generic) }

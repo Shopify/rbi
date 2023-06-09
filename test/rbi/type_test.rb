@@ -44,6 +44,12 @@ module RBI
       assert_equal("String", type.to_rbi)
     end
 
+    def test_build_type_verbatim
+      type = Type.verbatim("Foo/bar/baz@fizz-buzz")
+      refute_predicate(type, :nilable?)
+      assert_equal("Foo/bar/baz@fizz-buzz", type.to_rbi)
+    end
+
     def test_build_type_anything
       type = Type.anything
       assert_equal("T.anything", type.to_rbi)
