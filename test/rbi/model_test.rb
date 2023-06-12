@@ -77,7 +77,7 @@ module RBI
               param.comments << Comment.new("comment")
             end
             node.sigs << Sig.new do |sig|
-              sig << SigParam.new("x", "T.untyped") do |param|
+              sig << SigParam.new("x", RBI::Type.untyped) do |param|
                 param.comments << Comment.new("comment")
               end
             end

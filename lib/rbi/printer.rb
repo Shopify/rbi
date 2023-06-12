@@ -686,10 +686,10 @@ module RBI
         end
         v.print(").")
       end
-      if return_type && return_type != "void"
-        v.print("returns(#{return_type})")
-      else
+      if return_type.to_s == "void"
         v.print("void")
+      else
+        v.print("returns(#{return_type})")
       end
       v.printn(" }")
     end
@@ -732,10 +732,10 @@ module RBI
       end
       v.printt if params.empty?
       v.print(".") if modifiers.any? || params.any?
-      if return_type && return_type != "void"
-        v.print("returns(#{return_type})")
-      else
+      if return_type.to_s == "void"
         v.print("void")
+      else
+        v.print("returns(#{return_type})")
       end
       v.printn
       v.dedent
@@ -756,7 +756,7 @@ module RBI
     def print_comment_leading_space(v, last:)
       v.printn
       v.printt
-      v.print(" " * (name.size + type.size + 3))
+      v.print(" " * (name.size + type.to_s.size + 3))
       v.print(" ") unless last
     end
 

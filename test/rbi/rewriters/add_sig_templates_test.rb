@@ -9,11 +9,11 @@ module RBI
       rbi = Tree.new
 
       rbi << AttrReader.new(:a) do |attr|
-        attr.sigs << Sig.new(return_type: "Integer")
+        attr.sigs << Sig.new(return_type: RBI::Type.simple("Integer"))
       end
 
       rbi << Method.new("m") do |meth|
-        meth.sigs << Sig.new(return_type: "Integer")
+        meth.sigs << Sig.new(return_type: RBI::Type.simple("Integer"))
       end
 
       rbi.add_sig_templates!(with_todo_comment: true)

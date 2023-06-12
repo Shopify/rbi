@@ -393,5 +393,10 @@ module RBI
 
     sig { abstract.returns(String) }
     def to_rbi; end
+
+    sig { override.returns(String) }
+    def to_s
+      to_rbi
+    end
   end
 end

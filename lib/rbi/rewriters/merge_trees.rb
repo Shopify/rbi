@@ -536,7 +536,7 @@ module RBI
 
     sig { override.params(other: Node).returns(T::Boolean) }
     def compatible_with?(other)
-      other.is_a?(TStructField) && name == other.name && type == other.type && default == other.default
+      other.is_a?(TStructField) && name == other.name && type.to_s == other.type.to_s && default == other.default
     end
   end
 

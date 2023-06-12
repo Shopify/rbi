@@ -159,9 +159,9 @@ module RBI
     def test_print_attributes_with_signatures
       sig1 = Sig.new
 
-      sig2 = Sig.new(return_type: "R")
-      sig2 << SigParam.new("a", "A")
-      sig2 << SigParam.new("b", "T.nilable(B)")
+      sig2 = Sig.new(return_type: RBI::Type.simple("R"))
+      sig2 << SigParam.new("a", RBI::Type.simple("A"))
+      sig2 << SigParam.new("b", RBI::Type.simple("B").nilable)
       sig2 << SigParam.new("b", "T.proc.void")
 
       sig3 = Sig.new(is_abstract: true)
@@ -191,9 +191,9 @@ module RBI
     def test_print_methods_with_signatures
       sig1 = Sig.new
 
-      sig2 = Sig.new(return_type: "R")
-      sig2 << SigParam.new("a", "A")
-      sig2 << SigParam.new("b", "T.nilable(B)")
+      sig2 = Sig.new(return_type: RBI::Type.simple("R"))
+      sig2 << SigParam.new("a", RBI::Type.simple("A"))
+      sig2 << SigParam.new("b", RBI::Type.simple("B").nilable)
       sig2 << SigParam.new("b", "T.proc.void")
 
       sig3 = Sig.new(is_abstract: true)
@@ -505,9 +505,9 @@ module RBI
         method << BlockParam.new("g", comments: comments)
 
         sig = Sig.new
-        sig << SigParam.new("a", "Integer", comments: comments)
-        sig << SigParam.new("b", "String", comments: comments)
-        sig << SigParam.new("c", "T.untyped", comments: comments)
+        sig << SigParam.new("a", RBI::Type.simple("Integer"), comments: comments)
+        sig << SigParam.new("b", RBI::Type.simple("String"), comments: comments)
+        sig << SigParam.new("c", RBI::Type.untyped, comments: comments)
         method.sigs << sig
       end
 
@@ -608,9 +608,9 @@ module RBI
       rbi << method
 
       sig1 = Sig.new
-      sig2 = Sig.new(return_type: "R")
-      sig2 << SigParam.new("a", "A")
-      sig2 << SigParam.new("b", "T.nilable(B)")
+      sig2 = Sig.new(return_type: RBI::Type.simple("R"))
+      sig2 << SigParam.new("a", RBI::Type.simple("A"))
+      sig2 << SigParam.new("b", RBI::Type.simple("B").nilable)
       sig2 << SigParam.new("b", "T.proc.void")
 
       method = Method.new("bar", comments: comments_multi)
@@ -745,9 +745,9 @@ module RBI
       comments = [Comment.new("comment")]
 
       sig = Sig.new
-      sig << SigParam.new("a", "Integer", comments: comments)
-      sig << SigParam.new("b", "String", comments: comments)
-      sig << SigParam.new("c", "T.untyped", comments: comments)
+      sig << SigParam.new("a", RBI::Type.simple("Integer"), comments: comments)
+      sig << SigParam.new("b", RBI::Type.simple("String"), comments: comments)
+      sig << SigParam.new("c", RBI::Type.untyped, comments: comments)
 
       assert_equal(<<~RBI, sig.string)
         sig do
@@ -767,9 +767,9 @@ module RBI
       ]
 
       sig = Sig.new
-      sig << SigParam.new("a", "Integer", comments: comments)
-      sig << SigParam.new("b", "String", comments: comments)
-      sig << SigParam.new("c", "T.untyped", comments: comments)
+      sig << SigParam.new("a", RBI::Type.simple("Integer"), comments: comments)
+      sig << SigParam.new("b", RBI::Type.simple("String"), comments: comments)
+      sig << SigParam.new("c", RBI::Type.untyped, comments: comments)
 
       assert_equal(<<~RBI, sig.string)
         sig do
@@ -794,9 +794,9 @@ module RBI
       sig = Sig.new(is_abstract: true, is_override: true, is_overridable: true, checked: :always, return_type: "A")
       sig.type_params << "TP1"
       sig.type_params << "TP2"
-      sig << SigParam.new("a", "Integer", comments: comments)
-      sig << SigParam.new("b", "String", comments: comments)
-      sig << SigParam.new("c", "T.untyped", comments: comments)
+      sig << SigParam.new("a", RBI::Type.simple("Integer"), comments: comments)
+      sig << SigParam.new("b", RBI::Type.simple("String"), comments: comments)
+      sig << SigParam.new("c", RBI::Type.untyped, comments: comments)
 
       assert_equal(<<~RBI, sig.string)
         sig do
@@ -821,9 +821,9 @@ module RBI
       rbi = Tree.new do |tree|
         tree << Class.new("Foo") do |cls|
           cls << Sig.new(is_abstract: true, is_overridable: true) do |sig|
-            sig << SigParam.new("a", "Integer")
-            sig << SigParam.new("b", "String")
-            sig << SigParam.new("c", "T.untyped")
+            sig << SigParam.new("a", RBI::Type.simple("Set"))
+            sig << SigParam.new("b", RBI::Type.simple("String"))
+            sig << SigParam.new("c", RBI::Type.untyped)
           end
           cls << Method.new("foo") do |method|
             method << ReqParam.new("a")
@@ -835,7 +835,7 @@ module RBI
 
       assert_equal(<<~RBI, rbi.string(max_line_length: 80))
         class Foo
-          sig { abstract.overridable.params(a: Integer, b: String, c: T.untyped).void }
+          sig { abstract.overridable.params(a: Set, b: String, c: T.untyped).void }
           def foo(a, b, c); end
         end
       RBI
@@ -845,9 +845,9 @@ module RBI
       rbi = File.new do |file|
         file << Class.new("Foo") do |cls|
           cls << Sig.new(is_abstract: true, is_overridable: true) do |sig|
-            sig << SigParam.new("a", "Integer")
-            sig << SigParam.new("b", "Integer")
-            sig << SigParam.new("c", "T.untyped")
+            sig << SigParam.new("a", RBI::Type.simple("Integer"))
+            sig << SigParam.new("b", RBI::Type.simple("Integer"))
+            sig << SigParam.new("c", RBI::Type.untyped)
           end
           cls << Method.new("foo") do |method|
             method << ReqParam.new("a")
@@ -911,7 +911,7 @@ module RBI
       RBI
 
       sig = Sig.new
-      sig << SigParam.new("a", "Integer")
+      sig << SigParam.new("a", RBI::Type.simple("Integer"))
 
       assert_equal(<<~RBI, sig.string(max_line_length: 1))
         sig do
@@ -922,7 +922,7 @@ module RBI
       RBI
 
       sig = Sig.new(is_overridable: true)
-      sig << SigParam.new("a", "Integer")
+      sig << SigParam.new("a", RBI::Type.simple("Integer"))
 
       assert_equal(<<~RBI, sig.string(max_line_length: 1))
         sig do
@@ -934,7 +934,7 @@ module RBI
       RBI
 
       sig = Sig.new(checked: :never)
-      sig << SigParam.new("a", "Integer")
+      sig << SigParam.new("a", RBI::Type.simple("Integer"))
 
       assert_equal(<<~RBI, sig.string(max_line_length: 1))
         sig do

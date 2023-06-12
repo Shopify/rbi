@@ -713,7 +713,7 @@ module RBI
           @current.return_type = parse_expr(node.children[2])
         end
       when :void
-        @current.return_type = nil
+        @current.return_type = "void"
       else
         raise "#{node.location.line}: Unhandled #{name}"
       end
