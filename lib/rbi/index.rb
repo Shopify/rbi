@@ -175,6 +175,16 @@ module RBI
     end
   end
 
+  class TypeMember
+    extend T::Sig
+    include Indexable
+
+    sig { override.returns(T::Array[String]) }
+    def index_ids
+      [to_s]
+    end
+  end
+
   class Send
     extend T::Sig
     include Indexable
