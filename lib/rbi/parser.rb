@@ -255,6 +255,8 @@ module RBI
       node_value = node.children[2]
       if struct_definition?(node_value)
         parse_struct(node)
+      elsif type_variable_definition?(node_value)
+        parse_type_variable(node)
       else
         name = parse_name(node)
         value = parse_expr(node_value)
@@ -463,6 +465,24 @@ module RBI
       @scopes_stack.pop
 
       struct
+    end
+
+    sig { params(node: AST::Node).returns(T::Boolean) }
+    def type_variable_definition?(node)
+      (node.type == :send && node.children[0].nil? && (node.children[1] == :type_member ||
+        node.children[1] == :type_template)) ||
+        (node.type == :block && type_variable_definition?(node.children[0]))
+    end
+
+    sig { params(node: AST::Node).returns(RBI::TypeMember) }
+    def parse_type_variable(node)
+      name = parse_name(node)
+      loc = node_loc(node)
+      comments = node_comments(node)
+
+      send = node.children[2]
+
+      TypeMember.new(name, send.location.expression.source, loc: loc, comments: comments)
     end
 
     sig { params(node: AST::Node).returns([String, String, T.nilable(String)]) }

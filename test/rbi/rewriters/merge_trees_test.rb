@@ -285,6 +285,49 @@ module RBI
       RBI
     end
 
+    def test_merge_type_members_together
+      rbi1 = Parser.parse_string(<<~RBI)
+        class A
+          Foo = type_member {{ fixed: Integer }}
+          Bar = type_template {{ upper: String }}
+        end
+      RBI
+
+      rbi2 = Parser.parse_string(<<~RBI)
+        class A
+          Foo = type_member {
+            { fixed: Integer }
+          }
+          Bar = type_template {
+            { upper: String }
+          }
+          Baz = type_template
+        end
+      RBI
+
+      res = rbi1.merge(rbi2)
+      assert_equal(<<~RBI, res.string)
+        class A
+          Foo = type_member {{ fixed: Integer }}
+          Bar = type_template {{ upper: String }}
+          Baz = type_template
+        end
+      RBI
+
+      res = rbi2.merge(rbi1)
+      assert_equal(<<~RBI, res.string)
+        class A
+          Foo = type_member {
+            { fixed: Integer }
+          }
+          Bar = type_template {
+            { upper: String }
+          }
+          Baz = type_template
+        end
+      RBI
+    end
+
     def test_merge_structs_together
       rbi1 = Parser.parse_string(<<~RBI)
         class A < T::Struct
