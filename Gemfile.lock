@@ -6,6 +6,7 @@ PATH
       parser (>= 3.0.0)
       sorbet-runtime (>= 0.5.9204)
       unparser (>= 0.5.6)
+      yarp (>= 0.10.0)
 
 GEM
   remote: https://rubygems.org/
@@ -57,6 +58,7 @@ GEM
       sorbet-static (= 0.5.10993)
     sorbet-runtime (0.5.10993)
     sorbet-static (0.5.10993-universal-darwin-21)
+    sorbet-static (0.5.10993-universal-darwin-22)
     sorbet-static (0.5.10993-x86_64-linux)
     sorbet-static-and-runtime (0.5.10993)
       sorbet (= 0.5.10993)
@@ -83,9 +85,11 @@ GEM
     yard-sorbet (0.8.1)
       sorbet-runtime (>= 0.5)
       yard (>= 0.9)
+    yarp (0.10.0)
 
 PLATFORMS
   arm64-darwin-21
+  arm64-darwin-22
   x86_64-linux
 
 DEPENDENCIES
