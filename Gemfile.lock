@@ -5,6 +5,7 @@ PATH
       ast
       parser (>= 3.0.0)
       sorbet-runtime (>= 0.5.9204)
+      syntax_tree (>= 6.1.1)
       unparser (>= 0.5.6)
 
 GEM
@@ -27,6 +28,7 @@ GEM
     parser (3.2.2.3)
       ast (~> 2.4.1)
       racc
+    prettier_print (1.2.1)
     racc (1.7.0)
     rainbow (3.1.1)
     rake (13.0.6)
@@ -53,6 +55,7 @@ GEM
       sorbet-static (= 0.5.10875)
     sorbet-runtime (0.5.10875)
     sorbet-static (0.5.10875-universal-darwin-21)
+    sorbet-static (0.5.10875-universal-darwin-22)
     sorbet-static (0.5.10875-x86_64-linux)
     sorbet-static-and-runtime (0.5.10875)
       sorbet (= 0.5.10875)
@@ -61,6 +64,8 @@ GEM
       sorbet (>= 0.5.10187)
       sorbet-runtime (>= 0.5.9204)
       thor (>= 0.19.2)
+    syntax_tree (6.1.1)
+      prettier_print (>= 1.2.0)
     tapioca (0.11.6)
       bundler (>= 2.2.25)
       netrc (>= 0.11.0)
@@ -82,6 +87,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-21
+  arm64-darwin-22
   x86_64-linux
 
 DEPENDENCIES
