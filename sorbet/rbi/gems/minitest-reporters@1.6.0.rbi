@@ -401,7 +401,7 @@ end
 # The report is generated using ERB. A custom ERB template can be provided but it is not required
 # The default ERB template uses JQuery and Bootstrap, both of these are included by referencing the CDN sites
 #
-# source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#21
+# source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#20
 class Minitest::Reporters::HtmlReporter < ::Minitest::Reporters::BaseReporter
   # The constructor takes a hash, and uses the following keys:
   # :title - the title that will be used in the report, defaults to 'Test Results'
@@ -412,12 +412,12 @@ class Minitest::Reporters::HtmlReporter < ::Minitest::Reporters::BaseReporter
   #
   # @return [HtmlReporter] a new instance of HtmlReporter
   #
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#57
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#60
   def initialize(args = T.unsafe(nil)); end
 
   # Trims off the number prefix on test names when using Minitest Specs
   #
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#45
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#48
   def friendly_name(test); end
 
   # The number of tests that passed
@@ -427,7 +427,7 @@ class Minitest::Reporters::HtmlReporter < ::Minitest::Reporters::BaseReporter
 
   # The percentage of tests that failed
   #
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#40
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#43
   def percent_errors_failures; end
 
   # The percentage of tests that passed, calculated in a way that avoids rounding errors
@@ -436,16 +436,22 @@ class Minitest::Reporters::HtmlReporter < ::Minitest::Reporters::BaseReporter
   def percent_passes; end
 
   # The percentage of tests that were skipped
+  # Keeping old method name with typo for backwards compatibility in custom templates (for now)
   #
   # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#35
   def percent_skipps; end
 
+  # The percentage of tests that were skipped
+  #
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#35
+  def percent_skips; end
+
   # Called by the framework to generate the report
   #
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#88
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#91
   def report; end
 
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#79
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#82
   def start; end
 
   # The title of the report
@@ -459,46 +465,46 @@ class Minitest::Reporters::HtmlReporter < ::Minitest::Reporters::BaseReporter
   # Test suites which have failing tests are given highest order
   # Tests suites which have skipped tests are given second highest priority
   #
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#139
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#142
   def compare_suites(suite_a, suite_b); end
 
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#128
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#131
   def compare_suites_by_name(suite_a, suite_b); end
 
   # Tests are first ordered by evaluating the results of the tests, then by tests names
   # Tess which fail are given highest order
   # Tests which are skipped are given second highest priority
   #
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#154
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#157
   def compare_tests(test_a, test_b); end
 
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#132
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#135
   def compare_tests_by_name(test_a, test_b); end
 
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#124
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#127
   def html_file; end
 
   # taken from the JUnit reporter
   #
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#204
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#207
   def location(exception); end
 
   # based on message_for(test) from the JUnit reporter
   #
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#187
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#190
   def message_for(test); end
 
   # based on analyze_suite from the JUnit reporter
   #
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#172
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#175
   def summarize_suite(suite, tests); end
 
   # @return [Boolean]
   #
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#167
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#170
   def test_fail_or_error?(test); end
 
-  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#213
+  # source://minitest-reporters//lib/minitest/reporters/html_reporter.rb#216
   def total_time_to_hms; end
 end
 
@@ -509,49 +515,49 @@ end
 # Also inspired by Marc Seeger's attempt at producing a JUnitReporter (see https://github.com/rb2k/minitest-reporters/commit/e13d95b5f884453a9c77f62bc5cba3fa1df30ef5)
 # Also inspired by minitest-ci (see https://github.com/bhenderson/minitest-ci)
 #
-# source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#14
+# source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#16
 class Minitest::Reporters::JUnitReporter < ::Minitest::Reporters::BaseReporter
   # @return [JUnitReporter] a new instance of JUnitReporter
   #
-  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#19
+  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#21
   def initialize(reports_dir = T.unsafe(nil), empty = T.unsafe(nil), options = T.unsafe(nil)); end
 
-  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#61
+  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#64
   def get_relative_path(result); end
 
-  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#32
+  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#35
   def report; end
 
   # Returns the value of attribute reports_path.
   #
-  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#17
+  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#19
   def reports_path; end
 
   private
 
-  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#149
+  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#168
   def analyze_suite(tests); end
 
-  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#161
+  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#181
   def filename_for(suite); end
 
-  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#74
+  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#77
   def get_source_location(result); end
 
-  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#139
+  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#158
   def location(exception); end
 
-  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#123
+  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#142
   def message_for(test); end
 
-  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#82
+  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#85
   def parse_xml_for(xml, suite, tests); end
 
-  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#100
+  # source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#119
   def xml_message_for(test); end
 end
 
-# source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#15
+# source://minitest-reporters//lib/minitest/reporters/junit_reporter.rb#17
 Minitest::Reporters::JUnitReporter::DEFAULT_REPORTS_DIR = T.let(T.unsafe(nil), String)
 
 # This reporter creates a report providing the average (mean), minimum and
@@ -928,27 +934,39 @@ class Minitest::Reporters::SpecReporter < ::Minitest::Reporters::BaseReporter
   include ::Minitest::Reporters::ANSI::Code
   include ::Minitest::RelativePosition
 
-  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#29
+  # The constructor takes an `options` hash
+  #
+  # @option options
+  # @param options [Hash]
+  # @return [SpecReporter] a new instance of SpecReporter
+  #
+  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#18
+  def initialize(options = T.unsafe(nil)); end
+
+  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#50
   def record(test); end
 
-  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#19
+  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#29
   def report; end
 
-  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#13
+  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#23
   def start; end
 
   protected
 
-  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#41
+  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#62
   def after_suite(_suite); end
 
-  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#37
+  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#58
   def before_suite(suite); end
 
-  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#53
+  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#66
+  def print_failure(name, tests); end
+
+  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#76
   def record_print_failures_if_any(test); end
 
-  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#45
+  # source://minitest-reporters//lib/minitest/reporters/spec_reporter.rb#83
   def record_print_status(test); end
 end
 
