@@ -218,6 +218,64 @@ module RBI
       end
     end
 
+    class Proc < Type
+      sig { void }
+      def initialize
+        super()
+        @params = T.let({}, T::Hash[Symbol, Type])
+        @returns = T.let(Type.void, Type)
+        @bind = T.let(nil, T.nilable(Type))
+      end
+
+      sig { params(params: Type).returns(T.self_type) }
+      def params(**params)
+        @params = params
+        self
+      end
+
+      sig { params(type: T.untyped).returns(T.self_type) }
+      def returns(type)
+        @returns = type
+        self
+      end
+
+      sig { returns(T.self_type) }
+      def void
+        @returns = RBI::Type.void
+        self
+      end
+
+      sig { params(type: T.untyped).returns(T.self_type) }
+      def bind(type)
+        @bind = type
+        self
+      end
+
+      sig { override.returns(String) }
+      def to_rbi
+        rbi = +"T.proc"
+
+        if @bind
+          rbi << ".bind(#{@bind})"
+        end
+
+        unless @params.empty?
+          rbi << ".params("
+          rbi << @params.map { |name, type| "#{name}: #{type.to_rbi}" }.join(", ")
+          rbi << ")"
+        end
+
+        rbi << case @returns
+        when Void
+          ".void"
+        else
+          ".returns(#{@returns})"
+        end
+
+        rbi
+      end
+    end
+
     class << self
       extend T::Sig
 
@@ -298,6 +356,11 @@ module RBI
         types = hash_types.merge(types)
 
         Shape.new(types)
+      end
+
+      sig { returns(Proc) }
+      def proc
+        Proc.new
       end
 
       # Since we transform types such as `T.all(String, String)` into `String`, this method may return something else

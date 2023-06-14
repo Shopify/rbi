@@ -267,6 +267,73 @@ module RBI
       assert_equal("{foo: String, bar: Integer}", type.to_rbi)
     end
 
+    def test_build_type_void_proc
+      type = Type.proc
+      refute_predicate(type, :nilable?)
+      assert_equal("T.proc.void", type.to_rbi)
+    end
+
+    def test_build_type_void_proc_with_explicit_void_return_type
+      type = Type.proc.void
+      refute_predicate(type, :nilable?)
+      assert_equal("T.proc.void", type.to_rbi)
+    end
+
+    def test_build_type_void_proc_with_explicit_returns_with_void
+      type = Type.proc.returns(Type.void)
+      refute_predicate(type, :nilable?)
+      assert_equal("T.proc.void", type.to_rbi)
+    end
+
+    def test_build_type_void_proc_with_multiple_returns_specified
+      type = Type.proc.returns(Type.simple("Integer")).void
+      refute_predicate(type, :nilable?)
+      assert_equal("T.proc.void", type.to_rbi)
+    end
+
+    def test_build_type_void_nilable_proc
+      type = Type.proc.nilable
+      assert_predicate(type, :nilable?)
+      assert_equal("T.nilable(T.proc.void)", type.to_rbi)
+    end
+
+    def test_build_type_void_proc_with_params
+      type = Type.proc.params(foo: Type.simple("String"), bar: Type.simple("Integer"))
+      refute_predicate(type, :nilable?)
+      assert_equal("T.proc.params(foo: String, bar: Integer).void", type.to_rbi)
+    end
+
+    def test_build_type_void_nilable_proc_with_params
+      type = Type.proc.params(foo: Type.simple("String"), bar: Type.simple("Integer")).nilable
+      assert_predicate(type, :nilable?)
+      assert_equal("T.nilable(T.proc.params(foo: String, bar: Integer).void)", type.to_rbi)
+    end
+
+    def test_build_type_symbol_returning_proc_with_params
+      type = Type.proc.params(foo: Type.simple("String"), bar: Type.simple("Integer")).returns(Type.simple("Symbol"))
+      refute_predicate(type, :nilable?)
+      assert_equal("T.proc.params(foo: String, bar: Integer).returns(Symbol)", type.to_rbi)
+    end
+
+    def test_build_type_symbol_returning_proc_with_params_and_bind
+      type = Type.proc
+        .params(
+          foo: Type.simple("String"),
+          bar: Type.simple("Integer"),
+        )
+        .returns(Type.simple("Symbol"))
+        .bind(Type.class_of(Type.simple("Base")))
+      refute_predicate(type, :nilable?)
+      assert_equal("T.proc.bind(T.class_of(Base)).params(foo: String, bar: Integer).returns(Symbol)", type.to_rbi)
+    end
+
+    def test_build_type_void_proc_with_bind
+      type = Type.proc
+        .bind(Type.class_of(Type.simple("Base")))
+      refute_predicate(type, :nilable?)
+      assert_equal("T.proc.bind(T.class_of(Base)).void", type.to_rbi)
+    end
+
     def test_build_type_empty_shape
       type = Type.shape
       refute_predicate(type, :nilable?)
