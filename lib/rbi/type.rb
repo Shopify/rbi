@@ -218,9 +218,9 @@ module RBI
         Verbatim.new(rbi_string)
       end
 
-      sig { params(name: String, params: Type).returns(Generic) }
+      sig { params(name: String, params: T.any(Type, T::Array[Type])).returns(Generic) }
       def generic(name, *params)
-        T.unsafe(Generic).new(name, *params)
+        T.unsafe(Generic).new(name, *params.flatten)
       end
 
       sig { returns(Anything) }
@@ -271,16 +271,16 @@ module RBI
         ClassOf.new(type)
       end
 
-      sig { params(types: Type).returns(Tuple) }
+      sig { params(types: T.any(Type, T::Array[Type])).returns(Tuple) }
       def tuple(*types)
-        T.unsafe(Tuple).new(*types)
+        T.unsafe(Tuple).new(*types.flatten)
       end
 
       # Since we transform types such as `T.all(String, String)` into `String`, this method may return something else
       # than a `All`.
-      sig { params(types: Type).returns(Type) }
+      sig { params(types: T.any(Type, T::Array[Type])).returns(Type) }
       def all(*types)
-        flattened = types.flat_map do |type|
+        flattened = types.flatten.flat_map do |type|
           case type
           when All
             type.types
@@ -298,9 +298,9 @@ module RBI
 
       # Since we transform types such as `T.any(String, NilClass)` into `T.nilable(String)`, this method may return
       # something else than a `Any`.
-      sig { params(types: Type).returns(Type) }
+      sig { params(types: T.any(Type, T::Array[Type])).returns(Type) }
       def any(*types)
-        flattened = types.flat_map do |type|
+        flattened = types.flatten.flat_map do |type|
           case type
           when Any
             type.types
