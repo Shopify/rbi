@@ -201,6 +201,21 @@ module RBI
       end
     end
 
+    class Shape < Type
+      extend T::Sig
+
+      sig { params(types: T::Hash[Symbol, Type]).void }
+      def initialize(types)
+        super()
+        @types = types
+      end
+
+      sig { override.returns(String) }
+      def to_rbi
+        "{#{@types.map { |name, type| "#{name}: #{type.to_rbi}" }.join(", ")}}"
+      end
+    end
+
     class << self
       extend T::Sig
 
@@ -274,6 +289,13 @@ module RBI
       sig { params(types: T.any(Type, T::Array[Type])).returns(Tuple) }
       def tuple(*types)
         T.unsafe(Tuple).new(*types.flatten)
+      end
+
+      sig { params(hash_types: T::Hash[Symbol, Type], types: Type).returns(Shape) }
+      def shape(hash_types = {}, **types)
+        types = hash_types.merge(types)
+
+        Shape.new(types)
       end
 
       # Since we transform types such as `T.all(String, String)` into `String`, this method may return something else
