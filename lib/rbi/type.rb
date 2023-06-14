@@ -143,10 +143,10 @@ module RBI
       sig { returns(T::Array[Type]) }
       attr_reader :types
 
-      sig { params(types: Type).void }
-      def initialize(*types)
+      sig { params(types: T::Array[Type]).void }
+      def initialize(types)
         super()
-        @types = T.let(types, T::Array[Type])
+        @types = types
       end
     end
 
@@ -170,8 +170,6 @@ module RBI
 
       sig { override.returns(String) }
       def to_rbi
-        raise if @types.size < 2
-
         "T.all(#{@types.map(&:to_rbi).join(", ")})"
       end
     end
@@ -181,8 +179,6 @@ module RBI
 
       sig { override.returns(String) }
       def to_rbi
-        raise if @types.size < 2
-
         "T.any(#{@types.map(&:to_rbi).join(", ")})"
       end
 
@@ -318,9 +314,11 @@ module RBI
         end.uniq
 
         if flattened.size == 1
-          flattened.first
+          T.must(flattened.first)
         else
-          T.unsafe(All).new(*flattened)
+          raise ArgumentError, "RBI::Type.all should have at least 2 types supplied" if flattened.size < 2
+
+          All.new(flattened)
         end
       end
 
@@ -365,9 +363,11 @@ module RBI
         end
 
         type = if types.size == 1
-          types.first
+          T.must(types.first)
         else
-          T.unsafe(Any).new(*types)
+          raise ArgumentError, "RBI::Type.any should have at least 2 types supplied" if types.size < 2
+
+          Any.new(types)
         end
 
         if is_nilable
