@@ -252,6 +252,27 @@ module RBI
       assert_equal("[String, Integer]", type.to_rbi)
     end
 
+    def test_build_type_empty_tuple
+      type = Type.tuple
+      refute_predicate(type, :nilable?)
+      assert_equal("[]", type.to_rbi)
+    end
+
+    def test_build_type_shape
+      type = Type.shape(
+        foo: Type.simple("String"),
+        bar: Type.simple("Integer"),
+      )
+      refute_predicate(type, :nilable?)
+      assert_equal("{foo: String, bar: Integer}", type.to_rbi)
+    end
+
+    def test_build_type_empty_shape
+      type = Type.shape
+      refute_predicate(type, :nilable?)
+      assert_equal("{}", type.to_rbi)
+    end
+
     def test_build_type_generic
       type = Type.generic("T::Array", Type.simple("String"))
       refute_predicate(type, :nilable?)
