@@ -192,8 +192,14 @@ module RBI
       end
     end
 
-    class Tuple < Composite
+    class Tuple < Type
       extend T::Sig
+
+      sig { params(types: T::Array[Type]).void }
+      def initialize(types)
+        super()
+        @types = types
+      end
 
       sig { override.returns(String) }
       def to_rbi
@@ -288,7 +294,7 @@ module RBI
 
       sig { params(types: T.any(Type, T::Array[Type])).returns(Tuple) }
       def tuple(*types)
-        T.unsafe(Tuple).new(*types.flatten)
+        Tuple.new(types.flatten)
       end
 
       sig { params(hash_types: T::Hash[Symbol, Type], types: Type).returns(Shape) }
