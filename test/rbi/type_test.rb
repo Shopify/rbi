@@ -215,6 +215,14 @@ module RBI
       assert_equal("T.nilable(T.any(String, Integer))", type.to_rbi)
     end
 
+    def test_build_type_any_of_just_nilclass
+      type = Type.any(
+        Type.simple("NilClass"),
+      )
+      refute_predicate(type, :nilable?)
+      assert_equal("NilClass", type.to_rbi)
+    end
+
     def test_build_type_any_of_trueclass_and_falseclass
       type = Type.any(
         Type.simple("TrueClass"),

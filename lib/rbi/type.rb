@@ -425,11 +425,17 @@ module RBI
           types << boolean
         end
 
-        type = if types.size == 1
+        type = case types.size
+        when 0
+          if is_nilable
+            is_nilable = false
+            simple("NilClass")
+          else
+            raise ArgumentError, "RBI::Type.any should have at least 2 types supplied"
+          end
+        when 1
           T.must(types.first)
         else
-          raise ArgumentError, "RBI::Type.any should have at least 2 types supplied" if types.size < 2
-
           Any.new(types)
         end
 
