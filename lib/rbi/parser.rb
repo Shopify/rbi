@@ -324,7 +324,7 @@ module RBI
     sig { params(node: AST::Node).returns(T.nilable(RBI::Node)) }
     def parse_send(node)
       recv = node.children[0]
-      return nil if recv && recv != :self
+      return if recv && recv != :self
 
       method_name = node.children[1]
       loc = node_loc(node)
@@ -643,7 +643,7 @@ module RBI
       def visit(node)
         v = ConstBuilder.new
         v.visit(node)
-        return nil if v.names.empty?
+        return if v.names.empty?
 
         v.names.join("::")
       end
