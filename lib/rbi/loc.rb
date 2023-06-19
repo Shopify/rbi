@@ -36,8 +36,8 @@ module RBI
     sig { returns(T.nilable(String)) }
     def source
       file = self.file
-      return nil unless file
-      return nil unless ::File.file?(file)
+      return unless file
+      return unless ::File.file?(file)
 
       return ::File.read(file) unless begin_line && end_line
 
