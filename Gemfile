@@ -16,3 +16,5 @@ group(:development, :test) do
   gem("sorbet", ">= 0.5.9204", require: false)
   gem("tapioca", require: false)
 end
+
+gem "stackprof", "~> 0.2.25"
