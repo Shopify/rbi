@@ -24,9 +24,6 @@ Gem::Specification.new do |spec|
     "Rakefile",
   ]
 
-  spec.add_dependency("ast")
-  spec.add_dependency("parser", ">= 3.0.0")
   spec.add_dependency("sorbet-runtime", ">= 0.5.9204")
-  spec.add_dependency("unparser", ">= 0.5.6")
   spec.add_dependency("yarp", ">= 0.10.0")
 end
