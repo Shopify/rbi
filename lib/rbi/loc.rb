@@ -5,6 +5,21 @@ module RBI
   class Loc
     extend T::Sig
 
+    class << self
+      extend T::Sig
+
+      sig { params(file: String, yarp_location: YARP::Location).returns(Loc) }
+      def from_yarp(file, yarp_location)
+        new(
+          file: file,
+          begin_line: yarp_location.start_line,
+          end_line: yarp_location.end_line,
+          begin_column: yarp_location.start_column,
+          end_column: yarp_location.end_column + 1, # TODO: Why is this off by one?
+        )
+      end
+    end
+
     sig { returns(T.nilable(String)) }
     attr_reader :file
 

@@ -800,7 +800,7 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
-    def test_parse_trailing_comments_and_moves_them_in_header
+    def test_parse_collect_dangling_scope_comments
       rbi = <<~RBI
         # A comment 1
         # A comment 2
@@ -814,25 +814,23 @@ module RBI
       assert_equal(<<~RBI, out.string)
         # A comment 1
         # A comment 2
-
-        # A comment 3
         module A
           # B comment
           class B; end
+          # A comment 3
         end
       RBI
     end
 
-    def test_parse_comments_and_discard_orphans
+    def test_parse_collect_dangling_file_comments
       rbi = <<~RBI
         module A; end
         # Orphan comment
       RBI
       out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string)
-        # Orphan comment
-
         module A; end
+        # Orphan comment
       RBI
     end
 
@@ -871,15 +869,15 @@ module RBI
           def bar
         RBI
       end
-      assert_equal("unexpected token $end", e.message)
-      assert_equal("-:2:0-2:0", e.location.to_s)
+      assert_equal("Expected to be able to parse an expression. Expected `end` to close `def` statement.", e.message)
+      assert_equal("-:2:0-1:8", e.location.to_s)
 
       e = assert_raises(ParseError) do
         Parser.parse_string(<<~RBI)
           private include Foo
         RBI
       end
-      assert_equal("Unexpected token `private` before `send`", e.message)
+      assert_equal("Unexpected token `private` before `include Foo`", e.message)
       assert_equal("-:1:0-1:19", e.location.to_s)
 
       e = assert_raises(ParseError) do
@@ -887,7 +885,7 @@ module RBI
           private class Foo; end
         RBI
       end
-      assert_equal("Unexpected token `private` before `class`", e.message)
+      assert_equal("Unexpected token `private` before `class Foo; end`", e.message)
       assert_equal("-:1:0-1:22", e.location.to_s)
 
       e = assert_raises(ParseError) do
@@ -895,7 +893,7 @@ module RBI
           private CST = 42
         RBI
       end
-      assert_equal("Unexpected token `private` before `casgn`", e.message)
+      assert_equal("Unexpected token `private` before `CST = 42`", e.message)
       assert_equal("-:1:0-1:16", e.location.to_s)
     end
 
@@ -944,8 +942,8 @@ module RBI
       e = assert_raises(ParseError) do
         Parser.parse_file(path)
       end
-      assert_equal("unexpected token $end", e.message)
-      assert_equal("test_parse_real_file_with_error.rbi:2:0-2:0", e.location.to_s)
+      assert_equal("Expected to be able to parse an expression. Expected `end` to close `class` statement.", e.message)
+      assert_equal("test_parse_real_file_with_error.rbi:2:0-1:10", e.location.to_s)
 
       FileUtils.rm_rf(path)
     end

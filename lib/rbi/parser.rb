@@ -1,7 +1,7 @@
 # typed: strict
 # frozen_string_literal: true
 
-require "parser"
+require "yarp"
 
 module RBI
   class ParseError < StandardError
@@ -53,19 +53,6 @@ module RBI
   class Parser
     extend T::Sig
 
-    # opt-in to most recent AST format
-    ::Parser::Builders::Default.emit_lambda               = true
-    ::Parser::Builders::Default.emit_procarg0             = true
-    ::Parser::Builders::Default.emit_encoding             = true
-    ::Parser::Builders::Default.emit_index                = true
-    ::Parser::Builders::Default.emit_arg_inside_procarg0  = true
-
-    sig { void }
-    def initialize
-      # Delay load unparser and only if it has not been loaded already.
-      require "unparser" unless defined?(::Unparser)
-    end
-
     class << self
       extend T::Sig
 
@@ -104,22 +91,24 @@ module RBI
 
     private
 
-    sig { params(content: String, file: String).returns(Tree) }
-    def parse(content, file:)
-      node, comments = Unparser.parse_with_comments(content)
-      assoc = ::Parser::Source::Comment.associate_locations(node, comments)
-      builder = TreeBuilder.new(file: file, comments: comments, nodes_comments_assoc: assoc)
-      builder.visit(node)
-      builder.post_process
-      builder.tree
-    rescue ::Parser::SyntaxError => e
-      raise ParseError.new(e.message, Loc.from_ast_loc(file, e.diagnostic.location))
+    sig { params(source: String, file: String).returns(Tree) }
+    def parse(source, file:)
+      result = YARP.parse(source)
+      unless result.success?
+        raise ParseError.new(result.errors.map(&:message).join(" "), Loc.from_yarp(file, result.errors.first.location))
+      end
+
+      visitor = TreeBuilder.new(source, comments: result.comments, file: file)
+      visitor.visit(result.value)
+      visitor.tree
+    rescue YARP::ParseError => e
+      raise ParseError.new(e.message, Loc.from_yarp(file, e.location))
     rescue ParseError => e
       raise e
     rescue => e
-      last_node = builder&.last_node
+      last_node = visitor&.last_node
       last_location = if last_node
-        Loc.from_ast_loc(file, last_node.location)
+        Loc.from_yarp(file, last_node.location)
       else
         Loc.new(file: file)
       end
@@ -128,630 +117,692 @@ module RBI
       exception.print_debug
       raise exception
     end
-  end
 
-  class ASTVisitor
-    extend T::Helpers
-    extend T::Sig
+    class Visitor < YARP::Visitor
+      extend T::Sig
 
-    abstract!
+      sig { params(source: String, file: String).void }
+      def initialize(source, file:)
+        super()
 
-    sig { params(nodes: T::Array[AST::Node]).void }
-    def visit_all(nodes)
-      nodes.each { |node| visit(node) }
+        @source = source
+        @file = file
+      end
+
+      private
+
+      sig { params(node: YARP::Node).returns(Loc) }
+      def node_loc(node)
+        Loc.from_yarp(@file, node.location)
+      end
+
+      sig { params(node: T.nilable(YARP::Node)).returns(T.nilable(String)) }
+      def node_string(node)
+        return unless node
+
+        node.slice
+      end
+
+      sig { params(node: YARP::Node).returns(String) }
+      def node_string!(node)
+        T.must(node_string(node))
+      end
     end
 
-    sig { abstract.params(node: T.nilable(AST::Node)).void }
-    def visit(node); end
+    class TreeBuilder < Visitor
+      extend T::Sig
 
-    private
+      sig { returns(Tree) }
+      attr_reader :tree
 
-    sig { params(node: AST::Node).returns(String) }
-    def parse_name(node)
-      T.must(ConstBuilder.visit(node))
-    end
+      sig { returns(T.nilable(YARP::Node)) }
+      attr_reader :last_node
 
-    sig { params(node: AST::Node).returns(String) }
-    def parse_expr(node)
-      Unparser.unparse(node)
-    end
-  end
+      sig { params(source: String, comments: T::Array[YARP::Comment], file: String).void }
+      def initialize(source, comments:, file:)
+        super(source, file: file)
 
-  class TreeBuilder < ASTVisitor
-    extend T::Sig
+        @comments_by_line = T.let(comments.to_h { |c| [c.location.start_line, c] }, T::Hash[Integer, YARP::Comment])
+        @tree = T.let(Tree.new, Tree)
 
-    sig { returns(Tree) }
-    attr_reader :tree
+        @scopes_stack = T.let([@tree], T::Array[Tree])
+        @last_node = T.let(nil, T.nilable(YARP::Node))
+        @last_sigs = T.let([], T::Array[RBI::Sig])
+        @last_sigs_comments = T.let([], T::Array[Comment])
+      end
 
-    sig { returns(T.nilable(::AST::Node)) }
-    attr_reader :last_node
+      sig { override.params(node: T.nilable(YARP::Node)).void }
+      def visit(node)
+        return unless node
 
-    sig do
-      params(
-        file: String,
-        comments: T::Array[::Parser::Source::Comment],
-        nodes_comments_assoc: T::Hash[::Parser::Source::Map, T::Array[::Parser::Source::Comment]],
-      ).void
-    end
-    def initialize(file:, comments: [], nodes_comments_assoc: {})
-      super()
-      @file = file
-      @comments = comments
-      @nodes_comments_assoc = nodes_comments_assoc
-      @tree = T.let(Tree.new, Tree)
-      @scopes_stack = T.let([@tree], T::Array[Tree])
-      @last_node = T.let(nil, T.nilable(::AST::Node))
-      @last_sigs = T.let([], T::Array[RBI::Sig])
-      @last_sigs_comments = T.let([], T::Array[Comment])
+        @last_node = node
+        super
+      end
 
-      separate_header_comments
-    end
+      sig { override.params(node: YARP::ClassNode).void }
+      def visit_class_node(node)
+        scope = Class.new(
+          node_string!(node.constant_path),
+          superclass_name: node_string(node.superclass),
+          loc: node_loc(node),
+          comments: node_comments(node),
+        )
 
-    sig { void }
-    def post_process
-      assoc_dangling_comments
-      set_root_tree_loc
-    end
-
-    sig { override.params(node: T.nilable(Object)).void }
-    def visit(node)
-      return unless node.is_a?(AST::Node)
-
-      @last_node = node
-
-      case node.type
-      when :module, :class, :sclass
-        scope = parse_scope(node)
         current_scope << scope
         @scopes_stack << scope
-        visit_all(node.children)
+        visit(node.body)
+        collect_dangling_comments(node)
         @scopes_stack.pop
-      when :casgn
-        current_scope << parse_const_assign(node)
-      when :def, :defs
-        current_scope << parse_def(node)
-      when :send
-        node = parse_send(node)
-        current_scope << node if node
-      when :block
-        rbi_node = parse_block(node)
-        if rbi_node.is_a?(Sig)
-          @last_sigs << rbi_node
-          @last_sigs_comments.concat(node_comments(node))
-        elsif rbi_node
-          current_scope << rbi_node
+      end
+
+      sig { override.params(node: YARP::ConstantWriteNode).void }
+      def visit_constant_write_node(node)
+        visit_constant_assign(node)
+      end
+
+      sig { override.params(node: YARP::ConstantPathWriteNode).void }
+      def visit_constant_path_write_node(node)
+        visit_constant_assign(node)
+      end
+
+      sig { params(node: T.any(YARP::ConstantWriteNode, YARP::ConstantPathWriteNode)).void }
+      def visit_constant_assign(node)
+        struct = parse_struct(node)
+
+        current_scope << if struct
+          struct
+        elsif type_variable_definition?(node.value)
+          TypeMember.new(
+            case node
+            when YARP::ConstantWriteNode
+              node.name
+            when YARP::ConstantPathWriteNode
+              node_string!(node.target)
+            end,
+            node_string!(node.value),
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
+        else
+          Const.new(
+            case node
+            when YARP::ConstantWriteNode
+              node.name
+            when YARP::ConstantPathWriteNode
+              node_string!(node.target)
+            end,
+            node_string!(node.value),
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
         end
-      else
-        visit_all(node.children)
       end
 
-      @last_node = nil
-    end
-
-    private
-
-    sig { params(node: AST::Node).returns(Scope) }
-    def parse_scope(node)
-      loc = node_loc(node)
-      comments = node_comments(node)
-
-      case node.type
-      when :module
-        name = parse_name(node.children[0])
-        Module.new(name, loc: loc, comments: comments)
-      when :class
-        name = parse_name(node.children[0])
-        superclass_name = ConstBuilder.visit(node.children[1])
-        Class.new(name, superclass_name: superclass_name, loc: loc, comments: comments)
-      when :sclass
-        SingletonClass.new(loc: loc, comments: comments)
-      else
-        raise ParseError.new("Unsupported scope node type `#{node.type}`", loc)
+      sig { override.params(node: YARP::DefNode).void }
+      def visit_def_node(node)
+        current_scope << Method.new(
+          node.name,
+          params: parse_params(node.parameters),
+          sigs: current_sigs,
+          loc: node_loc(node),
+          comments: current_sigs_comments + node_comments(node),
+          is_singleton: !!node.receiver,
+        )
       end
-    end
 
-    sig { params(node: AST::Node).returns(RBI::Node) }
-    def parse_const_assign(node)
-      node_value = node.children[2]
-      if struct_definition?(node_value)
-        parse_struct(node)
-      elsif type_variable_definition?(node_value)
-        parse_type_variable(node)
-      else
-        name = parse_name(node)
-        value = parse_expr(node_value)
+      sig { override.params(node: YARP::ModuleNode).void }
+      def visit_module_node(node)
+        scope = Module.new(
+          node_string!(node.constant_path),
+          loc: node_loc(node),
+          comments: node_comments(node),
+        )
+
+        current_scope << scope
+        @scopes_stack << scope
+        visit(node.body)
+        collect_dangling_comments(node)
+        @scopes_stack.pop
+      end
+
+      sig { override.params(node: YARP::ProgramNode).void }
+      def visit_program_node(node)
+        super
+
+        collect_orphan_comments
+        separate_header_comments
+        set_root_tree_loc
+      end
+
+      sig { override.params(node: YARP::SingletonClassNode).void }
+      def visit_singleton_class_node(node)
+        scope = SingletonClass.new(
+          loc: node_loc(node),
+          comments: node_comments(node),
+        )
+
+        current_scope << scope
+        @scopes_stack << scope
+        visit(node.body)
+        collect_dangling_comments(node)
+        @scopes_stack.pop
+      end
+
+      sig { params(node: YARP::CallNode).void }
+      def visit_call_node(node)
+        message = node.name
+        case message
+        when "abstract!", "sealed!", "interface!"
+          current_scope << Helper.new(
+            message.delete_suffix("!"),
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
+        when "attr_reader"
+          args = node.arguments
+          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+
+          current_scope << AttrReader.new(
+            *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
+            sigs: current_sigs,
+            loc: node_loc(node),
+            comments: current_sigs_comments + node_comments(node),
+          )
+        when "attr_writer"
+          args = node.arguments
+          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+
+          current_scope << AttrWriter.new(
+            *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
+            sigs: current_sigs,
+            loc: node_loc(node),
+            comments: current_sigs_comments + node_comments(node),
+          )
+        when "attr_accessor"
+          args = node.arguments
+          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+
+          current_scope << AttrAccessor.new(
+            *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
+            sigs: current_sigs,
+            loc: node_loc(node),
+            comments: current_sigs_comments + node_comments(node),
+          )
+        when "enums"
+          block = node.block
+          return unless block.is_a?(YARP::BlockNode)
+
+          body = block.body
+          return unless body.is_a?(YARP::StatementsNode)
+
+          current_scope << TEnumBlock.new(
+            body.body.map { |stmt| T.cast(stmt, YARP::ConstantWriteNode).name },
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
+        when "extend"
+          args = node.arguments
+          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+
+          current_scope << Extend.new(
+            *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
+        when "include"
+          args = node.arguments
+          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+
+          current_scope << Include.new(
+            *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
+        when "mixes_in_class_methods"
+          args = node.arguments
+          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+
+          current_scope << MixesInClassMethods.new(
+            *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
+        when "private", "protected", "public"
+          args = node.arguments
+          if args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+            visit(node.arguments)
+            last_node = @scopes_stack.last&.nodes&.last
+            case last_node
+            when Method, Attr
+              last_node.visibility = parse_visibility(node.name, node)
+            else
+              raise ParseError.new(
+                "Unexpected token `#{node.message}` before `#{last_node&.string&.strip}`",
+                node_loc(node),
+              )
+            end
+          else
+            current_scope << parse_visibility(node.name, node)
+          end
+        when "prop", "const"
+          parse_tstruct_field(node)
+        when "requires_ancestor"
+          block = node.block
+          return unless block.is_a?(YARP::BlockNode)
+
+          body = block.body
+          return unless body.is_a?(YARP::StatementsNode)
+
+          current_scope << RequiresAncestor.new(
+            node_string!(body),
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
+        when "sig"
+          @last_sigs << parse_sig(node)
+        else
+          current_scope << Send.new(
+            message,
+            parse_send_args(node.arguments),
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
+        end
+      end
+
+      private
+
+      # Collect all the remaining comments within a node
+      sig { params(node: YARP::Node).void }
+      def collect_dangling_comments(node)
+        first_line = node.location.start_line
+        last_line = node.location.end_line
+
+        last_node_last_line = node.child_nodes.last&.location&.end_line
+
+        last_line.downto(first_line) do |line|
+          comment = @comments_by_line[line]
+          next unless comment
+          break if last_node_last_line && line <= last_node_last_line
+
+          current_scope << parse_comment(comment)
+          @comments_by_line.delete(line)
+        end
+      end
+
+      # Collect all the remaining comments after visiting the tree
+      sig { void }
+      def collect_orphan_comments
+        last_line = T.let(nil, T.nilable(Integer))
+        last_node_end = @tree.nodes.last&.loc&.end_line
+
+        @comments_by_line.each do |line, comment|
+          # Associate the comment either with the header or the file or as a dangling comment at the end
+          recv = if last_node_end && line >= last_node_end
+            @tree
+          else
+            @tree.comments
+          end
+
+          # Preserve blank lines in comments
+          if last_line && line > last_line + 1
+            recv << BlankLine.new(loc: Loc.from_yarp(@file, comment.location))
+          end
+
+          recv << parse_comment(comment)
+          last_line = line
+        end
+      end
+
+      sig { returns(Tree) }
+      def current_scope
+        T.must(@scopes_stack.last) # Should never be nil since we create a Tree as the root
+      end
+
+      sig { returns(T::Array[Sig]) }
+      def current_sigs
+        sigs = @last_sigs.dup
+        @last_sigs.clear
+        sigs
+      end
+
+      sig { returns(T::Array[Comment]) }
+      def current_sigs_comments
+        comments = @last_sigs_comments.dup
+        @last_sigs_comments.clear
+        comments
+      end
+
+      sig { params(node: YARP::Node).returns(T::Array[Comment]) }
+      def node_comments(node)
+        comments = []
+
+        start_line = node.location.start_line
+        start_line -= 1 unless @comments_by_line.key?(start_line)
+
+        start_line.downto(1) do |line|
+          comment = @comments_by_line[line]
+          break unless comment
+
+          comments.unshift(parse_comment(comment))
+          @comments_by_line.delete(line)
+        end
+
+        comments
+      end
+
+      sig { params(node: YARP::Comment).returns(Comment) }
+      def parse_comment(node)
+        Comment.new(node.location.slice.gsub(/^# ?/, "").rstrip, loc: Loc.from_yarp(@file, node.location))
+      end
+
+      sig { params(node: T.nilable(YARP::Node)).returns(T::Array[Arg]) }
+      def parse_send_args(node)
+        args = T.let([], T::Array[Arg])
+        return args unless node.is_a?(YARP::ArgumentsNode)
+
+        node.arguments.each do |arg|
+          case arg
+          when YARP::KeywordHashNode
+            arg.elements.each do |assoc|
+              next unless assoc.is_a?(YARP::AssocNode)
+
+              args << KwArg.new(
+                node_string!(assoc.key).delete_suffix(":"),
+                T.must(node_string(assoc.value)),
+              )
+            end
+          else
+            args << Arg.new(T.must(node_string(arg)))
+          end
+        end
+
+        args
+      end
+
+      sig { params(node: T.nilable(YARP::Node)).returns(T::Array[Param]) }
+      def parse_params(node)
+        params = []
+        return params unless node.is_a?(YARP::ParametersNode)
+
+        node.requireds.each do |param|
+          next unless param.is_a?(YARP::RequiredParameterNode)
+
+          params << ReqParam.new(
+            param.name.to_s,
+            loc: node_loc(param),
+            comments: node_comments(param),
+          )
+        end
+
+        node.optionals.each do |param|
+          next unless param.is_a?(YARP::OptionalParameterNode)
+
+          params << OptParam.new(
+            param.name.to_s,
+            node_string!(param.value),
+            loc: node_loc(param),
+            comments: node_comments(param),
+          )
+        end
+
+        rest = node.rest
+        if rest.is_a?(YARP::RestParameterNode)
+          params << RestParam.new(
+            rest.name || "*args",
+            loc: node_loc(rest),
+            comments: node_comments(rest),
+          )
+        end
+
+        node.keywords.each do |param|
+          next unless param.is_a?(YARP::KeywordParameterNode)
+
+          value = param.value
+          params << if value
+            KwOptParam.new(
+              param.name.delete_suffix(":"),
+              node_string!(value),
+              loc: node_loc(param),
+              comments: node_comments(param),
+            )
+          else
+            KwParam.new(
+              param.name.delete_suffix(":"),
+              loc: node_loc(param),
+              comments: node_comments(param),
+            )
+          end
+        end
+
+        rest_kw = node.keyword_rest
+        if rest_kw.is_a?(YARP::KeywordRestParameterNode)
+          params << KwRestParam.new(
+            rest_kw.name || "**kwargs",
+            loc: node_loc(rest_kw),
+            comments: node_comments(rest_kw),
+          )
+        end
+
+        block = node.block
+        if block.is_a?(YARP::BlockParameterNode)
+          params << BlockParam.new(
+            block.name || "&block",
+            loc: node_loc(block),
+            comments: node_comments(block),
+          )
+        end
+
+        params
+      end
+
+      sig { params(node: YARP::CallNode).returns(Sig) }
+      def parse_sig(node)
+        @last_sigs_comments = node_comments(node)
+
+        builder = SigBuilder.new(@source, file: @file)
+        builder.current.loc = node_loc(node)
+        builder.visit_call_node(node)
+        builder.current
+      end
+
+      sig { params(node: T.any(YARP::ConstantWriteNode, YARP::ConstantPathWriteNode)).returns(T.nilable(Struct)) }
+      def parse_struct(node)
+        send = node.value
+        return unless send.is_a?(YARP::CallNode)
+        return unless send.message == "new"
+
+        recv = send.receiver
+        return unless recv
+        return unless node_string(recv) =~ /(::)?Struct/
+
+        members = []
+        keyword_init = T.let(false, T::Boolean)
+
+        args = send.arguments
+        if args.is_a?(YARP::ArgumentsNode)
+          args.arguments.each do |arg|
+            case arg
+            when YARP::SymbolNode
+              members << arg.value
+            when YARP::KeywordHashNode
+              arg.elements.each do |assoc|
+                next unless assoc.is_a?(YARP::AssocNode)
+
+                key = node_string!(assoc.key)
+                val = node_string(assoc.value)
+
+                keyword_init = val == "true" if key == "keyword_init:"
+              end
+            else
+              raise ParseError.new("Unexpected node type `#{arg.class}`", node_loc(arg))
+            end
+          end
+        end
+
+        name = case node
+        when YARP::ConstantWriteNode
+          node.name
+        when YARP::ConstantPathWriteNode
+          node_string!(node.target)
+        end
+
         loc = node_loc(node)
         comments = node_comments(node)
-        Const.new(name, value, loc: loc, comments: comments)
+        struct = Struct.new(name, members: members, keyword_init: keyword_init, loc: loc, comments: comments)
+        @scopes_stack << struct
+        visit(send.block)
+        @scopes_stack.pop
+        struct
       end
-    end
 
-    sig { params(node: AST::Node).returns(Method) }
-    def parse_def(node)
-      loc = node_loc(node)
+      sig { params(send: YARP::CallNode).void }
+      def parse_tstruct_field(send)
+        args = send.arguments
+        return unless args.is_a?(YARP::ArgumentsNode)
 
-      case node.type
-      when :def
-        Method.new(
-          node.children[0].to_s,
-          params: node.children[1].children.map { |child| parse_param(child) },
-          sigs: current_sigs,
-          loc: loc,
-          comments: current_sigs_comments + node_comments(node),
+        name_arg, type_arg, *rest = args.arguments
+        return unless name_arg
+        return unless type_arg
+
+        name = node_string!(name_arg).delete_prefix(":")
+        type = node_string!(type_arg)
+        loc = node_loc(send)
+        comments = node_comments(send)
+        default_value = T.let(nil, T.nilable(String))
+
+        rest&.each do |arg|
+          next unless arg.is_a?(YARP::KeywordHashNode)
+
+          arg.elements.each do |assoc|
+            next unless assoc.is_a?(YARP::AssocNode)
+
+            if node_string(assoc.key) == "default:"
+              default_value = node_string(assoc.value)
+            end
+          end
+        end
+
+        current_scope << case send.message
+        when "const"
+          TStructConst.new(name, type, default: default_value, loc: loc, comments: comments)
+        when "prop"
+          TStructProp.new(name, type, default: default_value, loc: loc, comments: comments)
+        else
+          raise ParseError.new("Unexpected message `#{send.message}`", loc)
+        end
+      end
+
+      sig { params(name: String, node: YARP::Node).returns(Visibility) }
+      def parse_visibility(name, node)
+        case name
+        when "public"
+          Public.new(loc: node_loc(node))
+        when "protected"
+          Protected.new(loc: node_loc(node))
+        when "private"
+          Private.new(loc: node_loc(node))
+        else
+          raise ParseError.new("Unexpected visibility `#{name}`", node_loc(node))
+        end
+      end
+
+      sig { void }
+      def separate_header_comments
+        current_scope.nodes.dup.each do |child_node|
+          break unless child_node.is_a?(Comment) || child_node.is_a?(BlankLine)
+
+          current_scope.comments << child_node
+          child_node.detach
+        end
+      end
+
+      sig { void }
+      def set_root_tree_loc
+        first_loc = tree.nodes.first&.loc
+        last_loc = tree.nodes.last&.loc
+
+        @tree.loc = Loc.new(
+          file: @file,
+          begin_line: first_loc&.begin_line || 0,
+          begin_column: first_loc&.begin_column || 0,
+          end_line: last_loc&.end_line || 0,
+          end_column: last_loc&.end_column || 0,
         )
-      when :defs
-        Method.new(
-          node.children[1].to_s,
-          params: node.children[2].children.map { |child| parse_param(child) },
-          is_singleton: true,
-          sigs: current_sigs,
-          loc: loc,
-          comments: current_sigs_comments + node_comments(node),
-        )
-      else
-        raise ParseError.new("Unsupported def node type `#{node.type}`", loc)
+      end
+
+      sig { params(node: T.nilable(YARP::Node)).returns(T::Boolean) }
+      def type_variable_definition?(node)
+        return false unless node.is_a?(YARP::CallNode)
+        return false unless node.block
+
+        node.message == "type_member" || node.message == "type_template"
       end
     end
 
-    sig { params(node: AST::Node).returns(Param) }
-    def parse_param(node)
-      name = node.children[0].to_s
-      loc = node_loc(node)
-      comments = node_comments(node)
-
-      case node.type
-      when :arg
-        ReqParam.new(name, loc: loc, comments: comments)
-      when :optarg
-        value = parse_expr(node.children[1])
-        OptParam.new(name, value, loc: loc, comments: comments)
-      when :restarg
-        RestParam.new(name, loc: loc, comments: comments)
-      when :kwarg
-        KwParam.new(name, loc: loc, comments: comments)
-      when :kwoptarg
-        value = parse_expr(node.children[1])
-        KwOptParam.new(name, value, loc: loc, comments: comments)
-      when :kwrestarg
-        KwRestParam.new(name, loc: loc, comments: comments)
-      when :blockarg
-        BlockParam.new(name, loc: loc, comments: comments)
-      else
-        raise ParseError.new("Unsupported param node type `#{node.type}`", loc)
-      end
-    end
-
-    sig { params(node: AST::Node).returns(T.nilable(RBI::Node)) }
-    def parse_send(node)
-      recv = node.children[0]
-      return if recv && recv != :self
-
-      method_name = node.children[1]
-      loc = node_loc(node)
-      comments = node_comments(node)
-
-      case method_name
-      when :attr_reader
-        symbols = node.children[2..-1].map { |child| child.children[0] }
-        AttrReader.new(*symbols, sigs: current_sigs, loc: loc, comments: current_sigs_comments + comments)
-      when :attr_writer
-        symbols = node.children[2..-1].map { |child| child.children[0] }
-        AttrWriter.new(*symbols, sigs: current_sigs, loc: loc, comments: current_sigs_comments + comments)
-      when :attr_accessor
-        symbols = node.children[2..-1].map { |child| child.children[0] }
-        AttrAccessor.new(*symbols, sigs: current_sigs, loc: loc, comments: current_sigs_comments + comments)
-      when :include
-        names = node.children[2..-1].map { |child| parse_expr(child) }
-        Include.new(*names, loc: loc, comments: comments)
-      when :extend
-        names = node.children[2..-1].map { |child| parse_expr(child) }
-        Extend.new(*names, loc: loc, comments: comments)
-      when :abstract!, :sealed!, :interface!
-        Helper.new(method_name.to_s.delete_suffix("!"), loc: loc, comments: comments)
-      when :mixes_in_class_methods
-        names = node.children[2..-1].map { |child| parse_name(child) }
-        MixesInClassMethods.new(*names, loc: loc, comments: comments)
-      when :public, :protected, :private
-        visibility = case method_name
-        when :protected
-          Protected.new(loc: loc)
-        when :private
-          Private.new(loc: loc)
-        else
-          Public.new(loc: loc)
-        end
-        nested_node = node.children[2]
-        case nested_node&.type
-        when :def, :defs
-          method = parse_def(nested_node)
-          method.visibility = visibility
-          method
-        when :send
-          snode = parse_send(nested_node)
-          raise ParseError.new("Unexpected token `private` before `#{nested_node.type}`", loc) unless snode.is_a?(Attr)
-
-          snode.visibility = visibility
-          snode
-        when nil
-          visibility
-        else
-          raise ParseError.new("Unexpected token `private` before `#{nested_node.type}`", loc)
-        end
-      when :prop
-        name, type, default_value = parse_tstruct_prop(node)
-        TStructProp.new(name, type, default: default_value, loc: loc, comments: comments)
-      when :const
-        name, type, default_value = parse_tstruct_prop(node)
-        TStructConst.new(name, type, default: default_value, loc: loc, comments: comments)
-      else
-        args = parse_send_args(node)
-        Send.new(method_name.to_s, args, loc: loc, comments: comments)
-      end
-    end
-
-    sig { params(node: AST::Node).returns(T::Array[Arg]) }
-    def parse_send_args(node)
-      args = T.let([], T::Array[Arg])
-      node.children[2..-1].each do |child|
-        if child.type == :kwargs
-          child.children.each do |pair|
-            keyword = pair.children.first.children.last.to_s
-            value = parse_expr(pair.children.last)
-            args << KwArg.new(keyword, value)
-          end
-        else
-          args << Arg.new(parse_expr(child))
-        end
-      end
-      args
-    end
-
-    sig { params(node: AST::Node).returns(T.nilable(RBI::Node)) }
-    def parse_block(node)
-      name = node.children[0].children[1]
-
-      case name
-      when :sig
-        parse_sig(node)
-      when :enums
-        parse_enum(node)
-      when :requires_ancestor
-        parse_requires_ancestor(node)
-      else
-        raise ParseError.new("Unsupported block node type `#{name}`", node_loc(node))
-      end
-    end
-
-    sig { params(node: AST::Node).returns(T::Boolean) }
-    def struct_definition?(node)
-      (node.type == :send && node.children[0]&.type == :const && node.children[0].children[1] == :Struct) ||
-        (node.type == :block && struct_definition?(node.children[0]))
-    end
-
-    sig { params(node: AST::Node).returns(RBI::Struct) }
-    def parse_struct(node)
-      name = parse_name(node)
-      loc = node_loc(node)
-      comments = node_comments(node)
-
-      send = node.children[2]
-      body = []
-
-      if send.type == :block
-        if send.children[2].type == :begin
-          body = send.children[2].children
-        else
-          body << send.children[2]
-        end
-        send = send.children[0]
-      end
-
-      members = []
-      keyword_init = T.let(false, T::Boolean)
-      send.children[2..].each do |child|
-        if child.type == :sym
-          members << child.children[0]
-        elsif child.type == :kwargs
-          pair = child.children[0]
-          if pair.children[0].children[0] == :keyword_init
-            keyword_init = true if pair.children[1].type == :true
-          end
-        end
-      end
-
-      struct = Struct.new(name, members: members, keyword_init: keyword_init, loc: loc, comments: comments)
-      @scopes_stack << struct
-      visit_all(body)
-      @scopes_stack.pop
-
-      struct
-    end
-
-    sig { params(node: AST::Node).returns(T::Boolean) }
-    def type_variable_definition?(node)
-      (node.type == :send && node.children[0].nil? && (node.children[1] == :type_member ||
-        node.children[1] == :type_template)) ||
-        (node.type == :block && type_variable_definition?(node.children[0]))
-    end
-
-    sig { params(node: AST::Node).returns(RBI::TypeMember) }
-    def parse_type_variable(node)
-      name = parse_name(node)
-      loc = node_loc(node)
-      comments = node_comments(node)
-
-      send = node.children[2]
-
-      TypeMember.new(name, send.location.expression.source, loc: loc, comments: comments)
-    end
-
-    sig { params(node: AST::Node).returns([String, String, T.nilable(String)]) }
-    def parse_tstruct_prop(node)
-      name = node.children[2].children[0].to_s
-      type = parse_expr(node.children[3])
-      has_default = node.children[4]
-        &.children&.fetch(0, nil)
-        &.children&.fetch(0, nil)
-        &.children&.fetch(0, nil) == :default
-      default_value = if has_default
-        parse_expr(node.children.fetch(4, nil)
-          &.children&.fetch(0, nil)
-          &.children&.fetch(1, nil))
-      end
-      [name, type, default_value]
-    end
-
-    sig { params(node: AST::Node).returns(Sig) }
-    def parse_sig(node)
-      sig = SigBuilder.build(node)
-      sig.loc = node_loc(node)
-      sig
-    end
-
-    sig { params(node: AST::Node).returns(TEnumBlock) }
-    def parse_enum(node)
-      enum = TEnumBlock.new
-
-      body = if node.children[2].type == :begin
-        node.children[2].children
-      else
-        [node.children[2]]
-      end
-
-      body.each do |child|
-        enum << parse_name(child)
-      end
-      enum.loc = node_loc(node)
-      enum
-    end
-
-    sig { params(node: AST::Node).returns(RequiresAncestor) }
-    def parse_requires_ancestor(node)
-      name = parse_name(node.children[2])
-      ra = RequiresAncestor.new(name)
-      ra.loc = node_loc(node)
-      ra
-    end
-
-    sig { params(node: AST::Node).returns(Loc) }
-    def node_loc(node)
-      Loc.from_ast_loc(@file, node.location)
-    end
-
-    sig { params(node: AST::Node).returns(T::Array[Comment]) }
-    def node_comments(node)
-      comments = @nodes_comments_assoc[node.location]
-      return [] unless comments
-
-      comments.map do |comment|
-        text = comment.text[1..-1].strip
-        loc = Loc.from_ast_loc(@file, comment.location)
-        Comment.new(text, loc: loc)
-      end
-    end
-
-    sig { returns(Tree) }
-    def current_scope
-      T.must(@scopes_stack.last) # Should never be nil since we create a Tree as the root
-    end
-
-    sig { returns(T::Array[Sig]) }
-    def current_sigs
-      sigs = @last_sigs.dup
-      @last_sigs.clear
-      sigs
-    end
-
-    sig { returns(T::Array[Comment]) }
-    def current_sigs_comments
-      comments = @last_sigs_comments.dup
-      @last_sigs_comments.clear
-      comments
-    end
-
-    sig { void }
-    def assoc_dangling_comments
-      last_line = T.let(nil, T.nilable(Integer))
-      (@comments - @nodes_comments_assoc.values.flatten).each do |comment|
-        comment_line = comment.location.last_line
-        text = comment.text[1..-1].strip
-        loc = Loc.from_ast_loc(@file, comment.location)
-
-        if last_line && comment_line > last_line + 1
-          # Preserve empty lines in file headers
-          tree.comments << BlankLine.new(loc: loc)
-        end
-
-        tree.comments << Comment.new(text, loc: loc)
-        last_line = comment_line
-      end
-    end
-
-    sig { void }
-    def separate_header_comments
-      return if @nodes_comments_assoc.empty?
-
-      keep = []
-      node = T.must(@nodes_comments_assoc.keys.first)
-      comments = T.must(@nodes_comments_assoc.values.first)
-
-      last_line = T.let(nil, T.nilable(Integer))
-      comments.reverse.each do |comment|
-        comment_line = comment.location.last_line
-
-        break if last_line && comment_line < last_line - 1 ||
-          !last_line && comment_line < node.first_line - 1
-
-        keep << comment
-        last_line = comment_line
-      end
-
-      @nodes_comments_assoc[node] = keep.reverse
-    end
-
-    sig { void }
-    def set_root_tree_loc
-      first_loc = tree.nodes.first&.loc
-      last_loc = tree.nodes.last&.loc
-
-      @tree.loc = Loc.new(
-        file: @file,
-        begin_line: first_loc&.begin_line || 0,
-        begin_column: first_loc&.begin_column || 0,
-        end_line: last_loc&.end_line || 0,
-        end_column: last_loc&.end_column || 0,
-      )
-    end
-  end
-
-  class ConstBuilder < ASTVisitor
-    extend T::Sig
-
-    sig { returns(T::Array[String]) }
-    attr_accessor :names
-
-    sig { void }
-    def initialize
-      super
-      @names = T.let([], T::Array[String])
-    end
-
-    class << self
+    class SigBuilder < Visitor
       extend T::Sig
 
-      sig { params(node: T.nilable(AST::Node)).returns(T.nilable(String)) }
-      def visit(node)
-        v = ConstBuilder.new
-        v.visit(node)
-        return if v.names.empty?
+      sig { returns(Sig) }
+      attr_accessor :current
 
-        v.names.join("::")
+      sig { params(content: String, file: String).void }
+      def initialize(content, file:)
+        super
+
+        @current = T.let(Sig.new, Sig)
       end
-    end
 
-    sig { override.params(node: T.nilable(AST::Node)).void }
-    def visit(node)
-      return unless node
-
-      case node.type
-      when :const, :casgn
-        visit(node.children[0])
-        @names << node.children[1].to_s
-      when :cbase
-        @names << ""
-      when :sym
-        @names << ":#{node.children[0]}"
-      end
-    end
-  end
-
-  class SigBuilder < ASTVisitor
-    extend T::Sig
-
-    sig { returns(Sig) }
-    attr_reader :current
-
-    sig { void }
-    def initialize
-      super
-      @current = T.let(Sig.new, Sig)
-    end
-
-    class << self
-      extend T::Sig
-
-      sig { params(node: AST::Node).returns(Sig) }
-      def build(node)
-        v = SigBuilder.new
-        v.visit_all(node.children)
-        v.current
-      end
-    end
-
-    sig { override.params(node: T.nilable(AST::Node)).void }
-    def visit(node)
-      return unless node
-
-      case node.type
-      when :send
-        visit_send(node)
-      end
-    end
-
-    sig { params(node: AST::Node).void }
-    def visit_send(node)
-      visit(node.children[0]) if node.children[0]
-      name = node.children[1]
-      case name
-      when :sig
-        arg = node.children[2]
-        @current.is_final = arg && arg.children[0] == :final
-      when :abstract
-        @current.is_abstract = true
-      when :override
-        @current.is_override = true
-      when :overridable
-        @current.is_overridable = true
-      when :checked
-        if node.children.length >= 3
-          @current.checked = node.children[2].children[0]
-        end
-      when :type_parameters
-        node.children[2..-1].each do |child|
-          @current.type_params << child.children[0].to_s
-        end
-      when :params
-        if node.children.length >= 3
-          node.children[2].children.each do |child|
-            name = child.children[0].children[0].to_s
-            type = parse_expr(child.children[1])
-            @current << SigParam.new(name, type)
+      sig { override.params(node: YARP::CallNode).void }
+      def visit_call_node(node)
+        case node.message
+        when "sig"
+          args = node.arguments
+          if args.is_a?(YARP::ArgumentsNode)
+            args.arguments.each do |arg|
+              @current.is_final = node_string(arg) == ":final"
+            end
           end
+        when "abstract"
+          @current.is_abstract = true
+        when "checked"
+          args = node.arguments
+          if args.is_a?(YARP::ArgumentsNode)
+            arg = node_string(args.arguments.first)
+            @current.checked = arg&.delete_prefix(":")&.to_sym
+          end
+        when "override"
+          @current.is_override = true
+        when "overridable"
+          @current.is_overridable = true
+        when "params"
+          visit(node.arguments)
+        when "returns"
+          args = node.arguments
+          if args.is_a?(YARP::ArgumentsNode)
+            first = args.arguments.first
+            @current.return_type = node_string!(first) if first
+          end
+        when "type_parameters"
+          args = node.arguments
+          if args.is_a?(YARP::ArgumentsNode)
+            args.arguments.each do |arg|
+              @current.type_params << node_string!(arg).delete_prefix(":")
+            end
+          end
+        when "void"
+          @current.return_type = nil
         end
-      when :returns
-        if node.children.length >= 3
-          @current.return_type = parse_expr(node.children[2])
-        end
-      when :void
-        @current.return_type = nil
-      else
-        raise "#{node.location.line}: Unhandled #{name}"
+
+        visit(node.receiver)
+        visit(node.block)
       end
-    end
-  end
 
-  class Loc
-    class << self
-      extend T::Sig
-
-      sig { params(file: String, ast_loc: T.any(::Parser::Source::Map, ::Parser::Source::Range)).returns(Loc) }
-      def from_ast_loc(file, ast_loc)
-        Loc.new(
-          file: file,
-          begin_line: ast_loc.line,
-          begin_column: ast_loc.column,
-          end_line: ast_loc.last_line,
-          end_column: ast_loc.last_column,
+      sig { override.params(node: YARP::AssocNode).void }
+      def visit_assoc_node(node)
+        @current.params << SigParam.new(
+          node_string!(node.key).delete_suffix(":"),
+          node_string!(T.must(node.value)),
         )
       end
     end
