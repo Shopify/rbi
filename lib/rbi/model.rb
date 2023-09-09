@@ -774,7 +774,7 @@ module RBI
     abstract!
 
     sig { returns(T::Array[String]) }
-    attr_accessor :names
+    attr_reader :names
 
     sig do
       params(
