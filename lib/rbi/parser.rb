@@ -215,7 +215,7 @@ module RBI
           TypeMember.new(
             case node
             when YARP::ConstantWriteNode
-              node.name
+              node.name.to_s
             when YARP::ConstantPathWriteNode
               node_string!(node.target)
             end,
@@ -227,7 +227,7 @@ module RBI
           Const.new(
             case node
             when YARP::ConstantWriteNode
-              node.name
+              node.name.to_s
             when YARP::ConstantPathWriteNode
               node_string!(node.target)
             end,
@@ -241,7 +241,7 @@ module RBI
       sig { override.params(node: YARP::DefNode).void }
       def visit_def_node(node)
         current_scope << Method.new(
-          node.name,
+          node.name.to_s,
           params: parse_params(node.parameters),
           sigs: current_sigs,
           loc: node_loc(node),
@@ -336,7 +336,7 @@ module RBI
           return unless body.is_a?(YARP::StatementsNode)
 
           current_scope << TEnumBlock.new(
-            body.body.map { |stmt| T.cast(stmt, YARP::ConstantWriteNode).name },
+            body.body.map { |stmt| T.cast(stmt, YARP::ConstantWriteNode).name.to_s },
             loc: node_loc(node),
             comments: node_comments(node),
           )
@@ -549,7 +549,7 @@ module RBI
         rest = node.rest
         if rest.is_a?(YARP::RestParameterNode)
           params << RestParam.new(
-            rest.name || "*args",
+            rest.name&.to_s || "*args",
             loc: node_loc(rest),
             comments: node_comments(rest),
           )
@@ -561,14 +561,14 @@ module RBI
           value = param.value
           params << if value
             KwOptParam.new(
-              param.name.delete_suffix(":"),
+              param.name.to_s.delete_suffix(":"),
               node_string!(value),
               loc: node_loc(param),
               comments: node_comments(param),
             )
           else
             KwParam.new(
-              param.name.delete_suffix(":"),
+              param.name.to_s.delete_suffix(":"),
               loc: node_loc(param),
               comments: node_comments(param),
             )
@@ -578,7 +578,7 @@ module RBI
         rest_kw = node.keyword_rest
         if rest_kw.is_a?(YARP::KeywordRestParameterNode)
           params << KwRestParam.new(
-            rest_kw.name || "**kwargs",
+            rest_kw.name&.to_s || "**kwargs",
             loc: node_loc(rest_kw),
             comments: node_comments(rest_kw),
           )
@@ -587,7 +587,7 @@ module RBI
         block = node.block
         if block.is_a?(YARP::BlockParameterNode)
           params << BlockParam.new(
-            block.name || "&block",
+            block.name&.to_s || "&block",
             loc: node_loc(block),
             comments: node_comments(block),
           )
@@ -642,7 +642,7 @@ module RBI
 
         name = case node
         when YARP::ConstantWriteNode
-          node.name
+          node.name.to_s
         when YARP::ConstantPathWriteNode
           node_string!(node.target)
         end
