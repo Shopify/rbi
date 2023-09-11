@@ -95,7 +95,10 @@ module RBI
     def parse(source, file:)
       result = YARP.parse(source)
       unless result.success?
-        raise ParseError.new(result.errors.map(&:message).join(" "), Loc.from_yarp(file, result.errors.first.location))
+        message = result.errors.map { |e| "#{e.message}." }.join(" ")
+        error = result.errors.first
+        location = Loc.new(file: file, begin_line: error.location.start_line, begin_column: error.location.start_column)
+        raise ParseError.new(message, location)
       end
 
       visitor = TreeBuilder.new(source, comments: result.comments, file: file)
