@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rbi (0.1.0)
+    rbi (0.1.1)
       sorbet-runtime (>= 0.5.9204)
       yarp (>= 0.11.0)
 
