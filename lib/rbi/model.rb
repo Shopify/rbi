@@ -353,7 +353,7 @@ module RBI
     abstract!
 
     sig { returns(T::Array[Symbol]) }
-    attr_accessor :names
+    attr_reader :names
 
     sig { returns(Visibility) }
     attr_accessor :visibility
