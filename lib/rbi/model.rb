@@ -107,7 +107,7 @@ module RBI
     extend T::Sig
 
     sig { returns(T::Array[Node]) }
-    attr_reader :nodes
+    attr_accessor :nodes
 
     sig do
       params(
@@ -313,7 +313,7 @@ module RBI
     extend T::Sig
 
     sig { returns(String) }
-    attr_reader :name, :value
+    attr_accessor :name, :value
 
     sig do
       params(
@@ -359,7 +359,7 @@ module RBI
     attr_accessor :visibility
 
     sig { returns(T::Array[Sig]) }
-    attr_reader :sigs
+    attr_accessor :sigs
 
     sig do
       params(
@@ -487,7 +487,7 @@ module RBI
     attr_accessor :name
 
     sig { returns(T::Array[Param]) }
-    attr_reader :params
+    attr_accessor :params
 
     sig { returns(T::Boolean) }
     attr_accessor :is_singleton
@@ -556,7 +556,7 @@ module RBI
     abstract!
 
     sig { returns(String) }
-    attr_reader :name
+    attr_accessor :name
 
     sig do
       params(
@@ -602,7 +602,7 @@ module RBI
     extend T::Sig
 
     sig { returns(String) }
-    attr_reader :value
+    attr_accessor :value
 
     sig do
       params(
@@ -683,7 +683,7 @@ module RBI
     extend T::Sig
 
     sig { returns(String) }
-    attr_reader :value
+    attr_accessor :value
 
     sig do
       params(
@@ -845,7 +845,7 @@ module RBI
     abstract!
 
     sig { returns(Symbol) }
-    attr_reader :visibility
+    attr_accessor :visibility
 
     sig { params(visibility: Symbol, loc: T.nilable(Loc), comments: T::Array[Comment]).void }
     def initialize(visibility, loc: nil, comments: [])
@@ -928,10 +928,10 @@ module RBI
     extend T::Sig
 
     sig { returns(String) }
-    attr_reader :method
+    attr_accessor :method
 
     sig { returns(T::Array[Arg]) }
-    attr_reader :args
+    attr_accessor :args
 
     sig do
       params(
@@ -969,7 +969,7 @@ module RBI
     extend T::Sig
 
     sig { returns(String) }
-    attr_reader :value
+    attr_accessor :value
 
     sig do
       params(
@@ -997,7 +997,7 @@ module RBI
     extend T::Sig
 
     sig { returns(String) }
-    attr_reader :keyword
+    attr_accessor :keyword
 
     sig do
       params(
@@ -1028,7 +1028,7 @@ module RBI
     extend T::Sig
 
     sig { returns(T::Array[SigParam]) }
-    attr_reader :params
+    attr_accessor :params
 
     sig { returns(T.nilable(String)) }
     attr_accessor :return_type
@@ -1037,7 +1037,7 @@ module RBI
     attr_accessor :is_abstract, :is_override, :is_overridable, :is_final
 
     sig { returns(T::Array[String]) }
-    attr_reader :type_params
+    attr_accessor :type_params
 
     sig { returns(T.nilable(Symbol)) }
     attr_accessor :checked
@@ -1099,7 +1099,7 @@ module RBI
     extend T::Sig
 
     sig { returns(String) }
-    attr_reader :name, :type
+    attr_accessor :name, :type
 
     sig do
       params(
@@ -1257,7 +1257,7 @@ module RBI
     extend T::Sig
 
     sig { returns(T::Array[String]) }
-    attr_reader :names
+    attr_accessor :names
 
     sig do
       params(
@@ -1295,7 +1295,7 @@ module RBI
     extend T::Helpers
 
     sig { returns(String) }
-    attr_reader :name
+    attr_accessor :name
 
     sig do
       params(
@@ -1321,7 +1321,7 @@ module RBI
     extend T::Sig
 
     sig { returns(String) }
-    attr_reader :name, :value
+    attr_accessor :name, :value
 
     sig do
       params(
@@ -1379,7 +1379,7 @@ module RBI
     extend T::Sig
 
     sig { returns(String) }
-    attr_reader :name
+    attr_accessor :name
 
     sig do
       params(
