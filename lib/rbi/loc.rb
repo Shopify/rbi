@@ -15,7 +15,7 @@ module RBI
           begin_line: yarp_location.start_line,
           end_line: yarp_location.end_line,
           begin_column: yarp_location.start_column,
-          end_column: yarp_location.end_column + 1, # TODO: Why is this off by one?
+          end_column: yarp_location.end_column,
         )
       end
     end
@@ -45,7 +45,11 @@ module RBI
 
     sig { returns(String) }
     def to_s
-      "#{file}:#{begin_line}:#{begin_column}-#{end_line}:#{end_column}"
+      if end_line && end_column
+        "#{file}:#{begin_line}:#{begin_column}-#{end_line}:#{end_column}"
+      else
+        "#{file}:#{begin_line}:#{begin_column}"
+      end
     end
 
     sig { returns(T.nilable(String)) }

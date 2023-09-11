@@ -30,6 +30,16 @@ module RBI
       FileUtils.rm_rf(TEST_FILE_PATH)
     end
 
+    def test_loc_to_s_display_end_line_and_column_if_set
+      loc = Loc.new(file: "foo.rb", begin_line: 1, begin_column: 2, end_line: 3, end_column: 4)
+      assert_equal("foo.rb:1:2-3:4", loc.to_s)
+    end
+
+    def test_loc_to_s_does_not_display_end_line_and_column_if_not_set
+      loc = Loc.new(file: "foo.rb", begin_line: 1, begin_column: 2)
+      assert_equal("foo.rb:1:2", loc.to_s)
+    end
+
     def test_loc_source_without_file_returns_nil
       loc = Loc.new(file: nil)
       assert_nil(loc.source)

@@ -869,8 +869,8 @@ module RBI
           def bar
         RBI
       end
-      assert_equal("Expected to be able to parse an expression. Expected `end` to close `def` statement.", e.message)
-      assert_equal("-:2:0-1:8", e.location.to_s)
+      assert_equal("Cannot parse the expression. Expected an `end` to close the `def` statement.", e.message)
+      assert_equal("-:2:0", e.location.to_s)
 
       e = assert_raises(ParseError) do
         Parser.parse_string(<<~RBI)
@@ -942,8 +942,8 @@ module RBI
       e = assert_raises(ParseError) do
         Parser.parse_file(path)
       end
-      assert_equal("Expected to be able to parse an expression. Expected `end` to close `class` statement.", e.message)
-      assert_equal("test_parse_real_file_with_error.rbi:2:0-1:10", e.location.to_s)
+      assert_equal("Cannot parse the expression. Expected an `end` to close the `class` statement.", e.message)
+      assert_equal("test_parse_real_file_with_error.rbi:2:0", e.location.to_s)
 
       FileUtils.rm_rf(path)
     end

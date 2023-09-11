@@ -568,7 +568,7 @@ module YARP
     sig { params(keys: T::Array[Symbol]).returns(T::Hash[Symbol, T.nilable(T.any(Node, T::Array[Node], String, Token, T::Array[Token], Location))]) }
     def deconstruct_keys(keys); end
 
-    sig { returns(T.nilable(String)) }
+    sig { returns(T.nilable(Symbol)) }
     def name; end
 
     sig { returns(String) }
@@ -1402,7 +1402,7 @@ module YARP
     sig { params(keys: T::Array[Symbol]).returns(T::Hash[Symbol, T.nilable(T.any(Node, T::Array[Node], String, Token, T::Array[Token], Location))]) }
     def deconstruct_keys(keys); end
 
-    sig { returns(String) }
+    sig { returns(Symbol) }
     def name; end
 
     sig { returns(String) }
@@ -1447,7 +1447,7 @@ module YARP
     sig { params(keys: T::Array[Symbol]).returns(T::Hash[Symbol, T.nilable(T.any(Node, T::Array[Node], String, Token, T::Array[Token], Location))]) }
     def deconstruct_keys(keys); end
 
-    sig { returns(String) }
+    sig { returns(Symbol) }
     def name; end
 
     sig { params(inspector: NodeInspector).returns(String) }
@@ -1486,7 +1486,7 @@ module YARP
     sig { params(keys: T::Array[Symbol]).returns(T::Hash[Symbol, T.nilable(T.any(Node, T::Array[Node], String, Token, T::Array[Token], Location))]) }
     def deconstruct_keys(keys); end
 
-    sig { returns(String) }
+    sig { returns(Symbol) }
     def name; end
 
     sig { returns(String) }
@@ -1822,7 +1822,7 @@ module YARP
     sig { params(keys: T::Array[Symbol]).returns(T::Hash[Symbol, T.nilable(T.any(Node, T::Array[Node], String, Token, T::Array[Token], Location))]) }
     def deconstruct_keys(keys); end
 
-    sig { returns(String) }
+    sig { returns(Symbol) }
     def name; end
 
     sig { returns(String) }
@@ -1889,7 +1889,7 @@ module YARP
     sig { params(keys: T::Array[Symbol]).returns(T::Hash[Symbol, T.nilable(T.any(Node, T::Array[Node], String, Token, T::Array[Token], Location))]) }
     def deconstruct_keys(keys); end
 
-    sig { returns(String) }
+    sig { returns(Symbol) }
     def name; end
 
     sig { returns(String) }
@@ -3402,7 +3402,7 @@ module YARP
     sig { params(keys: T::Array[Symbol]).returns(T::Hash[Symbol, T.nilable(T.any(Node, T::Array[Node], String, Token, T::Array[Token], Location))]) }
     def deconstruct_keys(keys); end
 
-    sig { returns(String) }
+    sig { returns(Symbol) }
     def name; end
 
     sig { params(inspector: NodeInspector).returns(String) }
@@ -3442,7 +3442,7 @@ module YARP
     sig { returns(String) }
     def operator; end
 
-    sig { returns(T.nilable(String)) }
+    sig { returns(T.nilable(Symbol)) }
     def name; end
 
     sig { params(inspector: NodeInspector).returns(String) }
@@ -4861,7 +4861,7 @@ module YARP
     sig { returns(String) }
     def operator; end
 
-    sig { returns(T.nilable(String)) }
+    sig { returns(T.nilable(Symbol)) }
     def name; end
 
     sig { params(inspector: NodeInspector).returns(String) }
