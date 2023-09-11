@@ -744,7 +744,7 @@ module RBI
       extend T::Sig
 
       sig { returns(Sig) }
-      attr_accessor :current
+      attr_reader :current
 
       sig { params(content: String, file: String).void }
       def initialize(content, file:)
