@@ -96,7 +96,7 @@ module RBI
       result = YARP.parse(source)
       unless result.success?
         message = result.errors.map { |e| "#{e.message}." }.join(" ")
-        error = result.errors.first
+        error = T.must(result.errors.first)
         location = Loc.new(file: file, begin_line: error.location.start_line, begin_column: error.location.start_column)
         raise ParseError.new(message, location)
       end
@@ -421,7 +421,7 @@ module RBI
         first_line = node.location.start_line
         last_line = node.location.end_line
 
-        last_node_last_line = node.child_nodes.last&.location&.end_line
+        last_node_last_line = T.unsafe(node).child_nodes.last&.location&.end_line
 
         last_line.downto(first_line) do |line|
           comment = @comments_by_line[line]
