@@ -78,7 +78,7 @@ GEM
     yard-sorbet (0.8.1)
       sorbet-runtime (>= 0.5)
       yard (>= 0.9)
-    yarp (0.11.0)
+    yarp (0.13.0)
 
 PLATFORMS
   arm64-darwin-21
