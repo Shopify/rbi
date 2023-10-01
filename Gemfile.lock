@@ -47,7 +47,7 @@ GEM
       parser (>= 3.2.1.0)
     rubocop-shopify (2.14.0)
       rubocop (~> 1.51)
-    rubocop-sorbet (0.7.3)
+    rubocop-sorbet (0.7.4)
       rubocop (>= 0.90.0)
     ruby-progressbar (1.13.0)
     sorbet (0.5.10993)
