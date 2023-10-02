@@ -104,8 +104,6 @@ module RBI
       visitor = TreeBuilder.new(source, comments: result.comments, file: file)
       visitor.visit(result.value)
       visitor.tree
-    rescue YARP::ParseError => e
-      raise ParseError.new(e.message, Loc.from_yarp(file, e.location))
     rescue ParseError => e
       raise e
     rescue => e
