@@ -8,14 +8,14 @@ module RBI
     class << self
       extend T::Sig
 
-      sig { params(file: String, yarp_location: YARP::Location).returns(Loc) }
-      def from_yarp(file, yarp_location)
+      sig { params(file: String, prism_location: Prism::Location).returns(Loc) }
+      def from_prism(file, prism_location)
         new(
           file: file,
-          begin_line: yarp_location.start_line,
-          end_line: yarp_location.end_line,
-          begin_column: yarp_location.start_column,
-          end_column: yarp_location.end_column,
+          begin_line: prism_location.start_line,
+          end_line: prism_location.end_line,
+          begin_column: prism_location.start_column,
+          end_column: prism_location.end_column,
         )
       end
     end

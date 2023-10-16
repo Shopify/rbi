@@ -1,7 +1,7 @@
 # typed: strict
 # frozen_string_literal: true
 
-require "yarp"
+require "prism"
 
 module RBI
   class ParseError < StandardError
@@ -93,7 +93,7 @@ module RBI
 
     sig { params(source: String, file: String).returns(Tree) }
     def parse(source, file:)
-      result = YARP.parse(source)
+      result = Prism.parse(source)
       unless result.success?
         message = result.errors.map { |e| "#{e.message}." }.join(" ")
         error = result.errors.first
@@ -109,7 +109,7 @@ module RBI
     rescue => e
       last_node = visitor&.last_node
       last_location = if last_node
-        Loc.from_yarp(file, last_node.location)
+        Loc.from_prism(file, last_node.location)
       else
         Loc.new(file: file)
       end
@@ -119,7 +119,7 @@ module RBI
       raise exception
     end
 
-    class Visitor < YARP::Visitor
+    class Visitor < Prism::Visitor
       extend T::Sig
 
       sig { params(source: String, file: String).void }
@@ -132,19 +132,19 @@ module RBI
 
       private
 
-      sig { params(node: YARP::Node).returns(Loc) }
+      sig { params(node: Prism::Node).returns(Loc) }
       def node_loc(node)
-        Loc.from_yarp(@file, node.location)
+        Loc.from_prism(@file, node.location)
       end
 
-      sig { params(node: T.nilable(YARP::Node)).returns(T.nilable(String)) }
+      sig { params(node: T.nilable(Prism::Node)).returns(T.nilable(String)) }
       def node_string(node)
         return unless node
 
         node.slice
       end
 
-      sig { params(node: YARP::Node).returns(String) }
+      sig { params(node: Prism::Node).returns(String) }
       def node_string!(node)
         T.must(node_string(node))
       end
@@ -156,23 +156,23 @@ module RBI
       sig { returns(Tree) }
       attr_reader :tree
 
-      sig { returns(T.nilable(YARP::Node)) }
+      sig { returns(T.nilable(Prism::Node)) }
       attr_reader :last_node
 
-      sig { params(source: String, comments: T::Array[YARP::Comment], file: String).void }
+      sig { params(source: String, comments: T::Array[Prism::Comment], file: String).void }
       def initialize(source, comments:, file:)
         super(source, file: file)
 
-        @comments_by_line = T.let(comments.to_h { |c| [c.location.start_line, c] }, T::Hash[Integer, YARP::Comment])
+        @comments_by_line = T.let(comments.to_h { |c| [c.location.start_line, c] }, T::Hash[Integer, Prism::Comment])
         @tree = T.let(Tree.new, Tree)
 
         @scopes_stack = T.let([@tree], T::Array[Tree])
-        @last_node = T.let(nil, T.nilable(YARP::Node))
+        @last_node = T.let(nil, T.nilable(Prism::Node))
         @last_sigs = T.let([], T::Array[RBI::Sig])
         @last_sigs_comments = T.let([], T::Array[Comment])
       end
 
-      sig { override.params(node: T.nilable(YARP::Node)).void }
+      sig { override.params(node: T.nilable(Prism::Node)).void }
       def visit(node)
         return unless node
 
@@ -180,7 +180,7 @@ module RBI
         super
       end
 
-      sig { override.params(node: YARP::ClassNode).void }
+      sig { override.params(node: Prism::ClassNode).void }
       def visit_class_node(node)
         scope = Class.new(
           node_string!(node.constant_path),
@@ -196,17 +196,17 @@ module RBI
         @scopes_stack.pop
       end
 
-      sig { override.params(node: YARP::ConstantWriteNode).void }
+      sig { override.params(node: Prism::ConstantWriteNode).void }
       def visit_constant_write_node(node)
         visit_constant_assign(node)
       end
 
-      sig { override.params(node: YARP::ConstantPathWriteNode).void }
+      sig { override.params(node: Prism::ConstantPathWriteNode).void }
       def visit_constant_path_write_node(node)
         visit_constant_assign(node)
       end
 
-      sig { params(node: T.any(YARP::ConstantWriteNode, YARP::ConstantPathWriteNode)).void }
+      sig { params(node: T.any(Prism::ConstantWriteNode, Prism::ConstantPathWriteNode)).void }
       def visit_constant_assign(node)
         struct = parse_struct(node)
 
@@ -215,9 +215,9 @@ module RBI
         elsif type_variable_definition?(node.value)
           TypeMember.new(
             case node
-            when YARP::ConstantWriteNode
+            when Prism::ConstantWriteNode
               node.name.to_s
-            when YARP::ConstantPathWriteNode
+            when Prism::ConstantPathWriteNode
               node_string!(node.target)
             end,
             node_string!(node.value),
@@ -227,9 +227,9 @@ module RBI
         else
           Const.new(
             case node
-            when YARP::ConstantWriteNode
+            when Prism::ConstantWriteNode
               node.name.to_s
-            when YARP::ConstantPathWriteNode
+            when Prism::ConstantPathWriteNode
               node_string!(node.target)
             end,
             node_string!(node.value),
@@ -239,7 +239,7 @@ module RBI
         end
       end
 
-      sig { override.params(node: YARP::DefNode).void }
+      sig { override.params(node: Prism::DefNode).void }
       def visit_def_node(node)
         current_scope << Method.new(
           node.name.to_s,
@@ -251,7 +251,7 @@ module RBI
         )
       end
 
-      sig { override.params(node: YARP::ModuleNode).void }
+      sig { override.params(node: Prism::ModuleNode).void }
       def visit_module_node(node)
         scope = Module.new(
           node_string!(node.constant_path),
@@ -266,7 +266,7 @@ module RBI
         @scopes_stack.pop
       end
 
-      sig { override.params(node: YARP::ProgramNode).void }
+      sig { override.params(node: Prism::ProgramNode).void }
       def visit_program_node(node)
         super
 
@@ -275,7 +275,7 @@ module RBI
         set_root_tree_loc
       end
 
-      sig { override.params(node: YARP::SingletonClassNode).void }
+      sig { override.params(node: Prism::SingletonClassNode).void }
       def visit_singleton_class_node(node)
         scope = SingletonClass.new(
           loc: node_loc(node),
@@ -289,9 +289,9 @@ module RBI
         @scopes_stack.pop
       end
 
-      sig { params(node: YARP::CallNode).void }
+      sig { params(node: Prism::CallNode).void }
       def visit_call_node(node)
-        message = node.name
+        message = node.name.to_s
         case message
         when "abstract!", "sealed!", "interface!"
           current_scope << Helper.new(
@@ -301,7 +301,7 @@ module RBI
           )
         when "attr_reader"
           args = node.arguments
-          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
 
           current_scope << AttrReader.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
@@ -311,7 +311,7 @@ module RBI
           )
         when "attr_writer"
           args = node.arguments
-          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
 
           current_scope << AttrWriter.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
@@ -321,7 +321,7 @@ module RBI
           )
         when "attr_accessor"
           args = node.arguments
-          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
 
           current_scope << AttrAccessor.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
@@ -331,19 +331,19 @@ module RBI
           )
         when "enums"
           block = node.block
-          return unless block.is_a?(YARP::BlockNode)
+          return unless block.is_a?(Prism::BlockNode)
 
           body = block.body
-          return unless body.is_a?(YARP::StatementsNode)
+          return unless body.is_a?(Prism::StatementsNode)
 
           current_scope << TEnumBlock.new(
-            body.body.map { |stmt| T.cast(stmt, YARP::ConstantWriteNode).name.to_s },
+            body.body.map { |stmt| T.cast(stmt, Prism::ConstantWriteNode).name.to_s },
             loc: node_loc(node),
             comments: node_comments(node),
           )
         when "extend"
           args = node.arguments
-          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
 
           current_scope << Extend.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
@@ -352,7 +352,7 @@ module RBI
           )
         when "include"
           args = node.arguments
-          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
 
           current_scope << Include.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
@@ -361,7 +361,7 @@ module RBI
           )
         when "mixes_in_class_methods"
           args = node.arguments
-          return unless args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
 
           current_scope << MixesInClassMethods.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
@@ -370,12 +370,12 @@ module RBI
           )
         when "private", "protected", "public"
           args = node.arguments
-          if args.is_a?(YARP::ArgumentsNode) && args.arguments.any?
+          if args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
             visit(node.arguments)
             last_node = @scopes_stack.last&.nodes&.last
             case last_node
             when Method, Attr
-              last_node.visibility = parse_visibility(node.name, node)
+              last_node.visibility = parse_visibility(node.name.to_s, node)
             else
               raise ParseError.new(
                 "Unexpected token `#{node.message}` before `#{last_node&.string&.strip}`",
@@ -383,16 +383,16 @@ module RBI
               )
             end
           else
-            current_scope << parse_visibility(node.name, node)
+            current_scope << parse_visibility(node.name.to_s, node)
           end
         when "prop", "const"
           parse_tstruct_field(node)
         when "requires_ancestor"
           block = node.block
-          return unless block.is_a?(YARP::BlockNode)
+          return unless block.is_a?(Prism::BlockNode)
 
           body = block.body
-          return unless body.is_a?(YARP::StatementsNode)
+          return unless body.is_a?(Prism::StatementsNode)
 
           current_scope << RequiresAncestor.new(
             node_string!(body),
@@ -414,7 +414,7 @@ module RBI
       private
 
       # Collect all the remaining comments within a node
-      sig { params(node: YARP::Node).void }
+      sig { params(node: Prism::Node).void }
       def collect_dangling_comments(node)
         first_line = node.location.start_line
         last_line = node.location.end_line
@@ -447,7 +447,7 @@ module RBI
 
           # Preserve blank lines in comments
           if last_line && line > last_line + 1
-            recv << BlankLine.new(loc: Loc.from_yarp(@file, comment.location))
+            recv << BlankLine.new(loc: Loc.from_prism(@file, comment.location))
           end
 
           recv << parse_comment(comment)
@@ -474,7 +474,7 @@ module RBI
         comments
       end
 
-      sig { params(node: YARP::Node).returns(T::Array[Comment]) }
+      sig { params(node: Prism::Node).returns(T::Array[Comment]) }
       def node_comments(node)
         comments = []
 
@@ -492,21 +492,21 @@ module RBI
         comments
       end
 
-      sig { params(node: YARP::Comment).returns(Comment) }
+      sig { params(node: Prism::Comment).returns(Comment) }
       def parse_comment(node)
-        Comment.new(node.location.slice.gsub(/^# ?/, "").rstrip, loc: Loc.from_yarp(@file, node.location))
+        Comment.new(node.location.slice.gsub(/^# ?/, "").rstrip, loc: Loc.from_prism(@file, node.location))
       end
 
-      sig { params(node: T.nilable(YARP::Node)).returns(T::Array[Arg]) }
+      sig { params(node: T.nilable(Prism::Node)).returns(T::Array[Arg]) }
       def parse_send_args(node)
         args = T.let([], T::Array[Arg])
-        return args unless node.is_a?(YARP::ArgumentsNode)
+        return args unless node.is_a?(Prism::ArgumentsNode)
 
         node.arguments.each do |arg|
           case arg
-          when YARP::KeywordHashNode
+          when Prism::KeywordHashNode
             arg.elements.each do |assoc|
-              next unless assoc.is_a?(YARP::AssocNode)
+              next unless assoc.is_a?(Prism::AssocNode)
 
               args << KwArg.new(
                 node_string!(assoc.key).delete_suffix(":"),
@@ -521,13 +521,13 @@ module RBI
         args
       end
 
-      sig { params(node: T.nilable(YARP::Node)).returns(T::Array[Param]) }
+      sig { params(node: T.nilable(Prism::Node)).returns(T::Array[Param]) }
       def parse_params(node)
         params = []
-        return params unless node.is_a?(YARP::ParametersNode)
+        return params unless node.is_a?(Prism::ParametersNode)
 
         node.requireds.each do |param|
-          next unless param.is_a?(YARP::RequiredParameterNode)
+          next unless param.is_a?(Prism::RequiredParameterNode)
 
           params << ReqParam.new(
             param.name.to_s,
@@ -537,7 +537,7 @@ module RBI
         end
 
         node.optionals.each do |param|
-          next unless param.is_a?(YARP::OptionalParameterNode)
+          next unless param.is_a?(Prism::OptionalParameterNode)
 
           params << OptParam.new(
             param.name.to_s,
@@ -548,7 +548,7 @@ module RBI
         end
 
         rest = node.rest
-        if rest.is_a?(YARP::RestParameterNode)
+        if rest.is_a?(Prism::RestParameterNode)
           params << RestParam.new(
             rest.name&.to_s || "*args",
             loc: node_loc(rest),
@@ -557,7 +557,7 @@ module RBI
         end
 
         node.keywords.each do |param|
-          next unless param.is_a?(YARP::KeywordParameterNode)
+          next unless param.is_a?(Prism::KeywordParameterNode)
 
           value = param.value
           params << if value
@@ -577,7 +577,7 @@ module RBI
         end
 
         rest_kw = node.keyword_rest
-        if rest_kw.is_a?(YARP::KeywordRestParameterNode)
+        if rest_kw.is_a?(Prism::KeywordRestParameterNode)
           params << KwRestParam.new(
             rest_kw.name&.to_s || "**kwargs",
             loc: node_loc(rest_kw),
@@ -586,7 +586,7 @@ module RBI
         end
 
         block = node.block
-        if block.is_a?(YARP::BlockParameterNode)
+        if block.is_a?(Prism::BlockParameterNode)
           params << BlockParam.new(
             block.name&.to_s || "&block",
             loc: node_loc(block),
@@ -597,7 +597,7 @@ module RBI
         params
       end
 
-      sig { params(node: YARP::CallNode).returns(Sig) }
+      sig { params(node: Prism::CallNode).returns(Sig) }
       def parse_sig(node)
         @last_sigs_comments = node_comments(node)
 
@@ -607,10 +607,10 @@ module RBI
         builder.current
       end
 
-      sig { params(node: T.any(YARP::ConstantWriteNode, YARP::ConstantPathWriteNode)).returns(T.nilable(Struct)) }
+      sig { params(node: T.any(Prism::ConstantWriteNode, Prism::ConstantPathWriteNode)).returns(T.nilable(Struct)) }
       def parse_struct(node)
         send = node.value
-        return unless send.is_a?(YARP::CallNode)
+        return unless send.is_a?(Prism::CallNode)
         return unless send.message == "new"
 
         recv = send.receiver
@@ -621,14 +621,14 @@ module RBI
         keyword_init = T.let(false, T::Boolean)
 
         args = send.arguments
-        if args.is_a?(YARP::ArgumentsNode)
+        if args.is_a?(Prism::ArgumentsNode)
           args.arguments.each do |arg|
             case arg
-            when YARP::SymbolNode
+            when Prism::SymbolNode
               members << arg.value
-            when YARP::KeywordHashNode
+            when Prism::KeywordHashNode
               arg.elements.each do |assoc|
-                next unless assoc.is_a?(YARP::AssocNode)
+                next unless assoc.is_a?(Prism::AssocNode)
 
                 key = node_string!(assoc.key)
                 val = node_string(assoc.value)
@@ -642,9 +642,9 @@ module RBI
         end
 
         name = case node
-        when YARP::ConstantWriteNode
+        when Prism::ConstantWriteNode
           node.name.to_s
-        when YARP::ConstantPathWriteNode
+        when Prism::ConstantPathWriteNode
           node_string!(node.target)
         end
 
@@ -657,10 +657,10 @@ module RBI
         struct
       end
 
-      sig { params(send: YARP::CallNode).void }
+      sig { params(send: Prism::CallNode).void }
       def parse_tstruct_field(send)
         args = send.arguments
-        return unless args.is_a?(YARP::ArgumentsNode)
+        return unless args.is_a?(Prism::ArgumentsNode)
 
         name_arg, type_arg, *rest = args.arguments
         return unless name_arg
@@ -673,10 +673,10 @@ module RBI
         default_value = T.let(nil, T.nilable(String))
 
         rest&.each do |arg|
-          next unless arg.is_a?(YARP::KeywordHashNode)
+          next unless arg.is_a?(Prism::KeywordHashNode)
 
           arg.elements.each do |assoc|
-            next unless assoc.is_a?(YARP::AssocNode)
+            next unless assoc.is_a?(Prism::AssocNode)
 
             if node_string(assoc.key) == "default:"
               default_value = node_string(assoc.value)
@@ -694,7 +694,7 @@ module RBI
         end
       end
 
-      sig { params(name: String, node: YARP::Node).returns(Visibility) }
+      sig { params(name: String, node: Prism::Node).returns(Visibility) }
       def parse_visibility(name, node)
         case name
         when "public"
@@ -732,9 +732,9 @@ module RBI
         )
       end
 
-      sig { params(node: T.nilable(YARP::Node)).returns(T::Boolean) }
+      sig { params(node: T.nilable(Prism::Node)).returns(T::Boolean) }
       def type_variable_definition?(node)
-        return false unless node.is_a?(YARP::CallNode)
+        return false unless node.is_a?(Prism::CallNode)
         return false unless node.block
 
         node.message == "type_member" || node.message == "type_template"
@@ -754,12 +754,12 @@ module RBI
         @current = T.let(Sig.new, Sig)
       end
 
-      sig { override.params(node: YARP::CallNode).void }
+      sig { override.params(node: Prism::CallNode).void }
       def visit_call_node(node)
         case node.message
         when "sig"
           args = node.arguments
-          if args.is_a?(YARP::ArgumentsNode)
+          if args.is_a?(Prism::ArgumentsNode)
             args.arguments.each do |arg|
               @current.is_final = node_string(arg) == ":final"
             end
@@ -768,7 +768,7 @@ module RBI
           @current.is_abstract = true
         when "checked"
           args = node.arguments
-          if args.is_a?(YARP::ArgumentsNode)
+          if args.is_a?(Prism::ArgumentsNode)
             arg = node_string(args.arguments.first)
             @current.checked = arg&.delete_prefix(":")&.to_sym
           end
@@ -780,13 +780,13 @@ module RBI
           visit(node.arguments)
         when "returns"
           args = node.arguments
-          if args.is_a?(YARP::ArgumentsNode)
+          if args.is_a?(Prism::ArgumentsNode)
             first = args.arguments.first
             @current.return_type = node_string!(first) if first
           end
         when "type_parameters"
           args = node.arguments
-          if args.is_a?(YARP::ArgumentsNode)
+          if args.is_a?(Prism::ArgumentsNode)
             args.arguments.each do |arg|
               @current.type_params << node_string!(arg).delete_prefix(":")
             end
@@ -799,7 +799,7 @@ module RBI
         visit(node.block)
       end
 
-      sig { override.params(node: YARP::AssocNode).void }
+      sig { override.params(node: Prism::AssocNode).void }
       def visit_assoc_node(node)
         @current.params << SigParam.new(
           node_string!(node.key).delete_suffix(":"),
