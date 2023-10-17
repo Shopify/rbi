@@ -172,16 +172,9 @@ module RBI
         @last_sigs_comments = T.let([], T::Array[Comment])
       end
 
-      sig { override.params(node: T.nilable(Prism::Node)).void }
-      def visit(node)
-        return unless node
-
-        @last_node = node
-        super
-      end
-
       sig { override.params(node: Prism::ClassNode).void }
       def visit_class_node(node)
+        @last_node = node
         scope = Class.new(
           node_string!(node.constant_path),
           superclass_name: node_string(node.superclass),
@@ -194,16 +187,21 @@ module RBI
         visit(node.body)
         collect_dangling_comments(node)
         @scopes_stack.pop
+        @last_node = nil
       end
 
       sig { override.params(node: Prism::ConstantWriteNode).void }
       def visit_constant_write_node(node)
+        @last_node = node
         visit_constant_assign(node)
+        @last_node = nil
       end
 
       sig { override.params(node: Prism::ConstantPathWriteNode).void }
       def visit_constant_path_write_node(node)
+        @last_node = node
         visit_constant_assign(node)
+        @last_node = nil
       end
 
       sig { params(node: T.any(Prism::ConstantWriteNode, Prism::ConstantPathWriteNode)).void }
@@ -241,6 +239,7 @@ module RBI
 
       sig { override.params(node: Prism::DefNode).void }
       def visit_def_node(node)
+        @last_node = node
         current_scope << Method.new(
           node.name.to_s,
           params: parse_params(node.parameters),
@@ -249,10 +248,12 @@ module RBI
           comments: current_sigs_comments + node_comments(node),
           is_singleton: !!node.receiver,
         )
+        @last_node = nil
       end
 
       sig { override.params(node: Prism::ModuleNode).void }
       def visit_module_node(node)
+        @last_node = node
         scope = Module.new(
           node_string!(node.constant_path),
           loc: node_loc(node),
@@ -264,19 +265,23 @@ module RBI
         visit(node.body)
         collect_dangling_comments(node)
         @scopes_stack.pop
+        @last_node = nil
       end
 
       sig { override.params(node: Prism::ProgramNode).void }
       def visit_program_node(node)
+        @last_node = node
         super
 
         collect_orphan_comments
         separate_header_comments
         set_root_tree_loc
+        @last_node = nil
       end
 
       sig { override.params(node: Prism::SingletonClassNode).void }
       def visit_singleton_class_node(node)
+        @last_node = node
         scope = SingletonClass.new(
           loc: node_loc(node),
           comments: node_comments(node),
@@ -287,10 +292,12 @@ module RBI
         visit(node.body)
         collect_dangling_comments(node)
         @scopes_stack.pop
+        @last_node = nil
       end
 
       sig { params(node: Prism::CallNode).void }
       def visit_call_node(node)
+        @last_node = node
         message = node.name.to_s
         case message
         when "abstract!", "sealed!", "interface!"
@@ -301,7 +308,11 @@ module RBI
           )
         when "attr_reader"
           args = node.arguments
-          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+
+          unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+            @last_node = nil
+            return
+          end
 
           current_scope << AttrReader.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
@@ -311,7 +322,11 @@ module RBI
           )
         when "attr_writer"
           args = node.arguments
-          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+
+          unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+            @last_node = nil
+            return
+          end
 
           current_scope << AttrWriter.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
@@ -321,7 +336,11 @@ module RBI
           )
         when "attr_accessor"
           args = node.arguments
-          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+
+          unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+            @last_node = nil
+            return
+          end
 
           current_scope << AttrAccessor.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
@@ -331,10 +350,18 @@ module RBI
           )
         when "enums"
           block = node.block
-          return unless block.is_a?(Prism::BlockNode)
+
+          unless block.is_a?(Prism::BlockNode)
+            @last_node = nil
+            return
+          end
 
           body = block.body
-          return unless body.is_a?(Prism::StatementsNode)
+
+          unless body.is_a?(Prism::StatementsNode)
+            @last_node = nil
+            return
+          end
 
           current_scope << TEnumBlock.new(
             body.body.map { |stmt| T.cast(stmt, Prism::ConstantWriteNode).name.to_s },
@@ -343,7 +370,11 @@ module RBI
           )
         when "extend"
           args = node.arguments
-          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+
+          unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+            @last_node = nil
+            return
+          end
 
           current_scope << Extend.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
@@ -352,7 +383,11 @@ module RBI
           )
         when "include"
           args = node.arguments
-          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+
+          unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+            @last_node = nil
+            return
+          end
 
           current_scope << Include.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
@@ -361,7 +396,11 @@ module RBI
           )
         when "mixes_in_class_methods"
           args = node.arguments
-          return unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+
+          unless args.is_a?(Prism::ArgumentsNode) && args.arguments.any?
+            @last_node = nil
+            return
+          end
 
           current_scope << MixesInClassMethods.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
@@ -389,10 +428,18 @@ module RBI
           parse_tstruct_field(node)
         when "requires_ancestor"
           block = node.block
-          return unless block.is_a?(Prism::BlockNode)
+
+          unless block.is_a?(Prism::BlockNode)
+            @last_node = nil
+            return
+          end
 
           body = block.body
-          return unless body.is_a?(Prism::StatementsNode)
+
+          unless body.is_a?(Prism::StatementsNode)
+            @last_node = nil
+            return
+          end
 
           current_scope << RequiresAncestor.new(
             node_string!(body),
@@ -409,6 +456,8 @@ module RBI
             comments: node_comments(node),
           )
         end
+
+        @last_node = nil
       end
 
       private
