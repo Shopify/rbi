@@ -2,8 +2,8 @@ PATH
   remote: .
   specs:
     rbi (0.1.1)
+      prism (>= 0.14.0)
       sorbet-runtime (>= 0.5.9204)
-      yarp (>= 0.11.0)
 
 GEM
   remote: https://rubygems.org/
@@ -28,6 +28,7 @@ GEM
       ast (~> 2.4.1)
       racc
     prettier_print (1.2.1)
+    prism (0.14.0)
     racc (1.7.1)
     rainbow (3.1.1)
     rake (13.0.6)
@@ -82,7 +83,6 @@ GEM
     yard-sorbet (0.8.1)
       sorbet-runtime (>= 0.5)
       yard (>= 0.9)
-    yarp (0.13.0)
 
 PLATFORMS
   arm64-darwin-21

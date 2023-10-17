@@ -24,6 +24,6 @@ Gem::Specification.new do |spec|
     "Rakefile",
   ]
 
+  spec.add_dependency("prism", ">= 0.14.0")
   spec.add_dependency("sorbet-runtime", ">= 0.5.9204")
-  spec.add_dependency("yarp", ">= 0.11.0")
 end
