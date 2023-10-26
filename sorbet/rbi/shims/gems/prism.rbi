@@ -508,8 +508,8 @@ module Prism
   #     $'
   #     ^^
   class BackReferenceReadNode < Node
-    sig { params(location: Location).void }
-    def initialize(location); end
+    sig { params(name: Symbol, location: Location).void }
+    def initialize(name, location); end
 
     sig { params(visitor: Visitor).void }
     def accept(visitor); end
@@ -921,9 +921,6 @@ module Prism
         receiver: T.nilable(Node),
         call_operator_loc: T.nilable(Location),
         message_loc: T.nilable(Location),
-        opening_loc: T.nilable(Location),
-        arguments: T.nilable(ArgumentsNode),
-        closing_loc: T.nilable(Location),
         flags: Integer,
         read_name: Symbol,
         write_name: Symbol,
@@ -932,8 +929,7 @@ module Prism
         location: Location,
       ).void
     end
-    def initialize(receiver, call_operator_loc, message_loc, opening_loc, arguments, closing_loc, flags, read_name,
-      write_name, operator_loc, value, location)
+    def initialize(receiver, call_operator_loc, message_loc, flags, read_name, write_name, operator_loc, value, location)
     end
 
     sig { params(visitor: Visitor).void }
@@ -1130,9 +1126,6 @@ module Prism
         receiver: T.nilable(Node),
         call_operator_loc: T.nilable(Location),
         message_loc: T.nilable(Location),
-        opening_loc: T.nilable(Location),
-        arguments: T.nilable(ArgumentsNode),
-        closing_loc: T.nilable(Location),
         flags: Integer,
         read_name: Symbol,
         write_name: Symbol,
@@ -1142,8 +1135,7 @@ module Prism
         location: Location,
       ).void
     end
-    def initialize(receiver, call_operator_loc, message_loc, opening_loc, arguments, closing_loc, flags, read_name,
-      write_name, operator, operator_loc, value, location)
+    def initialize(receiver, call_operator_loc, message_loc, flags, read_name, write_name, operator, operator_loc, value, location)
     end
 
     sig { params(visitor: Visitor).void }
@@ -1229,9 +1221,6 @@ module Prism
         receiver: T.nilable(Node),
         call_operator_loc: T.nilable(Location),
         message_loc: T.nilable(Location),
-        opening_loc: T.nilable(Location),
-        arguments: T.nilable(ArgumentsNode),
-        closing_loc: T.nilable(Location),
         flags: Integer,
         read_name: Symbol,
         write_name: Symbol,
@@ -1240,8 +1229,7 @@ module Prism
         location: Location,
       ).void
     end
-    def initialize(receiver, call_operator_loc, message_loc, opening_loc, arguments, closing_loc, flags, read_name,
-      write_name, operator_loc, value, location)
+    def initialize(receiver, call_operator_loc, message_loc, flags, read_name, write_name, operator_loc, value, location)
     end
 
     sig { params(visitor: Visitor).void }
@@ -7782,8 +7770,8 @@ module Prism
     sig { params(value: T.nilable(Node), operator_loc: Location, location: Location).returns(AssocSplatNode) }
     def AssocSplatNode(value, operator_loc, location); end
     # Create a new BackReferenceReadNode node
-    sig { params(location: Location).returns(BackReferenceReadNode) }
-    def BackReferenceReadNode(location); end
+    sig { params(name: Symbol, location: Location).returns(BackReferenceReadNode) }
+    def BackReferenceReadNode(name, location); end
     # Create a new BeginNode node
     sig do
       params(
@@ -7846,9 +7834,6 @@ module Prism
         receiver: T.nilable(Node),
         call_operator_loc: T.nilable(Location),
         message_loc: T.nilable(Location),
-        opening_loc: T.nilable(Location),
-        arguments: T.nilable(ArgumentsNode),
-        closing_loc: T.nilable(Location),
         flags: Integer,
         read_name: Symbol,
         write_name: Symbol,
@@ -7857,8 +7842,8 @@ module Prism
         location: Location,
       ).returns(CallAndWriteNode)
     end
-    def CallAndWriteNode(receiver, call_operator_loc, message_loc, opening_loc, arguments, closing_loc, flags,
-      read_name, write_name, operator_loc, value, location)
+    def CallAndWriteNode(receiver, call_operator_loc, message_loc, flags, read_name, write_name, operator_loc,
+      value, location = nil)
     end
     # Create a new CallNode node
     sig do
@@ -7884,9 +7869,6 @@ module Prism
         receiver: T.nilable(Node),
         call_operator_loc: T.nilable(Location),
         message_loc: T.nilable(Location),
-        opening_loc: T.nilable(Location),
-        arguments: T.nilable(ArgumentsNode),
-        closing_loc: T.nilable(Location),
         flags: Integer,
         read_name: Symbol,
         write_name: Symbol,
@@ -7896,8 +7878,8 @@ module Prism
         location: Location,
       ).returns(CallOperatorWriteNode)
     end
-    def CallOperatorWriteNode(receiver, call_operator_loc, message_loc, opening_loc, arguments, closing_loc, flags,
-      read_name, write_name, operator, operator_loc, value, location)
+    def CallOperatorWriteNode(receiver, call_operator_loc, message_loc, flags, read_name, write_name, operator,
+      operator_loc, value, location = nil)
     end
     # Create a new CallOrWriteNode node
     sig do
@@ -7905,9 +7887,6 @@ module Prism
         receiver: T.nilable(Node),
         call_operator_loc: T.nilable(Location),
         message_loc: T.nilable(Location),
-        opening_loc: T.nilable(Location),
-        arguments: T.nilable(ArgumentsNode),
-        closing_loc: T.nilable(Location),
         flags: Integer,
         read_name: Symbol,
         write_name: Symbol,
@@ -7916,9 +7895,7 @@ module Prism
         location: Location,
       ).returns(CallOrWriteNode)
     end
-    def CallOrWriteNode(receiver, call_operator_loc, message_loc, opening_loc, arguments, closing_loc, flags,
-      read_name, write_name, operator_loc, value, location)
-    end
+    def CallOrWriteNode(receiver, call_operator_loc, message_loc, flags, read_name, write_name, operator_loc, value, location = nil); end
     # Create a new CapturePatternNode node
     sig { params(value: Node, target: Node, operator_loc: Location, location: Location).returns(CapturePatternNode) }
     def CapturePatternNode(value, target, operator_loc, location); end
