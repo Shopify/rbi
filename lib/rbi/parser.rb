@@ -606,19 +606,17 @@ module RBI
         end
 
         node.keywords.each do |param|
-          next unless param.is_a?(Prism::KeywordParameterNode)
-
-          value = param.value
-          params << if value
-            KwOptParam.new(
+          case param
+          when Prism::RequiredKeywordParameterNode
+            params << KwParam.new(
               param.name.to_s.delete_suffix(":"),
-              node_string!(value),
               loc: node_loc(param),
               comments: node_comments(param),
             )
-          else
-            KwParam.new(
+          when Prism::OptionalKeywordParameterNode
+            params << KwOptParam.new(
               param.name.to_s.delete_suffix(":"),
+              node_string!(param.value),
               loc: node_loc(param),
               comments: node_comments(param),
             )
