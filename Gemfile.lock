@@ -1,8 +1,8 @@
 PATH
   remote: .
   specs:
-    rbi (0.1.4)
-      prism (>= 0.17.1, < 0.18)
+    rbi (0.1.5)
+      prism (>= 0.18.0, < 0.19)
       sorbet-runtime (>= 0.5.9204)
 
 GEM
@@ -27,8 +27,8 @@ GEM
       ast (~> 2.4.1)
       racc
     prettier_print (1.2.1)
-    prism (0.17.1)
-    racc (1.7.1)
+    prism (0.18.0)
+    racc (1.7.3)
     rainbow (3.1.1)
     rake (13.1.0)
     regexp_parser (2.8.2)
@@ -51,14 +51,14 @@ GEM
     rubocop-sorbet (0.7.5)
       rubocop (>= 0.90.0)
     ruby-progressbar (1.13.0)
-    sorbet (0.5.11108)
-      sorbet-static (= 0.5.11108)
-    sorbet-runtime (0.5.11108)
-    sorbet-static (0.5.11108-universal-darwin)
-    sorbet-static (0.5.11108-x86_64-linux)
-    sorbet-static-and-runtime (0.5.11108)
-      sorbet (= 0.5.11108)
-      sorbet-runtime (= 0.5.11108)
+    sorbet (0.5.11141)
+      sorbet-static (= 0.5.11141)
+    sorbet-runtime (0.5.11141)
+    sorbet-static (0.5.11141-universal-darwin)
+    sorbet-static (0.5.11141-x86_64-linux)
+    sorbet-static-and-runtime (0.5.11141)
+      sorbet (= 0.5.11141)
+      sorbet-runtime (= 0.5.11141)
     spoom (1.2.4)
       erubi (>= 1.10.0)
       sorbet-static-and-runtime (>= 0.5.10187)
@@ -66,16 +66,16 @@ GEM
       thor (>= 0.19.2)
     syntax_tree (6.2.0)
       prettier_print (>= 1.2.0)
-    tapioca (0.11.9)
+    tapioca (0.11.12)
       bundler (>= 2.2.25)
       netrc (>= 0.11.0)
       parallel (>= 1.21.0)
-      rbi (~> 0.1.0, >= 0.1.0)
+      rbi (>= 0.1.4, < 0.2)
       sorbet-static-and-runtime (>= 0.5.10187)
       spoom (~> 1.2.0, >= 1.2.0)
       thor (>= 1.2.0)
       yard-sorbet
-    thor (1.2.2)
+    thor (1.3.0)
     unicode-display_width (2.5.0)
     yard (0.9.34)
     yard-sorbet (0.8.1)
@@ -100,4 +100,4 @@ DEPENDENCIES
   tapioca
 
 BUNDLED WITH
-   2.2.28
+   2.4.22
