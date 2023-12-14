@@ -221,22 +221,22 @@ class Spoom::Cli::Main < ::Thor
   # source://spoom//lib/spoom/cli.rb#61
   def __print_version; end
 
-  # source://thor/1.2.2/lib/thor.rb#239
+  # source://thor/1.3.0/lib/thor.rb#334
   def bump(*args); end
 
-  # source://thor/1.2.2/lib/thor.rb#239
+  # source://thor/1.3.0/lib/thor.rb#334
   def config(*args); end
 
-  # source://thor/1.2.2/lib/thor.rb#239
+  # source://thor/1.3.0/lib/thor.rb#334
   def coverage(*args); end
 
   # source://spoom//lib/spoom/cli.rb#43
   def files; end
 
-  # source://thor/1.2.2/lib/thor.rb#239
+  # source://thor/1.3.0/lib/thor.rb#334
   def lsp(*args); end
 
-  # source://thor/1.2.2/lib/thor.rb#239
+  # source://thor/1.3.0/lib/thor.rb#334
   def tc(*args); end
 
   class << self
@@ -359,19 +359,19 @@ module Spoom::Context::Bundle
 
   # Run a command with `bundle` in this context directory
   #
-  # source://spoom//lib/spoom/context/bundle.rb#27
+  # source://spoom//lib/spoom/context/bundle.rb#33
   sig { params(command: ::String, version: T.nilable(::String), capture_err: T::Boolean).returns(::Spoom::ExecResult) }
   def bundle(command, version: T.unsafe(nil), capture_err: T.unsafe(nil)); end
 
   # Run a command `bundle exec` in this context directory
   #
-  # source://spoom//lib/spoom/context/bundle.rb#40
+  # source://spoom//lib/spoom/context/bundle.rb#46
   sig { params(command: ::String, version: T.nilable(::String), capture_err: T::Boolean).returns(::Spoom::ExecResult) }
   def bundle_exec(command, version: T.unsafe(nil), capture_err: T.unsafe(nil)); end
 
   # Run `bundle install` in this context directory
   #
-  # source://spoom//lib/spoom/context/bundle.rb#34
+  # source://spoom//lib/spoom/context/bundle.rb#40
   sig { params(version: T.nilable(::String), capture_err: T::Boolean).returns(::Spoom::ExecResult) }
   def bundle_install!(version: T.unsafe(nil), capture_err: T.unsafe(nil)); end
 
@@ -379,19 +379,29 @@ module Spoom::Context::Bundle
   #
   # Returns `nil` if `gem` cannot be found in the Gemfile.
   #
-  # source://spoom//lib/spoom/context/bundle.rb#48
+  # source://spoom//lib/spoom/context/bundle.rb#62
   sig { params(gem: ::String).returns(T.nilable(::String)) }
   def gem_version_from_gemfile_lock(gem); end
 
-  # Read the `contents` of the Gemfile in this context directory
+  # source://spoom//lib/spoom/context/bundle.rb#51
+  sig { returns(T::Hash[::String, ::Bundler::LazySpecification]) }
+  def gemfile_lock_specs; end
+
+  # Read the contents of the Gemfile in this context directory
   #
   # source://spoom//lib/spoom/context/bundle.rb#15
   sig { returns(T.nilable(::String)) }
   def read_gemfile; end
 
-  # Set the `contents` of the Gemfile in this context directory
+  # Read the contents of the Gemfile.lock in this context directory
   #
   # source://spoom//lib/spoom/context/bundle.rb#21
+  sig { returns(T.nilable(::String)) }
+  def read_gemfile_lock; end
+
+  # Set the `contents` of the Gemfile in this context directory
+  #
+  # source://spoom//lib/spoom/context/bundle.rb#27
   sig { params(contents: ::String, append: T::Boolean).void }
   def write_gemfile!(contents, append: T.unsafe(nil)); end
 end
@@ -421,11 +431,21 @@ module Spoom::Context::FileSystem
   sig { params(relative_path: ::String).returns(::String) }
   def absolute_path_to(relative_path); end
 
+  # source://spoom//lib/spoom/context/file_system.rb#53
+  sig do
+    params(
+      allow_extensions: T::Array[::String],
+      allow_mime_types: T::Array[::String],
+      exclude_patterns: T::Array[::String]
+    ).returns(T::Array[::String])
+  end
+  def collect_files(allow_extensions: T.unsafe(nil), allow_mime_types: T.unsafe(nil), exclude_patterns: T.unsafe(nil)); end
+
   # Delete this context and its content
   #
   # Warning: it will `rm -rf` the context directory on the file system.
   #
-  # source://spoom//lib/spoom/context/file_system.rb#88
+  # source://spoom//lib/spoom/context/file_system.rb#105
   sig { void }
   def destroy!; end
 
@@ -437,7 +457,7 @@ module Spoom::Context::FileSystem
 
   # Does `relative_path` point to an existing file in this context directory?
   #
-  # source://spoom//lib/spoom/context/file_system.rb#48
+  # source://spoom//lib/spoom/context/file_system.rb#65
   sig { params(relative_path: ::String).returns(T::Boolean) }
   def file?(relative_path); end
 
@@ -461,7 +481,7 @@ module Spoom::Context::FileSystem
 
   # Move the file or directory from `from_relative_path` to `to_relative_path`
   #
-  # source://spoom//lib/spoom/context/file_system.rb#78
+  # source://spoom//lib/spoom/context/file_system.rb#95
   sig { params(from_relative_path: ::String, to_relative_path: ::String).void }
   def move!(from_relative_path, to_relative_path); end
 
@@ -469,13 +489,13 @@ module Spoom::Context::FileSystem
   #
   # Will raise if the file doesn't exist.
   #
-  # source://spoom//lib/spoom/context/file_system.rb#56
+  # source://spoom//lib/spoom/context/file_system.rb#73
   sig { params(relative_path: ::String).returns(::String) }
   def read(relative_path); end
 
   # Remove the path at `relative_path` (recursive + force) in this context directory
   #
-  # source://spoom//lib/spoom/context/file_system.rb#72
+  # source://spoom//lib/spoom/context/file_system.rb#89
   sig { params(relative_path: ::String).void }
   def remove!(relative_path); end
 
@@ -483,7 +503,7 @@ module Spoom::Context::FileSystem
   #
   # Append to the file if `append` is true.
   #
-  # source://spoom//lib/spoom/context/file_system.rb#64
+  # source://spoom//lib/spoom/context/file_system.rb#81
   sig { params(relative_path: ::String, contents: ::String, append: T::Boolean).void }
   def write!(relative_path, contents = T.unsafe(nil), append: T.unsafe(nil)); end
 end
@@ -506,21 +526,27 @@ module Spoom::Context::Git
   sig { params(ref: ::String).returns(::Spoom::ExecResult) }
   def git_checkout!(ref: T.unsafe(nil)); end
 
-  # Run `git add . && git commit` in this context directory
+  # Run `git checkout -b <branch-name> <ref>` in this context directory
   #
   # source://spoom//lib/spoom/context/git.rb#68
-  sig { params(message: ::String, time: ::Time, allow_empty: T::Boolean).void }
+  sig { params(branch_name: ::String, ref: T.nilable(::String)).returns(::Spoom::ExecResult) }
+  def git_checkout_new_branch!(branch_name, ref: T.unsafe(nil)); end
+
+  # Run `git add . && git commit` in this context directory
+  #
+  # source://spoom//lib/spoom/context/git.rb#78
+  sig { params(message: ::String, time: ::Time, allow_empty: T::Boolean).returns(::Spoom::ExecResult) }
   def git_commit!(message: T.unsafe(nil), time: T.unsafe(nil), allow_empty: T.unsafe(nil)); end
 
   # Get the current git branch in this context directory
   #
-  # source://spoom//lib/spoom/context/git.rb#79
+  # source://spoom//lib/spoom/context/git.rb#89
   sig { returns(T.nilable(::String)) }
   def git_current_branch; end
 
   # Run `git diff` in this context directory
   #
-  # source://spoom//lib/spoom/context/git.rb#88
+  # source://spoom//lib/spoom/context/git.rb#98
   sig { params(arg: ::String).returns(::Spoom::ExecResult) }
   def git_diff(*arg); end
 
@@ -535,21 +561,27 @@ module Spoom::Context::Git
 
   # Get the last commit in the currently checked out branch
   #
-  # source://spoom//lib/spoom/context/git.rb#94
+  # source://spoom//lib/spoom/context/git.rb#104
   sig { params(short_sha: T::Boolean).returns(T.nilable(::Spoom::Git::Commit)) }
   def git_last_commit(short_sha: T.unsafe(nil)); end
 
-  # source://spoom//lib/spoom/context/git.rb#105
+  # source://spoom//lib/spoom/context/git.rb#115
   sig { params(arg: ::String).returns(::Spoom::ExecResult) }
   def git_log(*arg); end
 
-  # source://spoom//lib/spoom/context/git.rb#110
+  # Run `git push <remote> <ref>` in this context directory
+  #
+  # source://spoom//lib/spoom/context/git.rb#121
+  sig { params(remote: ::String, ref: ::String, force: T::Boolean).returns(::Spoom::ExecResult) }
+  def git_push!(remote, ref, force: T.unsafe(nil)); end
+
+  # source://spoom//lib/spoom/context/git.rb#126
   sig { params(arg: ::String).returns(::Spoom::ExecResult) }
   def git_show(*arg); end
 
   # Is there uncommited changes in this context directory?
   #
-  # source://spoom//lib/spoom/context/git.rb#116
+  # source://spoom//lib/spoom/context/git.rb#132
   sig { params(path: ::String).returns(T::Boolean) }
   def git_workdir_clean?(path: T.unsafe(nil)); end
 end
@@ -562,35 +594,35 @@ module Spoom::Context::Sorbet
 
   # Does this context has a `sorbet/config` file?
   #
-  # source://spoom//lib/spoom/context/sorbet.rb#102
+  # source://spoom//lib/spoom/context/sorbet.rb#119
   sig { returns(T::Boolean) }
   def has_sorbet_config?; end
 
   # Read the strictness sigil from the file at `relative_path` (returns `nil` if no sigil)
   #
-  # source://spoom//lib/spoom/context/sorbet.rb#125
+  # source://spoom//lib/spoom/context/sorbet.rb#142
   sig { params(relative_path: ::String).returns(T.nilable(::String)) }
   def read_file_strictness(relative_path); end
 
   # Read the contents of `sorbet/config` in this context directory
   #
-  # source://spoom//lib/spoom/context/sorbet.rb#113
+  # source://spoom//lib/spoom/context/sorbet.rb#130
   sig { returns(::String) }
   def read_sorbet_config; end
 
-  # source://spoom//lib/spoom/context/sorbet.rb#107
+  # source://spoom//lib/spoom/context/sorbet.rb#124
   sig { returns(::Spoom::Sorbet::Config) }
   def sorbet_config; end
 
   # Get the commit introducing the `sorbet/config` file
   #
-  # source://spoom//lib/spoom/context/sorbet.rb#131
+  # source://spoom//lib/spoom/context/sorbet.rb#148
   sig { returns(T.nilable(::Spoom::Git::Commit)) }
   def sorbet_intro_commit; end
 
   # Get the commit removing the `sorbet/config` file
   #
-  # source://spoom//lib/spoom/context/sorbet.rb#143
+  # source://spoom//lib/spoom/context/sorbet.rb#160
   sig { returns(T.nilable(::Spoom::Git::Commit)) }
   def sorbet_removal_commit; end
 
@@ -608,7 +640,7 @@ module Spoom::Context::Sorbet
 
   # List all files typechecked by Sorbet from its `config` that matches `strictness`
   #
-  # source://spoom//lib/spoom/context/sorbet.rb#87
+  # source://spoom//lib/spoom/context/sorbet.rb#104
   sig do
     params(
       strictness: ::String,
@@ -632,13 +664,13 @@ module Spoom::Context::Sorbet
   sig { params(arg: ::String, sorbet_bin: T.nilable(::String), capture_err: T::Boolean).returns(::Spoom::ExecResult) }
   def srb_tc(*arg, sorbet_bin: T.unsafe(nil), capture_err: T.unsafe(nil)); end
 
-  # source://spoom//lib/spoom/context/sorbet.rb#93
+  # source://spoom//lib/spoom/context/sorbet.rb#110
   sig { params(arg: ::String, sorbet_bin: T.nilable(::String), capture_err: T::Boolean).returns(T.nilable(::String)) }
   def srb_version(*arg, sorbet_bin: T.unsafe(nil), capture_err: T.unsafe(nil)); end
 
   # Set the `contents` of `sorbet/config` in this context directory
   #
-  # source://spoom//lib/spoom/context/sorbet.rb#119
+  # source://spoom//lib/spoom/context/sorbet.rb#136
   sig { params(contents: ::String, append: T::Boolean).void }
   def write_sorbet_config!(contents, append: T.unsafe(nil)); end
 end
@@ -713,11 +745,6 @@ class Spoom::Coverage::Cards::Erb < ::Spoom::Coverage::Cards::Card
   # source://spoom//lib/spoom/coverage/report.rb#115
   sig { override.returns(::String) }
   def html; end
-
-  class << self
-    # source://sorbet-runtime/0.5.10875/lib/types/private/abstract/declare.rb#37
-    def new(*args, **_arg1, &blk); end
-  end
 end
 
 # source://spoom//lib/spoom/coverage/report.rb#153
@@ -869,9 +896,6 @@ class Spoom::Coverage::D3::Base
     # source://spoom//lib/spoom/coverage/d3/base.rb#26
     sig { returns(::String) }
     def header_style; end
-
-    # source://sorbet-runtime/0.5.10875/lib/types/private/abstract/declare.rb#37
-    def new(*args, **_arg1, &blk); end
   end
 end
 
@@ -934,7 +958,7 @@ class Spoom::Coverage::D3::ColorPalette < ::T::Struct
   prop :strong, ::String
 
   class << self
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -961,9 +985,6 @@ class Spoom::Coverage::D3::Pie < ::Spoom::Coverage::D3::Base
     # source://spoom//lib/spoom/coverage/d3/pie.rb#25
     sig { returns(::String) }
     def header_style; end
-
-    # source://sorbet-runtime/0.5.10875/lib/types/private/abstract/declare.rb#37
-    def new(*args, **_arg1, &blk); end
   end
 end
 
@@ -1056,9 +1077,6 @@ class Spoom::Coverage::D3::Timeline < ::Spoom::Coverage::D3::Base
     # source://spoom//lib/spoom/coverage/d3/timeline.rb#25
     sig { returns(::String) }
     def header_style; end
-
-    # source://sorbet-runtime/0.5.10875/lib/types/private/abstract/declare.rb#37
-    def new(*args, **_arg1, &blk); end
   end
 end
 
@@ -1150,11 +1168,6 @@ class Spoom::Coverage::D3::Timeline::Stacked < ::Spoom::Coverage::D3::Timeline
   # source://spoom//lib/spoom/coverage/d3/timeline.rb#336
   sig { override.returns(::String) }
   def script; end
-
-  class << self
-    # source://sorbet-runtime/0.5.10875/lib/types/private/abstract/declare.rb#37
-    def new(*args, **_arg1, &blk); end
-  end
 end
 
 # source://spoom//lib/spoom/coverage/d3/timeline.rb#232
@@ -1215,11 +1228,6 @@ class Spoom::Coverage::Page < ::Spoom::Coverage::Template
   # source://spoom//lib/spoom/coverage/report.rb#47
   sig { returns(::String) }
   def title; end
-
-  class << self
-    # source://sorbet-runtime/0.5.10875/lib/types/private/abstract/declare.rb#37
-    def new(*args, **_arg1, &blk); end
-  end
 end
 
 # source://spoom//lib/spoom/coverage/report.rb#44
@@ -1290,7 +1298,7 @@ class Spoom::Coverage::Snapshot < ::T::Struct
     sig { params(obj: T::Hash[::String, T.untyped]).returns(::Spoom::Coverage::Snapshot) }
     def from_obj(obj); end
 
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -1340,10 +1348,1253 @@ class Spoom::Coverage::Template
   # source://spoom//lib/spoom/coverage/report.rb#28
   sig { returns(::String) }
   def html; end
+end
+
+# source://spoom//lib/spoom/deadcode/erb.rb#27
+module Spoom::Deadcode
+  class << self
+    # source://spoom//lib/spoom/deadcode.rb#51
+    sig do
+      params(
+        index: ::Spoom::Deadcode::Index,
+        erb: ::String,
+        file: ::String,
+        plugins: T::Array[::Spoom::Deadcode::Plugins::Base]
+      ).void
+    end
+    def index_erb(index, erb, file:, plugins: T.unsafe(nil)); end
+
+    # source://spoom//lib/spoom/deadcode.rb#40
+    sig do
+      params(
+        index: ::Spoom::Deadcode::Index,
+        ruby: ::String,
+        file: ::String,
+        plugins: T::Array[::Spoom::Deadcode::Plugins::Base]
+      ).void
+    end
+    def index_ruby(index, ruby, file:, plugins: T.unsafe(nil)); end
+
+    # source://spoom//lib/spoom/deadcode/plugins.rb#74
+    sig { params(context: ::Spoom::Context).returns(T::Array[::Spoom::Deadcode::Plugins::Base]) }
+    def load_custom_plugins(context); end
+
+    # source://spoom//lib/spoom/deadcode/plugins.rb#60
+    sig { params(context: ::Spoom::Context).returns(T::Array[::Spoom::Deadcode::Plugins::Base]) }
+    def plugins_from_gemfile_lock(context); end
+  end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins.rb#25
+Spoom::Deadcode::DEFAULT_CUSTOM_PLUGINS_PATH = T.let(T.unsafe(nil), String)
+
+# source://spoom//lib/spoom/deadcode/plugins.rb#27
+Spoom::Deadcode::DEFAULT_PLUGINS = T.let(T.unsafe(nil), Set)
+
+# A definition is a class, module, method, constant, etc. being defined in the code
+#
+# source://spoom//lib/spoom/deadcode/definition.rb#7
+class Spoom::Deadcode::Definition < ::T::Struct
+  const :kind, ::Spoom::Deadcode::Definition::Kind
+  const :name, ::String
+  const :full_name, ::String
+  const :location, ::Spoom::Deadcode::Location
+  const :status, ::Spoom::Deadcode::Definition::Status, default: T.unsafe(nil)
+
+  # source://spoom//lib/spoom/deadcode/definition.rb#78
+  sig { void }
+  def alive!; end
+
+  # Status
+  #
+  # source://spoom//lib/spoom/deadcode/definition.rb#73
+  sig { returns(T::Boolean) }
+  def alive?; end
+
+  # Kind
+  #
+  # source://spoom//lib/spoom/deadcode/definition.rb#41
+  sig { returns(T::Boolean) }
+  def attr_reader?; end
+
+  # source://spoom//lib/spoom/deadcode/definition.rb#46
+  sig { returns(T::Boolean) }
+  def attr_writer?; end
+
+  # source://spoom//lib/spoom/deadcode/definition.rb#51
+  sig { returns(T::Boolean) }
+  def class?; end
+
+  # source://spoom//lib/spoom/deadcode/definition.rb#56
+  sig { returns(T::Boolean) }
+  def constant?; end
+
+  # source://spoom//lib/spoom/deadcode/definition.rb#83
+  sig { returns(T::Boolean) }
+  def dead?; end
+
+  # source://spoom//lib/spoom/deadcode/definition.rb#93
+  sig { void }
+  def ignored!; end
+
+  # source://spoom//lib/spoom/deadcode/definition.rb#88
+  sig { returns(T::Boolean) }
+  def ignored?; end
+
+  # source://spoom//lib/spoom/deadcode/definition.rb#61
+  sig { returns(T::Boolean) }
+  def method?; end
+
+  # source://spoom//lib/spoom/deadcode/definition.rb#66
+  sig { returns(T::Boolean) }
+  def module?; end
 
   class << self
-    # source://sorbet-runtime/0.5.10875/lib/types/private/abstract/declare.rb#37
-    def new(*args, **_arg1, &blk); end
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
+    def inherited(s); end
+  end
+end
+
+# source://spoom//lib/spoom/deadcode/definition.rb#10
+class Spoom::Deadcode::Definition::Kind < ::T::Enum
+  enums do
+    AttrReader = new
+    AttrWriter = new
+    Class = new
+    Constant = new
+    Method = new
+    Module = new
+  end
+end
+
+# source://spoom//lib/spoom/deadcode/definition.rb#21
+class Spoom::Deadcode::Definition::Status < ::T::Enum
+  enums do
+    ALIVE = new
+    DEAD = new
+    IGNORED = new
+  end
+end
+
+# Custom engine to handle ERB templates as used by Rails
+#
+# source://spoom//lib/spoom/deadcode/erb.rb#29
+class Spoom::Deadcode::ERB < ::Erubi::Engine
+  # source://spoom//lib/spoom/deadcode/erb.rb#33
+  sig { params(input: T.untyped, properties: T.untyped).void }
+  def initialize(input, properties = T.unsafe(nil)); end
+
+  private
+
+  # source://spoom//lib/spoom/deadcode/erb.rb#83
+  sig { override.params(code: T.untyped).void }
+  def add_code(code); end
+
+  # source://spoom//lib/spoom/deadcode/erb.rb#66
+  sig { override.params(indicator: T.untyped, code: T.untyped).void }
+  def add_expression(indicator, code); end
+
+  # source://spoom//lib/spoom/deadcode/erb.rb#89
+  sig { override.params(_: T.untyped).void }
+  def add_postamble(_); end
+
+  # source://spoom//lib/spoom/deadcode/erb.rb#48
+  sig { override.params(text: T.untyped).void }
+  def add_text(text); end
+
+  # source://spoom//lib/spoom/deadcode/erb.rb#95
+  sig { params(src: T.untyped).void }
+  def flush_newline_if_pending(src); end
+end
+
+# source://spoom//lib/spoom/deadcode/erb.rb#63
+Spoom::Deadcode::ERB::BLOCK_EXPR = T.let(T.unsafe(nil), Regexp)
+
+# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+#
+# source://spoom//lib/spoom/deadcode.rb#20
+class Spoom::Deadcode::Error < ::Spoom::Error
+  abstract!
+
+  # source://spoom//lib/spoom/deadcode.rb#27
+  sig { params(message: ::String, parent: ::Exception).void }
+  def initialize(message, parent:); end
+end
+
+# source://spoom//lib/spoom/deadcode/index.rb#6
+class Spoom::Deadcode::Index
+  # source://spoom//lib/spoom/deadcode/index.rb#16
+  sig { void }
+  def initialize; end
+
+  # source://spoom//lib/spoom/deadcode/index.rb#51
+  sig { returns(T::Array[::Spoom::Deadcode::Definition]) }
+  def all_definitions; end
+
+  # source://spoom//lib/spoom/deadcode/index.rb#56
+  sig { returns(T::Array[::Spoom::Deadcode::Reference]) }
+  def all_references; end
+
+  # Indexing
+  #
+  # source://spoom//lib/spoom/deadcode/index.rb#24
+  sig { params(definition: ::Spoom::Deadcode::Definition).void }
+  def define(definition); end
+
+  # source://spoom//lib/spoom/deadcode/index.rb#10
+  sig { returns(T::Hash[::String, T::Array[::Spoom::Deadcode::Definition]]) }
+  def definitions; end
+
+  # Utils
+  #
+  # source://spoom//lib/spoom/deadcode/index.rb#46
+  sig { params(name: ::String).returns(T::Array[::Spoom::Deadcode::Definition]) }
+  def definitions_for_name(name); end
+
+  # Mark all definitions having a reference of the same name as `alive`
+  #
+  # To be called once all the files have been indexed and all the definitions and references discovered.
+  #
+  # source://spoom//lib/spoom/deadcode/index.rb#37
+  sig { void }
+  def finalize!; end
+
+  # source://spoom//lib/spoom/deadcode/index.rb#29
+  sig { params(reference: ::Spoom::Deadcode::Reference).void }
+  def reference(reference); end
+
+  # source://spoom//lib/spoom/deadcode/index.rb#13
+  sig { returns(T::Hash[::String, T::Array[::Spoom::Deadcode::Reference]]) }
+  def references; end
+end
+
+# source://spoom//lib/spoom/deadcode/indexer.rb#6
+class Spoom::Deadcode::Indexer < ::SyntaxTree::Visitor
+  # source://spoom//lib/spoom/deadcode/indexer.rb#16
+  sig do
+    params(
+      path: ::String,
+      source: ::String,
+      index: ::Spoom::Deadcode::Index,
+      plugins: T::Array[::Spoom::Deadcode::Plugins::Base]
+    ).void
+  end
+  def initialize(path, source, index, plugins: T.unsafe(nil)); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#459
+  sig do
+    params(
+      node: T.nilable(T.any(::SyntaxTree::ArgParen, ::SyntaxTree::Args, ::SyntaxTree::ArgsForward))
+    ).returns(T::Array[::SyntaxTree::Node])
+  end
+  def call_args(node); end
+
+  # Context
+  #
+  # source://spoom//lib/spoom/deadcode/indexer.rb#367
+  sig { returns(::SyntaxTree::Node) }
+  def current_node; end
+
+  # Definition indexing
+  #
+  # source://spoom//lib/spoom/deadcode/indexer.rb#281
+  sig { params(name: ::String, full_name: ::String, node: ::SyntaxTree::Node).void }
+  def define_attr_reader(name, full_name, node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#293
+  sig { params(name: ::String, full_name: ::String, node: ::SyntaxTree::Node).void }
+  def define_attr_writer(name, full_name, node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#305
+  sig { params(name: ::String, full_name: ::String, node: ::SyntaxTree::Node).void }
+  def define_class(name, full_name, node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#317
+  sig { params(name: ::String, full_name: ::String, node: ::SyntaxTree::Node).void }
+  def define_constant(name, full_name, node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#329
+  sig { params(name: ::String, full_name: ::String, node: ::SyntaxTree::Node).void }
+  def define_method(name, full_name, node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#341
+  sig { params(name: ::String, full_name: ::String, node: ::SyntaxTree::Node).void }
+  def define_module(name, full_name, node); end
+
+  # @return [String]
+  #
+  # source://spoom//lib/spoom/deadcode/indexer.rb#10
+  def file_name; end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#13
+  sig { returns(::Spoom::Deadcode::Index) }
+  def index; end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#426
+  sig { returns(T.nilable(::String)) }
+  def last_sig; end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#386
+  sig { returns(T.nilable(::SyntaxTree::BlockNode)) }
+  def nesting_block; end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#391
+  sig { returns(T.nilable(::SyntaxTree::MethodAddBlock)) }
+  def nesting_block_call; end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#396
+  sig { returns(T.nilable(::String)) }
+  def nesting_block_call_name; end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#381
+  sig { returns(T.nilable(::SyntaxTree::ClassDeclaration)) }
+  def nesting_class; end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#410
+  sig { returns(T.nilable(::String)) }
+  def nesting_class_name; end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#418
+  sig { returns(T.nilable(::String)) }
+  def nesting_class_superclass_name; end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#372
+  sig { type_parameters(:N).params(type: T::Class[T.type_parameter(:N)]).returns(T.nilable(T.type_parameter(:N))) }
+  def nesting_node(type); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#445
+  sig { params(node: ::SyntaxTree::Node).returns(::Spoom::Deadcode::Location) }
+  def node_location(node); end
+
+  # Node utils
+  #
+  # source://spoom//lib/spoom/deadcode/indexer.rb#435
+  sig { params(node: T.any(::Symbol, ::SyntaxTree::Node)).returns(::String) }
+  def node_string(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#10
+  sig { returns(::String) }
+  def path; end
+
+  # Reference indexing
+  #
+  # source://spoom//lib/spoom/deadcode/indexer.rb#355
+  sig { params(name: ::String, node: ::SyntaxTree::Node).void }
+  def reference_constant(name, node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#360
+  sig { params(name: ::String, node: ::SyntaxTree::Node).void }
+  def reference_method(name, node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#450
+  sig { params(node: ::SyntaxTree::Node).returns(::String) }
+  def symbol_string(node); end
+
+  # Visit
+  #
+  # source://spoom//lib/spoom/deadcode/indexer.rb#35
+  sig { override.params(node: T.nilable(::SyntaxTree::Node)).void }
+  def visit(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#45
+  sig { override.params(node: ::SyntaxTree::AliasNode).void }
+  def visit_alias(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#50
+  sig { override.params(node: ::SyntaxTree::ARef).void }
+  def visit_aref(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#57
+  sig { override.params(node: ::SyntaxTree::ARefField).void }
+  def visit_aref_field(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#64
+  sig { override.params(node: ::SyntaxTree::ArgBlock).void }
+  def visit_arg_block(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#78
+  sig { override.params(node: ::SyntaxTree::Binary).void }
+  def visit_binary(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#94
+  sig { override.params(node: ::SyntaxTree::CallNode).void }
+  def visit_call(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#106
+  sig { override.params(node: ::SyntaxTree::ClassDeclaration).void }
+  def visit_class(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#119
+  sig { override.params(node: ::SyntaxTree::Command).void }
+  def visit_command(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#131
+  sig { override.params(node: ::SyntaxTree::CommandCall).void }
+  def visit_command_call(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#144
+  sig { override.params(node: ::SyntaxTree::Const).void }
+  def visit_const(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#149
+  sig { override.params(node: ::SyntaxTree::ConstPathField).void }
+  def visit_const_path_field(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#159
+  sig { override.params(node: ::SyntaxTree::DefNode).void }
+  def visit_def(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#167
+  sig { override.params(node: ::SyntaxTree::Field).void }
+  def visit_field(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#183
+  sig { override.params(node: ::SyntaxTree::ModuleDeclaration).void }
+  def visit_module(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#195
+  sig { override.params(node: ::SyntaxTree::OpAssign).void }
+  def visit_opassign(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#204
+  sig { params(send: ::Spoom::Deadcode::Send).void }
+  def visit_send(send); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#243
+  sig { override.params(node: ::SyntaxTree::SymbolLiteral).void }
+  def visit_symbol_literal(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#252
+  sig { override.params(node: ::SyntaxTree::TopConstField).void }
+  def visit_top_const_field(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#257
+  sig { override.params(node: ::SyntaxTree::VarField).void }
+  def visit_var_field(node); end
+
+  # source://spoom//lib/spoom/deadcode/indexer.rb#274
+  sig { override.params(node: ::SyntaxTree::VCall).void }
+  def visit_vcall(node); end
+end
+
+# source://spoom//lib/spoom/deadcode.rb#34
+class Spoom::Deadcode::IndexerError < ::Spoom::Deadcode::Error; end
+
+# source://spoom//lib/spoom/deadcode/location.rb#6
+class Spoom::Deadcode::Location
+  include ::Comparable
+
+  # source://spoom//lib/spoom/deadcode/location.rb#54
+  sig do
+    params(
+      file: ::String,
+      start_line: ::Integer,
+      start_column: ::Integer,
+      end_line: ::Integer,
+      end_column: ::Integer
+    ).void
+  end
+  def initialize(file, start_line, start_column, end_line, end_column); end
+
+  # source://spoom//lib/spoom/deadcode/location.rb#74
+  sig { override.params(other: ::BasicObject).returns(T.nilable(::Integer)) }
+  def <=>(other); end
+
+  # @return [Integer]
+  #
+  # source://spoom//lib/spoom/deadcode/location.rb#43
+  def end_column; end
+
+  # @return [Integer]
+  #
+  # source://spoom//lib/spoom/deadcode/location.rb#43
+  def end_line; end
+
+  # source://spoom//lib/spoom/deadcode/location.rb#40
+  sig { returns(::String) }
+  def file; end
+
+  # source://spoom//lib/spoom/deadcode/location.rb#63
+  sig { params(other: ::Spoom::Deadcode::Location).returns(T::Boolean) }
+  def include?(other); end
+
+  # @return [Integer]
+  #
+  # source://spoom//lib/spoom/deadcode/location.rb#43
+  def start_column; end
+
+  # source://spoom//lib/spoom/deadcode/location.rb#43
+  sig { returns(::Integer) }
+  def start_line; end
+
+  # source://spoom//lib/spoom/deadcode/location.rb#81
+  sig { returns(::String) }
+  def to_s; end
+
+  class << self
+    # @raise [LocationError]
+    #
+    # source://spoom//lib/spoom/deadcode/location.rb#17
+    sig { params(location_string: ::String).returns(::Spoom::Deadcode::Location) }
+    def from_string(location_string); end
+
+    # source://spoom//lib/spoom/deadcode/location.rb#34
+    sig { params(file: ::String, location: ::SyntaxTree::Location).returns(::Spoom::Deadcode::Location) }
+    def from_syntax_tree(file, location); end
+  end
+end
+
+# source://spoom//lib/spoom/deadcode/location.rb#11
+class Spoom::Deadcode::Location::LocationError < ::Spoom::Error; end
+
+# source://spoom//lib/spoom/deadcode/plugins.rb#35
+Spoom::Deadcode::PLUGINS_FOR_GEM = T.let(T.unsafe(nil), Hash)
+
+# source://spoom//lib/spoom/deadcode.rb#33
+class Spoom::Deadcode::ParserError < ::Spoom::Deadcode::Error; end
+
+# source://spoom//lib/spoom/deadcode/plugins/base.rb#8
+module Spoom::Deadcode::Plugins; end
+
+# source://spoom//lib/spoom/deadcode/plugins/action_mailer.rb#7
+class Spoom::Deadcode::Plugins::ActionMailer < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/action_mailer.rb#11
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, send: ::Spoom::Deadcode::Send).void }
+  def on_send(indexer, send); end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/actionpack.rb#7
+class Spoom::Deadcode::Plugins::ActionPack < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/actionpack.rb#31
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_method(indexer, definition); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/actionpack.rb#36
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, send: ::Spoom::Deadcode::Send).void }
+  def on_send(indexer, send); end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/actionpack.rb#10
+Spoom::Deadcode::Plugins::ActionPack::CALLBACKS = T.let(T.unsafe(nil), Array)
+
+# source://spoom//lib/spoom/deadcode/plugins/active_job.rb#7
+class Spoom::Deadcode::Plugins::ActiveJob < ::Spoom::Deadcode::Plugins::Base; end
+
+# source://spoom//lib/spoom/deadcode/plugins/active_model.rb#7
+class Spoom::Deadcode::Plugins::ActiveModel < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/active_model.rb#14
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, send: ::Spoom::Deadcode::Send).void }
+  def on_send(indexer, send); end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/active_record.rb#7
+class Spoom::Deadcode::Plugins::ActiveRecord < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/active_record.rb#74
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, send: ::Spoom::Deadcode::Send).void }
+  def on_send(indexer, send); end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/active_record.rb#64
+Spoom::Deadcode::Plugins::ActiveRecord::ARRAY_METHODS = T.let(T.unsafe(nil), Array)
+
+# source://spoom//lib/spoom/deadcode/plugins/active_record.rb#20
+Spoom::Deadcode::Plugins::ActiveRecord::CALLBACKS = T.let(T.unsafe(nil), Array)
+
+# source://spoom//lib/spoom/deadcode/plugins/active_record.rb#49
+Spoom::Deadcode::Plugins::ActiveRecord::CRUD_METHODS = T.let(T.unsafe(nil), Array)
+
+# source://spoom//lib/spoom/deadcode/plugins/active_support.rb#7
+class Spoom::Deadcode::Plugins::ActiveSupport < ::Spoom::Deadcode::Plugins::Base; end
+
+# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+#
+# source://spoom//lib/spoom/deadcode/plugins/base.rb#9
+class Spoom::Deadcode::Plugins::Base
+  abstract!
+
+  # Do not override this method, use `on_define_accessor` instead.
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#150
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def internal_on_define_accessor(indexer, definition); end
+
+  # Do not override this method, use `on_define_class` instead.
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#174
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def internal_on_define_class(indexer, definition); end
+
+  # Do not override this method, use `on_define_constant` instead.
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#204
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def internal_on_define_constant(indexer, definition); end
+
+  # Do not override this method, use `on_define_method` instead.
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#232
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def internal_on_define_method(indexer, definition); end
+
+  # Do not override this method, use `on_define_module` instead.
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#258
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def internal_on_define_module(indexer, definition); end
+
+  # Do not override this method, use `on_send` instead.
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#284
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, send: ::Spoom::Deadcode::Send).void }
+  def internal_on_send(indexer, send); end
+
+  # Called when an accessor is defined.
+  #
+  # Will be called when the indexer processes a `attr_reader`, `attr_writer` or `attr_accessor` node.
+  # Note that when this method is called, the definition for the node has already been added to the index.
+  # It is still possible to ignore it from the plugin:
+  #
+  # ~~~rb
+  # class MyPlugin < Spoom::Deadcode::Plugins::Base
+  #   def on_define_accessor(indexer, definition)
+  #     definition.ignored! if definition.name == "foo"
+  #   end
+  # end
+  # ~~~
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#144
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_accessor(indexer, definition); end
+
+  # Called when a class is defined.
+  #
+  # Will be called when the indexer processes a `class` node.
+  # Note that when this method is called, the definition for the node has already been added to the index.
+  # It is still possible to ignore it from the plugin:
+  #
+  # ~~~rb
+  # class MyPlugin < Spoom::Deadcode::Plugins::Base
+  #   def on_define_class(indexer, definition)
+  #     definition.ignored! if definition.name == "Foo"
+  #   end
+  # end
+  # ~~~
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#168
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_class(indexer, definition); end
+
+  # Called when a constant is defined.
+  #
+  # Will be called when the indexer processes a `CONST =` node.
+  # Note that when this method is called, the definition for the node has already been added to the index.
+  # It is still possible to ignore it from the plugin:
+  #
+  # ~~~rb
+  # class MyPlugin < Spoom::Deadcode::Plugins::Base
+  #   def on_define_constant(indexer, definition)
+  #     definition.ignored! if definition.name == "FOO"
+  #   end
+  # end
+  # ~~~
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#198
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_constant(indexer, definition); end
+
+  # Called when a method is defined.
+  #
+  # Will be called when the indexer processes a `def` or `defs` node.
+  # Note that when this method is called, the definition for the node has already been added to the index.
+  # It is still possible to ignore it from the plugin:
+  #
+  # ~~~rb
+  # class MyPlugin < Spoom::Deadcode::Plugins::Base
+  #   def on_define_method(indexer, definition)
+  #     super # So the `ignore_method_names` DSL is still applied
+  #
+  #     definition.ignored! if definition.name == "foo"
+  #   end
+  # end
+  # ~~~
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#226
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_method(indexer, definition); end
+
+  # Called when a module is defined.
+  #
+  # Will be called when the indexer processes a `module` node.
+  # Note that when this method is called, the definition for the node has already been added to the index.
+  # It is still possible to ignore it from the plugin:
+  #
+  # ~~~rb
+  # class MyPlugin < Spoom::Deadcode::Plugins::Base
+  #   def on_define_module(indexer, definition)
+  #     definition.ignored! if definition.name == "Foo"
+  #   end
+  # end
+  # ~~~
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#252
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_module(indexer, definition); end
+
+  # Called when a send is being processed
+  #
+  # ~~~rb
+  # class MyPlugin < Spoom::Deadcode::Plugins::Base
+  #   def on_send(indexer, send)
+  #     return unless send.name == "dsl_method"
+  #     return if send.args.empty?
+  #
+  #     method_name = indexer.node_string(send.args.first).delete_prefix(":")
+  #     indexer.reference_method(method_name, send.node)
+  #   end
+  # end
+  # ~~~
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#278
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, send: ::Spoom::Deadcode::Send).void }
+  def on_send(indexer, send); end
+
+  private
+
+  # Plugin utils
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#339
+  sig { params(name: ::String).returns(::String) }
+  def camelize(name); end
+
+  # DSL support
+  #
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#293
+  sig { params(name: T.nilable(::String)).returns(T::Boolean) }
+  def ignored_class_name?(name); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#307
+  sig { params(name: ::String).returns(T::Boolean) }
+  def ignored_constant_name?(name); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#312
+  sig { params(name: ::String).returns(T::Boolean) }
+  def ignored_method_name?(name); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#317
+  sig { params(name: ::String).returns(T::Boolean) }
+  def ignored_module_name?(name); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#322
+  sig { params(name: ::String, names_variable: ::Symbol, patterns_variable: ::Symbol).returns(T::Boolean) }
+  def ignored_name?(name, names_variable, patterns_variable); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#300
+  sig { params(superclass_name: T.nilable(::String)).returns(T::Boolean) }
+  def ignored_subclass?(superclass_name); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#327
+  sig { params(const: ::Symbol).returns(T::Set[::String]) }
+  def names(const); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/base.rb#332
+  sig { params(const: ::Symbol).returns(T::Array[::Regexp]) }
+  def patterns(const); end
+
+  class << self
+    # Mark classes directly subclassing a class matching `names` as ignored.
+    #
+    # Names can be either strings or regexps:
+    #
+    # ~~~rb
+    # class MyPlugin < Spoom::Deadcode::Plugins::Base
+    #   ignore_classes_inheriting_from(
+    #     "Foo",
+    #     "Bar",
+    #     /Baz.*/,
+    #   )
+    # end
+    # ~~~
+    #
+    # source://spoom//lib/spoom/deadcode/plugins/base.rb#52
+    sig { params(names: T.any(::Regexp, ::String)).void }
+    def ignore_classes_inheriting_from(*names); end
+
+    # Mark classes matching `names` as ignored.
+    #
+    # Names can be either strings or regexps:
+    #
+    # ~~~rb
+    # class MyPlugin < Spoom::Deadcode::Plugins::Base
+    #   ignore_class_names(
+    #     "Foo",
+    #     "Bar",
+    #     /Baz.*/,
+    #   )
+    # end
+    # ~~~
+    #
+    # source://spoom//lib/spoom/deadcode/plugins/base.rb#34
+    sig { params(names: T.any(::Regexp, ::String)).void }
+    def ignore_classes_named(*names); end
+
+    # Mark constants matching `names` as ignored.
+    #
+    # Names can be either strings or regexps:
+    #
+    # ~~~rb
+    # class MyPlugin < Spoom::Deadcode::Plugins::Base
+    #   ignore_class_names(
+    #     "FOO",
+    #     "BAR",
+    #     /BAZ.*/,
+    #   )
+    # end
+    # ~~~
+    #
+    # source://spoom//lib/spoom/deadcode/plugins/base.rb#70
+    sig { params(names: T.any(::Regexp, ::String)).void }
+    def ignore_constants_named(*names); end
+
+    # Mark methods matching `names` as ignored.
+    #
+    # Names can be either strings or regexps:
+    #
+    # ~~~rb
+    # class MyPlugin < Spoom::Deadcode::Plugins::Base
+    #   ignore_method_names(
+    #     "foo",
+    #     "bar",
+    #     /baz.*/,
+    #   )
+    # end
+    # ~~~
+    #
+    # source://spoom//lib/spoom/deadcode/plugins/base.rb#88
+    sig { params(names: T.any(::Regexp, ::String)).void }
+    def ignore_methods_named(*names); end
+
+    # Mark modules matching `names` as ignored.
+    #
+    # Names can be either strings or regexps:
+    #
+    # ~~~rb
+    # class MyPlugin < Spoom::Deadcode::Plugins::Base
+    #   ignore_class_names(
+    #     "Foo",
+    #     "Bar",
+    #     /Baz.*/,
+    #   )
+    # end
+    # ~~~
+    #
+    # source://spoom//lib/spoom/deadcode/plugins/base.rb#106
+    sig { params(names: T.any(::Regexp, ::String)).void }
+    def ignore_modules_named(*names); end
+
+    private
+
+    # source://spoom//lib/spoom/deadcode/plugins/base.rb#113
+    sig do
+      params(
+        names: T::Array[T.any(::Regexp, ::String)],
+        names_variable: ::Symbol,
+        patterns_variable: ::Symbol
+      ).void
+    end
+    def save_names_and_patterns(names, names_variable, patterns_variable); end
+  end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/graphql.rb#7
+class Spoom::Deadcode::Plugins::GraphQL < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/graphql.rb#28
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, send: ::Spoom::Deadcode::Send).void }
+  def on_send(indexer, send); end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/minitest.rb#7
+class Spoom::Deadcode::Plugins::Minitest < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/minitest.rb#22
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_method(indexer, definition); end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/namespaces.rb#7
+class Spoom::Deadcode::Plugins::Namespaces < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/namespaces.rb#11
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_class(indexer, definition); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/namespaces.rb#16
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_module(indexer, definition); end
+
+  private
+
+  # source://spoom//lib/spoom/deadcode/plugins/namespaces.rb#23
+  sig { params(indexer: ::Spoom::Deadcode::Indexer).returns(T::Boolean) }
+  def used_as_namespace?(indexer); end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/rspec.rb#7
+class Spoom::Deadcode::Plugins::RSpec < ::Spoom::Deadcode::Plugins::Base; end
+
+# source://spoom//lib/spoom/deadcode/plugins/rails.rb#7
+class Spoom::Deadcode::Plugins::Rails < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/rails.rb#13
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_class(indexer, definition); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/rails.rb#18
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_module(indexer, definition); end
+
+  private
+
+  # source://spoom//lib/spoom/deadcode/plugins/rails.rb#25
+  sig { params(indexer: ::Spoom::Deadcode::Indexer).returns(T::Boolean) }
+  def file_is_helper?(indexer); end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/rake.rb#7
+class Spoom::Deadcode::Plugins::Rake < ::Spoom::Deadcode::Plugins::Base; end
+
+# source://spoom//lib/spoom/deadcode/plugins/rubocop.rb#7
+class Spoom::Deadcode::Plugins::Rubocop < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/rubocop.rb#18
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_constant(indexer, definition); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/rubocop.rb#23
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_method(indexer, definition); end
+
+  private
+
+  # source://spoom//lib/spoom/deadcode/plugins/rubocop.rb#30
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).returns(T::Boolean) }
+  def rubocop_constant?(indexer, definition); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/rubocop.rb#35
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).returns(T::Boolean) }
+  def rubocop_method?(indexer, definition); end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/rubocop.rb#10
+Spoom::Deadcode::Plugins::Rubocop::RUBOCOP_CONSTANTS = T.let(T.unsafe(nil), Set)
+
+# source://spoom//lib/spoom/deadcode/plugins/ruby.rb#7
+class Spoom::Deadcode::Plugins::Ruby < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/ruby.rb#24
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, send: ::Spoom::Deadcode::Send).void }
+  def on_send(indexer, send); end
+
+  private
+
+  # source://spoom//lib/spoom/deadcode/plugins/ruby.rb#50
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, send: ::Spoom::Deadcode::Send, node: ::SyntaxTree::Node).void }
+  def reference_symbol_as_constant(indexer, send, node); end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/sorbet.rb#7
+class Spoom::Deadcode::Plugins::Sorbet < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/sorbet.rb#11
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_constant(indexer, definition); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/sorbet.rb#16
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_method(indexer, definition); end
+
+  private
+
+  # source://spoom//lib/spoom/deadcode/plugins/sorbet.rb#40
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).returns(T::Boolean) }
+  def sorbet_enum_constant?(indexer, definition); end
+
+  # source://spoom//lib/spoom/deadcode/plugins/sorbet.rb#23
+  sig { params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).returns(T::Boolean) }
+  def sorbet_type_member?(indexer, definition); end
+end
+
+# source://spoom//lib/spoom/deadcode/plugins/thor.rb#7
+class Spoom::Deadcode::Plugins::Thor < ::Spoom::Deadcode::Plugins::Base
+  # source://spoom//lib/spoom/deadcode/plugins/thor.rb#13
+  sig { override.params(indexer: ::Spoom::Deadcode::Indexer, definition: ::Spoom::Deadcode::Definition).void }
+  def on_define_method(indexer, definition); end
+end
+
+# A reference is a call to a method or a constant
+#
+# source://spoom//lib/spoom/deadcode/reference.rb#7
+class Spoom::Deadcode::Reference < ::T::Struct
+  const :kind, ::Spoom::Deadcode::Reference::Kind
+  const :name, ::String
+  const :location, ::Spoom::Deadcode::Location
+
+  # Kind
+  #
+  # source://spoom//lib/spoom/deadcode/reference.rb#24
+  sig { returns(T::Boolean) }
+  def constant?; end
+
+  # source://spoom//lib/spoom/deadcode/reference.rb#29
+  sig { returns(T::Boolean) }
+  def method?; end
+
+  class << self
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
+    def inherited(s); end
+  end
+end
+
+# source://spoom//lib/spoom/deadcode/reference.rb#10
+class Spoom::Deadcode::Reference::Kind < ::T::Enum
+  enums do
+    Constant = new
+    Method = new
+  end
+end
+
+# source://spoom//lib/spoom/deadcode/remover.rb#6
+class Spoom::Deadcode::Remover
+  # source://spoom//lib/spoom/deadcode/remover.rb#12
+  sig { params(context: ::Spoom::Context).void }
+  def initialize(context); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#17
+  sig { params(kind: ::Spoom::Deadcode::Definition::Kind, location: ::Spoom::Deadcode::Location).void }
+  def remove_location(kind, location); end
+end
+
+# source://spoom//lib/spoom/deadcode/remover.rb#9
+class Spoom::Deadcode::Remover::Error < ::Spoom::Error; end
+
+# source://spoom//lib/spoom/deadcode/remover.rb#348
+class Spoom::Deadcode::Remover::NodeContext
+  # source://spoom//lib/spoom/deadcode/remover.rb#358
+  sig { params(source: ::String, node: ::SyntaxTree::Node, nesting: T::Array[::SyntaxTree::Node]).void }
+  def initialize(source, node, nesting); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#467
+  sig { returns(T::Array[::SyntaxTree::Node]) }
+  def attached_comments_and_sigs; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#480
+  sig { returns(T.nilable(::SyntaxTree::MethodAddBlock)) }
+  def attached_sig; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#460
+  sig { params(comment: ::SyntaxTree::Node, node: ::SyntaxTree::Node).returns(T::Boolean) }
+  def comment_for_node?(comment, node); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#355
+  sig { returns(T::Array[::SyntaxTree::Node]) }
+  def nesting; end
+
+  # @return [Array<SyntaxTree::Node>]
+  #
+  # source://spoom//lib/spoom/deadcode/remover.rb#355
+  def nesting=(_arg0); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#407
+  sig { returns(T.nilable(::SyntaxTree::Node)) }
+  def next_node; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#397
+  sig { returns(T::Array[::SyntaxTree::Node]) }
+  def next_nodes; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#352
+  sig { returns(::SyntaxTree::Node) }
+  def node; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#495
+  sig { params(node: T.any(::Symbol, ::SyntaxTree::Node)).returns(::String) }
+  def node_string(node); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#373
+  sig { returns(::Spoom::Deadcode::Remover::NodeContext) }
+  def parent_context; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#365
+  sig { returns(::SyntaxTree::Node) }
+  def parent_node; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#392
+  sig { returns(T.nilable(::SyntaxTree::Node)) }
+  def previous_node; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#382
+  sig { returns(T::Array[::SyntaxTree::Node]) }
+  def previous_nodes; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#412
+  sig { returns(T.nilable(::Spoom::Deadcode::Remover::NodeContext)) }
+  def sclass_context; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#451
+  sig { params(node: T.nilable(::SyntaxTree::Node)).returns(T::Boolean) }
+  def sorbet_extend_sig?(node); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#438
+  sig { params(node: T.nilable(::SyntaxTree::Node)).returns(T::Boolean) }
+  def sorbet_signature?(node); end
+end
+
+# source://spoom//lib/spoom/deadcode/remover.rb#505
+class Spoom::Deadcode::Remover::NodeFinder < ::SyntaxTree::Visitor
+  # source://spoom//lib/spoom/deadcode/remover.rb#554
+  sig { params(location: ::Spoom::Deadcode::Location).void }
+  def initialize(location); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#548
+  sig { returns(T.nilable(::SyntaxTree::Node)) }
+  def node; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#551
+  sig { returns(T::Array[::SyntaxTree::Node]) }
+  def nodes_nesting; end
+
+  # @return [Array<SyntaxTree::Node>]
+  #
+  # source://spoom//lib/spoom/deadcode/remover.rb#551
+  def nodes_nesting=(_arg0); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#562
+  sig { override.params(node: T.nilable(::SyntaxTree::Node)).void }
+  def visit(node); end
+
+  private
+
+  # TODO: remove once SyntaxTree location are fixed
+  #
+  # source://spoom//lib/spoom/deadcode/remover.rb#601
+  sig { params(node: ::SyntaxTree::Node, nodes: T::Array[::SyntaxTree::Node]).returns(::Spoom::Deadcode::Location) }
+  def location_from_children(node, nodes); end
+
+  # TODO: remove once SyntaxTree location are fixed
+  #
+  # source://spoom//lib/spoom/deadcode/remover.rb#586
+  sig { params(node: ::SyntaxTree::Node).returns(::Spoom::Deadcode::Location) }
+  def location_from_node(node); end
+
+  class << self
+    # source://spoom//lib/spoom/deadcode/remover.rb#512
+    sig do
+      params(
+        source: ::String,
+        location: ::Spoom::Deadcode::Location,
+        kind: ::Spoom::Deadcode::Definition::Kind
+      ).returns(::Spoom::Deadcode::Remover::NodeContext)
+    end
+    def find(source, location, kind); end
+
+    # source://spoom//lib/spoom/deadcode/remover.rb#531
+    sig { params(node: ::SyntaxTree::Node, kind: ::Spoom::Deadcode::Definition::Kind).returns(T::Boolean) }
+    def node_match_kind?(node, kind); end
+  end
+end
+
+# source://spoom//lib/spoom/deadcode/remover.rb#29
+class Spoom::Deadcode::Remover::NodeRemover
+  # source://spoom//lib/spoom/deadcode/remover.rb#36
+  sig do
+    params(
+      source: ::String,
+      kind: ::Spoom::Deadcode::Definition::Kind,
+      location: ::Spoom::Deadcode::Location
+    ).void
+  end
+  def initialize(source, kind, location); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#46
+  sig { void }
+  def apply_edit; end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#33
+  sig { returns(::String) }
+  def new_source; end
+
+  private
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#142
+  sig { params(context: ::Spoom::Deadcode::Remover::NodeContext).void }
+  def delete_attr_accessor(context); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#290
+  sig { params(start_char: ::Integer, end_char: ::Integer).void }
+  def delete_chars(start_char, end_char); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#69
+  sig { params(context: ::Spoom::Deadcode::Remover::NodeContext).void }
+  def delete_constant_assignment(context); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#300
+  sig { params(line_number: ::Integer, start_column: ::Integer, end_column: ::Integer).void }
+  def delete_line_part(line_number, start_column, end_column); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#283
+  sig { params(start_line: ::Integer, end_line: ::Integer).void }
+  def delete_lines(start_line, end_line); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#250
+  sig { params(context: ::Spoom::Deadcode::Remover::NodeContext).void }
+  def delete_node_and_comments_and_sigs(context); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#207
+  sig do
+    params(
+      node: ::SyntaxTree::Node,
+      send_context: ::Spoom::Deadcode::Remover::NodeContext,
+      was_removed: T::Boolean
+    ).void
+  end
+  def insert_accessor(node, send_context, was_removed:); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#295
+  sig { params(start_char: ::Integer, end_char: ::Integer, replacement: ::String).void }
+  def replace_chars(start_char, end_char, replacement); end
+
+  # source://spoom//lib/spoom/deadcode/remover.rb#315
+  sig do
+    params(
+      node: ::SyntaxTree::MethodAddBlock,
+      name: ::String,
+      kind: ::Spoom::Deadcode::Definition::Kind
+    ).returns(::String)
+  end
+  def transform_sig(node, name:, kind:); end
+end
+
+# An abstraction to simplify handling of SyntaxTree::CallNode, SyntaxTree::Command, SyntaxTree::CommandCall and
+# SyntaxTree::VCall nodes.
+#
+# source://spoom//lib/spoom/deadcode/send.rb#8
+class Spoom::Deadcode::Send < ::T::Struct
+  const :node, ::SyntaxTree::Node
+  const :name, ::String
+  const :recv, T.nilable(::SyntaxTree::Node), default: T.unsafe(nil)
+  const :args, T::Array[::SyntaxTree::Node], default: T.unsafe(nil)
+  const :block, T.nilable(::SyntaxTree::Node), default: T.unsafe(nil)
+
+  # source://spoom//lib/spoom/deadcode/send.rb#22
+  sig do
+    type_parameters(:T)
+      .params(
+        arg_type: T::Class[T.type_parameter(:T)],
+        block: T.proc.params(arg: T.type_parameter(:T)).void
+      ).void
+  end
+  def each_arg(arg_type, &block); end
+
+  # source://spoom//lib/spoom/deadcode/send.rb#29
+  sig { params(block: T.proc.params(key: ::SyntaxTree::Node, value: T.nilable(::SyntaxTree::Node)).void).void }
+  def each_arg_assoc(&block); end
+
+  class << self
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
+    def inherited(s); end
   end
 end
 
@@ -1362,7 +2613,7 @@ class Spoom::ExecResult < ::T::Struct
   def to_s; end
 
   class << self
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -1374,41 +2625,55 @@ class Spoom::FileCollector
   # If `allow_extensions` is empty, all files are collected.
   # If `allow_extensions` is an array of extensions, only files with one of these extensions are collected.
   #
-  # source://spoom//lib/spoom/file_collector.rb#21
-  sig { params(allow_extensions: T::Array[::String], exclude_patterns: T::Array[::String]).void }
-  def initialize(allow_extensions: T.unsafe(nil), exclude_patterns: T.unsafe(nil)); end
+  # If `allow_mime_types` is empty, all files are collected.
+  # If `allow_mime_types` is an array of mimetypes, files without an extension are collected if their mimetype is in
+  # the list.
+  #
+  # source://spoom//lib/spoom/file_collector.rb#26
+  sig do
+    params(
+      allow_extensions: T::Array[::String],
+      allow_mime_types: T::Array[::String],
+      exclude_patterns: T::Array[::String]
+    ).void
+  end
+  def initialize(allow_extensions: T.unsafe(nil), allow_mime_types: T.unsafe(nil), exclude_patterns: T.unsafe(nil)); end
 
   # source://spoom//lib/spoom/file_collector.rb#9
   sig { returns(T::Array[::String]) }
   def files; end
 
-  # source://spoom//lib/spoom/file_collector.rb#33
+  # source://spoom//lib/spoom/file_collector.rb#39
   sig { params(path: ::String).void }
   def visit_path(path); end
 
-  # source://spoom//lib/spoom/file_collector.rb#28
+  # source://spoom//lib/spoom/file_collector.rb#34
   sig { params(paths: T::Array[::String]).void }
   def visit_paths(paths); end
 
   private
 
-  # source://spoom//lib/spoom/file_collector.rb#50
+  # source://spoom//lib/spoom/file_collector.rb#56
   sig { params(path: ::String).returns(::String) }
   def clean_path(path); end
 
-  # source://spoom//lib/spoom/file_collector.rb#67
+  # source://spoom//lib/spoom/file_collector.rb#73
   sig { params(path: ::String).returns(T::Boolean) }
   def excluded_file?(path); end
 
-  # source://spoom//lib/spoom/file_collector.rb#75
+  # source://spoom//lib/spoom/file_collector.rb#88
   sig { params(path: ::String).returns(T::Boolean) }
   def excluded_path?(path); end
 
-  # source://spoom//lib/spoom/file_collector.rb#62
+  # source://spoom//lib/spoom/file_collector.rb#97
+  sig { params(path: ::String).returns(T.nilable(::String)) }
+  def mime_type_for(path); end
+
+  # source://spoom//lib/spoom/file_collector.rb#68
   sig { params(path: ::String).void }
   def visit_directory(path); end
 
-  # source://spoom//lib/spoom/file_collector.rb#55
+  # source://spoom//lib/spoom/file_collector.rb#61
   sig { params(path: ::String).void }
   def visit_file(path); end
 end
@@ -1556,7 +2821,7 @@ class Spoom::FileTree::Node < ::T::Struct
   def path; end
 
   class << self
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -1607,11 +2872,6 @@ class Spoom::FileTree::Visitor
   # source://spoom//lib/spoom/file_tree.rb#124
   sig { params(tree: ::Spoom::FileTree).void }
   def visit_tree(tree); end
-
-  class << self
-    # source://sorbet-runtime/0.5.10875/lib/types/private/abstract/declare.rb#37
-    def new(*args, **_arg1, &blk); end
-  end
 end
 
 # source://spoom//lib/spoom/context/git.rb#5
@@ -1627,7 +2887,7 @@ class Spoom::Git::Commit < ::T::Struct
   def timestamp; end
 
   class << self
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
 
     # Parse a line formated as `%h %at` into a `Commit`
@@ -1739,7 +2999,7 @@ class Spoom::LSP::Diagnostic < ::T::Struct
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::Diagnostic) }
     def from_json(json); end
 
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -1772,7 +3032,7 @@ class Spoom::LSP::DocumentSymbol < ::T::Struct
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::DocumentSymbol) }
     def from_json(json); end
 
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -1830,7 +3090,7 @@ class Spoom::LSP::Hover < ::T::Struct
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::Hover) }
     def from_json(json); end
 
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -1855,7 +3115,7 @@ class Spoom::LSP::Location < ::T::Struct
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::Location) }
     def from_json(json); end
 
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -1866,19 +3126,15 @@ end
 #
 # source://spoom//lib/spoom/sorbet/lsp/base.rb#12
 class Spoom::LSP::Message
-  # source://spoom//lib/spoom/sorbet/lsp/base.rb#19
+  # source://spoom//lib/spoom/sorbet/lsp/base.rb#16
   sig { void }
   def initialize; end
 
-  # source://spoom//lib/spoom/sorbet/lsp/base.rb#24
+  # source://spoom//lib/spoom/sorbet/lsp/base.rb#21
   sig { returns(T::Hash[T.untyped, T.untyped]) }
   def as_json; end
 
-  # source://spoom//lib/spoom/sorbet/lsp/base.rb#16
-  sig { returns(::String) }
-  def jsonrpc; end
-
-  # source://spoom//lib/spoom/sorbet/lsp/base.rb#32
+  # source://spoom//lib/spoom/sorbet/lsp/base.rb#29
   sig { params(args: T.untyped).returns(::String) }
   def to_json(*args); end
 end
@@ -1887,17 +3143,17 @@ end
 #
 # A processed notification message must not send a response back. They work like events.
 #
-# source://spoom//lib/spoom/sorbet/lsp/base.rb#64
+# source://spoom//lib/spoom/sorbet/lsp/base.rb#58
 class Spoom::LSP::Notification < ::Spoom::LSP::Message
-  # source://spoom//lib/spoom/sorbet/lsp/base.rb#74
+  # source://spoom//lib/spoom/sorbet/lsp/base.rb#68
   sig { params(method: ::String, params: T::Hash[T.untyped, T.untyped]).void }
   def initialize(method, params); end
 
-  # source://spoom//lib/spoom/sorbet/lsp/base.rb#68
+  # source://spoom//lib/spoom/sorbet/lsp/base.rb#62
   sig { returns(::String) }
   def method; end
 
-  # source://spoom//lib/spoom/sorbet/lsp/base.rb#71
+  # source://spoom//lib/spoom/sorbet/lsp/base.rb#65
   sig { returns(T::Hash[T.untyped, T.untyped]) }
   def params; end
 end
@@ -1922,7 +3178,7 @@ class Spoom::LSP::Position < ::T::Struct
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::Position) }
     def from_json(json); end
 
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -1960,7 +3216,7 @@ class Spoom::LSP::Range < ::T::Struct
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::Range) }
     def from_json(json); end
 
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -1969,21 +3225,17 @@ end
 #
 # Every processed request must send a response back to the sender of the request.
 #
-# source://spoom//lib/spoom/sorbet/lsp/base.rb#40
+# source://spoom//lib/spoom/sorbet/lsp/base.rb#37
 class Spoom::LSP::Request < ::Spoom::LSP::Message
-  # source://spoom//lib/spoom/sorbet/lsp/base.rb#53
+  # source://spoom//lib/spoom/sorbet/lsp/base.rb#47
   sig { params(id: ::Integer, method: ::String, params: T::Hash[T.untyped, T.untyped]).void }
   def initialize(id, method, params); end
 
-  # source://spoom//lib/spoom/sorbet/lsp/base.rb#44
+  # source://spoom//lib/spoom/sorbet/lsp/base.rb#41
   sig { returns(::Integer) }
   def id; end
 
-  # source://spoom//lib/spoom/sorbet/lsp/base.rb#47
-  sig { returns(::String) }
-  def method; end
-
-  # source://spoom//lib/spoom/sorbet/lsp/base.rb#50
+  # source://spoom//lib/spoom/sorbet/lsp/base.rb#44
   sig { returns(T::Hash[T.untyped, T.untyped]) }
   def params; end
 end
@@ -2030,7 +3282,7 @@ class Spoom::LSP::SignatureHelp < ::T::Struct
     sig { params(json: T::Hash[T.untyped, T.untyped]).returns(::Spoom::LSP::SignatureHelp) }
     def from_json(json); end
 
-    # source://sorbet-runtime/0.5.10875/lib/types/struct.rb#13
+    # source://sorbet-runtime/0.5.11143/lib/types/struct.rb#13
     def inherited(s); end
   end
 end
@@ -2076,55 +3328,46 @@ class Spoom::LSP::SymbolPrinter < ::Spoom::Printer
   # source://spoom//lib/spoom/sorbet/lsp/structures.rb#313
   sig { returns(T::Set[::Integer]) }
   def seen; end
-
-  # @return [Set<Integer>]
-  #
-  # source://spoom//lib/spoom/sorbet/lsp/structures.rb#313
-  def seen=(_arg0); end
 end
 
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
-#
 # source://spoom//lib/spoom/printer.rb#7
 class Spoom::Printer
   include ::Spoom::Colorize
 
-  abstract!
-
-  # source://spoom//lib/spoom/printer.rb#19
+  # source://spoom//lib/spoom/printer.rb#17
   sig { params(out: T.any(::IO, ::StringIO), colors: T::Boolean, indent_level: ::Integer).void }
   def initialize(out: T.unsafe(nil), colors: T.unsafe(nil), indent_level: T.unsafe(nil)); end
 
   # Colorize `string` with color if `@colors`
   #
-  # source://spoom//lib/spoom/printer.rb#80
+  # source://spoom//lib/spoom/printer.rb#78
   sig { params(string: ::String, color: ::Spoom::Color).returns(::String) }
   def colorize(string, *color); end
 
   # Decrease indent level
   #
-  # source://spoom//lib/spoom/printer.rb#33
+  # source://spoom//lib/spoom/printer.rb#31
   sig { void }
   def dedent; end
 
   # Increase indent level
   #
-  # source://spoom//lib/spoom/printer.rb#27
+  # source://spoom//lib/spoom/printer.rb#25
   sig { void }
   def indent; end
 
-  # source://spoom//lib/spoom/printer.rb#16
+  # source://spoom//lib/spoom/printer.rb#14
   sig { returns(T.any(::IO, ::StringIO)) }
   def out; end
 
   # @return [IO, StringIO]
   #
-  # source://spoom//lib/spoom/printer.rb#16
+  # source://spoom//lib/spoom/printer.rb#14
   def out=(_arg0); end
 
   # Print `string` into `out`
   #
-  # source://spoom//lib/spoom/printer.rb#39
+  # source://spoom//lib/spoom/printer.rb#37
   sig { params(string: T.nilable(::String)).void }
   def print(string); end
 
@@ -2132,32 +3375,27 @@ class Spoom::Printer
   #
   # Does not use colors unless `@colors`.
   #
-  # source://spoom//lib/spoom/printer.rb#49
+  # source://spoom//lib/spoom/printer.rb#47
   sig { params(string: T.nilable(::String), color: ::Spoom::Color).void }
   def print_colored(string, *color); end
 
   # Print `string` with indent and newline
   #
-  # source://spoom//lib/spoom/printer.rb#64
+  # source://spoom//lib/spoom/printer.rb#62
   sig { params(string: T.nilable(::String)).void }
   def printl(string); end
 
   # Print a new line into `out`
   #
-  # source://spoom//lib/spoom/printer.rb#58
+  # source://spoom//lib/spoom/printer.rb#56
   sig { void }
   def printn; end
 
   # Print an indent space into `out`
   #
-  # source://spoom//lib/spoom/printer.rb#74
+  # source://spoom//lib/spoom/printer.rb#72
   sig { void }
   def printt; end
-
-  class << self
-    # source://sorbet-runtime/0.5.10875/lib/types/private/abstract/declare.rb#37
-    def new(*args, **_arg1, &blk); end
-  end
 end
 
 # source://spoom//lib/spoom.rb#10
@@ -2166,7 +3404,7 @@ Spoom::SPOOM_PATH = T.let(T.unsafe(nil), String)
 # source://spoom//lib/spoom/sorbet/config.rb#5
 module Spoom::Sorbet; end
 
-# source://spoom//lib/spoom/sorbet.rb#38
+# source://spoom//lib/spoom/sorbet.rb#39
 Spoom::Sorbet::BIN_PATH = T.let(T.unsafe(nil), String)
 
 # source://spoom//lib/spoom/sorbet.rb#36
@@ -2409,7 +3647,10 @@ Spoom::Sorbet::Errors::Parser::HEADER = T.let(T.unsafe(nil), Array)
 # source://spoom//lib/spoom/sorbet.rb#37
 Spoom::Sorbet::GEM_PATH = T.let(T.unsafe(nil), String)
 
-# source://spoom//lib/spoom/sorbet.rb#40
+# source://spoom//lib/spoom/sorbet.rb#38
+Spoom::Sorbet::GEM_VERSION = T.let(T.unsafe(nil), String)
+
+# source://spoom//lib/spoom/sorbet.rb#41
 Spoom::Sorbet::KILLED_CODE = T.let(T.unsafe(nil), Integer)
 
 # source://spoom//lib/spoom/sorbet/metrics.rb#8
@@ -2432,7 +3673,7 @@ end
 # source://spoom//lib/spoom/sorbet/metrics.rb#9
 Spoom::Sorbet::MetricsParser::DEFAULT_PREFIX = T.let(T.unsafe(nil), String)
 
-# source://spoom//lib/spoom/sorbet.rb#41
+# source://spoom//lib/spoom/sorbet.rb#42
 Spoom::Sorbet::SEGFAULT_CODE = T.let(T.unsafe(nil), Integer)
 
 # source://spoom//lib/spoom/sorbet/sigils.rb#9
