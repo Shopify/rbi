@@ -850,7 +850,7 @@ module RBI
       def visit_assoc_node(node)
         @current.params << SigParam.new(
           node_string!(node.key).delete_suffix(":"),
-          node_string!(T.must(node.value)),
+          node_string!(node.value),
         )
       end
     end
