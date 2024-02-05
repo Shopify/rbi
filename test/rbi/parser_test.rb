@@ -869,7 +869,11 @@ module RBI
           def bar
         RBI
       end
-      assert_equal("cannot parse the expression. expected an `end` to close the `def` statement.", e.message)
+      assert_equal(
+        "unexpected end of file, assuming it is closing the parent top level context. expected an `end` " \
+          "to close the `def` statement.",
+        e.message,
+      )
       assert_equal("-:2:0", e.location.to_s)
 
       e = assert_raises(ParseError) do
@@ -942,7 +946,11 @@ module RBI
       e = assert_raises(ParseError) do
         Parser.parse_file(path)
       end
-      assert_equal("cannot parse the expression. expected an `end` to close the `class` statement.", e.message)
+      assert_equal(
+        "unexpected end of file, assuming it is closing the parent top level context. expected an `end` " \
+          "to close the `class` statement.",
+        e.message,
+      )
       assert_equal("test_parse_real_file_with_error.rbi:2:0", e.location.to_s)
 
       FileUtils.rm_rf(path)
