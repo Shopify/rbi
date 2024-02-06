@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rbi (0.1.7)
+    rbi (0.1.8)
       prism (>= 0.18.0, < 0.22)
       sorbet-runtime (>= 0.5.9204)
 
