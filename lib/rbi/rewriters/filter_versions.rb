@@ -113,11 +113,5 @@ module RBI
 
   class Tree
     extend T::Sig
-
-    sig { params(version: Gem::Version).void }
-    def filter_versions!(version)
-      visitor = Rewriters::FilterVersions.new(version)
-      visitor.visit(self)
-    end
   end
 end
