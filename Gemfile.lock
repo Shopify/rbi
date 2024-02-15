@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     rbi (0.1.8)
-      prism (>= 0.18.0, < 0.22)
+      prism (>= 0.18.0, < 0.25)
       sorbet-runtime (>= 0.5.9204)
 
 GEM
@@ -27,7 +27,7 @@ GEM
       ast (~> 2.4.1)
       racc
     prettier_print (1.2.1)
-    prism (0.21.0)
+    prism (0.24.0)
     racc (1.7.3)
     rainbow (3.1.1)
     rake (13.1.0)
