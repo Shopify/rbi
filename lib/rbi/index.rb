@@ -70,7 +70,7 @@ module RBI
     end
   end
 
-  # A Node that can be refered to by a unique ID inside an index
+  # A Node that can be referred to by a unique ID inside an index
   module Indexable
     extend T::Sig
     extend T::Helpers
