@@ -36,7 +36,7 @@ module RBI
 
       tree = Parser.parse_string(rbi)
 
-      Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0"))
+      tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
         # @version < 1.0.0
         class Foo; end
@@ -60,7 +60,7 @@ module RBI
 
       tree = Parser.parse_string(rbi)
 
-      Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0"))
+      tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
         # @version > 0.4.0-prerelease
         class Bar; end
@@ -87,7 +87,7 @@ module RBI
 
       tree = Parser.parse_string(rbi)
 
-      Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0"))
+      tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
         # @version = 0.4.0
         class Baz; end
@@ -111,7 +111,7 @@ module RBI
 
       tree = Parser.parse_string(rbi)
 
-      Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0"))
+      tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
         # @version != 1.0.0
         class Foo; end
@@ -138,7 +138,7 @@ module RBI
 
       tree = Parser.parse_string(rbi)
 
-      Rewriters::FilterVersions.filter(tree, Gem::Version.new("1.1.5"))
+      tree.filter_versions!(Gem::Version.new("1.1.5"))
       assert_equal(<<~RBI, tree.string)
         # @version ~> 1.1.0
         class Foo; end
@@ -162,7 +162,7 @@ module RBI
 
       tree = Parser.parse_string(rbi)
 
-      Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0"))
+      tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
         # @version >= 0.4.0-prerelease
         class Bar; end
@@ -192,7 +192,7 @@ module RBI
 
       tree = Parser.parse_string(rbi)
 
-      Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0"))
+      tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
         # @version <= 1.0.0
         class Foo; end
@@ -219,7 +219,7 @@ module RBI
 
       tree = Parser.parse_string(rbi)
 
-      Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0-prerelease"))
+      tree.filter_versions!(Gem::Version.new("0.4.0-prerelease"))
       assert_equal(<<~RBI, tree.string)
         # @version <= 1.0.0
         class Foo; end
@@ -246,7 +246,7 @@ module RBI
 
       tree = Parser.parse_string(rbi)
 
-      Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0"))
+      tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
         # @version > 0.3.0, < 1.0.0
         class Foo; end
@@ -274,7 +274,7 @@ module RBI
 
       tree = Parser.parse_string(rbi)
 
-      Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0"))
+      tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
         # @version = 0.4.0
         # @version > 0.5.0
@@ -299,7 +299,7 @@ module RBI
 
       tree = Parser.parse_string(rbi)
 
-      Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0"))
+      tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
         # @version > 0.3.0, < 1.0.0
         # @version > 1.5.0
@@ -320,7 +320,7 @@ module RBI
       tree = Parser.parse_string(rbi)
 
       assert_raises(Gem::Requirement::BadRequirementError) do
-        Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0"))
+        tree.filter_versions!(Gem::Version.new("0.4.0"))
       end
     end
   end
