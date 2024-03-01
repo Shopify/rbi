@@ -47,7 +47,7 @@ GEM
     rubocop-ast (1.31.0)
       parser (>= 3.3.0.4)
       prism (>= 0.24.0)
-    rubocop-shopify (2.14.0)
+    rubocop-shopify (2.15.1)
       rubocop (~> 1.51)
     rubocop-sorbet (0.7.7)
       rubocop (>= 0.90.0)
