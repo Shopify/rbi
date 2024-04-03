@@ -534,6 +534,79 @@ module RBI
       @params << param
     end
 
+    sig { params(name: String).void }
+    def add_param(name)
+      @params << ReqParam.new(name)
+    end
+
+    sig { params(name: String, default_value: String).void }
+    def add_opt_param(name, default_value)
+      @params << OptParam.new(name, default_value)
+    end
+
+    sig { params(name: String).void }
+    def add_rest_param(name)
+      @params << RestParam.new(name)
+    end
+
+    sig { params(name: String).void }
+    def add_kw_param(name)
+      @params << KwParam.new(name)
+    end
+
+    sig { params(name: String, default_value: String).void }
+    def add_kw_opt_param(name, default_value)
+      @params << KwOptParam.new(name, default_value)
+    end
+
+    sig { params(name: String).void }
+    def add_kw_rest_param(name)
+      @params << KwRestParam.new(name)
+    end
+
+    sig { params(name: String).void }
+    def add_block_param(name)
+      @params << BlockParam.new(name)
+    end
+
+    sig do
+      params(
+        params: T::Array[SigParam],
+        return_type: T.nilable(String),
+        is_abstract: T::Boolean,
+        is_override: T::Boolean,
+        is_overridable: T::Boolean,
+        is_final: T::Boolean,
+        type_params: T::Array[String],
+        checked: T.nilable(Symbol),
+        block: T.proc.params(node: Sig).void,
+      ).void
+    end
+    def add_sig(
+      params: [],
+      return_type: nil,
+      is_abstract: false,
+      is_override: false,
+      is_overridable: false,
+      is_final: false,
+      type_params: [],
+      checked: nil,
+      &block
+    )
+      sig = Sig.new(
+        params: params,
+        return_type: return_type,
+        is_abstract: is_abstract,
+        is_override: is_override,
+        is_overridable: is_overridable,
+        is_final: is_final,
+        type_params: type_params,
+        checked: checked,
+        &block
+      )
+      @sigs << sig
+    end
+
     sig { returns(String) }
     def fully_qualified_name
       if is_singleton
@@ -1083,6 +1156,11 @@ module RBI
     sig { params(param: SigParam).void }
     def <<(param)
       @params << param
+    end
+
+    sig { params(name: String, type: String).void }
+    def add_param(name, type)
+      @params << SigParam.new(name, type)
     end
 
     sig { params(other: Object).returns(T::Boolean) }
