@@ -201,6 +201,48 @@ module RBI
       RBI
     end
 
+    def test_model_sig_builder
+      rbi = Tree.new do |tree|
+        tree << Method.new("foo") do |node|
+          node.add_param("p1")
+          node.add_opt_param("p2", "'value'")
+          node.add_rest_param("p3")
+          node.add_kw_param("p4")
+          node.add_kw_opt_param("p5", "'value'")
+          node.add_kw_rest_param("p6")
+          node.add_block_param("p7")
+
+          node.add_sig do |sig|
+            sig.add_param("p1", "T.untyped")
+            sig.add_param("p2", "String")
+            sig.return_type = "T.untyped"
+          end
+
+          node.add_sig do |sig|
+            sig.add_param("p3", "T.untyped")
+            sig.return_type = "void"
+          end
+
+          node.add_sig(type_params: ["T", "U"]) do |sig|
+            sig.is_abstract = true
+            sig.is_override = true
+            sig.is_overridable = true
+            sig.is_final = true
+            sig.checked = :never
+            sig.add_param("p4", "T.untyped")
+            sig.return_type = "void"
+          end
+        end
+      end
+
+      assert_equal(<<~RBI, rbi.string)
+        sig { params(p1: T.untyped, p2: String).returns(T.untyped) }
+        sig { params(p3: T.untyped).void }
+        sig(:final) { abstract.override.overridable.type_parameters(:T, :U).checked(:never).params(p4: T.untyped).void }
+        def foo(p1, p2 = 'value', *p3, p4:, p5: 'value', **p6, &p7); end
+      RBI
+    end
+
     def test_model_fully_qualified_names
       mod = Module.new("Foo")
       assert_equal("::Foo", mod.fully_qualified_name)
