@@ -12,7 +12,6 @@ Gem::Specification.new do |spec|
   spec.summary       = "RBI generation framework"
   spec.homepage      = "https://github.com/Shopify/rbi"
   spec.license       = "MIT"
-  spec.required_ruby_version = Gem::Requirement.new(">= 3.0.0")
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
@@ -26,4 +25,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency("prism", ">= 0.18.0", "< 0.28")
   spec.add_dependency("sorbet-runtime", ">= 0.5.9204")
+
+  spec.required_ruby_version = ">= 3.1"
 end
