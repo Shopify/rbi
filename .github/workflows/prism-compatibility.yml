@@ -1,0 +1,37 @@
+name: Check compatibility against Prism
+
+# Every day run tests with latest version of `prism` gem
+
+on:
+  schedule:
+    - cron: '0 13 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Install latest prism
+        run: |
+          echo "gem 'prism', git:'https://github.com/ruby/prism.git'" >> Gemfile
+          bundle update prism --conservative
+            
+      - name: Run type check
+        run: bin/typecheck
+
+      - name: Run tests
+        run: bin/test
+
+      - name: Notify if there's a failure
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' --fail ${{ secrets.SLACK_WEBHOOK_URL }} --data \
+          "
+          {
+          \"text\": \"Prism's `main` branch is incompatible with `rbi`: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+          }"
