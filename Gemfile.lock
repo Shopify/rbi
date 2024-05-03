@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     rbi (0.1.12)
-      prism (>= 0.18.0, < 0.28)
+      prism (>= 0.18.0)
       sorbet-runtime (>= 0.5.9204)
 
 GEM
