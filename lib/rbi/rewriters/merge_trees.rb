@@ -592,6 +592,9 @@ module RBI
     sig { returns(Tree) }
     attr_reader :left, :right
 
+    sig { returns(String) }
+    attr_reader :left_name, :right_name
+
     sig { params(left_name: String, right_name: String).void }
     def initialize(left_name: "left", right_name: "right")
       super()
@@ -630,6 +633,9 @@ module RBI
 
     sig { returns(Scope) }
     attr_reader :left, :right
+
+    sig { returns(String) }
+    attr_reader :left_name, :right_name
 
     sig do
       params(
