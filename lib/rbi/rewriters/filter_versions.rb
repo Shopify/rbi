@@ -57,8 +57,6 @@ module RBI
     class FilterVersions < Visitor
       extend T::Sig
 
-      VERSION_PREFIX = "version "
-
       class << self
         extend T::Sig
 
