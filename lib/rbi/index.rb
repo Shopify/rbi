@@ -19,7 +19,7 @@ module RBI
 
     sig { void }
     def initialize
-      super()
+      super
       @index = T.let({}, T::Hash[String, T::Array[Node]])
     end
 
