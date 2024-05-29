@@ -605,15 +605,6 @@ module RBI
       @right = T.let(Tree.new, Tree)
       @right.parent_tree = self
     end
-
-    sig { override.params(v: Printer).void }
-    def accept_printer(v)
-      v.printl("<<<<<<< #{@left_name}")
-      v.visit(left)
-      v.printl("=======")
-      v.visit(right)
-      v.printl(">>>>>>> #{@right_name}")
-    end
   end
 
   # A conflict between two scope headers
@@ -651,27 +642,6 @@ module RBI
       @right = right
       @left_name = left_name
       @right_name = right_name
-    end
-
-    sig { override.params(v: Printer).void }
-    def accept_printer(v)
-      previous_node = v.previous_node
-      v.printn if previous_node && (!previous_node.oneline? || !oneline?)
-
-      v.printl("# #{loc}") if loc && v.print_locs
-      v.visit_all(comments)
-
-      v.printl("<<<<<<< #{@left_name}")
-      left.print_header(v)
-      v.printl("=======")
-      right.print_header(v)
-      v.printl(">>>>>>> #{@right_name}")
-      left.print_body(v)
-    end
-
-    sig { override.returns(T::Boolean) }
-    def oneline?
-      left.oneline?
     end
   end
 end
