@@ -13,7 +13,6 @@ module RBI
         case node
         when Tree
           kinds = node.nodes.map { |child| group_kind(child) }
-          kinds.compact!
           kinds.uniq!
 
           groups = {}
