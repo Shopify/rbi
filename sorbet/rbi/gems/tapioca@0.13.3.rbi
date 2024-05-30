@@ -54,7 +54,7 @@ module RBI; end
 
 # source://tapioca//lib/tapioca/rbi_ext/model.rb#5
 class RBI::Tree < ::RBI::NodeWithComments
-  # source://rbi/0.1.12/lib/rbi/model.rb#119
+  # source://rbi/0.1.13/lib/rbi/model.rb#119
   sig do
     params(
       loc: T.nilable(::RBI::Loc),
@@ -64,19 +64,15 @@ class RBI::Tree < ::RBI::NodeWithComments
   end
   def initialize(loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  # source://rbi/0.1.12/lib/rbi/model.rb#126
+  # source://rbi/0.1.13/lib/rbi/model.rb#126
   sig { params(node: ::RBI::Node).void }
   def <<(node); end
 
-  # source://rbi/0.1.12/lib/rbi/printer.rb#226
-  sig { override.params(v: ::RBI::Printer).void }
-  def accept_printer(v); end
-
-  # source://rbi/0.1.12/lib/rbi/rewriters/add_sig_templates.rb#66
+  # source://rbi/0.1.13/lib/rbi/rewriters/add_sig_templates.rb#66
   sig { params(with_todo_comment: T::Boolean).void }
   def add_sig_templates!(with_todo_comment: T.unsafe(nil)); end
 
-  # source://rbi/0.1.12/lib/rbi/rewriters/annotate.rb#49
+  # source://rbi/0.1.13/lib/rbi/rewriters/annotate.rb#49
   sig { params(annotation: ::String, annotate_scopes: T::Boolean, annotate_properties: T::Boolean).void }
   def annotate!(annotation, annotate_scopes: T.unsafe(nil), annotate_properties: T.unsafe(nil)); end
 
@@ -157,27 +153,27 @@ class RBI::Tree < ::RBI::NodeWithComments
   end
   def create_type_variable(name, type:, variance: T.unsafe(nil), fixed: T.unsafe(nil), upper: T.unsafe(nil), lower: T.unsafe(nil)); end
 
-  # source://rbi/0.1.12/lib/rbi/rewriters/deannotate.rb#41
+  # source://rbi/0.1.13/lib/rbi/rewriters/deannotate.rb#41
   sig { params(annotation: ::String).void }
   def deannotate!(annotation); end
 
-  # source://rbi/0.1.12/lib/rbi/model.rb#132
+  # source://rbi/0.1.13/lib/rbi/model.rb#132
   sig { returns(T::Boolean) }
   def empty?; end
 
-  # source://rbi/0.1.12/lib/rbi/rewriters/filter_versions.rb#118
+  # source://rbi/0.1.13/lib/rbi/rewriters/filter_versions.rb#118
   sig { params(version: ::Gem::Version).void }
   def filter_versions!(version); end
 
-  # source://rbi/0.1.12/lib/rbi/rewriters/group_nodes.rb#38
+  # source://rbi/0.1.13/lib/rbi/rewriters/group_nodes.rb#80
   sig { void }
   def group_nodes!; end
 
-  # source://rbi/0.1.12/lib/rbi/index.rb#68
+  # source://rbi/0.1.13/lib/rbi/index.rb#68
   sig { returns(::RBI::Index) }
   def index; end
 
-  # source://rbi/0.1.12/lib/rbi/rewriters/merge_trees.rb#324
+  # source://rbi/0.1.13/lib/rbi/rewriters/merge_trees.rb#324
   sig do
     params(
       other: ::RBI::Tree,
@@ -188,23 +184,19 @@ class RBI::Tree < ::RBI::NodeWithComments
   end
   def merge(other, left_name: T.unsafe(nil), right_name: T.unsafe(nil), keep: T.unsafe(nil)); end
 
-  # source://rbi/0.1.12/lib/rbi/rewriters/nest_non_public_methods.rb#46
+  # source://rbi/0.1.13/lib/rbi/rewriters/nest_non_public_methods.rb#46
   sig { void }
   def nest_non_public_methods!; end
 
-  # source://rbi/0.1.12/lib/rbi/rewriters/nest_singleton_methods.rb#36
+  # source://rbi/0.1.13/lib/rbi/rewriters/nest_singleton_methods.rb#36
   sig { void }
   def nest_singleton_methods!; end
 
-  # source://rbi/0.1.12/lib/rbi/model.rb#110
+  # source://rbi/0.1.13/lib/rbi/model.rb#110
   sig { returns(T::Array[::RBI::Node]) }
   def nodes; end
 
-  # source://rbi/0.1.12/lib/rbi/printer.rb#233
-  sig { override.returns(T::Boolean) }
-  def oneline?; end
-
-  # source://rbi/0.1.12/lib/rbi/rewriters/sort_nodes.rb#119
+  # source://rbi/0.1.13/lib/rbi/rewriters/sort_nodes.rb#119
   sig { void }
   def sort_nodes!; end
 
@@ -3478,20 +3470,23 @@ end
 # source://tapioca//lib/tapioca/version.rb#5
 Tapioca::VERSION = T.let(T.unsafe(nil), String)
 
+# source://tapioca//lib/tapioca/helpers/source_uri.rb#6
+module URI
+  include ::URI::RFC2396_REGEXP
+end
+
 # source://tapioca//lib/tapioca/helpers/source_uri.rb#7
 class URI::Source < ::URI::File
   # source://tapioca//lib/tapioca/helpers/source_uri.rb#58
   sig { params(v: T.nilable(::String)).returns(T::Boolean) }
   def check_host(v); end
 
-  # source://uri/0.13.0/uri/generic.rb#243
   def gem_name; end
 
   # source://tapioca//lib/tapioca/helpers/source_uri.rb#25
   sig { returns(T.nilable(::String)) }
   def gem_version; end
 
-  # source://uri/0.13.0/uri/generic.rb#283
   def line_number; end
 
   # source://tapioca//lib/tapioca/helpers/source_uri.rb#51
@@ -3518,3 +3513,5 @@ end
 
 # source://tapioca//lib/tapioca/helpers/source_uri.rb#10
 URI::Source::COMPONENT = T.let(T.unsafe(nil), Array)
+
+class URI::WSS < ::URI::WS; end

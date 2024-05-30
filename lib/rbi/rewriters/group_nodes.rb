@@ -12,7 +12,7 @@ module RBI
 
         case node
         when Tree
-          kinds = node.nodes.map(&:group_kind)
+          kinds = node.nodes.map { |child| group_kind(child) }
           kinds.compact!
           kinds.uniq!
 
@@ -22,10 +22,52 @@ module RBI
           node.nodes.dup.each do |child|
             visit(child)
             child.detach
-            groups[child.group_kind] << child
+            groups[group_kind(child)] << child
           end
 
           groups.each { |_, group| node << group }
+        end
+      end
+
+      private
+
+      sig { params(node: Node).returns(Group::Kind) }
+      def group_kind(node)
+        case node
+        when Group
+          node.kind
+        when Include, Extend
+          Group::Kind::Mixins
+        when RequiresAncestor
+          Group::Kind::RequiredAncestors
+        when Helper
+          Group::Kind::Helpers
+        when TypeMember
+          Group::Kind::TypeMembers
+        when MixesInClassMethods
+          Group::Kind::MixesInClassMethods
+        when Send
+          Group::Kind::Sends
+        when Attr
+          Group::Kind::Attrs
+        when TStructField
+          Group::Kind::TStructFields
+        when TEnumBlock
+          Group::Kind::TEnums
+        when VisibilityGroup
+          Group::Kind::Methods
+        when Method
+          if node.name == "initialize"
+            Group::Kind::Inits
+          else
+            Group::Kind::Methods
+          end
+        when SingletonClass
+          Group::Kind::SingletonClasses
+        when Scope, Const
+          Group::Kind::Consts
+        else
+          raise "Unknown group for #{self}"
         end
       end
     end
@@ -38,50 +80,6 @@ module RBI
     def group_nodes!
       visitor = Rewriters::GroupNodes.new
       visitor.visit(self)
-    end
-  end
-
-  class Node
-    extend T::Sig
-
-    sig { returns(Group::Kind) }
-    def group_kind
-      case self
-      when Group
-        kind
-      when Include, Extend
-        Group::Kind::Mixins
-      when RequiresAncestor
-        Group::Kind::RequiredAncestors
-      when Helper
-        Group::Kind::Helpers
-      when TypeMember
-        Group::Kind::TypeMembers
-      when MixesInClassMethods
-        Group::Kind::MixesInClassMethods
-      when Send
-        Group::Kind::Sends
-      when Attr
-        Group::Kind::Attrs
-      when TStructField
-        Group::Kind::TStructFields
-      when TEnumBlock
-        Group::Kind::TEnums
-      when VisibilityGroup
-        Group::Kind::Methods
-      when Method
-        if name == "initialize"
-          Group::Kind::Inits
-        else
-          Group::Kind::Methods
-        end
-      when SingletonClass
-        Group::Kind::SingletonClasses
-      when Scope, Const
-        Group::Kind::Consts
-      else
-        raise "Unknown group for #{self}"
-      end
     end
   end
 
