@@ -242,9 +242,5 @@ module RBI
   end
 
   class Node
-    sig { params(visitor: Visitor).void }
-    def accept(visitor)
-      visitor.visit(self)
-    end
   end
 end
