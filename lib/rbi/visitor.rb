@@ -240,7 +240,4 @@ module RBI
     sig { params(node: ScopeConflict).void }
     def visit_scope_conflict(node); end
   end
-
-  class Node
-  end
 end
