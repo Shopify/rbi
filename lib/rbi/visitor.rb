@@ -240,11 +240,4 @@ module RBI
     sig { params(node: ScopeConflict).void }
     def visit_scope_conflict(node); end
   end
-
-  class Node
-    sig { params(visitor: Visitor).void }
-    def accept(visitor)
-      visitor.visit(self)
-    end
-  end
 end
