@@ -348,6 +348,8 @@ module RBI
     end
   end
 
+  class DuplicateNodeError < Error; end
+
   class Scope
     extend T::Sig
 
@@ -364,7 +366,7 @@ module RBI
       when SingletonClass
         SingletonClass.new(loc: loc, comments: comments)
       else
-        raise "Can't duplicate node #{self}"
+        raise DuplicateNodeError, "Can't duplicate node #{self}"
       end
     end
   end
