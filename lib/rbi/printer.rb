@@ -2,6 +2,8 @@
 # frozen_string_literal: true
 
 module RBI
+  class PrinterError < Error; end
+
   class Printer < Visitor
     extend T::Sig
 
@@ -187,7 +189,7 @@ module RBI
       when TEnum
         printt("class #{node.name} < T::Enum")
       else
-        raise "Unhandled node: #{node.class}"
+        raise PrinterError, "Unhandled node: #{node.class}"
       end
       if node.empty? && !node.is_a?(Struct)
         print("; end")
