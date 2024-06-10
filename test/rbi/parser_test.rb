@@ -870,7 +870,7 @@ module RBI
         RBI
       end
       assert_equal(
-        "unexpected end of file, assuming it is closing the parent top level context. expected an `end` " \
+        "unexpected end-of-input, assuming it is closing the parent top level context. expected an `end` " \
           "to close the `def` statement.",
         e.message,
       )
@@ -947,7 +947,7 @@ module RBI
         Parser.parse_file(path)
       end
       assert_equal(
-        "unexpected end of file, assuming it is closing the parent top level context. expected an `end` " \
+        "unexpected end-of-input, assuming it is closing the parent top level context. expected an `end` " \
           "to close the `class` statement.",
         e.message,
       )
