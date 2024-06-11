@@ -18,6 +18,7 @@ module RBI
         when Scope, Const, Attr, Method, TStructField, TypeMember
           deannotate_node(node)
         end
+
         visit_all(node.nodes) if node.is_a?(Tree)
       end
 
