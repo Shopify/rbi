@@ -4,7 +4,7 @@
 require "prism"
 
 module RBI
-  class ParseError < StandardError
+  class ParseError < Error
     extend T::Sig
 
     sig { returns(Loc) }
@@ -17,7 +17,7 @@ module RBI
     end
   end
 
-  class UnexpectedParserError < StandardError
+  class UnexpectedParserError < Error
     extend T::Sig
 
     sig { returns(Loc) }
