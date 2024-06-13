@@ -2,6 +2,8 @@
 # frozen_string_literal: true
 
 module RBI
+  class GroupNodesError < Error; end
+
   module Rewriters
     class GroupNodes < Visitor
       extend T::Sig
@@ -66,7 +68,7 @@ module RBI
         when Scope, Const
           Group::Kind::Consts
         else
-          raise "Unknown group for #{self}"
+          raise GroupNodesError, "Unknown group for #{self}"
         end
       end
     end

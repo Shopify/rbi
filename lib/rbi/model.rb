@@ -2,6 +2,8 @@
 # frozen_string_literal: true
 
 module RBI
+  class ReplaceNodeError < Error; end
+
   class Node
     extend T::Sig
     extend T::Helpers
@@ -32,10 +34,10 @@ module RBI
     sig { params(node: Node).void }
     def replace(node)
       tree = parent_tree
-      raise unless tree
+      raise ReplaceNodeError, "Can't replace #{self} without a parent tree" unless tree
 
       index = tree.nodes.index(self)
-      raise unless index
+      raise ReplaceNodeError, "Can't find #{self} in #{tree} child nodes" unless index
 
       tree.nodes[index] = node
       node.parent_tree = tree

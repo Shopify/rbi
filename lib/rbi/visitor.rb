@@ -2,6 +2,8 @@
 # frozen_string_literal: true
 
 module RBI
+  class VisitorError < Error; end
+
   class Visitor
     extend T::Helpers
     extend T::Sig
@@ -98,7 +100,7 @@ module RBI
       when RequiresAncestor
         visit_requires_ancestor(node)
       else
-        raise "Unhandled node: #{node.class}"
+        raise VisitorError, "Unhandled node: #{node.class}"
       end
     end
 
