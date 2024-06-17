@@ -10,24 +10,21 @@ module RBI
 
       sig { override.params(node: T.nilable(Node)).void }
       def visit(node)
-        return unless node
+        return unless node.is_a?(Tree)
 
-        case node
-        when Tree
-          kinds = node.nodes.map { |child| group_kind(child) }
-          kinds.uniq!
+        kinds = node.nodes.map { |child| group_kind(child) }
+        kinds.uniq!
 
-          groups = {}
-          kinds.each { |kind| groups[kind] = Group.new(kind) }
+        groups = {}
+        kinds.each { |kind| groups[kind] = Group.new(kind) }
 
-          node.nodes.dup.each do |child|
-            visit(child)
-            child.detach
-            groups[group_kind(child)] << child
-          end
-
-          groups.each { |_, group| node << group }
+        node.nodes.dup.each do |child|
+          visit(child)
+          child.detach
+          groups[group_kind(child)] << child
         end
+
+        groups.each { |_, group| node << group }
       end
 
       private

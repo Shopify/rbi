@@ -8,33 +8,30 @@ module RBI
 
       sig { override.params(node: T.nilable(Node)).void }
       def visit(node)
-        return unless node
+        return unless node.is_a?(Tree)
 
-        case node
-        when Tree
-          public_group = VisibilityGroup.new(Public.new)
-          protected_group = VisibilityGroup.new(Protected.new)
-          private_group = VisibilityGroup.new(Private.new)
+        public_group = VisibilityGroup.new(Public.new)
+        protected_group = VisibilityGroup.new(Protected.new)
+        private_group = VisibilityGroup.new(Private.new)
 
-          node.nodes.dup.each do |child|
-            visit(child)
-            next unless child.is_a?(Method)
+        node.nodes.dup.each do |child|
+          visit(child)
+          next unless child.is_a?(Method)
 
-            child.detach
-            case child.visibility
-            when Protected
-              protected_group << child
-            when Private
-              private_group << child
-            else
-              public_group << child
-            end
+          child.detach
+          case child.visibility
+          when Protected
+            protected_group << child
+          when Private
+            private_group << child
+          else
+            public_group << child
           end
-
-          node << public_group unless public_group.empty?
-          node << protected_group unless protected_group.empty?
-          node << private_group unless private_group.empty?
         end
+
+        node << public_group unless public_group.empty?
+        node << protected_group unless protected_group.empty?
+        node << private_group unless private_group.empty?
       end
     end
   end

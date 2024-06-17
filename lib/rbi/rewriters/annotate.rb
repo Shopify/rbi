@@ -22,6 +22,7 @@ module RBI
         when Const, Attr, Method, TStructField, TypeMember
           annotate_node(node) if @annotate_properties
         end
+
         visit_all(node.nodes) if node.is_a?(Tree)
       end
 

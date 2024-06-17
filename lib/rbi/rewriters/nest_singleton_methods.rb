@@ -8,23 +8,20 @@ module RBI
 
       sig { override.params(node: T.nilable(Node)).void }
       def visit(node)
-        return unless node
+        return unless node.is_a?(Tree)
 
-        case node
-        when Tree
-          singleton_class = SingletonClass.new
+        singleton_class = SingletonClass.new
 
-          node.nodes.dup.each do |child|
-            visit(child)
-            next unless child.is_a?(Method) && child.is_singleton
+        node.nodes.dup.each do |child|
+          visit(child)
+          next unless child.is_a?(Method) && child.is_singleton
 
-            child.detach
-            child.is_singleton = false
-            singleton_class << child
-          end
-
-          node << singleton_class unless singleton_class.empty?
+          child.detach
+          child.is_singleton = false
+          singleton_class << child
         end
+
+        node << singleton_class unless singleton_class.empty?
       end
     end
   end

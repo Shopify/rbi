@@ -117,8 +117,6 @@ module RBI
 
         sig { override.params(node: T.nilable(Node)).void }
         def visit(node)
-          return unless node
-
           case node
           when Scope
             prev = previous_definition(node)

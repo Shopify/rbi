@@ -77,6 +77,8 @@ module RBI
 
     interface!
 
+    requires_ancestor { Node }
+
     # Unique IDs that refer to this node.
     #
     # Some nodes can have multiple ids, for example an attribute accessor matches the ID of the
