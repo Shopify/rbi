@@ -719,7 +719,7 @@ module RBI
         comments = node_comments(send)
         default_value = T.let(nil, T.nilable(String))
 
-        rest&.each do |arg|
+        rest.each do |arg|
           next unless arg.is_a?(Prism::KeywordHashNode)
 
           arg.elements.each do |assoc|
