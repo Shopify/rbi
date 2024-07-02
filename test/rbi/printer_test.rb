@@ -1138,5 +1138,19 @@ module RBI
         def m1; end
       RBI
     end
+
+    def test_print_sigs_with_final
+      sig = Sig.new(is_final: true, return_type: "Integer")
+
+      assert_equal(<<~RBI, sig.string)
+        sig(:final) { returns(Integer) }
+      RBI
+
+      assert_equal(<<~RBI, sig.string(max_line_length: 10))
+        sig(:final) do
+          returns(Integer)
+        end
+      RBI
+    end
   end
 end
