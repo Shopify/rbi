@@ -666,7 +666,9 @@ module RBI
     def print_sig_as_block(node)
       modifiers = sig_modifiers(node)
 
-      printl("sig do")
+      printt("sig")
+      print("(:final)") if node.is_final
+      printn(" do")
       indent
       if modifiers.any?
         printl(T.must(modifiers.first))
