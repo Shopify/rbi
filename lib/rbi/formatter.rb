@@ -8,9 +8,6 @@ module RBI
     sig { params(sort_nodes: T::Boolean).returns(T::Boolean) }
     attr_writer :sort_nodes
 
-    sig { params(nest_singleton_methods: T::Boolean).returns(T::Boolean) }
-    attr_writer :nest_singleton_methods
-
     sig { params(group_nodes: T::Boolean).returns(T::Boolean) }
     attr_writer :group_nodes
 
