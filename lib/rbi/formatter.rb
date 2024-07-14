@@ -8,9 +8,6 @@ module RBI
     sig { params(sort_nodes: T::Boolean).returns(T::Boolean) }
     attr_writer :sort_nodes
 
-    sig { params(group_nodes: T::Boolean).returns(T::Boolean) }
-    attr_writer :group_nodes
-
     sig { returns(T.nilable(Integer)) }
     attr_accessor :max_line_length
 
