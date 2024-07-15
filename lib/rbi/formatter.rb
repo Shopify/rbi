@@ -11,9 +11,6 @@ module RBI
     sig { params(nest_singleton_methods: T::Boolean).returns(T::Boolean) }
     attr_writer :nest_singleton_methods
 
-    sig { params(add_sig_templates: T::Boolean).returns(T::Boolean) }
-    attr_writer :add_sig_templates
-
     sig { params(group_nodes: T::Boolean).returns(T::Boolean) }
     attr_writer :group_nodes
 
