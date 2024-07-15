@@ -8,4 +8,6 @@ require "minitest/test"
 require "minitest/autorun"
 require "minitest/reporters"
 
-Minitest::Reporters.use!(Minitest::Reporters::SpecReporter.new(color: true))
+unless ENV["RM_INFO"]
+  Minitest::Reporters.use!(Minitest::Reporters::SpecReporter.new(color: true))
+end
