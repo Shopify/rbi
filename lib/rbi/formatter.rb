@@ -14,9 +14,6 @@ module RBI
     sig { params(group_nodes: T::Boolean).returns(T::Boolean) }
     attr_writer :group_nodes
 
-    sig { params(nest_non_public_methods: T::Boolean).returns(T::Boolean) }
-    attr_writer :nest_non_public_methods
-
     sig { returns(T.nilable(Integer)) }
     attr_accessor :max_line_length
 
