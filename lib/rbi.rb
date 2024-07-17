@@ -5,7 +5,9 @@ require "sorbet-runtime"
 require "stringio"
 
 module RBI
-  class Error < StandardError; end
+  class Error < StandardError
+    extend T::Sig
+  end
 end
 
 require "rbi/loc"
@@ -21,6 +23,7 @@ require "rbi/rewriters/nest_singleton_methods"
 require "rbi/rewriters/nest_non_public_methods"
 require "rbi/rewriters/group_nodes"
 require "rbi/rewriters/remove_known_definitions"
+require "rbi/rewriters/attr_to_methods"
 require "rbi/rewriters/sort_nodes"
 require "rbi/parser"
 require "rbi/printer"
