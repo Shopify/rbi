@@ -3,9 +3,6 @@
 
 module RBI
   class UnexpectedMultipleSigsError < Error
-    sig { returns(Node) }
-    attr_reader :node
-
     sig { params(node: Node).void }
     def initialize(node)
       super(<<~MSG)
