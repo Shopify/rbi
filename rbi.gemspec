@@ -23,6 +23,9 @@ Gem::Specification.new do |spec|
     "Rakefile",
   ]
 
+  spec.executables   = Dir.glob("exe/*").map { |f| File.basename(f) }
+  spec.bindir        = "exe"
+
   spec.add_dependency("prism", ">= 0.18.0", "< 1.0.0")
   spec.add_dependency("sorbet-runtime", ">= 0.5.9204")
 
