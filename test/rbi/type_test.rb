@@ -257,6 +257,23 @@ module RBI
       )
       refute_predicate(type, :nilable?)
       assert_equal("{ foo: String, bar: Integer }", type.to_rbi)
+
+      type = Type.shape(
+        foo: Type.simple("String"),
+        "bar": Type.simple("String"),
+        "baz" => Type.simple("String"),
+        :qux => Type.simple("String"),
+      )
+      refute_predicate(type, :nilable?)
+      assert_equal("{ foo: String, bar: String, baz: String, qux: String }", type.to_rbi)
+
+      type = Type.shape(
+        "\"foo\"": Type.simple("String"),
+        "\"bar\"" => Type.simple("String"),
+        :"\"baz\"" => Type.simple("String"),
+      )
+      refute_predicate(type, :nilable?)
+      assert_equal("{ \"foo\": String, \"bar\": String, \"baz\": String }", type.to_rbi)
     end
 
     def test_build_type_void_proc
