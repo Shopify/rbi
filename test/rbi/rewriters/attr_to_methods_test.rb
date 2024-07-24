@@ -298,6 +298,7 @@ module RBI
 
       e = assert_raises(RBI::UnexpectedMultipleSigsError) { rbi.replace_attributes_with_methods! }
 
+      assert_equal(["Integer", "String"], e.node.sigs.map(&:return_type))
       # This is just to test the message rendering. Please don't depend on the exact message content.
       assert_equal(e.message, <<~MSG)
         This declaration cannot have more than one sig.
