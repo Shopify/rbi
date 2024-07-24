@@ -35,3 +35,7 @@ require "rbi/type_visitor"
 require "rbi/printer"
 require "rbi/formatter"
 require "rbi/version"
+
+require "rbi/rbs/type_converter"
+require "rbi/rbs/visitor"
+require "rbi/rbs/rbs_to_rbi_visitor"
