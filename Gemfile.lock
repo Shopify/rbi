@@ -15,6 +15,7 @@ GEM
     erubi (1.13.0)
     json (2.7.2)
     language_server-protocol (3.17.0.3)
+    logger (1.6.0)
     minitest (5.25.1)
     minitest-reporters (1.7.1)
       ansi
@@ -30,6 +31,8 @@ GEM
     racc (1.8.1)
     rainbow (3.1.1)
     rake (13.2.1)
+    rbs (3.5.2)
+      logger
     regexp_parser (2.9.2)
     rexml (3.3.4)
       strscan
@@ -55,7 +58,6 @@ GEM
       sorbet-static (= 0.5.11528)
     sorbet-runtime (0.5.11528)
     sorbet-static (0.5.11528-universal-darwin)
-    sorbet-static (0.5.11528-x86_64-linux)
     sorbet-static-and-runtime (0.5.11528)
       sorbet (= 0.5.11528)
       sorbet-runtime (= 0.5.11528)
@@ -82,10 +84,8 @@ GEM
       yard
 
 PLATFORMS
-  arm64-darwin-21
   arm64-darwin-22
   arm64-darwin-23
-  x86_64-linux
 
 DEPENDENCIES
   byebug
@@ -93,6 +93,7 @@ DEPENDENCIES
   minitest-reporters
   rake (~> 13.2)
   rbi!
+  rbs
   rubocop (~> 1.65)
   rubocop-shopify
   rubocop-sorbet
