@@ -240,12 +240,18 @@ module RBI
       sig { override.params(node: Prism::DefNode).void }
       def visit_def_node(node)
         @last_node = node
+
+        # We need to collect the comments with `current_sigs_comments` _before_ visiting the parameters to make sure
+        # the method comments are properly associated with the sigs and not the parameters.
+        comments = current_sigs_comments + node_comments(node)
+        params = parse_params(node.parameters)
+
         current_scope << Method.new(
           node.name.to_s,
-          params: parse_params(node.parameters),
+          params: params,
           sigs: current_sigs,
           loc: node_loc(node),
-          comments: current_sigs_comments + node_comments(node),
+          comments: comments,
           is_singleton: !!node.receiver,
         )
         @last_node = nil

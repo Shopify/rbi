@@ -720,7 +720,7 @@ module RBI
           # B comment
           class B
             # c comment
-            def c; end
+            def c(a); end
 
             # d comment
             attr_reader :a
