@@ -574,7 +574,7 @@ module RBI
     sig do
       params(
         params: T::Array[SigParam],
-        return_type: T.nilable(String),
+        return_type: T.any(String, Type),
         is_abstract: T::Boolean,
         is_override: T::Boolean,
         is_overridable: T::Boolean,
@@ -586,7 +586,7 @@ module RBI
     end
     def add_sig(
       params: [],
-      return_type: nil,
+      return_type: "void",
       is_abstract: false,
       is_override: false,
       is_overridable: false,
@@ -928,8 +928,10 @@ module RBI
       @visibility = visibility
     end
 
-    sig { params(other: Visibility).returns(T::Boolean) }
+    sig { params(other: T.nilable(Object)).returns(T::Boolean) }
     def ==(other)
+      return false unless other.is_a?(Visibility)
+
       visibility == other.visibility
     end
 
@@ -1105,7 +1107,7 @@ module RBI
     sig { returns(T::Array[SigParam]) }
     attr_reader :params
 
-    sig { returns(T.nilable(String)) }
+    sig { returns(T.any(Type, String)) }
     attr_accessor :return_type
 
     sig { returns(T::Boolean) }
@@ -1120,7 +1122,7 @@ module RBI
     sig do
       params(
         params: T::Array[SigParam],
-        return_type: T.nilable(String),
+        return_type: T.any(Type, String),
         is_abstract: T::Boolean,
         is_override: T::Boolean,
         is_overridable: T::Boolean,
@@ -1133,7 +1135,7 @@ module RBI
     end
     def initialize(
       params: [],
-      return_type: nil,
+      return_type: "void",
       is_abstract: false,
       is_override: false,
       is_overridable: false,
@@ -1160,7 +1162,7 @@ module RBI
       @params << param
     end
 
-    sig { params(name: String, type: String).void }
+    sig { params(name: String, type: T.any(Type, String)).void }
     def add_param(name, type)
       @params << SigParam.new(name, type)
     end
@@ -1169,7 +1171,7 @@ module RBI
     def ==(other)
       return false unless other.is_a?(Sig)
 
-      params == other.params && return_type == other.return_type && is_abstract == other.is_abstract &&
+      params == other.params && return_type.to_s == other.return_type.to_s && is_abstract == other.is_abstract &&
         is_override == other.is_override && is_overridable == other.is_overridable && is_final == other.is_final &&
         type_params == other.type_params && checked == other.checked
     end
@@ -1179,12 +1181,15 @@ module RBI
     extend T::Sig
 
     sig { returns(String) }
-    attr_reader :name, :type
+    attr_reader :name
+
+    sig { returns(T.any(Type, String)) }
+    attr_reader :type
 
     sig do
       params(
         name: String,
-        type: String,
+        type: T.any(Type, String),
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
         block: T.nilable(T.proc.params(node: SigParam).void),
@@ -1199,7 +1204,7 @@ module RBI
 
     sig { params(other: Object).returns(T::Boolean) }
     def ==(other)
-      other.is_a?(SigParam) && name == other.name && type == other.type
+      other.is_a?(SigParam) && name == other.name && type.to_s == other.type.to_s
     end
   end
 
@@ -1229,7 +1234,10 @@ module RBI
     abstract!
 
     sig { returns(String) }
-    attr_accessor :name, :type
+    attr_accessor :name
+
+    sig { returns(T.any(Type, String)) }
+    attr_accessor :type
 
     sig { returns(T.nilable(String)) }
     attr_accessor :default
@@ -1237,7 +1245,7 @@ module RBI
     sig do
       params(
         name: String,
-        type: String,
+        type: T.any(Type, String),
         default: T.nilable(String),
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
@@ -1260,7 +1268,7 @@ module RBI
     sig do
       params(
         name: String,
-        type: String,
+        type: T.any(Type, String),
         default: T.nilable(String),
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
@@ -1290,7 +1298,7 @@ module RBI
     sig do
       params(
         name: String,
-        type: String,
+        type: T.any(Type, String),
         default: T.nilable(String),
         loc: T.nilable(Loc),
         comments: T::Array[Comment],

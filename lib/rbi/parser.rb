@@ -839,7 +839,7 @@ module RBI
             end
           end
         when "void"
-          @current.return_type = nil
+          @current.return_type = "void"
         end
 
         visit(node.receiver)

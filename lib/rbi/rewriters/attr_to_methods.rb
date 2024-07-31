@@ -62,7 +62,7 @@ module RBI
 
     private
 
-    sig(:final) { returns([T.nilable(Sig), T.nilable(String)]) }
+    sig(:final) { returns([T.nilable(Sig), T.nilable(T.any(Type, String))]) }
     def parse_sig
       raise UnexpectedMultipleSigsError, self if 1 < sigs.count
 
@@ -101,7 +101,7 @@ module RBI
       params(
         name: String,
         sig: T.nilable(Sig),
-        attribute_type: T.nilable(String),
+        attribute_type: T.nilable(T.any(Type, String)),
         visibility: Visibility,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
