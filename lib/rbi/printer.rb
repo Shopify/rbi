@@ -611,7 +611,7 @@ module RBI
     def print_sig_param_comment_leading_space(node, last:)
       printn
       printt
-      print(" " * (node.name.size + node.type.size + 3))
+      print(" " * (node.name.size + node.type.to_s.size + 3))
       print(" ") unless last
     end
 
@@ -654,10 +654,10 @@ module RBI
         print(").")
       end
       return_type = node.return_type
-      if node.return_type && node.return_type != "void"
-        print("returns(#{return_type})")
-      else
+      if node.return_type.to_s == "void"
         print("void")
+      else
+        print("returns(#{return_type})")
       end
       printn(" }")
     end
@@ -707,10 +707,10 @@ module RBI
       print(".") if modifiers.any? || params.any?
 
       return_type = node.return_type
-      if return_type && return_type != "void"
-        print("returns(#{return_type})")
-      else
+      if return_type.to_s == "void"
         print("void")
+      else
+        print("returns(#{return_type})")
       end
       printn
       dedent

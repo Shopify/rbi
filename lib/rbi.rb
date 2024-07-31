@@ -12,6 +12,7 @@ end
 
 require "rbi/loc"
 require "rbi/model"
+require "rbi/type"
 require "rbi/visitor"
 require "rbi/index"
 require "rbi/rewriters/add_sig_templates"

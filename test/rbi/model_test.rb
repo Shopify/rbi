@@ -420,5 +420,48 @@ module RBI
       mod << helper
       assert_equal("::Foo.foo!", helper.to_s)
     end
+
+    # types
+
+    def test_model_sig_builder_with_types
+      rbi = Tree.new do |tree|
+        tree << Method.new("foo") do |node|
+          node.add_param("x")
+
+          node.add_sig do |sig|
+            sig.add_param("x", Type.untyped)
+            sig.return_type = Type.void
+          end
+        end
+      end
+
+      assert_equal(<<~RBI, rbi.string)
+        sig { params(x: T.untyped).void }
+        def foo(x); end
+      RBI
+    end
+
+    def test_model_sig_with_types
+      node = Sig.new
+      node << SigParam.new("x", Type.untyped)
+      node.return_type = Type.simple("Integer")
+
+      assert_equal(<<~RBI, node.string)
+        sig { params(x: T.untyped).returns(Integer) }
+      RBI
+    end
+
+    def test_t_struct_with_types
+      node = TStruct.new("MyStruct")
+      node << TStructConst.new("foo", Type.simple("Foo"))
+      node << TStructProp.new("bar", Type.simple("Bar"))
+
+      assert_equal(<<~RBI, node.string)
+        class MyStruct < ::T::Struct
+          const :foo, Foo
+          prop :bar, Bar
+        end
+      RBI
+    end
   end
 end
