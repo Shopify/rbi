@@ -501,12 +501,6 @@ module RBI
         Boolean.new
       end
 
-      # Builds a type that represents `T.noreturn`.
-      sig { returns(NoReturn) }
-      def noreturn
-        NoReturn.new
-      end
-
       # Builds a type that represents `T.self_type`.
       sig { returns(SelfType) }
       def self_type
