@@ -746,11 +746,6 @@ module RBI
     sig { abstract.params(other: BasicObject).returns(T::Boolean) }
     def ==(other); end
 
-    sig { params(other: BasicObject).returns(T::Boolean) }
-    def eql?(other)
-      self == other
-    end
-
     sig { override.returns(Integer) }
     def hash
       to_rbi.hash
