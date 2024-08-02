@@ -527,12 +527,6 @@ module RBI
 
       # Composites
 
-      # Builds a type that represents the class of another type like `T::Class[Foo]`.
-      sig { params(type: Type).returns(Class) }
-      def t_class(type)
-        Class.new(type)
-      end
-
       # Builds a type that represents the singleton class of another type like `T.class_of(Foo)`.
       sig { params(type: Simple, type_parameter: T.nilable(Type)).returns(ClassOf) }
       def class_of(type, type_parameter = nil)
