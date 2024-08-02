@@ -189,7 +189,7 @@ module RBI
 
       sig { override.params(other: BasicObject).returns(T::Boolean) }
       def ==(other)
-        ClassOf === other && @type == other.type
+        ClassOf === other && @type == other.type && @type_parameter == other.type_parameter
       end
 
       sig { override.returns(String) }
@@ -671,10 +671,8 @@ module RBI
       end
 
       # Builds a type that represents a shape type like `{name: String, age: Integer}`.
-      sig { params(hash_types: T::Hash[T.any(String, Symbol), Type], types: Type).returns(Shape) }
-      def shape(hash_types = {}, **types)
-        types = hash_types.merge(types)
-
+      sig { params(types: T::Hash[T.any(String, Symbol), Type]).returns(Shape) }
+      def shape(types = {})
         Shape.new(types)
       end
 
