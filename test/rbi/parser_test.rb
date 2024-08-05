@@ -198,6 +198,22 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
+    def test_parse_visibility_labels_with_comments
+      rbi = <<~RBI
+        # Public
+        public
+
+        # Protected
+        protected
+
+        # Private
+        private
+      RBI
+
+      out = Parser.parse_string(rbi)
+      assert_equal(rbi, out.string)
+    end
+
     def test_parse_t_struct
       rbi = <<~RBI
         class Foo < ::T::Struct
