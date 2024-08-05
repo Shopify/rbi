@@ -372,6 +372,16 @@ module RBI
       assert_equal("T.class_of(String)", type.to_rbi)
     end
 
+    def test_build_type_class_of_generic
+      type = Type.class_of(Type.simple("String"), Type.simple("Integer"))
+      assert_equal("T.class_of(String)[Integer]", type.to_rbi)
+    end
+
+    def test_buid_type_t_class
+      type = Type.t_class(Type.simple("String"))
+      assert_equal("T::Class[String]", type.to_rbi)
+    end
+
     def test_build_type_self_type
       type = Type.self_type
       assert_equal("T.self_type", type.to_rbi)
@@ -385,6 +395,11 @@ module RBI
     def test_build_type_untyped
       type = Type.untyped
       assert_equal("T.untyped", type.to_rbi)
+    end
+
+    def test_buid_type_noreturn
+      type = Type.noreturn
+      assert_equal("T.noreturn", type.to_rbi)
     end
 
     def test_types_comparison
