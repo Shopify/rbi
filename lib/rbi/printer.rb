@@ -426,6 +426,7 @@ module RBI
     sig { override.params(node: Sig).void }
     def visit_sig(node)
       print_loc(node)
+      visit_all(node.comments)
 
       max_line_length = self.max_line_length
       if oneline?(node) && max_line_length.nil?

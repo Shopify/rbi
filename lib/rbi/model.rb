@@ -1101,7 +1101,7 @@ module RBI
 
   # Sorbet's sigs
 
-  class Sig < Node
+  class Sig < NodeWithComments
     extend T::Sig
 
     sig { returns(T::Array[SigParam]) }
@@ -1130,6 +1130,7 @@ module RBI
         type_params: T::Array[String],
         checked: T.nilable(Symbol),
         loc: T.nilable(Loc),
+        comments: T::Array[Comment],
         block: T.nilable(T.proc.params(node: Sig).void),
       ).void
     end
@@ -1143,9 +1144,10 @@ module RBI
       type_params: [],
       checked: nil,
       loc: nil,
+      comments: [],
       &block
     )
-      super(loc: loc)
+      super(loc: loc, comments: comments)
       @params = params
       @return_type = return_type
       @is_abstract = is_abstract
