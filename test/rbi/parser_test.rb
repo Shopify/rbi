@@ -254,6 +254,10 @@ module RBI
       RBI
 
       tree = parse_rbi(rbi)
+
+      # Make sure the T::Struct is not parsed as a normal class
+      assert_equal(TStruct, tree.nodes.first.class)
+
       assert_equal(<<~RBI, tree.string)
         class Foo < ::T::Struct
           const :a, A

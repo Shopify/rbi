@@ -177,6 +177,12 @@ module RBI
         @last_node = node
         superclass_name = node_string(node.superclass)
         scope = case superclass_name
+        when /^(::)?T::Struct$/
+          TStruct.new(
+            node_string!(node.constant_path),
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
         when /^(::)?T::Enum$/
           TEnum.new(
             node_string!(node.constant_path),
