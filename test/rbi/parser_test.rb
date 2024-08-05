@@ -153,6 +153,36 @@ module RBI
       RBI
     end
 
+    def test_parse_dangling_sigs
+      rbi = <<~RBI
+        class Foo
+          sig { void }
+        end
+
+        module Bar
+          class << self
+            sig { void }
+          end
+          sig { void }
+        end
+        sig { void }
+        sig { returns(A) }
+      RBI
+
+      out = Parser.parse_string(rbi)
+      assert_equal(rbi, out.string)
+    end
+
+    def test_parse_sig_standalone
+      rbi = <<~RBI
+        sig { void }
+        sig { returns(A) }
+      RBI
+
+      out = Parser.parse_string(rbi)
+      assert_equal(rbi, out.string)
+    end
+
     def test_parse_methods_with_visibility
       rbi = <<~RBI
         private def m1; end
