@@ -476,7 +476,7 @@ module RBI
 
         last_node_last_line = node.child_nodes.last&.location&.end_line
 
-        last_line.downto(first_line) do |line|
+        first_line.upto(last_line) do |line|
           comment = @comments_by_line[line]
           next unless comment
           break if last_node_last_line && line <= last_node_last_line

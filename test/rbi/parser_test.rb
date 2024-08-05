@@ -808,30 +808,21 @@ module RBI
           # B comment
           class B; end
           # A comment 3
+          # A comment 4
         end
       RBI
       out = Parser.parse_string(rbi)
-      assert_equal(<<~RBI, out.string)
-        # A comment 1
-        # A comment 2
-        module A
-          # B comment
-          class B; end
-          # A comment 3
-        end
-      RBI
+      assert_equal(rbi, out.string)
     end
 
     def test_parse_collect_dangling_file_comments
       rbi = <<~RBI
         module A; end
-        # Orphan comment
+        # Orphan comment1
+        # Orphan comment2
       RBI
       out = Parser.parse_string(rbi)
-      assert_equal(<<~RBI, out.string)
-        module A; end
-        # Orphan comment
-      RBI
+      assert_equal(rbi, out.string)
     end
 
     def test_parse_params_comments
