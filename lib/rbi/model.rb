@@ -1343,39 +1343,29 @@ module RBI
     end
   end
 
-  class TEnumBlock < NodeWithComments
+  class TEnumBlock < Scope
     extend T::Sig
-
-    sig { returns(T::Array[String]) }
-    attr_reader :names
 
     sig do
       params(
-        names: T::Array[String],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
         block: T.nilable(T.proc.params(node: TEnumBlock).void),
       ).void
     end
-    def initialize(names = [], loc: nil, comments: [], &block)
-      super(loc: loc, comments: comments)
-      @names = names
+    def initialize(loc: nil, comments: [], &block)
+      super(loc: loc, comments: comments) {}
       block&.call(self)
     end
 
-    sig { returns(T::Boolean) }
-    def empty?
-      names.empty?
-    end
-
-    sig { params(name: String).void }
-    def <<(name)
-      @names << name
+    sig { override.returns(String) }
+    def fully_qualified_name
+      "#{parent_scope&.fully_qualified_name}.enums"
     end
 
     sig { override.returns(String) }
     def to_s
-      "#{parent_scope&.fully_qualified_name}.enums"
+      fully_qualified_name
     end
   end
 

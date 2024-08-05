@@ -361,6 +361,8 @@ module RBI
         Module.new(name, loc: loc, comments: comments)
       when TEnum
         TEnum.new(name, loc: loc, comments: comments)
+      when TEnumBlock
+        TEnumBlock.new(loc: loc, comments: comments)
       when TStruct
         TStruct.new(name, loc: loc, comments: comments)
       when Class
@@ -552,20 +554,6 @@ module RBI
     sig { override.params(other: Node).returns(T::Boolean) }
     def compatible_with?(other)
       other.is_a?(TStructConst) && super
-    end
-  end
-
-  class TEnumBlock
-    extend T::Sig
-
-    sig { override.params(other: Node).void }
-    def merge_with(other)
-      return unless other.is_a?(TEnumBlock)
-
-      super
-      other.names.each do |name|
-        names << name unless names.include?(name)
-      end
     end
   end
 

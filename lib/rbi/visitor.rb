@@ -39,6 +39,8 @@ module RBI
         visit_conflict_tree(node)
       when ScopeConflict
         visit_scope_conflict(node)
+      when TEnumBlock
+        visit_tenum_block(node)
       when Tree
         visit_tree(node)
       when Const
@@ -89,8 +91,6 @@ module RBI
         visit_tstruct_const(node)
       when TStructProp
         visit_tstruct_prop(node)
-      when TEnumBlock
-        visit_tenum_block(node)
       when Helper
         visit_helper(node)
       when TypeMember
