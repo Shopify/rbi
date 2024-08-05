@@ -751,11 +751,11 @@ module RBI
       def parse_visibility(name, node)
         case name
         when "public"
-          Public.new(loc: node_loc(node))
+          Public.new(loc: node_loc(node), comments: node_comments(node))
         when "protected"
-          Protected.new(loc: node_loc(node))
+          Protected.new(loc: node_loc(node), comments: node_comments(node))
         when "private"
-          Private.new(loc: node_loc(node))
+          Private.new(loc: node_loc(node), comments: node_comments(node))
         else
           raise ParseError.new("Unexpected visibility `#{name}`", node_loc(node))
         end
