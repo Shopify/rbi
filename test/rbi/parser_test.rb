@@ -300,6 +300,7 @@ module RBI
         class ActiveRecord::Base
           class_attribute :typed_stores, :store_accessors, instance_accessor: false, default: "Foo"
           foo bar, "bar", :bar
+          private :foo
         end
       RBI
 

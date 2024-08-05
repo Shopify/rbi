@@ -421,6 +421,13 @@ module RBI
             case last_node
             when Method, Attr
               last_node.visibility = parse_visibility(node.name.to_s, node)
+            when Send
+              current_scope << Send.new(
+                message,
+                parse_send_args(node.arguments),
+                loc: node_loc(node),
+                comments: node_comments(node),
+              )
             else
               raise ParseError.new(
                 "Unexpected token `#{node.message}` before `#{last_node&.string&.strip}`",
