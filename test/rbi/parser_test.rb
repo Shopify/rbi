@@ -233,8 +233,12 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
-      assert_equal(rbi, out.string)
+      tree = Parser.parse_string(rbi)
+
+      # Make sure the enums are not parsed as normal classes
+      assert_equal(TEnum, tree.nodes.first.class)
+
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_t_enums_with_one_value
