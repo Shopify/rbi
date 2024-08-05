@@ -5,6 +5,8 @@ require "test_helper"
 
 module RBI
   class ParserTest < Minitest::Test
+    include TestHelper
+
     def test_parse_scopes
       rbi = <<~RBI
         module Foo; end
@@ -14,7 +16,7 @@ module RBI
         class << self; end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -29,7 +31,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -49,7 +51,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string)
         A = ::Struct.new
         B = ::Struct.new(:a, :b)
@@ -82,7 +84,7 @@ module RBI
         A::B::C = Foo
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -99,7 +101,7 @@ module RBI
         attr_accessor :a, :b, :c
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -110,7 +112,7 @@ module RBI
         def m3(a, b = 42, *c, d:, e: "bar", **f, &g); end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -133,7 +135,7 @@ module RBI
         def foo; end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string)
         sig { void }
         sig(:final) { void }
@@ -190,7 +192,7 @@ module RBI
         private attr_reader :a
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string)
         private def m1; end
         protected def self.m2; end
@@ -210,7 +212,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -224,7 +226,7 @@ module RBI
         def m3; end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -255,7 +257,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string)
         class Foo < ::T::Struct
           const :a, A
@@ -279,7 +281,7 @@ module RBI
         end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       # Make sure the enums are not parsed as normal classes
       assert_equal(TEnum, tree.nodes.first.class)
@@ -297,7 +299,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -312,7 +314,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -331,7 +333,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -341,7 +343,7 @@ module RBI
         class Bar; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
       assert_equal("-:1:0-2:14", tree.loc.to_s)
     end
 
@@ -353,7 +355,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -365,7 +367,7 @@ module RBI
         class << self; end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-1:15
         module Foo; end
@@ -389,7 +391,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-7:3
         module Foo
@@ -413,7 +415,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-4:3
         Foo = ::Struct.new(:a) do
@@ -433,7 +435,7 @@ module RBI
         A::B::C = Foo
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-1:8
         Foo = 42
@@ -459,7 +461,7 @@ module RBI
         attr_accessor :a, :b, :c
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-1:14
         attr_reader :a
@@ -493,7 +495,7 @@ module RBI
         def m4; end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-1:11
         def m1; end
@@ -523,7 +525,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-4:3
         class Foo
@@ -545,7 +547,7 @@ module RBI
         def m3; end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-1:6
         public
@@ -573,7 +575,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-7:3
         class Foo < ::T::Struct
@@ -603,7 +605,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-8:3
         class Foo < T::Enum
@@ -630,7 +632,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-7:3
         class Foo
@@ -656,7 +658,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-4:3
         class Foo
@@ -680,7 +682,7 @@ module RBI
         # Preserving empty lines
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string)
         # typed: false
         # frozen_string_literal: true
@@ -699,7 +701,7 @@ module RBI
 
         module A; end
       RBI
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string)
         # typed: true
 
@@ -714,7 +716,7 @@ module RBI
 
         module A; end
       RBI
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string)
         # typed: true
         # frozen_string_literal: true
@@ -730,7 +732,7 @@ module RBI
         # A comment
         module A; end
       RBI
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string)
         # typed: true
 
@@ -750,7 +752,7 @@ module RBI
         # for the module
         module A; end
       RBI
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string)
         # typed: true
         # frozen_string_literal: true
@@ -781,7 +783,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -802,7 +804,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string)
         module A
           # foo comment
@@ -833,7 +835,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -846,7 +848,7 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(rbi, out.string)
     end
 
@@ -888,7 +890,7 @@ module RBI
           e: _
         ); end
       RBI
-      out = Parser.parse_string(rbi)
+      out = parse_rbi(rbi)
       assert_equal(<<~RBI, out.string)
         def bar; end
 

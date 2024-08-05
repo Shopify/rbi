@@ -5,6 +5,8 @@ require "test_helper"
 
 module RBI
   class RemoveKnownDefinitionsTest < Minitest::Test
+    include TestHelper
+
     def test_remove_known_definitions_does_nothing_with_an_empty_index
       index = Index.new
 
@@ -20,7 +22,7 @@ module RBI
         BAZ = 42
       RBI
 
-      original = Parser.parse_string(shim)
+      original = parse_rbi(shim)
       cleaned, operations = Rewriters::RemoveKnownDefinitions.remove(original, index)
 
       assert_equal(shim, cleaned.string)
@@ -28,25 +30,25 @@ module RBI
     end
 
     def test_remove_known_definitions_removes_all_definitions_found_in_index
-      tree1 = Parser.parse_string(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class Foo
           attr_reader :foo
         end
       RBI
 
-      tree2 = Parser.parse_string(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         module Bar
           def bar; end
         end
       RBI
 
-      tree3 = Parser.parse_string(<<~RBI)
+      tree3 = parse_rbi(<<~RBI)
         BAZ = 42
       RBI
 
       index = Index.index(tree1, tree2, tree3)
 
-      shim = Parser.parse_string(<<~RBI)
+      shim = parse_rbi(<<~RBI)
         class Foo
           attr_reader :foo
         end
@@ -72,7 +74,7 @@ module RBI
     end
 
     def test_remove_known_definitions_keeps_definitions_not_found_in_index
-      tree = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class Foo
           def foo; end
           FOO = 42
@@ -81,7 +83,7 @@ module RBI
 
       index = Index.index(tree)
 
-      shim = Parser.parse_string(<<~RBI)
+      shim = parse_rbi(<<~RBI)
         class Foo
           def foo; end
           def bar; end
@@ -106,7 +108,7 @@ module RBI
     end
 
     def test_remove_known_definitions_keeps_mismatching_definitions
-      tree = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class Foo
           def foo; end
         end
@@ -121,7 +123,7 @@ module RBI
 
       index = Index.index(tree)
 
-      shim = Parser.parse_string(<<~RBI)
+      shim = parse_rbi(<<~RBI)
         class Foo
           def foo(x); end
         end
@@ -139,25 +141,25 @@ module RBI
     end
 
     def test_remove_known_definitions_removes_empty_scopes
-      tree1 = Parser.parse_string(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class Foo
           attr_reader :foo
         end
       RBI
 
-      tree2 = Parser.parse_string(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class Foo
           def bar; end
         end
       RBI
 
-      tree3 = Parser.parse_string(<<~RBI)
+      tree3 = parse_rbi(<<~RBI)
         Foo::BAZ = 42
       RBI
 
       index = Index.index(tree1, tree2, tree3)
 
-      shim = Parser.parse_string(<<~RBI)
+      shim = parse_rbi(<<~RBI)
         class Foo
           attr_reader :foo
           def bar; end
@@ -178,11 +180,11 @@ module RBI
     end
 
     def test_remove_known_definitions_keeps_empty_scopes_not_found_in_index
-      tree1 = Parser.parse_string(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class Foo; end
       RBI
 
-      tree2 = Parser.parse_string(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class Bar
           def bar; end
         end
@@ -190,7 +192,7 @@ module RBI
 
       index = Index.index(tree1, tree2)
 
-      shim = Parser.parse_string(<<~RBI)
+      shim = parse_rbi(<<~RBI)
         class Foo; end
         class Bar
           def bar; end
@@ -212,7 +214,7 @@ module RBI
     end
 
     def test_remove_known_definitions_keeps_nodes_defined_with_a_signature
-      tree = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class Foo
           def foo; end
           def self.bar; end
@@ -222,7 +224,7 @@ module RBI
 
       index = Index.index(tree)
 
-      shim = Parser.parse_string(<<~RBI)
+      shim = parse_rbi(<<~RBI)
         class Foo
           sig { void }
           def foo; end
@@ -242,7 +244,7 @@ module RBI
     end
 
     def test_remove_known_definitions_keeps_multiple_attributes
-      tree = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class Foo
           attr_reader :foo
         end
@@ -250,7 +252,7 @@ module RBI
 
       index = Index.index(tree)
 
-      shim = Parser.parse_string(<<~RBI)
+      shim = parse_rbi(<<~RBI)
         class Foo
           attr_reader :foo, :bar
         end
@@ -263,7 +265,7 @@ module RBI
     end
 
     def test_remove_known_definitions_even_if_the_comments_differ
-      tree = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class Foo
           def foo; end
         end
@@ -271,7 +273,7 @@ module RBI
 
       index = Index.index(tree)
 
-      shim = Parser.parse_string(<<~RBI)
+      shim = parse_rbi(<<~RBI)
         class Foo
           # Some comments
           def foo; end
@@ -289,7 +291,7 @@ module RBI
     end
 
     def test_remove_known_definitions_even_if_the_value_differ
-      tree = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class Foo
           FOO = 42
         end
@@ -297,7 +299,7 @@ module RBI
 
       index = Index.index(tree)
 
-      shim = Parser.parse_string(<<~RBI)
+      shim = parse_rbi(<<~RBI)
         class Foo
           FOO = 24
         end

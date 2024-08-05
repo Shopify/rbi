@@ -5,8 +5,10 @@ require "test_helper"
 
 module RBI
   class AnnotateTest < Minitest::Test
+    include TestHelper
+
     def test_deannotate_nodes
-      rbi = Parser.parse_string(<<~RBI)
+      rbi = parse_rbi(<<~RBI)
         # @test
         module A
           # @test
@@ -56,7 +58,7 @@ module RBI
     end
 
     def test_deannotate_only_removes_the_matching_annotation
-      rbi = Parser.parse_string(<<~RBI)
+      rbi = parse_rbi(<<~RBI)
         # @test
         # @other
         module A

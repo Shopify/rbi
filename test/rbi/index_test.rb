@@ -5,6 +5,7 @@ require "test_helper"
 
 module RBI
   class IndexTest < Minitest::Test
+    include TestHelper
     extend T::Sig
 
     def test_index_empty_trees
@@ -14,7 +15,7 @@ module RBI
     end
 
     def test_index_scopes_and_consts
-      rbi = Parser.parse_string(<<~RBI)
+      rbi = parse_rbi(<<~RBI)
         class A
           module B
             module ::C; end
@@ -38,7 +39,7 @@ module RBI
     end
 
     def test_index_properties
-      rbi = Parser.parse_string(<<~RBI)
+      rbi = parse_rbi(<<~RBI)
         class A
           attr_reader :a, :b
           attr_writer :a, :b
@@ -70,7 +71,7 @@ module RBI
     end
 
     def test_index_sorbet_constructs
-      rbi = Parser.parse_string(<<~RBI)
+      rbi = parse_rbi(<<~RBI)
         class A < T::Struct
           const :a, Integer
           prop :b, String
@@ -105,7 +106,7 @@ module RBI
     end
 
     def test_index_multiple_trees
-      tree1 = Parser.parse_string(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           module B
             module ::C; end
@@ -113,7 +114,7 @@ module RBI
         end
       RBI
 
-      tree2 = Parser.parse_string(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           module B
             module ::C; end

@@ -5,6 +5,8 @@ require "test_helper"
 
 module RBI
   class AttrToMethodsTest < Minitest::Test
+    include TestHelper
+
     def test_replaces_attr_reader_with_method
       rbi = Parser.parse_string(<<~RBI)
         # Lorum ipsum...
