@@ -8,50 +8,50 @@ module RBI
     include TestHelper
 
     def test_merge_empty_trees
-      rbi1 = Tree.new
-      rbi2 = Tree.new
-      res = rbi1.merge(rbi2)
+      tree1 = Tree.new
+      tree2 = Tree.new
+      res = tree1.merge(tree2)
       assert_equal("", res.string)
     end
 
     def test_merge_empty_tree_into_tree
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class Foo; end
       RBI
 
-      rbi2 = Tree.new
+      tree2 = Tree.new
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class Foo; end
       RBI
     end
 
     def test_merge_tree_into_empty_tree
-      rbi1 = Tree.new
+      tree1 = Tree.new
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class Foo; end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class Foo; end
       RBI
     end
 
     def test_merge_scopes_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A; end
         class B; end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class C; end
         class D; end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A; end
         class B; end
@@ -61,19 +61,19 @@ module RBI
     end
 
     def test_merge_nested_scopes_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           class B; end
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class C
           class D; end
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           class B; end
@@ -86,20 +86,20 @@ module RBI
     end
 
     def test_merge_same_scopes_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           class B; end
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           class B; end
           class C; end
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           class B; end
@@ -109,14 +109,14 @@ module RBI
     end
 
     def test_merge_constants_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           A = 42
         end
         B = 42
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           A = 42
           B = 42
@@ -124,7 +124,7 @@ module RBI
         B = 42
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           A = 42
@@ -136,7 +136,7 @@ module RBI
     end
 
     def test_merge_attributes_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           attr_reader :a
           attr_writer :a
@@ -146,7 +146,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           attr_reader :a
           attr_writer :a
@@ -156,7 +156,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           attr_reader :a
@@ -170,7 +170,7 @@ module RBI
     end
 
     def test_merge_methods_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           def a; end
           def b; end
@@ -180,7 +180,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           def a; end
           def b; end
@@ -190,7 +190,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           def a; end
@@ -204,7 +204,7 @@ module RBI
     end
 
     def test_merge_mixins_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           include A
           extend B
@@ -214,7 +214,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           include A
           extend B
@@ -224,7 +224,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           include A
@@ -238,21 +238,21 @@ module RBI
     end
 
     def test_merge_helpers_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           abstract!
           interface!
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           interface!
           sealed!
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           abstract!
@@ -263,21 +263,21 @@ module RBI
     end
 
     def test_merge_sends_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           foo :bar, :baz
           bar
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           foo :bar, :baz
           baz
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           foo :bar, :baz
@@ -288,14 +288,14 @@ module RBI
     end
 
     def test_merge_type_members_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           Foo = type_member {{ fixed: Integer }}
           Bar = type_template {{ upper: String }}
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           Foo = type_member {
             { fixed: Integer }
@@ -307,7 +307,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           Foo = type_member {{ fixed: Integer }}
@@ -316,7 +316,7 @@ module RBI
         end
       RBI
 
-      res = rbi2.merge(rbi1)
+      res = tree2.merge(tree1)
       assert_equal(<<~RBI, res.string)
         class A
           Foo = type_member {
@@ -331,21 +331,21 @@ module RBI
     end
 
     def test_merge_structs_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A < T::Struct
           prop :a, Integer
           const :b, Integer
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A < T::Struct
           const :b, Integer
           prop :c, Integer
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A < T::Struct
           prop :a, Integer
@@ -356,7 +356,7 @@ module RBI
     end
 
     def test_merge_enums_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A < T::Enum
           enums do
             A = new
@@ -365,7 +365,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A < T::Enum
           enums do
             B = new
@@ -374,7 +374,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A < T::Enum
           enums do
@@ -387,7 +387,7 @@ module RBI
     end
 
     def test_merge_signatures
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           def m1; end
 
@@ -407,7 +407,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           sig { returns(Integer) }
           def m1; end
@@ -427,7 +427,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           sig { returns(Integer) }
@@ -452,7 +452,7 @@ module RBI
     end
 
     def test_merge_comments
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         # Comment A1
         class A
           # Comment a1
@@ -462,7 +462,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         # Comment A1
         # Comment A2
         # Comment A3
@@ -475,7 +475,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         # Comment A1
         # Comment A2
@@ -493,19 +493,19 @@ module RBI
     end
 
     def test_merge_tree_comments_together
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         # typed: true
 
         # Some comments
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         # typed: true
 
         # Other comments
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         # typed: true
 
@@ -515,7 +515,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_scopes
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class Foo
           A = 10
         end
@@ -529,7 +529,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         module Foo
           A = 10
         end
@@ -543,7 +543,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         <<<<<<< left
         class Foo
@@ -572,7 +572,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_structs
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         A = Struct.new(:a) do
           def m; end
         end
@@ -584,7 +584,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         A = Struct.new(:a) do
           def m1; end
         end
@@ -598,7 +598,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         A = ::Struct.new(:a) do
           def m; end
@@ -624,21 +624,21 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_constants
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class Foo
           A = 10
         end
         B = 10
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class Foo
           A = 42
         end
         B = 42
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class Foo
           <<<<<<< left
@@ -656,7 +656,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_constants_and_scopes
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A; end
         module B; end
         module C; end
@@ -666,7 +666,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         module A; end
         class B; end
         C = 42
@@ -674,7 +674,7 @@ module RBI
         module E::F; end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         <<<<<<< left
         class A; end
@@ -704,7 +704,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_attributes
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class Foo
           attr_accessor :a
           attr_accessor :b
@@ -712,7 +712,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class Foo
           attr_reader :a
           attr_writer :b
@@ -721,7 +721,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class Foo
           <<<<<<< left
@@ -739,7 +739,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_methods
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class Foo
           def m1; end
           def m2(a); end
@@ -752,7 +752,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class Foo
           def m1(a); end
           def m2; end
@@ -765,7 +765,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class Foo
           <<<<<<< left
@@ -789,7 +789,7 @@ module RBI
         end
       RBI
 
-      res = rbi2.merge(rbi1)
+      res = tree2.merge(tree1)
       assert_equal(<<~RBI, res.string)
         class Foo
           <<<<<<< left
@@ -815,7 +815,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_mixins
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           include A, B
           extend A, B
@@ -823,7 +823,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           include B
           extend B
@@ -831,7 +831,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           <<<<<<< left
@@ -848,7 +848,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_sends
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A
           foo A
           bar :bar
@@ -856,7 +856,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A
           foo B
           bar "bar"
@@ -864,7 +864,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
           <<<<<<< left
@@ -881,7 +881,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_tstructs
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class A < T::Struct
           prop :a, Integer
           const :b, Integer
@@ -890,7 +890,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class A < T::Struct
           const :a, Integer
           prop :b, Integer
@@ -899,7 +899,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A < T::Struct
           <<<<<<< left
@@ -918,7 +918,7 @@ module RBI
     end
 
     def test_merge_create_conflict_tree_for_signatures
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class Foo
           sig { returns(Integer) }
           attr_reader :a
@@ -934,7 +934,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         class Foo
           sig { returns(String) }
           attr_reader :a
@@ -950,7 +950,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2)
+      res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class Foo
           <<<<<<< left
@@ -983,21 +983,21 @@ module RBI
     end
 
     def test_merge_return_the_list_of_conflicts
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         class Foo
           A = 10
         end
         B = 10
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         module Foo
           A = 42
         end
         B = 42
       RBI
 
-      merged_tree = rbi1.merge(rbi2)
+      merged_tree = tree1.merge(tree2)
 
       assert_equal(<<~STR.strip, merged_tree.conflicts.join("\n"))
         Conflicting definitions for `::Foo`
@@ -1007,7 +1007,7 @@ module RBI
     end
 
     def test_merge_keep_left
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         module Foo
           A = 10
 
@@ -1022,7 +1022,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         module Foo
           A = 42
 
@@ -1037,7 +1037,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2, keep: Rewriters::Merge::Keep::LEFT)
+      res = tree1.merge(tree2, keep: Rewriters::Merge::Keep::LEFT)
 
       assert_equal(<<~RBI, res.string)
         module Foo
@@ -1057,7 +1057,7 @@ module RBI
     end
 
     def test_merge_keep_right
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         module Foo
           A = 10
 
@@ -1072,7 +1072,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         module Foo
           A = 42
 
@@ -1087,7 +1087,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2, keep: Rewriters::Merge::Keep::RIGHT)
+      res = tree1.merge(tree2, keep: Rewriters::Merge::Keep::RIGHT)
 
       assert_equal(<<~RBI, res.string)
         module Foo
@@ -1107,7 +1107,7 @@ module RBI
     end
 
     def test_merge_trees_with_singleton_classes
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         module Foo
           class << self
             def m1; end
@@ -1118,7 +1118,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         module Foo
           def self.m1(x); end
 
@@ -1127,7 +1127,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2, keep: Rewriters::Merge::Keep::RIGHT)
+      res = tree1.merge(tree2, keep: Rewriters::Merge::Keep::RIGHT)
 
       assert_equal(<<~RBI, res.string)
         module Foo
@@ -1142,7 +1142,7 @@ module RBI
     end
 
     def test_merge_trees_with_singleton_classes_with_scope
-      rbi1 = parse_rbi(<<~RBI)
+      tree1 = parse_rbi(<<~RBI)
         module Foo
           def self.m1(x); end
 
@@ -1151,7 +1151,7 @@ module RBI
         end
       RBI
 
-      rbi2 = parse_rbi(<<~RBI)
+      tree2 = parse_rbi(<<~RBI)
         module Foo
           class << self
             def m1; end
@@ -1162,7 +1162,7 @@ module RBI
         end
       RBI
 
-      res = rbi1.merge(rbi2, keep: Rewriters::Merge::Keep::RIGHT)
+      res = tree1.merge(tree2, keep: Rewriters::Merge::Keep::RIGHT)
 
       assert_equal(<<~RBI, res.string)
         module Foo
