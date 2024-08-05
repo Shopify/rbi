@@ -182,7 +182,7 @@ module RBI
           prop :foo, Foo
         end
 
-        class Enum < ::T::Enum
+        class Enum < T::Enum
           # comment
           enums do
             A = new

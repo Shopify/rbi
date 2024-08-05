@@ -300,7 +300,7 @@ module RBI
       rbi << Method.new("baz")
 
       assert_equal(<<~RBI, rbi.string)
-        class Foo < ::T::Enum
+        class Foo < T::Enum
           enums do
             A = new
             B = new
@@ -461,7 +461,7 @@ module RBI
 
         # This is a
         # Multiline Comment
-        class Foo < ::T::Enum
+        class Foo < T::Enum
           # This is a single line comment
           enums do
             A = new
@@ -1096,7 +1096,7 @@ module RBI
         # file.rbi:1:3-2:4
         class << self; end
         # file.rbi:1:3-2:4
-        class TE < ::T::Enum; end
+        class TE < T::Enum; end
         # file.rbi:1:3-2:4
         class TS < ::T::Struct; end
         # file.rbi:1:3-2:4

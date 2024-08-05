@@ -200,10 +200,10 @@ module RBI
       rbi.sort_nodes!
 
       assert_equal(<<~RBI, rbi.string)
-        class A < ::T::Enum; end
-        class B < ::T::Enum; end
-        class C < ::T::Enum; end
-        class D < ::T::Enum; end
+        class A < T::Enum; end
+        class B < T::Enum; end
+        class C < T::Enum; end
+        class D < T::Enum; end
       RBI
     end
 
@@ -246,7 +246,7 @@ module RBI
         def self.m3; end
         A = 42
         module B; end
-        class C < ::T::Enum; end
+        class C < T::Enum; end
         class D < ::T::Struct; end
         class E; end
       RBI
@@ -305,7 +305,7 @@ module RBI
         class << self; end
         A = 42
         module B; end
-        class C < ::T::Enum; end
+        class C < T::Enum; end
         class D < ::T::Struct; end
         class E; end
       RBI
