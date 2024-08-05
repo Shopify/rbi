@@ -185,6 +185,7 @@ module RBI
         current_scope << scope
         @scopes_stack << scope
         visit(node.body)
+        scope.nodes.concat(current_sigs)
         collect_dangling_comments(node)
         @scopes_stack.pop
         @last_node = nil
@@ -269,6 +270,7 @@ module RBI
         current_scope << scope
         @scopes_stack << scope
         visit(node.body)
+        scope.nodes.concat(current_sigs)
         collect_dangling_comments(node)
         @scopes_stack.pop
         @last_node = nil
@@ -278,7 +280,7 @@ module RBI
       def visit_program_node(node)
         @last_node = node
         super
-
+        @tree.nodes.concat(current_sigs)
         collect_orphan_comments
         separate_header_comments
         set_root_tree_loc
@@ -296,6 +298,7 @@ module RBI
         current_scope << scope
         @scopes_stack << scope
         visit(node.body)
+        scope.nodes.concat(current_sigs)
         collect_dangling_comments(node)
         @scopes_stack.pop
         @last_node = nil
@@ -476,7 +479,7 @@ module RBI
 
         last_node_last_line = node.child_nodes.last&.location&.end_line
 
-        last_line.downto(first_line) do |line|
+        first_line.upto(last_line) do |line|
           comment = @comments_by_line[line]
           next unless comment
           break if last_node_last_line && line <= last_node_last_line
