@@ -171,6 +171,8 @@ module RBI
         printt("module #{node.name}")
       when TEnum
         printt("class #{node.name} < T::Enum")
+      when TStruct
+        printt("class #{node.name} < T::Struct")
       when Class
         printt("class #{node.name}")
         superclass = node.superclass_name
@@ -186,8 +188,6 @@ module RBI
         end
       when SingletonClass
         printt("class << self")
-      when TStruct
-        printt("class #{node.name} < T::Struct")
       else
         raise PrinterError, "Unhandled node: #{node.class}"
       end

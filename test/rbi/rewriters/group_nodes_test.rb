@@ -63,7 +63,7 @@ module RBI
         class S2; end
         S3 = ::Struct.new
         class TE < T::Enum; end
-        class TS < ::T::Struct; end
+        class TS < T::Struct; end
       RBI
     end
 
@@ -172,7 +172,7 @@ module RBI
         class S2; end
         S3 = ::Struct.new
         class TE < T::Enum; end
-        class TS < ::T::Struct; end
+        class TS < T::Struct; end
       RBI
     end
 
@@ -293,7 +293,7 @@ module RBI
           class S2; end
           S3 = ::Struct.new
           class TE < T::Enum; end
-          class TS < ::T::Struct; end
+          class TS < T::Struct; end
         end
       RBI
     end
@@ -367,8 +367,8 @@ module RBI
         S3 = ::Struct.new
         class TE1 < T::Enum; end
         class TE2 < T::Enum; end
-        class TS1 < ::T::Struct; end
-        class TS2 < ::T::Struct; end
+        class TS1 < T::Struct; end
+        class TS2 < T::Struct; end
       RBI
     end
 
@@ -502,8 +502,8 @@ module RBI
           S3 = ::Struct.new
           class TE1 < T::Enum; end
           class TE2 < T::Enum; end
-          class TS1 < ::T::Struct; end
-          class TS2 < ::T::Struct; end
+          class TS1 < T::Struct; end
+          class TS2 < T::Struct; end
         end
 
         class Scope2
@@ -571,14 +571,14 @@ module RBI
             S3 = ::Struct.new
             class TE1 < T::Enum; end
             class TE2 < T::Enum; end
-            class TS1 < ::T::Struct; end
-            class TS2 < ::T::Struct; end
+            class TS1 < T::Struct; end
+            class TS2 < T::Struct; end
           end
 
           class TE1 < T::Enum; end
           class TE2 < T::Enum; end
-          class TS1 < ::T::Struct; end
-          class TS2 < ::T::Struct; end
+          class TS1 < T::Struct; end
+          class TS2 < T::Struct; end
         end
       RBI
     end

@@ -174,7 +174,7 @@ module RBI
         # comment
         private
 
-        class Struct < ::T::Struct
+        class Struct < T::Struct
           # comment
           const :foo, Foo
 
@@ -457,7 +457,7 @@ module RBI
       node << TStructProp.new("bar", Type.simple("Bar"))
 
       assert_equal(<<~RBI, node.string)
-        class MyStruct < ::T::Struct
+        class MyStruct < T::Struct
           const :foo, Foo
           prop :bar, Bar
         end
