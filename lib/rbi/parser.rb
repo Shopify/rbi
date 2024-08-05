@@ -383,25 +383,11 @@ module RBI
             comments: comments,
           )
         when "enums"
-          block = node.block
-
-          unless block.is_a?(Prism::BlockNode)
-            @last_node = nil
-            return
-          end
-
-          body = block.body
-
-          unless body.is_a?(Prism::StatementsNode)
-            @last_node = nil
-            return
-          end
-
-          current_scope << TEnumBlock.new(
-            body.body.map { |stmt| T.cast(stmt, Prism::ConstantWriteNode).name.to_s },
-            loc: node_loc(node),
-            comments: node_comments(node),
-          )
+          scope = TEnumBlock.new(loc: node_loc(node), comments: node_comments(node))
+          current_scope << scope
+          @scopes_stack << scope
+          visit(node.block)
+          @scopes_stack.pop
         when "extend"
           args = node.arguments
 
