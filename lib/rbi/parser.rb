@@ -169,7 +169,6 @@ module RBI
         @scopes_stack = T.let([@tree], T::Array[Tree])
         @last_node = T.let(nil, T.nilable(Prism::Node))
         @last_sigs = T.let([], T::Array[RBI::Sig])
-        @last_sigs_comments = T.let([], T::Array[Comment])
       end
 
       sig { override.params(node: Prism::ClassNode).void }
@@ -260,13 +259,14 @@ module RBI
 
         # We need to collect the comments with `current_sigs_comments` _before_ visiting the parameters to make sure
         # the method comments are properly associated with the sigs and not the parameters.
-        comments = current_sigs_comments + node_comments(node)
+        sigs = current_sigs
+        comments = detach_comments_from_sigs(sigs) + node_comments(node)
         params = parse_params(node.parameters)
 
         current_scope << Method.new(
           node.name.to_s,
           params: params,
-          sigs: current_sigs,
+          sigs: sigs,
           loc: node_loc(node),
           comments: comments,
           is_singleton: !!node.receiver,
@@ -339,11 +339,14 @@ module RBI
             return
           end
 
+          sigs = current_sigs
+          comments = detach_comments_from_sigs(sigs) + node_comments(node)
+
           current_scope << AttrReader.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
-            sigs: current_sigs,
+            sigs: sigs,
             loc: node_loc(node),
-            comments: current_sigs_comments + node_comments(node),
+            comments: comments,
           )
         when "attr_writer"
           args = node.arguments
@@ -353,11 +356,14 @@ module RBI
             return
           end
 
+          sigs = current_sigs
+          comments = detach_comments_from_sigs(sigs) + node_comments(node)
+
           current_scope << AttrWriter.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
-            sigs: current_sigs,
+            sigs: sigs,
             loc: node_loc(node),
-            comments: current_sigs_comments + node_comments(node),
+            comments: comments,
           )
         when "attr_accessor"
           args = node.arguments
@@ -367,11 +373,14 @@ module RBI
             return
           end
 
+          sigs = current_sigs
+          comments = detach_comments_from_sigs(sigs) + node_comments(node)
+
           current_scope << AttrAccessor.new(
             *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
-            sigs: current_sigs,
+            sigs: sigs,
             loc: node_loc(node),
-            comments: current_sigs_comments + node_comments(node),
+            comments: comments,
           )
         when "enums"
           block = node.block
@@ -548,10 +557,15 @@ module RBI
         sigs
       end
 
-      sig { returns(T::Array[Comment]) }
-      def current_sigs_comments
-        comments = @last_sigs_comments.dup
-        @last_sigs_comments.clear
+      sig { params(sigs: T::Array[Sig]).returns(T::Array[Comment]) }
+      def detach_comments_from_sigs(sigs)
+        comments = T.let([], T::Array[Comment])
+
+        sigs.each do |sig|
+          comments += sig.comments.dup
+          sig.comments.clear
+        end
+
         comments
       end
 
@@ -678,11 +692,10 @@ module RBI
 
       sig { params(node: Prism::CallNode).returns(Sig) }
       def parse_sig(node)
-        @last_sigs_comments = node_comments(node)
-
         builder = SigBuilder.new(@source, file: @file)
         builder.current.loc = node_loc(node)
         builder.visit_call_node(node)
+        builder.current.comments = node_comments(node)
         builder.current
       end
 
