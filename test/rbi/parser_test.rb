@@ -185,6 +185,19 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
+    def test_parse_sig_comments
+      rbi = <<~RBI
+        # Sig comment
+        sig { void }
+        # Multi line
+        # sig comment
+        sig { void }
+      RBI
+
+      out = Parser.parse_string(rbi)
+      assert_equal(rbi, out.string)
+    end
+
     def test_parse_methods_with_visibility
       rbi = <<~RBI
         private def m1; end
