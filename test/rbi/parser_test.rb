@@ -269,7 +269,7 @@ module RBI
 
     def test_parse_t_enums
       rbi = <<~RBI
-        class Foo < ::T::Enum
+        class Foo < T::Enum
           enums do
             A = new
             B = new
@@ -279,13 +279,17 @@ module RBI
         end
       RBI
 
-      out = Parser.parse_string(rbi)
-      assert_equal(rbi, out.string)
+      tree = Parser.parse_string(rbi)
+
+      # Make sure the enums are not parsed as normal classes
+      assert_equal(TEnum, tree.nodes.first.class)
+
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_t_enums_with_one_value
       rbi = <<~RBI
-        class Foo < ::T::Enum
+        class Foo < T::Enum
           enums do
             A = new
           end
@@ -589,7 +593,7 @@ module RBI
 
     def test_t_enums_locations
       rbi = <<~RBI
-        class Foo < ::T::Enum
+        class Foo < T::Enum
           enums do
             A = new
             B = new
@@ -602,7 +606,7 @@ module RBI
       out = Parser.parse_string(rbi)
       assert_equal(<<~RBI, out.string(print_locs: true))
         # -:1:0-8:3
-        class Foo < ::T::Enum
+        class Foo < T::Enum
           # -:2:2-6:5
           enums do
             A = new

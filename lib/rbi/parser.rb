@@ -175,12 +175,22 @@ module RBI
       sig { override.params(node: Prism::ClassNode).void }
       def visit_class_node(node)
         @last_node = node
-        scope = Class.new(
-          node_string!(node.constant_path),
-          superclass_name: node_string(node.superclass),
-          loc: node_loc(node),
-          comments: node_comments(node),
-        )
+        superclass_name = node_string(node.superclass)
+        scope = case superclass_name
+        when /^(::)?T::Enum$/
+          TEnum.new(
+            node_string!(node.constant_path),
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
+        else
+          Class.new(
+            node_string!(node.constant_path),
+            superclass_name: superclass_name,
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
+        end
 
         current_scope << scope
         @scopes_stack << scope

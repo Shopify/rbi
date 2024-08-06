@@ -19,6 +19,8 @@ module RBI
         visit_blank_line(node)
       when Comment
         visit_comment(node)
+      when TEnum
+        visit_tenum(node)
       when Module
         visit_module(node)
       when Class
@@ -87,8 +89,6 @@ module RBI
         visit_tstruct_const(node)
       when TStructProp
         visit_tstruct_prop(node)
-      when TEnum
-        visit_tenum(node)
       when TEnumBlock
         visit_tenum_block(node)
       when Helper
