@@ -117,10 +117,10 @@ module RBI
       file = File.new
       file.root = parse_rbi(rbi)
 
-      out = Formatter.new(nest_non_public_methods: false).print_file(file)
+      out = Formatter.new(nest_non_public_members: false).print_file(file)
       assert_equal(rbi, out)
 
-      out = Formatter.new(nest_non_public_methods: true).print_file(file)
+      out = Formatter.new(nest_non_public_members: true).print_file(file)
       assert_equal(<<~RBI, out)
         module Foo
           private

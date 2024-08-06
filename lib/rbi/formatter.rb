@@ -17,7 +17,7 @@ module RBI
         group_nodes: T::Boolean,
         max_line_length: T.nilable(Integer),
         nest_singleton_methods: T::Boolean,
-        nest_non_public_methods: T::Boolean,
+        nest_non_public_members: T::Boolean,
         sort_nodes: T::Boolean,
       ).void
     end
@@ -26,14 +26,14 @@ module RBI
       group_nodes: false,
       max_line_length: nil,
       nest_singleton_methods: false,
-      nest_non_public_methods: false,
+      nest_non_public_members: false,
       sort_nodes: false
     )
       @add_sig_templates = add_sig_templates
       @group_nodes = group_nodes
       @max_line_length = max_line_length
       @nest_singleton_methods = nest_singleton_methods
-      @nest_non_public_methods = nest_non_public_methods
+      @nest_non_public_members = nest_non_public_members
       @sort_nodes = sort_nodes
     end
 
@@ -52,7 +52,7 @@ module RBI
     def format_tree(tree)
       tree.add_sig_templates! if @add_sig_templates
       tree.nest_singleton_methods! if @nest_singleton_methods
-      tree.nest_non_public_methods! if @nest_non_public_methods
+      tree.nest_non_public_members! if @nest_non_public_members
       tree.group_nodes! if @group_nodes
       tree.sort_nodes! if @sort_nodes
     end
