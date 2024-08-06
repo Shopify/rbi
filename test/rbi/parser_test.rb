@@ -299,6 +299,24 @@ module RBI
       assert_equal(rbi, tree.string)
     end
 
+    def test_parse_helpers_vs_sends
+      rbi = <<~RBI
+        abstract!
+        sealed!
+        interface!
+        x!
+        foo!
+      RBI
+
+      tree = parse_rbi(rbi)
+
+      # Make sure the helpers are properly parsed as `Helper` classes
+      assert_equal(2, tree.nodes.grep(Send).size) # `x!` and `foo!`
+      assert_equal(3, tree.nodes.grep(Helper).size)
+
+      assert_equal(rbi, tree.string)
+    end
+
     def test_parse_sorbet_helpers
       rbi = <<~RBI
         class Foo
@@ -311,6 +329,14 @@ module RBI
       RBI
 
       tree = parse_rbi(rbi)
+
+      # Make sure the helpers are properly parsed as `Helper` classes
+      cls = T.cast(tree.nodes.first, Class)
+      assert_equal(0, cls.nodes.grep(Send).size)
+      assert_equal(3, cls.nodes.grep(Helper).size)
+      assert_equal(1, cls.nodes.grep(MixesInClassMethods).size)
+      assert_equal(1, cls.nodes.grep(RequiresAncestor).size)
+
       assert_equal(rbi, tree.string)
     end
 
