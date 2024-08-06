@@ -12,14 +12,14 @@ module RBI
         def m1; end
         protected def m2; end
         private def m3; end
-        public def m4; end
+        public attr_reader :m4
       RBI
 
       tree.nest_non_public_methods!
 
       assert_equal(<<~RBI, tree.string)
         def m1; end
-        def m4; end
+        attr_reader :m4
 
         protected
 
@@ -39,7 +39,7 @@ module RBI
 
           class S2
             def m3; end
-            private def m4; end
+            private attr_reader :m4
 
             class << self
               def m5; end
@@ -66,7 +66,7 @@ module RBI
 
             private
 
-            def m4; end
+            attr_reader :m4
           end
 
           def m1; end

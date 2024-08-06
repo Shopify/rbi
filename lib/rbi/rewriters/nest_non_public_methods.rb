@@ -18,7 +18,7 @@ module RBI
 
           node.nodes.dup.each do |child|
             visit(child)
-            next unless child.is_a?(Method)
+            next unless child.is_a?(Attr) || child.is_a?(Method)
 
             child.detach
             case child.visibility
