@@ -282,7 +282,7 @@ module RBI
       struct << Method.new("foo")
 
       assert_equal(<<~RBI, struct.string)
-        class Foo < ::T::Struct
+        class Foo < T::Struct
           const :a, A
           const :b, B, default: B.new
           prop :c, C
@@ -450,7 +450,7 @@ module RBI
         foo
 
         # This is a single line comment
-        class Foo < ::T::Struct
+        class Foo < T::Struct
           # This is a
           # Multiline Comment
           const :a, A
@@ -1098,7 +1098,7 @@ module RBI
         # file.rbi:1:3-2:4
         class TE < T::Enum; end
         # file.rbi:1:3-2:4
-        class TS < ::T::Struct; end
+        class TS < T::Struct; end
         # file.rbi:1:3-2:4
         C = 42
         # file.rbi:1:3-2:4

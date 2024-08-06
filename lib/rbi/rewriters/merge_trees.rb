@@ -361,6 +361,8 @@ module RBI
         Module.new(name, loc: loc, comments: comments)
       when TEnum
         TEnum.new(name, loc: loc, comments: comments)
+      when TStruct
+        TStruct.new(name, loc: loc, comments: comments)
       when Class
         Class.new(name, superclass_name: superclass_name, loc: loc, comments: comments)
       when Struct

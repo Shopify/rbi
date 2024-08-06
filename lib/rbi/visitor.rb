@@ -21,6 +21,8 @@ module RBI
         visit_comment(node)
       when TEnum
         visit_tenum(node)
+      when TStruct
+        visit_tstruct(node)
       when Module
         visit_module(node)
       when Class
@@ -83,8 +85,6 @@ module RBI
         visit_sig(node)
       when SigParam
         visit_sig_param(node)
-      when TStruct
-        visit_tstruct(node)
       when TStructConst
         visit_tstruct_const(node)
       when TStructProp
