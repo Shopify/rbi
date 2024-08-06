@@ -5,6 +5,8 @@ require "test_helper"
 
 module RBI
   class FilterVersions < Minitest::Test
+    include TestHelper
+
     def test_filter_versions_do_nothing
       rbi = <<~RBI
         class Foo; end
@@ -13,7 +15,7 @@ module RBI
         class Buzz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.4.0"))
       assert_equal(rbi, tree.string)
@@ -34,7 +36,7 @@ module RBI
         class Buzz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
@@ -58,7 +60,7 @@ module RBI
         class Buzz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
@@ -85,7 +87,7 @@ module RBI
         class Buzz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
@@ -109,7 +111,7 @@ module RBI
         class Buzz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
@@ -136,7 +138,7 @@ module RBI
         class Baz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       tree.filter_versions!(Gem::Version.new("1.1.5"))
       assert_equal(<<~RBI, tree.string)
@@ -160,7 +162,7 @@ module RBI
         class Buzz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
@@ -190,7 +192,7 @@ module RBI
         class Buzz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
@@ -217,7 +219,7 @@ module RBI
         class Buzz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       tree.filter_versions!(Gem::Version.new("0.4.0-prerelease"))
       assert_equal(<<~RBI, tree.string)
@@ -244,7 +246,7 @@ module RBI
         class Baz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
@@ -272,7 +274,7 @@ module RBI
         class Baz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
@@ -297,7 +299,7 @@ module RBI
         class Baz; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       tree.filter_versions!(Gem::Version.new("0.4.0"))
       assert_equal(<<~RBI, tree.string)
@@ -317,7 +319,7 @@ module RBI
         class Foo; end
       RBI
 
-      tree = Parser.parse_string(rbi)
+      tree = parse_rbi(rbi)
 
       assert_raises(Gem::Requirement::BadRequirementError) do
         tree.filter_versions!(Gem::Version.new("0.4.0"))

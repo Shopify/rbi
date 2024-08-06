@@ -5,6 +5,8 @@ require "test_helper"
 
 module RBI
   class FormatterTest < Minitest::Test
+    include TestHelper
+
     def test_format_add_sig_templates
       rbi = <<~RBI
         module Foo
@@ -13,7 +15,7 @@ module RBI
       RBI
 
       file = File.new
-      file.root = Parser.parse_string(rbi)
+      file.root = parse_rbi(rbi)
 
       out = Formatter.new(add_sig_templates: false).print_file(file)
       assert_equal(rbi, out)
@@ -38,7 +40,7 @@ module RBI
       RBI
 
       file = File.new
-      file.root = Parser.parse_string(rbi)
+      file.root = parse_rbi(rbi)
 
       out = Formatter.new(group_nodes: false).print_file(file)
       assert_equal(rbi, out)
@@ -63,7 +65,7 @@ module RBI
       RBI
 
       file = File.new
-      file.root = Parser.parse_string(rbi)
+      file.root = parse_rbi(rbi)
 
       out = Formatter.new(max_line_length: nil).print_file(file)
       assert_equal(rbi, out)
@@ -90,7 +92,7 @@ module RBI
       RBI
 
       file = File.new
-      file.root = Parser.parse_string(rbi)
+      file.root = parse_rbi(rbi)
 
       out = Formatter.new(nest_singleton_methods: false).print_file(file)
       assert_equal(rbi, out)
@@ -113,7 +115,7 @@ module RBI
       RBI
 
       file = File.new
-      file.root = Parser.parse_string(rbi)
+      file.root = parse_rbi(rbi)
 
       out = Formatter.new(nest_non_public_methods: false).print_file(file)
       assert_equal(rbi, out)
@@ -137,7 +139,7 @@ module RBI
       RBI
 
       file = File.new
-      file.root = Parser.parse_string(rbi)
+      file.root = parse_rbi(rbi)
 
       out = Formatter.new(sort_nodes: false).print_file(file)
       assert_equal(rbi, out)
