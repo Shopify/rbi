@@ -800,10 +800,7 @@ module RBI
 
       sig { params(node: T.nilable(Prism::Node)).returns(T::Boolean) }
       def type_variable_definition?(node)
-        return false unless node.is_a?(Prism::CallNode)
-        return false unless node.block
-
-        node.message == "type_member" || node.message == "type_template"
+        node.is_a?(Prism::CallNode) && (node.message == "type_member" || node.message == "type_template")
       end
     end
 

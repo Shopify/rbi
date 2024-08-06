@@ -319,7 +319,7 @@ module RBI
         class Foo
           A = type_member
           B = type_member(:in)
-          C = type_member(:tree)
+          C = type_member(:out) {}
           D = type_member(lower: A)
           E = type_member(upper: A)
           F = type_member(:in, fixed: A)
@@ -329,7 +329,13 @@ module RBI
         end
       RBI
 
-      tree = parse_rbi(rbi)
+      tree = Parser.parse_string(rbi)
+
+      # Make sure the type members and templates are not parsed as constants
+      cls = T.must(tree.nodes.grep(Class).first)
+      assert_equal(0, cls.nodes.grep(Const).size)
+      assert_equal(9, cls.nodes.grep(TypeMember).size)
+
       assert_equal(rbi, tree.string)
     end
 
