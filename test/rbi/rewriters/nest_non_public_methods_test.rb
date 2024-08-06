@@ -5,16 +5,19 @@ require "test_helper"
 
 module RBI
   class NestNonPublicMethodsTest < Minitest::Test
+    include TestHelper
+
     def test_nest_non_public_methods_in_tree
-      rbi = Tree.new
-      rbi << Method.new("m1")
-      rbi << Method.new("m2", visibility: Protected.new)
-      rbi << Method.new("m3", visibility: Private.new)
-      rbi << Method.new("m4", visibility: Public.new)
+      tree = parse_rbi(<<~RBI)
+        def m1; end
+        protected def m2; end
+        private def m3; end
+        public def m4; end
+      RBI
 
-      rbi.nest_non_public_methods!
+      tree.nest_non_public_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         def m1; end
         def m4; end
 
@@ -29,23 +32,26 @@ module RBI
     end
 
     def test_nest_non_public_methods_in_scopes
-      rbi = Tree.new
-      scope1 = Module.new("S1")
-      scope1 << Method.new("m1")
-      scope1 << Method.new("m2", visibility: Protected.new)
-      scope2 = Class.new("S2")
-      scope2 << Method.new("m3")
-      scope2 << Method.new("m4", visibility: Private.new)
-      scope3 = SingletonClass.new
-      scope3 << Method.new("m5")
-      scope3 << Method.new("m6", visibility: Protected.new)
-      rbi << scope1
-      scope1 << scope2
-      scope2 << scope3
+      tree = parse_rbi(<<~RBI)
+        module S1
+          def m1; end
+          protected def m2; end
 
-      rbi.nest_non_public_methods!
+          class S2
+            def m3; end
+            private def m4; end
 
-      assert_equal(<<~RBI, rbi.string)
+            class << self
+              def m5; end
+              protected def m6; end
+            end
+          end
+        end
+      RBI
+
+      tree.nest_non_public_methods!
+
+      assert_equal(<<~RBI, tree.string)
         module S1
           class S2
             class << self
@@ -73,14 +79,15 @@ module RBI
     end
 
     def test_nest_non_public_singleton_methods
-      rbi = Tree.new
-      rbi << Method.new("m1", is_singleton: true, visibility: Protected.new)
-      rbi << Method.new("m2", is_singleton: true, visibility: Private.new)
-      rbi << Method.new("m3", is_singleton: true, visibility: Public.new)
+      tree = parse_rbi(<<~RBI)
+        protected def self.m1; end
+        private def self.m2; end
+        public def self.m3; end
+      RBI
 
-      rbi.nest_non_public_methods!
+      tree.nest_non_public_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         def self.m3; end
 
         protected
