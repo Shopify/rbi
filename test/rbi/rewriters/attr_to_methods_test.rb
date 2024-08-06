@@ -8,15 +8,15 @@ module RBI
     include TestHelper
 
     def test_replaces_attr_reader_with_method
-      rbi = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # Lorum ipsum...
         sig { returns(Integer) }
         attr_reader :a
       RBI
 
-      rbi.replace_attributes_with_methods!
+      tree.replace_attributes_with_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # Lorum ipsum...
         sig { returns(Integer) }
         def a; end
@@ -24,15 +24,15 @@ module RBI
     end
 
     def test_replaces_attr_writer_with_setter_method
-      rbi = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # Lorum ipsum...
         sig { params(a: Integer).void }
         attr_writer :a
       RBI
 
-      rbi.replace_attributes_with_methods!
+      tree.replace_attributes_with_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # Lorum ipsum...
         sig { params(a: Integer).void }
         def a=(a); end
@@ -43,15 +43,15 @@ module RBI
       # Sorbet allows either `.void` or `.returns(TheType)`.
       # We'll support both, until Sorbet starts to prefer one or the other.
 
-      rbi = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # Lorum ipsum...
         sig { params(a: Integer).returns(Integer) }
         attr_writer :a
       RBI
 
-      rbi.replace_attributes_with_methods!
+      tree.replace_attributes_with_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # Lorum ipsum...
         sig { params(a: Integer).void }
         def a=(a); end
@@ -59,15 +59,15 @@ module RBI
     end
 
     def test_replaces_attr_accessor_with_getter_and_setter_methods
-      rbi = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # Lorum ipsum...
         sig { returns(Integer) }
         attr_accessor :a
       RBI
 
-      rbi.replace_attributes_with_methods!
+      tree.replace_attributes_with_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # Lorum ipsum...
         sig { returns(Integer) }
         def a; end
@@ -81,15 +81,15 @@ module RBI
     ### Testing for multiple attributes defined in a single declaration
 
     def test_replaces_multi_attr_reader_with_methods
-      rbi = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # Lorum ipsum...
         sig { returns(Integer) }
         attr_reader :a, :b, :c
       RBI
 
-      rbi.replace_attributes_with_methods!
+      tree.replace_attributes_with_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # Lorum ipsum...
         sig { returns(Integer) }
         def a; end
@@ -105,15 +105,15 @@ module RBI
     end
 
     def test_replaces_multi_attr_writer_with_methods
-      rbi = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # Lorum ipsum...
         sig { params(a: Integer).void }
         attr_writer :a, :b, :c
       RBI
 
-      rbi.replace_attributes_with_methods!
+      tree.replace_attributes_with_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # Lorum ipsum...
         sig { params(a: Integer).void }
         def a=(a); end
@@ -129,15 +129,15 @@ module RBI
     end
 
     def test_replaces_multi_attr_accessor_with_methods
-      rbi = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # Lorum ipsum...
         sig { returns(Integer) }
         attr_accessor :a, :b, :c
       RBI
 
-      rbi.replace_attributes_with_methods!
+      tree.replace_attributes_with_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # Lorum ipsum...
         sig { returns(Integer) }
         def a; end
@@ -169,7 +169,7 @@ module RBI
     # they have always have a method body, and so they could never be abstract.
 
     def test_replacing_attr_reader_copies_sig_modifiers
-      rbi = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class GrandParent
           sig { overridable.returns(Integer) }
           attr_reader :a
@@ -186,9 +186,9 @@ module RBI
         end
       RBI
 
-      rbi.replace_attributes_with_methods!
+      tree.replace_attributes_with_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         class GrandParent
           sig { overridable.returns(Integer) }
           def a; end
@@ -207,7 +207,7 @@ module RBI
     end
 
     def test_replacing_attr_writer_copies_sig_modifiers
-      rbi = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class GrandParent
           sig { overridable.params(a: Integer).void }
           attr_writer :a
@@ -224,9 +224,9 @@ module RBI
         end
       RBI
 
-      rbi.replace_attributes_with_methods!
+      tree.replace_attributes_with_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         class GrandParent
           sig { overridable.params(a: Integer).void }
           def a=(a); end
@@ -245,7 +245,7 @@ module RBI
     end
 
     def test_replacing_attr_accessor_copies_sig_modifiers
-      rbi = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class GrandParent
           sig { overridable.returns(Integer) }
           attr_accessor :a
@@ -262,9 +262,9 @@ module RBI
         end
       RBI
 
-      rbi.replace_attributes_with_methods!
+      tree.replace_attributes_with_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         class GrandParent
           sig { overridable.returns(Integer) }
           def a; end
@@ -292,13 +292,13 @@ module RBI
     end
 
     def test_raise_on_multiple_sigs
-      rbi = Parser.parse_string(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         sig { returns(Integer) }
         sig { returns(String) }
         attr_accessor :a
       RBI
 
-      e = assert_raises(RBI::UnexpectedMultipleSigsError) { rbi.replace_attributes_with_methods! }
+      e = assert_raises(RBI::UnexpectedMultipleSigsError) { tree.replace_attributes_with_methods! }
 
       assert_equal(["Integer", "String"], e.node.sigs.map(&:return_type))
       # This is just to test the message rendering. Please don't depend on the exact message content.

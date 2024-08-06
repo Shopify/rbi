@@ -8,7 +8,7 @@ module RBI
     include TestHelper
 
     def test_add_annotation_to_root_nodes
-      rbi = parse_rbi(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         module A
           class B
             def m; end
@@ -20,9 +20,9 @@ module RBI
         end
       RBI
 
-      rbi.annotate!("test")
+      tree.annotate!("test")
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # @test
         module A
           class B
@@ -38,7 +38,7 @@ module RBI
     end
 
     def test_add_annotation_to_all_scopes
-      rbi = parse_rbi(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         module A
           FOO = type_member
 
@@ -56,9 +56,9 @@ module RBI
         end
       RBI
 
-      rbi.annotate!("test", annotate_scopes: true)
+      tree.annotate!("test", annotate_scopes: true)
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # @test
         module A
           FOO = type_member
@@ -80,7 +80,7 @@ module RBI
     end
 
     def test_add_annotation_to_all_properties
-      rbi = parse_rbi(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # Root scope are always annotated
         module A
           FOO = type_member
@@ -100,9 +100,9 @@ module RBI
         end
       RBI
 
-      rbi.annotate!("test", annotate_properties: true)
+      tree.annotate!("test", annotate_properties: true)
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # Root scope are always annotated
         # @test
         module A
@@ -134,7 +134,7 @@ module RBI
     end
 
     def test_add_annotation_to_all_nodes
-      rbi = parse_rbi(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         module A
           FOO = type_member
 
@@ -152,9 +152,9 @@ module RBI
         end
       RBI
 
-      rbi.annotate!("test", annotate_scopes: true, annotate_properties: true)
+      tree.annotate!("test", annotate_scopes: true, annotate_properties: true)
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # @test
         module A
           # @test
@@ -185,7 +185,7 @@ module RBI
     end
 
     def test_does_not_reannotate_already_annotated_nodes
-      rbi = parse_rbi(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # @test
         module A
           # @test
@@ -196,9 +196,9 @@ module RBI
         end
       RBI
 
-      rbi.annotate!("test", annotate_scopes: true, annotate_properties: true)
+      tree.annotate!("test", annotate_scopes: true, annotate_properties: true)
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # @test
         module A
           # @test
@@ -211,7 +211,7 @@ module RBI
     end
 
     def test_add_different_annotation_to_nodes
-      rbi = parse_rbi(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # @test
         module A
           # @test
@@ -222,9 +222,9 @@ module RBI
         end
       RBI
 
-      rbi.annotate!("other", annotate_scopes: true, annotate_properties: true)
+      tree.annotate!("other", annotate_scopes: true, annotate_properties: true)
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # @test
         # @other
         module A

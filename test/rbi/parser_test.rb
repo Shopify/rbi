@@ -16,8 +16,8 @@ module RBI
         class << self; end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_nested_scopes
@@ -31,8 +31,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_structs
@@ -51,8 +51,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
         A = ::Struct.new
         B = ::Struct.new(:a, :b)
         C = ::Struct.new(:a, :b)
@@ -84,8 +84,8 @@ module RBI
         A::B::C = Foo
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_attributes
@@ -101,8 +101,8 @@ module RBI
         attr_accessor :a, :b, :c
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_methods
@@ -112,8 +112,8 @@ module RBI
         def m3(a, b = 42, *c, d:, e: "bar", **f, &g); end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_sigs
@@ -135,8 +135,8 @@ module RBI
         def foo; end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
         sig { void }
         sig(:final) { void }
         sig { returns(String) }
@@ -192,12 +192,8 @@ module RBI
         private attr_reader :a
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string)
-        private def m1; end
-        protected def self.m2; end
-        private attr_reader :a
-      RBI
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_mixins
@@ -212,8 +208,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_visibility_labels
@@ -226,8 +222,8 @@ module RBI
         def m3; end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_visibility_labels_with_comments
@@ -257,8 +253,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
         class Foo < ::T::Struct
           const :a, A
           const :b, B, default: B.new
@@ -299,8 +295,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_sorbet_helpers
@@ -314,8 +310,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_sorbet_type_members_and_templates
@@ -323,18 +319,18 @@ module RBI
         class Foo
           A = type_member
           B = type_member(:in)
-          C = type_member(:out)
+          C = type_member(:tree)
           D = type_member(lower: A)
           E = type_member(upper: A)
           F = type_member(:in, fixed: A)
           G = type_template
           H = type_template(:in)
-          I = type_template(:out, lower: A)
+          I = type_template(:tree, lower: A)
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_root_tree_location
@@ -355,8 +351,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_scopes_locations
@@ -367,8 +363,8 @@ module RBI
         class << self; end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-1:15
         module Foo; end
         # -:2:0-2:14
@@ -391,8 +387,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-7:3
         module Foo
           # -:2:2-6:5
@@ -415,8 +411,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-4:3
         Foo = ::Struct.new(:a) do
           # -:2:2-2:14
@@ -435,8 +431,8 @@ module RBI
         A::B::C = Foo
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-1:8
         Foo = 42
         # -:2:0-2:11
@@ -461,8 +457,8 @@ module RBI
         attr_accessor :a, :b, :c
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-1:14
         attr_reader :a
         # -:2:0-2:18
@@ -495,8 +491,8 @@ module RBI
         def m4; end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-1:11
         def m1; end
         # -:2:0-2:16
@@ -525,8 +521,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-4:3
         class Foo
           # -:2:2-2:11
@@ -547,8 +543,8 @@ module RBI
         def m3; end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-1:6
         public
         # -:2:0-2:11
@@ -575,8 +571,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-7:3
         class Foo < ::T::Struct
           # -:2:2-2:13
@@ -605,8 +601,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-8:3
         class Foo < T::Enum
           # -:2:2-6:5
@@ -632,8 +628,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-7:3
         class Foo
           # -:2:2-2:11
@@ -658,8 +654,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string(print_locs: true))
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-4:3
         class Foo
           # -:2:2-2:17
@@ -682,8 +678,8 @@ module RBI
         # Preserving empty lines
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
         # typed: false
         # frozen_string_literal: true
 
@@ -701,8 +697,9 @@ module RBI
 
         module A; end
       RBI
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string)
+
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
         # typed: true
 
         module A; end
@@ -716,8 +713,9 @@ module RBI
 
         module A; end
       RBI
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string)
+
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
         # typed: true
         # frozen_string_literal: true
 
@@ -732,13 +730,9 @@ module RBI
         # A comment
         module A; end
       RBI
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string)
-        # typed: true
 
-        # A comment
-        module A; end
-      RBI
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_file_header_and_node_comments
@@ -752,8 +746,9 @@ module RBI
         # for the module
         module A; end
       RBI
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string)
+
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
         # typed: true
         # frozen_string_literal: true
 
@@ -783,8 +778,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_comments_with_sigs
@@ -804,8 +799,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
         module A
           # foo comment
           sig { void }
@@ -835,8 +830,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_struct_comments
@@ -848,8 +843,8 @@ module RBI
         end
       RBI
 
-      out = parse_rbi(rbi)
-      assert_equal(rbi, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_collect_dangling_scope_comments
@@ -863,8 +858,9 @@ module RBI
           # A comment 4
         end
       RBI
-      out = Parser.parse_string(rbi)
-      assert_equal(rbi, out.string)
+
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_collect_dangling_file_comments
@@ -873,8 +869,9 @@ module RBI
         # Orphan comment1
         # Orphan comment2
       RBI
-      out = Parser.parse_string(rbi)
-      assert_equal(rbi, out.string)
+
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
     end
 
     def test_parse_params_comments
@@ -890,8 +887,8 @@ module RBI
           e: _
         ); end
       RBI
-      out = parse_rbi(rbi)
-      assert_equal(<<~RBI, out.string)
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
         def bar; end
 
         def foo(
@@ -945,10 +942,10 @@ module RBI
     end
 
     def test_parse_strings
-      rbi1 = "class Foo; end"
-      rbi2 = "class Bar; end"
-
-      trees = Parser.parse_strings([rbi1, rbi2])
+      trees = Parser.parse_strings([
+        "class Foo; end",
+        "class Bar; end",
+      ])
 
       assert_equal(<<~RBI, trees.map(&:string).join("\n"))
         class Foo; end

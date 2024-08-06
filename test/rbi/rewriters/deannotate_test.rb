@@ -8,7 +8,7 @@ module RBI
     include TestHelper
 
     def test_deannotate_nodes
-      rbi = parse_rbi(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # @test
         module A
           # @test
@@ -37,9 +37,9 @@ module RBI
         end
       RBI
 
-      rbi.deannotate!("test")
+      tree.deannotate!("test")
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         module A
           FOO = type_member
 
@@ -58,7 +58,7 @@ module RBI
     end
 
     def test_deannotate_only_removes_the_matching_annotation
-      rbi = parse_rbi(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         # @test
         # @other
         module A
@@ -72,9 +72,9 @@ module RBI
         end
       RBI
 
-      rbi.deannotate!("other")
+      tree.deannotate!("other")
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         # @test
         module A
           # @test

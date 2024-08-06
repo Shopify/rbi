@@ -9,13 +9,13 @@ module RBI
     extend T::Sig
 
     def test_index_empty_trees
-      rbi = Tree.new
-      index_string = index_string(rbi.index)
+      tree = Tree.new
+      index_string = index_string(tree.index)
       assert_empty(index_string)
     end
 
     def test_index_scopes_and_consts
-      rbi = parse_rbi(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class A
           module B
             module ::C; end
@@ -28,7 +28,7 @@ module RBI
         A::B = 10
       RBI
 
-      index_string = index_string(rbi.index)
+      index_string = index_string(tree.index)
       assert_equal(<<~IDX, index_string)
         ::A: -:1:0-5:3, -:7:2-7:16
         ::A::B: -:2:2-4:5, -:10:0-10:9
@@ -39,7 +39,7 @@ module RBI
     end
 
     def test_index_properties
-      rbi = parse_rbi(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class A
           attr_reader :a, :b
           attr_writer :a, :b
@@ -52,7 +52,7 @@ module RBI
         end
       RBI
 
-      index_string = index_string(rbi.index)
+      index_string = index_string(tree.index)
       assert_equal(<<~IDX, index_string)
         ::A: -:1:0-10:3
         ::A#a: -:2:2-2:20
@@ -71,7 +71,7 @@ module RBI
     end
 
     def test_index_sorbet_constructs
-      rbi = parse_rbi(<<~RBI)
+      tree = parse_rbi(<<~RBI)
         class A < T::Struct
           const :a, Integer
           prop :b, String
@@ -90,7 +90,7 @@ module RBI
         D = type_template
       RBI
 
-      index_string = index_string(rbi.index)
+      index_string = index_string(tree.index)
       assert_equal(<<~IDX, index_string)
         .mixes_in_class_method(A): -:13:0-13:24
         .requires_ancestor(A): -:14:0-14:23
