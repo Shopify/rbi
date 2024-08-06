@@ -5,16 +5,19 @@ require "test_helper"
 
 module RBI
   class NestSingletonMethodsTest < Minitest::Test
+    include TestHelper
+
     def test_nest_singleton_methods_in_trees
-      rbi = Tree.new
-      rbi << Method.new("m1")
-      rbi << Method.new("m2", is_singleton: true)
-      rbi << Method.new("m3")
-      rbi << Method.new("m4", is_singleton: true)
+      tree = parse_rbi(<<~RBI)
+        def m1; end
+        def self.m2; end
+        def m3; end
+        def self.m4; end
+      RBI
 
-      rbi.nest_singleton_methods!
+      tree.nest_singleton_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         def m1; end
         def m3; end
 
@@ -26,19 +29,21 @@ module RBI
     end
 
     def test_nest_singleton_methods_in_scopes
-      rbi = Tree.new
-      scope1 = Module.new("Foo")
-      scope1 << Method.new("m1")
-      scope1 << Method.new("m2", is_singleton: true)
-      scope2 = Class.new("Bar")
-      scope2 << Method.new("m3")
-      scope2 << Method.new("m4", is_singleton: true)
-      rbi << scope1
-      rbi << scope2
+      tree = parse_rbi(<<~RBI)
+        module Foo
+          def m1; end
+          def self.m2; end
+        end
 
-      rbi.nest_singleton_methods!
+        class Bar
+          def m3; end
+          def self.m4; end
+        end
+      RBI
 
-      assert_equal(<<~RBI, rbi.string)
+      tree.nest_singleton_methods!
+
+      assert_equal(<<~RBI, tree.string)
         module Foo
           def m1; end
 
@@ -58,17 +63,18 @@ module RBI
     end
 
     def test_nest_singleton_methods_in_singleton_classes
-      rbi = Tree.new
-      scope1 = SingletonClass.new
-      scope1 << Method.new("m1", is_singleton: true)
-      scope2 = SingletonClass.new
-      scope2 << Method.new("m2", is_singleton: true)
-      scope1 << scope2
-      rbi << scope1
+      tree = parse_rbi(<<~RBI)
+        class << self
+          def self.m1; end
+          class << self
+            def self.m2; end
+          end
+        end
+      RBI
 
-      rbi.nest_singleton_methods!
+      tree.nest_singleton_methods!
 
-      assert_equal(<<~RBI, rbi.string)
+      assert_equal(<<~RBI, tree.string)
         class << self
           class << self
             class << self
@@ -84,20 +90,7 @@ module RBI
     end
 
     def test_nest_does_not_nest_other_nodes
-      rbi = Tree.new
-      scope1 = Module.new("Foo")
-      scope1 << Const.new("C1", "42")
-      scope1 << Module.new("M1")
-      scope1 << Helper.new("h1")
-      scope2 = Class.new("Bar")
-      scope2 << Include.new("I1")
-      scope2 << Extend.new("E1")
-      rbi << scope1
-      rbi << scope2
-
-      rbi.nest_singleton_methods!
-
-      assert_equal(<<~RBI, rbi.string)
+      rbi = <<~RBI
         module Foo
           C1 = 42
           module M1; end
@@ -109,6 +102,11 @@ module RBI
           extend E1
         end
       RBI
+
+      tree = parse_rbi(rbi)
+      tree.nest_singleton_methods!
+
+      assert_equal(rbi, tree.string)
     end
   end
 end
