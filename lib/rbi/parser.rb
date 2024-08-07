@@ -383,11 +383,20 @@ module RBI
             comments: comments,
           )
         when "enums"
-          scope = TEnumBlock.new(loc: node_loc(node), comments: node_comments(node))
-          current_scope << scope
-          @scopes_stack << scope
-          visit(node.block)
-          @scopes_stack.pop
+          if node.block && node.arguments.nil?
+            scope = TEnumBlock.new(loc: node_loc(node), comments: node_comments(node))
+            current_scope << scope
+            @scopes_stack << scope
+            visit(node.block)
+            @scopes_stack.pop
+          else
+            current_scope << Send.new(
+              message,
+              parse_send_args(node.arguments),
+              loc: node_loc(node),
+              comments: node_comments(node),
+            )
+          end
         when "extend"
           args = node.arguments
 
