@@ -106,8 +106,10 @@ module RBI
             end
           end
           tree << TEnum.new("Enum") do |node|
-            node << TEnumBlock.new(["A", "B"]) do |block|
+            node << TEnumBlock.new do |block|
               block.comments << Comment.new("comment")
+              block << Const.new("A", "new", comments: [Comment.new("comment")])
+              block << Const.new("B", "new", comments: [Comment.new("comment")])
             end
           end
           tree << Helper.new("foo") do |node|
@@ -185,7 +187,10 @@ module RBI
         class Enum < T::Enum
           # comment
           enums do
+            # comment
             A = new
+
+            # comment
             B = new
           end
         end
@@ -392,7 +397,9 @@ module RBI
       mod << enum
       assert_equal("::Foo::Enum", enum.to_s)
 
-      block = TEnumBlock.new(["A", "B"])
+      block = TEnumBlock.new
+      block << Const.new("A", "new")
+      block << Const.new("B", "new")
       enum << block
       assert_equal("::Foo::Enum.enums", block.to_s)
 
@@ -419,6 +426,26 @@ module RBI
       helper = Helper.new("foo")
       mod << helper
       assert_equal("::Foo.foo!", helper.to_s)
+    end
+
+    def test_model_enum_members
+      enum = TEnum.new("Enum")
+      assert_empty(enum.members)
+
+      block = TEnumBlock.new
+      assert_empty(block.members)
+
+      enum << block
+      assert_empty(enum.members)
+
+      block << Const.new("A", "new")
+      block << Const.new("B", "new")
+      block << Const.new("Ignored", "42")
+      block << Const.new("Ignored", "new(42)")
+      block << Const.new("Ignored", "new {}")
+
+      assert_equal(["A", "B"], enum.members)
+      assert_equal(["A", "B"], block.members)
     end
 
     # types

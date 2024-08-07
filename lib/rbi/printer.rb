@@ -493,9 +493,7 @@ module RBI
 
       printl("enums do")
       indent
-      node.names.each do |name|
-        printl("#{name} = new")
-      end
+      visit_all(node.nodes)
       dedent
       printl("end")
     end

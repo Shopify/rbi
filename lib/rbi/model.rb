@@ -1341,41 +1341,43 @@ module RBI
       super(name, superclass_name: "::T::Enum", loc: loc, comments: comments) {}
       block&.call(self)
     end
+
+    # Find the names defined by the enum.
+    sig { returns(T::Array[String]) }
+    def members
+      nodes.grep(TEnumBlock).flat_map(&:members)
+    end
   end
 
-  class TEnumBlock < NodeWithComments
+  class TEnumBlock < Scope
     extend T::Sig
-
-    sig { returns(T::Array[String]) }
-    attr_reader :names
 
     sig do
       params(
-        names: T::Array[String],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
         block: T.nilable(T.proc.params(node: TEnumBlock).void),
       ).void
     end
-    def initialize(names = [], loc: nil, comments: [], &block)
-      super(loc: loc, comments: comments)
-      @names = names
+    def initialize(loc: nil, comments: [], &block)
+      super(loc: loc, comments: comments) {}
       block&.call(self)
     end
 
-    sig { returns(T::Boolean) }
-    def empty?
-      names.empty?
+    sig { override.returns(String) }
+    def fully_qualified_name
+      "#{parent_scope&.fully_qualified_name}.enums"
     end
 
-    sig { params(name: String).void }
-    def <<(name)
-      @names << name
+    # Find the names defined by the enum.
+    sig { returns(T::Array[String]) }
+    def members
+      nodes.grep(Const).select { |const| const.value == "new" }.map(&:name)
     end
 
     sig { override.returns(String) }
     def to_s
-      "#{parent_scope&.fully_qualified_name}.enums"
+      fully_qualified_name
     end
   end
 
