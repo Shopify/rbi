@@ -4,22 +4,22 @@
 require "test_helper"
 
 module RBI
-  class NestNonPublicMethodsTest < Minitest::Test
+  class NestNonPublicMembersTest < Minitest::Test
     include TestHelper
 
-    def test_nest_non_public_methods_in_tree
+    def test_nest_non_public_members_in_tree
       tree = parse_rbi(<<~RBI)
         def m1; end
         protected def m2; end
         private def m3; end
-        public def m4; end
+        public attr_reader :m4
       RBI
 
-      tree.nest_non_public_methods!
+      tree.nest_non_public_members!
 
       assert_equal(<<~RBI, tree.string)
         def m1; end
-        def m4; end
+        attr_reader :m4
 
         protected
 
@@ -31,7 +31,7 @@ module RBI
       RBI
     end
 
-    def test_nest_non_public_methods_in_scopes
+    def test_nest_non_public_members_in_scopes
       tree = parse_rbi(<<~RBI)
         module S1
           def m1; end
@@ -39,7 +39,7 @@ module RBI
 
           class S2
             def m3; end
-            private def m4; end
+            private attr_reader :m4
 
             class << self
               def m5; end
@@ -49,7 +49,7 @@ module RBI
         end
       RBI
 
-      tree.nest_non_public_methods!
+      tree.nest_non_public_members!
 
       assert_equal(<<~RBI, tree.string)
         module S1
@@ -66,7 +66,7 @@ module RBI
 
             private
 
-            def m4; end
+            attr_reader :m4
           end
 
           def m1; end
@@ -85,7 +85,7 @@ module RBI
         public def self.m3; end
       RBI
 
-      tree.nest_non_public_methods!
+      tree.nest_non_public_members!
 
       assert_equal(<<~RBI, tree.string)
         def self.m3; end

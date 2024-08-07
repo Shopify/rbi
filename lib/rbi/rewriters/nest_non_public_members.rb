@@ -3,7 +3,7 @@
 
 module RBI
   module Rewriters
-    class NestNonPublicMethods < Visitor
+    class NestNonPublicMembers < Visitor
       extend T::Sig
 
       sig { override.params(node: T.nilable(Node)).void }
@@ -18,7 +18,7 @@ module RBI
 
           node.nodes.dup.each do |child|
             visit(child)
-            next unless child.is_a?(Method)
+            next unless child.is_a?(Attr) || child.is_a?(Method)
 
             child.detach
             case child.visibility
@@ -43,8 +43,8 @@ module RBI
     extend T::Sig
 
     sig { void }
-    def nest_non_public_methods!
-      visitor = Rewriters::NestNonPublicMethods.new
+    def nest_non_public_members!
+      visitor = Rewriters::NestNonPublicMembers.new
       visitor.visit(self)
     end
   end
