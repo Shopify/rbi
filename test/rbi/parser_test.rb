@@ -298,7 +298,11 @@ module RBI
       tree = parse_rbi(rbi)
 
       # Make sure the enums are not parsed as normal classes
-      assert_equal(TEnum, tree.nodes.first.class)
+      enum = tree.nodes.first
+      assert_equal(TEnum, enum.class)
+
+      enum = T.cast(enum, TEnum)
+      assert_equal(["A", "B", "C"], enum.members)
 
       assert_equal(rbi, tree.string)
     end
@@ -315,6 +319,14 @@ module RBI
       RBI
 
       tree = parse_rbi(rbi)
+
+      # Make sure the enums are not parsed as normal classes
+      enum = tree.nodes.first
+      assert_equal(TEnum, enum.class)
+
+      enum = T.cast(enum, TEnum)
+      assert_equal(["A"], enum.members)
+
       assert_equal(rbi, tree.string)
     end
 
@@ -330,6 +342,14 @@ module RBI
       RBI
 
       tree = parse_rbi(rbi)
+
+      # Make sure the enums are not parsed as normal classes
+      enum = tree.nodes.first
+      assert_equal(TEnum, enum.class)
+
+      enum = T.cast(enum, TEnum)
+      assert_empty(enum.members)
+
       assert_equal(rbi, tree.string)
     end
 

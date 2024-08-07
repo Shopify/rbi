@@ -1341,6 +1341,12 @@ module RBI
       super(name, superclass_name: "::T::Enum", loc: loc, comments: comments) {}
       block&.call(self)
     end
+
+    # Find the names defined by the enum.
+    sig { returns(T::Array[String]) }
+    def members
+      nodes.grep(TEnumBlock).flat_map(&:members)
+    end
   end
 
   class TEnumBlock < Scope
@@ -1361,6 +1367,12 @@ module RBI
     sig { override.returns(String) }
     def fully_qualified_name
       "#{parent_scope&.fully_qualified_name}.enums"
+    end
+
+    # Find the names defined by the enum.
+    sig { returns(T::Array[String]) }
+    def members
+      nodes.grep(Const).select { |const| const.value == "new" }.map(&:name)
     end
 
     sig { override.returns(String) }

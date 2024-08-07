@@ -428,6 +428,26 @@ module RBI
       assert_equal("::Foo.foo!", helper.to_s)
     end
 
+    def test_model_enum_members
+      enum = TEnum.new("Enum")
+      assert_empty(enum.members)
+
+      block = TEnumBlock.new
+      assert_empty(block.members)
+
+      enum << block
+      assert_empty(enum.members)
+
+      block << Const.new("A", "new")
+      block << Const.new("B", "new")
+      block << Const.new("Ignored", "42")
+      block << Const.new("Ignored", "new(42)")
+      block << Const.new("Ignored", "new {}")
+
+      assert_equal(["A", "B"], enum.members)
+      assert_equal(["A", "B"], block.members)
+    end
+
     # types
 
     def test_model_sig_builder_with_types
