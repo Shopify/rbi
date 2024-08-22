@@ -290,6 +290,7 @@ module RBI
             B = new
             C = new
           end
+
           def baz; end
         end
       RBI
@@ -297,7 +298,8 @@ module RBI
       tree = parse_rbi(rbi)
 
       # Make sure the enums are not parsed as normal classes
-      assert_equal(TEnum, tree.nodes.first.class)
+      enum = tree.nodes.first
+      assert_equal(TEnum, enum.class)
 
       assert_equal(rbi, tree.string)
     end
@@ -308,11 +310,37 @@ module RBI
           enums do
             A = new
           end
+
           def baz; end
         end
       RBI
 
       tree = parse_rbi(rbi)
+
+      # Make sure the enums are not parsed as normal classes
+      enum = tree.nodes.first
+      assert_equal(TEnum, enum.class)
+
+      assert_equal(rbi, tree.string)
+    end
+
+    def test_parse_t_enums_ignore_malformed_blocks
+      rbi = <<~RBI
+        class Foo < T::Enum
+          enums
+        end
+
+        class Bar < T::Enum
+          enums 1, 2
+        end
+      RBI
+
+      tree = parse_rbi(rbi)
+
+      # Make sure the enums are not parsed as normal classes
+      enum = tree.nodes.first
+      assert_equal(TEnum, enum.class)
+
       assert_equal(rbi, tree.string)
     end
 
@@ -331,6 +359,30 @@ module RBI
       assert_equal(2, tree.nodes.grep(Send).size) # `x!` and `foo!`
       assert_equal(3, tree.nodes.grep(Helper).size)
 
+      assert_equal(rbi, tree.string)
+    end
+
+    def test_parse_t_enums_with_comments
+      rbi = <<~RBI
+        # Comment 1
+        class Foo < T::Enum
+          enums do
+            # Comment 2
+            A = new
+
+            # Comment 3
+            B = new
+
+            # Comment 4
+            C = new
+          end
+
+          # Comment 5
+          def baz; end
+        end
+      RBI
+
+      tree = Parser.parse_string(rbi)
       assert_equal(rbi, tree.string)
     end
 
@@ -657,10 +709,14 @@ module RBI
         class Foo < T::Enum
           # -:2:2-6:5
           enums do
+            # -:3:4-3:11
             A = new
+            # -:4:4-4:11
             B = new
+            # -:5:4-5:11
             C = new
           end
+
           # -:7:2-7:14
           def baz; end
         end
