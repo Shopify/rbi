@@ -262,8 +262,8 @@ module RBI
         print(" #{name}")
         first_sig, *_rest = node.sigs # discard remaining signatures
         if first_sig
-          type = parse_type(first_sig.return_type)
-          print(": #{type.rbs_string}")
+          print(": ")
+          print_attr_sig(node, first_sig)
         else
           print(": untyped")
         end
@@ -273,7 +273,18 @@ module RBI
 
     sig { params(node: RBI::Attr, sig: Sig).void }
     def print_attr_sig(node, sig)
-      type = parse_type(sig.return_type)
+      type = case node
+      when AttrAccessor, AttrReader
+        parse_type(sig.return_type)
+      else
+        first_arg = sig.params.first
+        if first_arg
+          parse_type(first_arg.type)
+        else
+          Type.untyped
+        end
+      end
+
       print(type.rbs_string)
     end
 

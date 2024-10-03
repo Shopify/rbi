@@ -230,7 +230,17 @@ module RBI
         attr_accessor :foo
 
         sig { returns(String) }
-        attr_accessor :bar
+        sig { returns(Integer) }
+        attr_reader :bar
+
+        sig { params(baz: String).returns(String) }
+        attr_writer :baz
+
+        sig { params(qux: String).void }
+        attr_writer :qux
+
+        sig { returns(Integer) }
+        attr_writer :quux
       RBI
 
       # With RBS, attributes can only have one and only one return type
@@ -238,7 +248,10 @@ module RBI
       # and ignore the rest
       assert_equal(<<~RBI, rbi.rbs_string)
         attr_accessor foo: Integer
-        attr_accessor bar: String
+        attr_reader bar: String
+        attr_writer baz: String
+        attr_writer qux: String
+        attr_writer quux: untyped
       RBI
     end
 
