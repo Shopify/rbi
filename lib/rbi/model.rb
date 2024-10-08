@@ -581,7 +581,7 @@ module RBI
         is_final: T::Boolean,
         type_params: T::Array[String],
         checked: T.nilable(Symbol),
-        block: T.proc.params(node: Sig).void,
+        block: T.nilable(T.proc.params(node: Sig).void),
       ).void
     end
     def add_sig(
