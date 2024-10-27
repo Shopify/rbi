@@ -777,11 +777,6 @@ module RBI
     def bare_proc?(node)
       node.is_a?(Type::Simple) && node.name == "Proc"
     end
-
-    sig { params(node: Type).returns(T::Boolean) }
-    def bare_nilable_proc?(node)
-      node.is_a?(Type::Nilable) && bare_proc?(node.type)
-    end
   end
 
   class TypePrinter
