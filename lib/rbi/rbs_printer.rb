@@ -772,11 +772,6 @@ module RBI
 
       node.arguments&.arguments&.fetch(1, nil)&.slice
     end
-
-    sig { params(node: Type).returns(T::Boolean) }
-    def bare_proc?(node)
-      node.is_a?(Type::Simple) && node.name == "Proc"
-    end
   end
 
   class TypePrinter
