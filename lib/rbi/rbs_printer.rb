@@ -770,7 +770,10 @@ module RBI
       return unless node.name == :let
       return unless node.receiver&.slice =~ /^(::)?T$/
 
-      node.arguments&.arguments&.fetch(1, nil)&.slice
+      arguments = node.arguments&.arguments
+      return unless arguments
+
+      arguments.fetch(1, nil)&.slice
     end
   end
 
