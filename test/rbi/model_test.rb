@@ -237,6 +237,11 @@ module RBI
             sig.add_param("p4", "T.untyped")
             sig.return_type = "void"
           end
+
+          node.add_sig(
+            params: [RBI::SigParam.new("p5", "T.untyped")],
+            return_type: "void",
+          )
         end
       end
 
@@ -244,6 +249,7 @@ module RBI
         sig { params(p1: T.untyped, p2: String).returns(T.untyped) }
         sig { params(p3: T.untyped).void }
         sig(:final) { abstract.override.overridable.type_parameters(:T, :U).checked(:never).params(p4: T.untyped).void }
+        sig { params(p5: T.untyped).void }
         def foo(p1, p2 = 'value', *p3, p4:, p5: 'value', **p6, &p7); end
       RBI
     end
