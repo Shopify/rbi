@@ -880,7 +880,7 @@ module RBI
 
     sig { params(type: Type::AttachedClass).void }
     def visit_attached_class(type)
-      @string << "attached_class"
+      @string << "instance"
     end
 
     sig { params(type: Type::Nilable).void }
