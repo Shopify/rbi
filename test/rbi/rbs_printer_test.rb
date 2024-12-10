@@ -519,6 +519,17 @@ module RBI
       assert_empty(rbi.rbs_string)
     end
 
+    def test_print_attached_class
+      rbi = parse_rbi(<<~RBI)
+        sig { returns(T.attached_class) }
+        def foo; end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: -> instance
+      RBI
+    end
+
     def test_print_t_structs
       rbi = parse_rbi(<<~RBI)
         class Foo < T::Struct; end
