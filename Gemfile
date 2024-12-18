@@ -5,6 +5,8 @@ source "https://rubygems.org"
 
 gemspec
 
+gem "spoom", path: "../spoom"
+
 group(:development, :test) do
   gem("byebug")
   gem("minitest")

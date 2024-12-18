@@ -17,3 +17,8 @@ Sorbet:
 
 Sorbet/TrueSigil:
   Enabled: true
+
+
+
+Layout/LeadingCommentSpace:
+  Enabled: false

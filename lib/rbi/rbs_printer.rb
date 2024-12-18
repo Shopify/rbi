@@ -962,14 +962,9 @@ module RBI
 
     sig { params(type: Type::Class).void }
     def visit_class(type)
-      case type.type
-      when Type::Simple
-        @string << "singleton("
-        visit(type.type)
-        @string << ")"
-      else
-        @string << "Class"
-      end
+      @string << "Class["
+      visit(type.type)
+      @string << "]"
     end
 
     private

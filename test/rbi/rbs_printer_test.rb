@@ -352,8 +352,6 @@ module RBI
         sig { params(a: A, b: T.nilable(B)).returns(T.anything) }
         sig { params(a: T.nilable(A), b: B).returns(T.untyped) }
         sig { params(a: A, b: B).returns(T.noreturn) }
-        sig { params(a: A, b: B).returns(T.class_of(C)) }
-        sig { params(a: A, b: B).returns(T::Class[C]) }
         sig { params(a: A, b: B).returns(T::Array[C]) }
         sig { params(a: A, b: B).returns(T::Hash[C, D]) }
         sig { params(a: A, b: B).returns(T::Set[C]) }
@@ -365,8 +363,6 @@ module RBI
                | (A a, B? b) -> top
                | (A? a, B b) -> untyped
                | (A a, B b) -> bot
-               | (A a, B b) -> singleton(C)
-               | (A a, B b) -> singleton(C)
                | (A a, B b) -> Array[C]
                | (A a, B b) -> Hash[C, D]
                | (A a, B b) -> Set[C]
@@ -542,27 +538,6 @@ module RBI
       RBI
     end
 
-    def test_print_singleton
-      rbi = parse_rbi(<<~RBI)
-        sig { returns(T.class_of(String)) }
-        def foo; end
-
-        sig { returns(T::Class[T.anything]) }
-        def bar; end
-
-        sig { returns(T::Class[T.untyped]) }
-        def baz; end
-      RBI
-
-      assert_equal(<<~RBI, rbi.rbs_string)
-        def foo: -> singleton(String)
-
-        def bar: -> Class
-
-        def baz: -> Class
-      RBI
-    end
-
     def test_print_block_type_alias
       rbi = parse_rbi(<<~RBI)
         BLOCK = T.type_alias { T.proc.void }
@@ -586,6 +561,48 @@ module RBI
 
       assert_equal(<<~RBI, rbi.rbs_string)
         def foo: -> {a: A, "B-B" => B}
+      RBI
+    end
+
+    def test_print_method_type_parameters
+      rbi = parse_rbi(<<~RBI)
+        sig { type_parameters(:A).returns(T.type_parameter(:A))}
+        def foo; end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: [A] -> A
+      RBI
+    end
+
+    def test_print_class_type
+      rbi = parse_rbi(<<~RBI)
+        sig { returns(T.class_of(String)) }
+        def a; end
+
+        sig { returns(T::Class[String]) }
+        def b; end
+
+        sig { returns(Class) }
+        def c; end
+
+        sig { returns(T::Class[T.anything]) }
+        def d; end
+
+        sig { returns(T::Class[T.untyped]) }
+        def e; end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def a: -> singleton(String)
+
+        def b: -> Class[String]
+
+        def c: -> Class
+
+        def d: -> Class[top]
+
+        def e: -> Class[untyped]
       RBI
     end
 
