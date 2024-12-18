@@ -88,6 +88,16 @@ module RBI
       assert_equal(rbi, tree.string)
     end
 
+    def test_parse_constants_with_newlines
+      rbi = <<~RBI
+        sig { returns(Foo::
+              Bar) }
+      RBI
+
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
+    end
+
     def test_parse_attributes
       rbi = <<~RBI
         attr_reader :a
