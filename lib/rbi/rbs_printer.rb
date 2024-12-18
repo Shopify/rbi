@@ -388,9 +388,7 @@ module RBI
           type_string = "(?) -> untyped"
           block_is_nilable = true
         when Type::Simple
-          if block_type.name == "Proc"
-            type_string = "(?) -> untyped"
-          end
+          type_string = "(?) -> untyped"
           skip = true if block_type.name == "NilClass"
         end
 
@@ -834,7 +832,7 @@ module RBI
 
     sig { params(type: Type::Simple).void }
     def visit_simple(type)
-      @string << translate_t_type(type.name)
+      @string << translate_t_type(type.name.gsub(/\s/, ""))
     end
 
     sig { params(type: Type::Boolean).void }
@@ -844,7 +842,7 @@ module RBI
 
     sig { params(type: Type::Generic).void }
     def visit_generic(type)
-      @string << translate_t_type(type.name)
+      @string << translate_t_type(type.name.gsub(/\s/, ""))
       @string << "["
       type.params.each_with_index do |arg, index|
         visit(arg)
@@ -930,7 +928,11 @@ module RBI
     def visit_shape(type)
       @string << "{"
       type.types.each_with_index do |(key, value), index|
-        @string << "#{key}: "
+        @string << if key.match?(/\A[a-zA-Z_]*[a-zA-Z0-9_]*\z/)
+          "#{key}: "
+        else
+          "\"#{key}\" => "
+        end
         visit(value)
         @string << ", " if index < type.types.size - 1
       end
@@ -960,9 +962,14 @@ module RBI
 
     sig { params(type: Type::Class).void }
     def visit_class(type)
-      @string << "singleton("
-      visit(type.type)
-      @string << ")"
+      case type.type
+      when Type::Simple
+        @string << "singleton("
+        visit(type.type)
+        @string << ")"
+      else
+        @string << "Class"
+      end
     end
 
     private
