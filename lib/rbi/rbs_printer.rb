@@ -305,6 +305,10 @@ module RBI
         printl("# @overridable")
       end
 
+      if node.sigs.any?(&:is_final)
+        printl("# @final")
+      end
+
       print_loc(node)
       printt
       unless in_visibility_group || node.visibility.public?
