@@ -363,7 +363,7 @@ module RBI
 
     def test_print_methods_with_signature_with_modifiers
       rbi = parse_rbi(<<~RBI)
-        sig { abstract.override.overridable.returns(void).checked(:never) }
+        sig(:final) { abstract.override.overridable.returns(void).checked(:never) }
         def foo; end
       RBI
 
@@ -373,6 +373,7 @@ module RBI
         # @abstract
         # @override
         # @overridable
+        # @final
         def foo: -> void
       RBI
     end
