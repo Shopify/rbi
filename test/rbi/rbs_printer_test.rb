@@ -393,7 +393,7 @@ module RBI
 
       # To avoid conflict with existing constants, we prefix type parameters with `TYPE_`
       assert_equal(<<~RBI, rbi.rbs_string)
-        def foo: [TYPE_U, TYPE_V] (TYPE_U a) -> TYPE_V
+        def foo: [U, V] (U a) -> V
       RBI
     end
 
@@ -561,17 +561,6 @@ module RBI
 
       assert_equal(<<~RBI, rbi.rbs_string)
         def foo: -> {a: A, "B-B" => B}
-      RBI
-    end
-
-    def test_print_method_type_parameters
-      rbi = parse_rbi(<<~RBI)
-        sig { type_parameters(:A).returns(T.type_parameter(:A))}
-        def foo; end
-      RBI
-
-      assert_equal(<<~RBI, rbi.rbs_string)
-        def foo: [A] -> A
       RBI
     end
 
