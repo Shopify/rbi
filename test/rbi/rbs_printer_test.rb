@@ -616,14 +616,29 @@ module RBI
       RBI
     end
 
-    def test_print_nilable_proc
+    def test_print_procs
       rbi = parse_rbi(<<~RBI)
         sig { params(x: T.nilable(T.proc.void)) }
-        def foo(x); end
+        def proc1(x); end
+
+        sig { params(x: T.proc.bind(T.untyped).void) }
+        def proc2(x); end
+
+        sig { params(block: T.nilable(T.proc.void)) }
+        def block1(&block); end
+
+        sig { params(block: T.proc.bind(T.untyped).void) }
+        def block2(&block); end
       RBI
 
       assert_equal(<<~RBI, rbi.rbs_string)
-        def foo: ((^-> void)? x) -> void
+        def proc1: ((^-> void)? x) -> void
+
+        def proc2: (^[self: untyped] -> void x) -> void
+
+        def block1: ?{ -> void } -> void
+
+        def block2: { [self: untyped] -> void } -> void
       RBI
     end
 
