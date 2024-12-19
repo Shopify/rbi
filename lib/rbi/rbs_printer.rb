@@ -965,6 +965,12 @@ module RBI
         end
         @string << ") "
       end
+      proc_bind = type.proc_bind
+      if proc_bind
+        @string << "[self: "
+        visit(proc_bind)
+        @string << "] "
+      end
       @string << "-> "
       visit(type.proc_returns)
     end
