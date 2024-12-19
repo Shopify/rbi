@@ -357,7 +357,7 @@ module RBI
     sig { params(node: RBI::Method, sig: Sig).void }
     def print_method_sig(node, sig)
       unless sig.type_params.empty?
-        print("[#{sig.type_params.map { |t| "TYPE_#{t}" }.join(", ")}] ")
+        print("[#{sig.type_params.join(", ")}] ")
       end
 
       block_param = node.params.find { |param| param.is_a?(BlockParam) }
@@ -972,7 +972,7 @@ module RBI
 
     sig { params(type: Type::TypeParameter).void }
     def visit_type_parameter(type)
-      @string << "TYPE_#{type.name}"
+      @string << type.name.to_s
     end
 
     sig { params(type: Type::Class).void }
