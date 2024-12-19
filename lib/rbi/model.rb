@@ -1111,7 +1111,7 @@ module RBI
     attr_accessor :return_type
 
     sig { returns(T::Boolean) }
-    attr_accessor :is_abstract, :is_override, :is_overridable, :is_final
+    attr_accessor :is_abstract, :is_override, :is_overridable, :is_final, :allow_incompatible_override
 
     sig { returns(T::Array[String]) }
     attr_reader :type_params
