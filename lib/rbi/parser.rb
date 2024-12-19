@@ -858,6 +858,22 @@ module RBI
           end
         when "override"
           @current.is_override = true
+
+          args = node.arguments&.arguments
+
+          keywords_hash = args
+            &.grep(Prism::KeywordHashNode)
+            &.first
+
+          allow_incompatible_override = keywords_hash
+            &.elements
+            &.any? do |assoc|
+              assoc.is_a?(Prism::AssocNode) &&
+                node_string(assoc.key) == "allow_incompatible:" &&
+                node_string(assoc.value) == "true"
+            end
+
+          @current.allow_incompatible_override = !!allow_incompatible_override
         when "overridable"
           @current.is_overridable = true
         when "params"

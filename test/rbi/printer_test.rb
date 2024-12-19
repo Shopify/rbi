@@ -201,21 +201,26 @@ module RBI
       sig3.is_overridable = true
       sig3.checked = :never
 
-      sig4 = Sig.new(return_type: "T.type_parameter(:V)")
-      sig4.type_params << "U"
-      sig4.type_params << "V"
-      sig4 << SigParam.new("a", "T.type_parameter(:U)")
+      sig4 = Sig.new(return_type: "T.nilable(String)")
+      sig4.is_override = true
+      sig4.allow_incompatible_override = true
+
+      sig5 = Sig.new(return_type: "T.type_parameter(:V)")
+      sig5.type_params << "U"
+      sig5.type_params << "V"
+      sig5 << SigParam.new("a", "T.type_parameter(:U)")
 
       method = Method.new("foo")
       method.sigs << sig1
       method.sigs << sig2
       method.sigs << sig3
       method.sigs << sig4
-
+      method.sigs << sig5
       assert_equal(<<~RBI, method.string)
         sig { void }
         sig { params(a: A, b: T.nilable(B), b: T.proc.void).returns(R) }
         sig { abstract.override.overridable.checked(:never).void }
+        sig { override(allow_incompatible: true).returns(T.nilable(String)) }
         sig { type_parameters(:U, :V).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)) }
         def foo; end
       RBI

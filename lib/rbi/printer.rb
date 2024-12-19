@@ -721,7 +721,15 @@ module RBI
     def sig_modifiers(node)
       modifiers = T.let([], T::Array[String])
       modifiers << "abstract" if node.is_abstract
-      modifiers << "override" if node.is_override
+
+      if node.is_override
+        modifiers << if node.allow_incompatible_override
+          "override(allow_incompatible: true)"
+        else
+          "override"
+        end
+      end
+
       modifiers << "overridable" if node.is_overridable
       modifiers << "type_parameters(#{node.type_params.map { |type| ":#{type}" }.join(", ")})" if node.type_params.any?
       modifiers << "checked(:#{node.checked})" if node.checked
