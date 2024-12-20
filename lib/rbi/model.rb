@@ -1127,6 +1127,7 @@ module RBI
         is_override: T::Boolean,
         is_overridable: T::Boolean,
         is_final: T::Boolean,
+        allow_incompatible_override: T::Boolean,
         type_params: T::Array[String],
         checked: T.nilable(Symbol),
         loc: T.nilable(Loc),
@@ -1141,6 +1142,7 @@ module RBI
       is_override: false,
       is_overridable: false,
       is_final: false,
+      allow_incompatible_override: false,
       type_params: [],
       checked: nil,
       loc: nil,
@@ -1154,6 +1156,7 @@ module RBI
       @is_override = is_override
       @is_overridable = is_overridable
       @is_final = is_final
+      @allow_incompatible_override = allow_incompatible_override
       @type_params = type_params
       @checked = checked
       block&.call(self)
