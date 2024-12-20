@@ -560,17 +560,6 @@ module RBI
       RBI
     end
 
-    def test_print_record_keys
-      rbi = parse_rbi(<<~RBI)
-        sig { returns({a: A, "B-B": B})}
-        def foo; end
-      RBI
-
-      assert_equal(<<~RBI, rbi.rbs_string)
-        def foo: -> {a: A, "B-B" => B}
-      RBI
-    end
-
     def test_print_procs
       rbi = parse_rbi(<<~RBI)
         sig { params(x: T.nilable(T.proc.void)) }
@@ -625,6 +614,32 @@ module RBI
         def d: -> Class[top]
 
         def e: -> Class[untyped]
+      RBI
+    end
+
+    def test_print_record_type
+      rbi = parse_rbi(<<~RBI)
+        sig { returns({a: A, b: B}) }
+        def a; end
+
+        sig { returns({"a" => A, "b" => B}) }
+        def b; end
+
+        sig { returns({a: A, "b": B, :c => C, "d" => D}) }
+        def c; end
+
+        sig { returns({a: A, "B-B": B})}
+        def d; end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def a: -> {a: A, b: B}
+
+        def b: -> {"a" => A, "b" => B}
+
+        def c: -> {a: A, b: B, c: C, "d" => D}
+
+        def d: -> {a: A, "B-B": B}
       RBI
     end
 
