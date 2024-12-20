@@ -233,7 +233,7 @@ module RBI
         sig { returns(Integer) }
         attr_reader :bar
 
-        sig { params(baz: String).returns(String) }
+        sig { params(baz: String).returns(T.nilable(String)) }
         attr_writer :baz
 
         sig { params(qux: String).void }
@@ -249,9 +249,9 @@ module RBI
       assert_equal(<<~RBI, rbi.rbs_string)
         attr_accessor foo: Integer
         attr_reader bar: String
-        attr_writer baz: String
+        attr_writer baz: String?
         attr_writer qux: String
-        attr_writer quux: untyped
+        attr_writer quux: Integer
       RBI
     end
 
