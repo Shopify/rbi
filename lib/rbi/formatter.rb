@@ -5,9 +5,6 @@ module RBI
   class Formatter
     extend T::Sig
 
-    sig { params(sort_nodes: T::Boolean).returns(T::Boolean) }
-    attr_writer :sort_nodes
-
     sig { returns(T.nilable(Integer)) }
     attr_accessor :max_line_length
 
