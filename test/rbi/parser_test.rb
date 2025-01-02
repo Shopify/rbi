@@ -1020,7 +1020,7 @@ module RBI
           "to close the `def` statement.",
         e.message,
       )
-      assert_equal("-:2:0", e.location.to_s)
+      assert_equal("-:1:7", e.location.to_s)
 
       e = assert_raises(ParseError) do
         Parser.parse_string(<<~RBI)
@@ -1097,7 +1097,7 @@ module RBI
           "to close the `class` statement.",
         e.message,
       )
-      assert_equal("test_parse_real_file_with_error.rbi:2:0", e.location.to_s)
+      assert_equal("test_parse_real_file_with_error.rbi:1:9", e.location.to_s)
 
       FileUtils.rm_rf(path)
     end
