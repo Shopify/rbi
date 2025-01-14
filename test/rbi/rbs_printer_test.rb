@@ -616,6 +616,17 @@ module RBI
       RBI
     end
 
+    def test_print_nilable_proc
+      rbi = parse_rbi(<<~RBI)
+        sig { params(x: T.nilable(T.proc.void)) }
+        def foo(x); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: ((^-> void)? x) -> void
+      RBI
+    end
+
     def test_print_t_structs
       rbi = parse_rbi(<<~RBI)
         class Foo < T::Struct; end

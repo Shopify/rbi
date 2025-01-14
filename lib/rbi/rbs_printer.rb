@@ -891,7 +891,14 @@ module RBI
 
     sig { params(type: Type::Nilable).void }
     def visit_nilable(type)
-      visit(type.type)
+      inner = type.type
+      if inner.is_a?(Type::Proc)
+        @string << "("
+      end
+      visit(inner)
+      if inner.is_a?(Type::Proc)
+        @string << ")"
+      end
       @string << "?"
     end
 
