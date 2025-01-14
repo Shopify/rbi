@@ -563,6 +563,21 @@ module RBI
       RBI
     end
 
+    def test_print_block_type_alias
+      rbi = parse_rbi(<<~RBI)
+        BLOCK = T.type_alias { T.proc.void }
+
+        sig { params(block: BLOCK) }
+        def foo(&block); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        BLOCK: untyped
+
+        def foo: { (?) -> untyped } -> void
+      RBI
+    end
+
     def test_print_t_structs
       rbi = parse_rbi(<<~RBI)
         class Foo < T::Struct; end

@@ -396,9 +396,7 @@ module RBI
           type_string = "(?) -> untyped"
           block_is_nilable = true
         when Type::Simple
-          if block_type.name == "Proc"
-            type_string = "(?) -> untyped"
-          end
+          type_string = "(?) -> untyped"
           skip = true if block_type.name == "NilClass"
         end
 
