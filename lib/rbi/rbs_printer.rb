@@ -930,7 +930,16 @@ module RBI
     def visit_shape(type)
       @string << "{"
       type.types.each_with_index do |(key, value), index|
-        @string << "#{key}: "
+        @string << case key
+        when String
+          "\"#{key}\" => "
+        when Symbol
+          if key.match?(/\A[a-zA-Z_]+[a-zA-Z0-9_]*\z/)
+            "#{key}: "
+          else
+            "\"#{key}\": "
+          end
+        end
         visit(value)
         @string << ", " if index < type.types.size - 1
       end
