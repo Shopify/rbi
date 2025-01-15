@@ -616,6 +616,32 @@ module RBI
       RBI
     end
 
+    def test_print_procs
+      rbi = parse_rbi(<<~RBI)
+        sig { params(x: T.nilable(T.proc.void)) }
+        def proc1(x); end
+
+        sig { params(x: T.proc.bind(T.untyped).void) }
+        def proc2(x); end
+
+        sig { params(block: T.nilable(T.proc.void)) }
+        def block1(&block); end
+
+        sig { params(block: T.proc.bind(T.untyped).void) }
+        def block2(&block); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def proc1: ((^-> void)? x) -> void
+
+        def proc2: (^[self: untyped] -> void x) -> void
+
+        def block1: ?{ -> void } -> void
+
+        def block2: { [self: untyped] -> void } -> void
+      RBI
+    end
+
     def test_print_t_structs
       rbi = parse_rbi(<<~RBI)
         class Foo < T::Struct; end
