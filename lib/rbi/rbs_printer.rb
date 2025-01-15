@@ -273,19 +273,24 @@ module RBI
 
     sig { params(node: RBI::Attr, sig: Sig).void }
     def print_attr_sig(node, sig)
+      ret_type = sig.return_type
+
       type = case node
-      when AttrAccessor, AttrReader
-        parse_type(sig.return_type)
+      when AttrReader, AttrAccessor
+        parse_type(ret_type).rbs_string
       else
-        first_arg = sig.params.first
-        if first_arg
-          parse_type(first_arg.type)
+        # For attr_writer, Sorbet will prioritize the return type over the argument type in case of mismatch
+        arg_type = sig.params.first
+        if arg_type && (ret_type.is_a?(Type::Void) || ret_type == "void")
+          # If we have an argument type and the return type is void, we prioritize the argument type
+          parse_type(arg_type.type).rbs_string
         else
-          Type.untyped
+          # Otherwise, we prioritize the return type
+          parse_type(ret_type).rbs_string
         end
       end
 
-      print(type.rbs_string)
+      print(type)
     end
 
     sig { override.params(node: Method).void }
@@ -414,6 +419,24 @@ module RBI
 
       loc = sig.loc
       print(" # #{loc}") if loc && print_locs
+    end
+
+    sig { params(node: Sig).void }
+    def visit_sig(node)
+      if node.params
+        print("(")
+        node.params.each do |param|
+          visit(param)
+        end
+        print(") ")
+      end
+
+      print("-> #{parse_type(node.return_type).rbs_string}")
+    end
+
+    sig { params(node: SigParam).void }
+    def visit_sig_param(node)
+      print(parse_type(node.type).rbs_string)
     end
 
     sig { override.params(node: ReqParam).void }
