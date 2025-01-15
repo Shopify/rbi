@@ -352,8 +352,6 @@ module RBI
         sig { params(a: A, b: T.nilable(B)).returns(T.anything) }
         sig { params(a: T.nilable(A), b: B).returns(T.untyped) }
         sig { params(a: A, b: B).returns(T.noreturn) }
-        sig { params(a: A, b: B).returns(T.class_of(C)) }
-        sig { params(a: A, b: B).returns(T::Class[C]) }
         sig { params(a: A, b: B).returns(T::Array[C]) }
         sig { params(a: A, b: B).returns(T::Hash[C, D]) }
         sig { params(a: A, b: B).returns(T::Set[C]) }
@@ -365,8 +363,6 @@ module RBI
                | (A a, B? b) -> top
                | (A? a, B b) -> untyped
                | (A a, B b) -> bot
-               | (A a, B b) -> singleton(C)
-               | (A a, B b) -> singleton(C)
                | (A a, B b) -> Array[C]
                | (A a, B b) -> Hash[C, D]
                | (A a, B b) -> Set[C]
@@ -586,6 +582,37 @@ module RBI
         BLOCK: untyped
 
         def foo: { (?) -> untyped } -> void
+      RBI
+    end
+
+    def test_print_class_type
+      rbi = parse_rbi(<<~RBI)
+        sig { returns(T.class_of(String)) }
+        def a; end
+
+        sig { returns(T::Class[String]) }
+        def b; end
+
+        sig { returns(Class) }
+        def c; end
+
+        sig { returns(T::Class[T.anything]) }
+        def d; end
+
+        sig { returns(T::Class[T.untyped]) }
+        def e; end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def a: -> singleton(String)
+
+        def b: -> Class[String]
+
+        def c: -> Class
+
+        def d: -> Class[top]
+
+        def e: -> Class[untyped]
       RBI
     end
 

@@ -975,9 +975,9 @@ module RBI
 
     sig { params(type: Type::Class).void }
     def visit_class(type)
-      @string << "singleton("
+      @string << "Class["
       visit(type.type)
-      @string << ")"
+      @string << "]"
     end
 
     private
