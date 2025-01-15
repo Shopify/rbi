@@ -842,7 +842,7 @@ module RBI
 
     sig { params(type: Type::Simple).void }
     def visit_simple(type)
-      @string << translate_t_type(type.name)
+      @string << translate_t_type(type.name.gsub(/\s/, ""))
     end
 
     sig { params(type: Type::Boolean).void }
@@ -852,7 +852,7 @@ module RBI
 
     sig { params(type: Type::Generic).void }
     def visit_generic(type)
-      @string << translate_t_type(type.name)
+      @string << translate_t_type(type.name.gsub(/\s/, ""))
       @string << "["
       type.params.each_with_index do |arg, index|
         visit(arg)

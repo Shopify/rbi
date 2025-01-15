@@ -268,6 +268,18 @@ module RBI
       RBI
     end
 
+    def test_print_signature_with_newlines
+      rbi = parse_rbi(<<~RBI)
+        sig { returns(T.class_of(Foo::
+          Bar)) }
+        def foo; end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: -> singleton(Foo::Bar)
+      RBI
+    end
+
     def test_print_methods_without_signature
       rbi = parse_rbi(<<~RBI)
         def foo; end
