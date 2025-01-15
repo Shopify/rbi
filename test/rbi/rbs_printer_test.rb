@@ -402,9 +402,8 @@ module RBI
         def foo(a); end
       RBI
 
-      # To avoid conflict with existing constants, we prefix type parameters with `TYPE_`
       assert_equal(<<~RBI, rbi.rbs_string)
-        def foo: [TYPE_U, TYPE_V] (TYPE_U a) -> TYPE_V
+        def foo: [U, V] (U a) -> V
       RBI
     end
 
