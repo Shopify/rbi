@@ -365,6 +365,9 @@ module RBI
       rbi = parse_rbi(<<~RBI)
         sig(:final) { abstract.override.overridable.returns(void).checked(:never) }
         def foo; end
+
+        sig { override(allow_incompatible: true).returns(T.nilable(String)) }
+        def bar; end
       RBI
 
       # Modifiers are ignored in RBS, but we generate comments for them
@@ -375,6 +378,9 @@ module RBI
         # @overridable
         # @final
         def foo: -> void
+
+        # @override(allow_incompatible: true)
+        def bar: -> String?
       RBI
     end
 

@@ -298,7 +298,11 @@ module RBI
       end
 
       if node.sigs.any?(&:is_override)
-        printl("# @override")
+        if node.sigs.any?(&:allow_incompatible_override)
+          printl("# @override(allow_incompatible: true)")
+        else
+          printl("# @override")
+        end
       end
 
       if node.sigs.any?(&:is_overridable)
