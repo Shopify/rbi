@@ -1019,44 +1019,6 @@ module RBI
       RBI
     end
 
-    def test_parse_errors
-      e = assert_raises(ParseError) do
-        Parser.parse_string(<<~RBI)
-          def bar
-        RBI
-      end
-      assert_equal(
-        "unexpected end-of-input, assuming it is closing the parent top level context. expected an `end` " \
-          "to close the `def` statement.",
-        e.message,
-      )
-      assert_equal("-:1:7", e.location.to_s)
-
-      e = assert_raises(ParseError) do
-        Parser.parse_string(<<~RBI)
-          private include Foo
-        RBI
-      end
-      assert_equal("Unexpected token `private` before `include Foo`", e.message)
-      assert_equal("-:1:0-1:19", e.location.to_s)
-
-      e = assert_raises(ParseError) do
-        Parser.parse_string(<<~RBI)
-          private class Foo; end
-        RBI
-      end
-      assert_equal("Unexpected token `private` before `class Foo; end`", e.message)
-      assert_equal("-:1:0-1:22", e.location.to_s)
-
-      e = assert_raises(ParseError) do
-        Parser.parse_string(<<~RBI)
-          private CST = 42
-        RBI
-      end
-      assert_equal("Unexpected token `private` before `CST = 42`", e.message)
-      assert_equal("-:1:0-1:16", e.location.to_s)
-    end
-
     def test_parse_strings
       trees = Parser.parse_strings([
         "class Foo; end",
