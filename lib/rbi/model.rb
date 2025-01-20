@@ -261,7 +261,7 @@ module RBI
       ).void
     end
     def initialize(loc: nil, comments: [], &block)
-      super(loc: loc, comments: comments) {}
+      super {}
       block&.call(self)
     end
 
@@ -1357,7 +1357,7 @@ module RBI
       ).void
     end
     def initialize(loc: nil, comments: [], &block)
-      super(loc: loc, comments: comments) {}
+      super {}
       block&.call(self)
     end
 
