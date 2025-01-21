@@ -451,11 +451,6 @@ module RBI
                 loc: node_loc(node),
                 comments: node_comments(node),
               )
-            else
-              raise ParseError.new(
-                "Unexpected token `#{node.message}` before `#{last_node&.string&.strip}`",
-                node_loc(node),
-              )
             end
           else
             current_scope << parse_visibility(node.name.to_s, node)
@@ -722,8 +717,6 @@ module RBI
 
                 keyword_init = val == "true" if key == "keyword_init:"
               end
-            else
-              raise ParseError.new("Unexpected node type `#{arg.class}`", node_loc(arg))
             end
           end
         end
