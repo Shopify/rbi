@@ -9,7 +9,7 @@ module RBI
     class << self
       extend T::Sig
 
-      sig { params(node: Node).returns(Index) }
+      #: (*Node node) -> Index
       def index(*node)
         index = Index.new
         index.visit_all(node)
@@ -17,28 +17,29 @@ module RBI
       end
     end
 
-    sig { void }
+    #: -> void
     def initialize
       super
       @index = T.let({}, T::Hash[String, T::Array[Node]])
     end
 
-    sig { returns(T::Array[String]) }
+    #: -> Array[String]
     def keys
       @index.keys
     end
 
-    sig { params(id: String).returns(T::Array[Node]) }
+    #: (String id) -> Array[Node]
     def [](id)
       @index[id] ||= []
     end
 
-    sig { params(nodes: Node).void }
+    #: (*Node nodes) -> void
     def index(*nodes)
       nodes.each { |node| visit(node) }
     end
 
-    sig { override.params(node: T.nilable(Node)).void }
+    # @override
+    #: (Node? node) -> void
     def visit(node)
       return unless node
 
@@ -55,7 +56,7 @@ module RBI
 
     private
 
-    sig { params(node: T.all(Indexable, Node)).void }
+    #: ((Indexable & Node) node) -> void
     def index_node(node)
       node.index_ids.each { |id| self[id] << node }
     end
@@ -64,7 +65,7 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { returns(Index) }
+    #: -> Index
     def index
       Index.index(self)
     end
@@ -81,7 +82,8 @@ module RBI
     #
     # Some nodes can have multiple ids, for example an attribute accessor matches the ID of the
     # getter and the setter.
-    sig { abstract.returns(T::Array[String]) }
+    # @abstract
+    #: -> Array[String]
     def index_ids; end
   end
 
@@ -89,7 +91,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       [fully_qualified_name]
     end
@@ -99,7 +102,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       [fully_qualified_name]
     end
@@ -109,7 +113,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       fully_qualified_names
     end
@@ -119,7 +124,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       [fully_qualified_name]
     end
@@ -129,7 +135,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       names.map { |name| "#{parent_scope&.fully_qualified_name}.include(#{name})" }
     end
@@ -139,7 +146,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       names.map { |name| "#{parent_scope&.fully_qualified_name}.extend(#{name})" }
     end
@@ -149,7 +157,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       names.map { |name| "#{parent_scope&.fully_qualified_name}.mixes_in_class_method(#{name})" }
     end
@@ -159,7 +168,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       [to_s]
     end
@@ -169,7 +179,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       [to_s]
     end
@@ -179,7 +190,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       [to_s]
     end
@@ -189,7 +201,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       ["#{parent_scope&.fully_qualified_name}.#{method}"]
     end
@@ -199,7 +212,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       fully_qualified_names
     end
@@ -209,7 +223,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       fully_qualified_names
     end
@@ -219,7 +234,8 @@ module RBI
     extend T::Sig
     include Indexable
 
-    sig { override.returns(T::Array[String]) }
+    # @override
+    #: -> Array[String]
     def index_ids
       [to_s]
     end

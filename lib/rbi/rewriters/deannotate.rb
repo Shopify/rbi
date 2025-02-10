@@ -6,13 +6,14 @@ module RBI
     class Deannotate < Visitor
       extend T::Sig
 
-      sig { params(annotation: String).void }
+      #: (String annotation) -> void
       def initialize(annotation)
         super()
         @annotation = annotation
       end
 
-      sig { override.params(node: T.nilable(Node)).void }
+      # @override
+      #: (Node? node) -> void
       def visit(node)
         case node
         when Scope, Const, Attr, Method, TStructField, TypeMember
@@ -23,7 +24,7 @@ module RBI
 
       private
 
-      sig { params(node: NodeWithComments).void }
+      #: (NodeWithComments node) -> void
       def deannotate_node(node)
         return unless node.annotations.one?(@annotation)
 
@@ -37,7 +38,7 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { params(annotation: String).void }
+    #: (String annotation) -> void
     def deannotate!(annotation)
       visitor = Rewriters::Deannotate.new(annotation)
       visitor.visit(self)

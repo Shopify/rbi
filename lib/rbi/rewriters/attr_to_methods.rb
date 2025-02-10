@@ -3,10 +3,10 @@
 
 module RBI
   class UnexpectedMultipleSigsError < Error
-    sig { returns(Node) }
+    #: Node
     attr_reader :node
 
-    sig { params(node: Node).void }
+    #: (Node node) -> void
     def initialize(node)
       super(<<~MSG)
         This declaration cannot have more than one sig.
@@ -22,7 +22,8 @@ module RBI
     class AttrToMethods < Visitor
       extend T::Sig
 
-      sig { override.params(node: T.nilable(Node)).void }
+      # @override
+      #: (Node? node) -> void
       def visit(node)
         case node
         when Tree
@@ -35,7 +36,7 @@ module RBI
 
       private
 
-      sig { params(node: Node, with: T::Array[Node]).void }
+      #: (Node node, with: Array[Node]) -> void
       def replace(node, with:)
         tree = node.parent_tree
         raise ReplaceNodeError, "Can't replace #{self} without a parent tree" unless tree
@@ -49,7 +50,7 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { void }
+    #: -> void
     def replace_attributes_with_methods!
       visitor = Rewriters::AttrToMethods.new
       visitor.visit(self)
@@ -57,12 +58,14 @@ module RBI
   end
 
   class Attr
-    sig { abstract.returns(T::Array[Method]) }
+    # @abstract
+    #: -> Array[Method]
     def convert_to_methods; end
 
     private
 
-    sig(:final) { returns([T.nilable(Sig), T.nilable(T.any(Type, String))]) }
+    # @final
+    #: -> [Sig?, (Type | String)?]
     def parse_sig
       raise UnexpectedMultipleSigsError, self if 1 < sigs.count
 
@@ -77,15 +80,7 @@ module RBI
       [sig, attribute_type]
     end
 
-    sig do
-      params(
-        name: String,
-        sig: T.nilable(Sig),
-        visibility: Visibility,
-        loc: T.nilable(Loc),
-        comments: T::Array[Comment],
-      ).returns(Method)
-    end
+    #: (String name, Sig? sig, Visibility visibility, Loc? loc, Array[Comment] comments) -> Method
     def create_getter_method(name, sig, visibility, loc, comments)
       Method.new(
         name,
@@ -97,16 +92,7 @@ module RBI
       )
     end
 
-    sig do
-      params(
-        name: String,
-        sig: T.nilable(Sig),
-        attribute_type: T.nilable(T.any(Type, String)),
-        visibility: Visibility,
-        loc: T.nilable(Loc),
-        comments: T::Array[Comment],
-      ).returns(Method)
-    end
+    #: (String name, Sig? sig, (Type | String)? attribute_type, Visibility visibility, Loc? loc, Array[Comment] comments) -> Method
     def create_setter_method(name, sig, attribute_type, visibility, loc, comments) # rubocop:disable Metrics/ParameterLists
       sig = if sig # Modify the original sig to correct the name, and remove the return type
         params = attribute_type ? [SigParam.new(name, attribute_type)] : []
@@ -136,7 +122,8 @@ module RBI
   end
 
   class AttrAccessor
-    sig { override.returns(T::Array[Method]) }
+    # @override
+    #: -> Array[Method]
     def convert_to_methods
       sig, attribute_type = parse_sig
 
@@ -150,7 +137,8 @@ module RBI
   end
 
   class AttrReader
-    sig { override.returns(T::Array[Method]) }
+    # @override
+    #: -> Array[Method]
     def convert_to_methods
       sig, _ = parse_sig
 
@@ -159,7 +147,8 @@ module RBI
   end
 
   class AttrWriter
-    sig { override.returns(T::Array[Method]) }
+    # @override
+    #: -> Array[Method]
     def convert_to_methods
       sig, attribute_type = parse_sig
 

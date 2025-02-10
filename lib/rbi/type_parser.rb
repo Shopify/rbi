@@ -6,7 +6,7 @@ module RBI
     class Error < RBI::Error; end
 
     class << self
-      sig { params(string: String).returns(Type) }
+      #: (String string) -> Type
       def parse_string(string)
         result = Prism.parse(string)
         unless result.success?
@@ -22,7 +22,7 @@ module RBI
         parse_node(node)
       end
 
-      sig { params(node: Prism::Node).returns(Type) }
+      #: (Prism::Node node) -> Type
       def parse_node(node)
         case node
         when Prism::ConstantReadNode, Prism::ConstantPathNode
@@ -48,7 +48,7 @@ module RBI
 
       private
 
-      sig { params(node: T.any(Prism::ConstantReadNode, Prism::ConstantPathNode)).returns(Type) }
+      #: ((Prism::ConstantReadNode | Prism::ConstantPathNode) node) -> Type
       def parse_constant(node)
         case node
         when Prism::ConstantReadNode
@@ -65,7 +65,7 @@ module RBI
         end
       end
 
-      sig { params(node: Prism::CallNode).returns(Type) }
+      #: (Prism::CallNode node) -> Type
       def parse_call(node)
         recv = node.receiver
 
@@ -167,12 +167,12 @@ module RBI
         end
       end
 
-      sig { params(node: Prism::ArrayNode).returns(Type) }
+      #: (Prism::ArrayNode node) -> Type
       def parse_tuple(node)
         T.unsafe(Type).tuple(*node.elements.map { |elem| parse_node(elem) })
       end
 
-      sig { params(node: T.any(Prism::HashNode, Prism::KeywordHashNode)).returns(Type) }
+      #: ((Prism::HashNode | Prism::KeywordHashNode) node) -> Type
       def parse_shape(node)
         hash = node.elements.map do |elem|
           raise Error, "Expected key-value pair, got `#{elem.slice}`" unless elem.is_a?(Prism::AssocNode)
@@ -191,7 +191,7 @@ module RBI
         T.unsafe(Type).shape(**hash)
       end
 
-      sig { params(node: Prism::CallNode).returns(Type) }
+      #: (Prism::CallNode node) -> Type
       def parse_proc(node)
         calls = call_chain(node).reverse
         calls.pop # remove `T.`
@@ -231,7 +231,7 @@ module RBI
         type
       end
 
-      sig { params(node: Prism::CallNode, count: Integer).returns(T::Array[Prism::Node]) }
+      #: (Prism::CallNode node, Integer count) -> Array[Prism::Node]
       def check_arguments_exactly!(node, count)
         args = node.arguments&.arguments || []
         unless args.size == count
@@ -246,7 +246,7 @@ module RBI
         args
       end
 
-      sig { params(node: Prism::CallNode, count: Integer).returns(T::Array[Prism::Node]) }
+      #: (Prism::CallNode node, Integer count) -> Array[Prism::Node]
       def check_arguments_at_least!(node, count)
         args = node.arguments&.arguments || []
         if args.size < count
@@ -259,7 +259,7 @@ module RBI
         args
       end
 
-      sig { params(node: Prism::CallNode).returns(T::Array[Prism::Node]) }
+      #: (Prism::CallNode node) -> Array[Prism::Node]
       def call_chain(node)
         call_chain = T.let([node], T::Array[Prism::Node])
         receiver = T.let(node.receiver, T.nilable(Prism::Node))
@@ -272,7 +272,7 @@ module RBI
         call_chain
       end
 
-      sig { params(node: T.nilable(Prism::Node)).returns(T::Boolean) }
+      #: (Prism::Node? node) -> bool
       def t?(node)
         case node
         when Prism::ConstantReadNode
@@ -284,26 +284,26 @@ module RBI
         false
       end
 
-      sig { params(node: T.nilable(Prism::Node)).returns(T::Boolean) }
+      #: (Prism::Node? node) -> bool
       def t_boolean?(node)
         return false unless node.is_a?(Prism::ConstantPathNode)
 
         t?(node.parent) && node.name == :Boolean
       end
 
-      sig { params(node: Prism::ConstantPathNode).returns(T::Boolean) }
+      #: (Prism::ConstantPathNode node) -> bool
       def t_class?(node)
         t?(node.parent) && node.name == :Class
       end
 
-      sig { params(node: T.nilable(Prism::Node)).returns(T::Boolean) }
+      #: (Prism::Node? node) -> bool
       def t_class_of?(node)
         return false unless node.is_a?(Prism::CallNode)
 
         t?(node.receiver) && node.name == :class_of
       end
 
-      sig { params(node: Prism::CallNode).returns(T::Boolean) }
+      #: (Prism::CallNode node) -> bool
       def t_proc?(node)
         chain = call_chain(node)
         return false if chain.size < 2

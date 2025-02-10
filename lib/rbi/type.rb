@@ -17,21 +17,23 @@ module RBI
     class Simple < Type
       extend T::Sig
 
-      sig { returns(String) }
+      #: String
       attr_reader :name
 
-      sig { params(name: String).void }
+      #: (String name) -> void
       def initialize(name)
         super()
         @name = name
       end
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         Simple === other && @name == other.name
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         @name
       end
@@ -43,12 +45,14 @@ module RBI
     class Anything < Type
       extend T::Sig
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         Anything === other
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "T.anything"
       end
@@ -58,12 +62,14 @@ module RBI
     class AttachedClass < Type
       extend T::Sig
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         AttachedClass === other
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "T.attached_class"
       end
@@ -73,12 +79,14 @@ module RBI
     class Boolean < Type
       extend T::Sig
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         Boolean === other
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "T::Boolean"
       end
@@ -88,12 +96,14 @@ module RBI
     class NoReturn < Type
       extend T::Sig
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         NoReturn === other
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "T.noreturn"
       end
@@ -103,12 +113,14 @@ module RBI
     class SelfType < Type
       extend T::Sig
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         SelfType === other
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "T.self_type"
       end
@@ -118,12 +130,14 @@ module RBI
     class Untyped < Type
       extend T::Sig
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         Untyped === other
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "T.untyped"
       end
@@ -133,12 +147,14 @@ module RBI
     class Void < Type
       extend T::Sig
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         Void === other
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "void"
       end
@@ -150,21 +166,23 @@ module RBI
     class Class < Type
       extend T::Sig
 
-      sig { returns(Type) }
+      #: Type
       attr_reader :type
 
-      sig { params(type: Type).void }
+      #: (Type type) -> void
       def initialize(type)
         super()
         @type = type
       end
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         Class === other && @type == other.type
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "T::Class[#{@type}]"
       end
@@ -174,25 +192,27 @@ module RBI
     class ClassOf < Type
       extend T::Sig
 
-      sig { returns(Simple) }
+      #: Simple
       attr_reader :type
 
-      sig { returns(T.nilable(Type)) }
+      #: Type?
       attr_reader :type_parameter
 
-      sig { params(type: Simple, type_parameter: T.nilable(Type)).void }
+      #: (Simple type, ?Type? type_parameter) -> void
       def initialize(type, type_parameter = nil)
         super()
         @type = type
         @type_parameter = type_parameter
       end
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         ClassOf === other && @type == other.type && @type_parameter == other.type_parameter
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         if @type_parameter
           "T.class_of(#{@type.to_rbi})[#{@type_parameter.to_rbi}]"
@@ -206,21 +226,23 @@ module RBI
     class Nilable < Type
       extend T::Sig
 
-      sig { returns(Type) }
+      #: Type
       attr_reader :type
 
-      sig { params(type: Type).void }
+      #: (Type type) -> void
       def initialize(type)
         super()
         @type = type
       end
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         Nilable === other && @type == other.type
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "T.nilable(#{@type.to_rbi})"
       end
@@ -233,16 +255,17 @@ module RBI
 
       abstract!
 
-      sig { returns(T::Array[Type]) }
+      #: Array[Type]
       attr_reader :types
 
-      sig { params(types: T::Array[Type]).void }
+      #: (Array[Type] types) -> void
       def initialize(types)
         super()
         @types = types
       end
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         self.class === other && @types.sort_by(&:to_rbi) == other.types.sort_by(&:to_rbi)
       end
@@ -252,7 +275,8 @@ module RBI
     class All < Composite
       extend T::Sig
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "T.all(#{@types.map(&:to_rbi).join(", ")})"
       end
@@ -262,12 +286,13 @@ module RBI
     class Any < Composite
       extend T::Sig
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "T.any(#{@types.map(&:to_rbi).join(", ")})"
       end
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def nilable?
         @types.any? { |type| type.nilable? || (type.is_a?(Simple) && type.name == "NilClass") }
       end
@@ -279,25 +304,27 @@ module RBI
     class Generic < Type
       extend T::Sig
 
-      sig { returns(String) }
+      #: String
       attr_reader :name
 
-      sig { returns(T::Array[Type]) }
+      #: Array[Type]
       attr_reader :params
 
-      sig { params(name: String, params: Type).void }
+      #: (String name, *Type params) -> void
       def initialize(name, *params)
         super()
         @name = name
         @params = T.let(params, T::Array[Type])
       end
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         Generic === other && @name == other.name && @params == other.params
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "#{@name}[#{@params.map(&:to_rbi).join(", ")}]"
       end
@@ -307,21 +334,23 @@ module RBI
     class TypeParameter < Type
       extend T::Sig
 
-      sig { returns(Symbol) }
+      #: Symbol
       attr_reader :name
 
-      sig { params(name: Symbol).void }
+      #: (Symbol name) -> void
       def initialize(name)
         super()
         @name = name
       end
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         TypeParameter === other && @name == other.name
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "T.type_parameter(#{@name.inspect})"
       end
@@ -333,21 +362,23 @@ module RBI
     class Tuple < Type
       extend T::Sig
 
-      sig { returns(T::Array[Type]) }
+      #: Array[Type]
       attr_reader :types
 
-      sig { params(types: T::Array[Type]).void }
+      #: (Array[Type] types) -> void
       def initialize(types)
         super()
         @types = types
       end
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         Tuple === other && @types == other.types
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         "[#{@types.map(&:to_rbi).join(", ")}]"
       end
@@ -357,21 +388,23 @@ module RBI
     class Shape < Type
       extend T::Sig
 
-      sig { returns(T::Hash[T.any(String, Symbol), Type]) }
+      #: Hash[(String | Symbol), Type]
       attr_reader :types
 
-      sig { params(types: T::Hash[T.any(String, Symbol), Type]).void }
+      #: (Hash[(String | Symbol), Type] types) -> void
       def initialize(types)
         super()
         @types = types
       end
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         Shape === other && @types.sort_by { |t| t.first.to_s } == other.types.sort_by { |t| t.first.to_s }
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         if @types.empty?
           "{}"
@@ -387,16 +420,16 @@ module RBI
     class Proc < Type
       extend T::Sig
 
-      sig { returns(T::Hash[Symbol, Type]) }
+      #: Hash[Symbol, Type]
       attr_reader :proc_params
 
-      sig { returns(Type) }
+      #: Type
       attr_reader :proc_returns
 
-      sig { returns(T.nilable(Type)) }
+      #: Type?
       attr_reader :proc_bind
 
-      sig { void }
+      #: -> void
       def initialize
         super
         @proc_params = T.let({}, T::Hash[Symbol, Type])
@@ -404,7 +437,8 @@ module RBI
         @proc_bind = T.let(nil, T.nilable(Type))
       end
 
-      sig { override.params(other: BasicObject).returns(T::Boolean) }
+      # @override
+      #: (BasicObject other) -> bool
       def ==(other)
         return false unless Proc === other
         return false unless @proc_params == other.proc_params
@@ -414,31 +448,32 @@ module RBI
         true
       end
 
-      sig { params(params: Type).returns(T.self_type) }
+      #: (**Type params) -> self
       def params(**params)
         @proc_params = params
         self
       end
 
-      sig { params(type: T.untyped).returns(T.self_type) }
+      #: (untyped type) -> self
       def returns(type)
         @proc_returns = type
         self
       end
 
-      sig { returns(T.self_type) }
+      #: -> self
       def void
         @proc_returns = RBI::Type.void
         self
       end
 
-      sig { params(type: T.untyped).returns(T.self_type) }
+      #: (untyped type) -> self
       def bind(type)
         @proc_bind = type
         self
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def to_rbi
         rbi = +"T.proc"
 
@@ -473,7 +508,7 @@ module RBI
       # Builds a simple type like `String` or `::Foo::Bar`.
       #
       # It raises a `NameError` if the name is not a valid Ruby class identifier.
-      sig { params(name: String).returns(Simple) }
+      #: (String name) -> Simple
       def simple(name)
         # TODO: should we allow creating the instance anyway and move this to a `validate!` method?
         raise NameError, "Invalid type name: `#{name}`" unless valid_identifier?(name)
@@ -484,43 +519,43 @@ module RBI
       # Literals
 
       # Builds a type that represents `T.anything`.
-      sig { returns(Anything) }
+      #: -> Anything
       def anything
         Anything.new
       end
 
       # Builds a type that represents `T.attached_class`.
-      sig { returns(AttachedClass) }
+      #: -> AttachedClass
       def attached_class
         AttachedClass.new
       end
 
       # Builds a type that represents `T::Boolean`.
-      sig { returns(Boolean) }
+      #: -> Boolean
       def boolean
         Boolean.new
       end
 
       # Builds a type that represents `T.noreturn`.
-      sig { returns(NoReturn) }
+      #: -> NoReturn
       def noreturn
         NoReturn.new
       end
 
       # Builds a type that represents `T.self_type`.
-      sig { returns(SelfType) }
+      #: -> SelfType
       def self_type
         SelfType.new
       end
 
       # Builds a type that represents `T.untyped`.
-      sig { returns(Untyped) }
+      #: -> Untyped
       def untyped
         Untyped.new
       end
 
       # Builds a type that represents `void`.
-      sig { returns(Void) }
+      #: -> Void
       def void
         Void.new
       end
@@ -528,13 +563,13 @@ module RBI
       # Composites
 
       # Builds a type that represents the class of another type like `T::Class[Foo]`.
-      sig { params(type: Type).returns(Class) }
+      #: (Type type) -> Class
       def t_class(type)
         Class.new(type)
       end
 
       # Builds a type that represents the singleton class of another type like `T.class_of(Foo)`.
-      sig { params(type: Simple, type_parameter: T.nilable(Type)).returns(ClassOf) }
+      #: (Simple type, ?Type? type_parameter) -> ClassOf
       def class_of(type, type_parameter = nil)
         ClassOf.new(type, type_parameter)
       end
@@ -543,7 +578,7 @@ module RBI
       #
       # Note that this method transforms types such as `T.nilable(T.untyped)` into `T.untyped`, so
       # it may return something other than a `RBI::Type::Nilable`.
-      sig { params(type: Type).returns(Type) }
+      #: (Type type) -> Type
       def nilable(type)
         # TODO: should we move this logic to a `flatten!`, `normalize!` or `simplify!` method?
         return type if type.is_a?(Untyped)
@@ -559,7 +594,7 @@ module RBI
       #
       # Note that this method transforms types such as `T.all(String, String)` into `String`, so
       # it may return something other than a `All`.
-      sig { params(type1: Type, type2: Type, types: Type).returns(Type) }
+      #: (Type type1, Type type2, *Type types) -> Type
       def all(type1, type2, *types)
         types = [type1, type2, *types]
 
@@ -586,7 +621,7 @@ module RBI
       #
       # Note that this method transforms types such as `T.any(String, NilClass)` into `T.nilable(String)`, so
       # it may return something other than a `Any`.
-      sig { params(type1: Type, type2: Type, types: Type).returns(Type) }
+      #: (Type type1, Type type2, *Type types) -> Type
       def any(type1, type2, *types)
         types = [type1, type2, *types]
 
@@ -651,13 +686,13 @@ module RBI
       # Generics
 
       # Builds a type that represents a generic type like `T::Array[String]` or `T::Hash[Symbol, Integer]`.
-      sig { params(name: String, params: T.any(Type, T::Array[Type])).returns(Generic) }
+      #: (String name, *(Type | Array[Type]) params) -> Generic
       def generic(name, *params)
         T.unsafe(Generic).new(name, *params.flatten)
       end
 
       # Builds a type that represents a type parameter like `T.type_parameter(:U)`.
-      sig { params(name: Symbol).returns(TypeParameter) }
+      #: (Symbol name) -> TypeParameter
       def type_parameter(name)
         TypeParameter.new(name)
       end
@@ -665,13 +700,13 @@ module RBI
       # Tuples and shapes
 
       # Builds a type that represents a tuple type like `[String, Integer]`.
-      sig { params(types: T.any(Type, T::Array[Type])).returns(Tuple) }
+      #: (*(Type | Array[Type]) types) -> Tuple
       def tuple(*types)
         Tuple.new(types.flatten)
       end
 
       # Builds a type that represents a shape type like `{name: String, age: Integer}`.
-      sig { params(types: T::Hash[T.any(String, Symbol), Type]).returns(Shape) }
+      #: (?Hash[(String | Symbol), Type] types) -> Shape
       def shape(types = {})
         Shape.new(types)
       end
@@ -679,7 +714,7 @@ module RBI
       # Proc
 
       # Builds a type that represents a proc type like `T.proc.void`.
-      sig { returns(Proc) }
+      #: -> Proc
       def proc
         Proc.new
       end
@@ -689,13 +724,13 @@ module RBI
 
       private
 
-      sig { params(name: String).returns(T::Boolean) }
+      #: (String name) -> bool
       def valid_identifier?(name)
         Prism.parse("class self::#{name.delete_prefix("::")}; end").success?
       end
     end
 
-    sig { void }
+    #: -> void
     def initialize
       @nilable = T.let(false, T::Boolean)
     end
@@ -709,7 +744,7 @@ module RBI
     # type.nilable.to_rbi # => "T.nilable(String)"
     # type.nilable.nilable.to_rbi # => "T.nilable(String)"
     # ```
-    sig { returns(Type) }
+    #: -> Type
     def nilable
       Type.nilable(self)
     end
@@ -724,7 +759,7 @@ module RBI
     # type.non_nilable.to_rbi # => "String"
     # type.non_nilable.non_nilable.to_rbi # => "String"
     # ```
-    sig { returns(Type) }
+    #: -> Type
     def non_nilable
       # TODO: Should this logic be moved into a builder method?
       case self
@@ -736,28 +771,32 @@ module RBI
     end
 
     # Returns whether the type is nilable.
-    sig { returns(T::Boolean) }
+    #: -> bool
     def nilable?
       is_a?(Nilable)
     end
 
-    sig { abstract.params(other: BasicObject).returns(T::Boolean) }
+    # @abstract
+    #: (BasicObject other) -> bool
     def ==(other); end
 
-    sig { params(other: BasicObject).returns(T::Boolean) }
+    #: (BasicObject other) -> bool
     def eql?(other)
       self == other
     end
 
-    sig { override.returns(Integer) }
+    # @override
+    #: -> Integer
     def hash
       to_rbi.hash
     end
 
-    sig { abstract.returns(String) }
+    # @abstract
+    #: -> String
     def to_rbi; end
 
-    sig { override.returns(String) }
+    # @override
+    #: -> String
     def to_s
       to_rbi
     end

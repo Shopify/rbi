@@ -62,20 +62,21 @@ module RBI
       class << self
         extend T::Sig
 
-        sig { params(tree: Tree, version: Gem::Version).void }
+        #: (Tree tree, Gem::Version version) -> void
         def filter(tree, version)
           v = new(version)
           v.visit(tree)
         end
       end
 
-      sig { params(version: Gem::Version).void }
+      #: (Gem::Version version) -> void
       def initialize(version)
         super()
         @version = version
       end
 
-      sig { override.params(node: T.nilable(Node)).void }
+      # @override
+      #: (Node? node) -> void
       def visit(node)
         return unless node
 
@@ -90,7 +91,7 @@ module RBI
   end
 
   class Node
-    sig { params(version: Gem::Version).returns(T::Boolean) }
+    #: (Gem::Version version) -> bool
     def satisfies_version?(version)
       return true unless is_a?(NodeWithComments)
 
@@ -100,7 +101,7 @@ module RBI
   end
 
   class NodeWithComments
-    sig { returns(T::Array[Gem::Requirement]) }
+    #: -> Array[Gem::Requirement]
     def version_requirements
       annotations.select do |annotation|
         annotation.start_with?(Rewriters::FilterVersions::VERSION_PREFIX)
@@ -114,7 +115,7 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { params(version: Gem::Version).void }
+    #: (Gem::Version version) -> void
     def filter_versions!(version)
       visitor = Rewriters::FilterVersions.new(version)
       visitor.visit(self)

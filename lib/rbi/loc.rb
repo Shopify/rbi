@@ -8,7 +8,7 @@ module RBI
     class << self
       extend T::Sig
 
-      sig { params(file: String, prism_location: Prism::Location).returns(Loc) }
+      #: (String file, Prism::Location prism_location) -> Loc
       def from_prism(file, prism_location)
         new(
           file: file,
@@ -20,21 +20,13 @@ module RBI
       end
     end
 
-    sig { returns(T.nilable(String)) }
+    #: String?
     attr_reader :file
 
-    sig { returns(T.nilable(Integer)) }
+    #: Integer?
     attr_reader :begin_line, :end_line, :begin_column, :end_column
 
-    sig do
-      params(
-        file: T.nilable(String),
-        begin_line: T.nilable(Integer),
-        end_line: T.nilable(Integer),
-        begin_column: T.nilable(Integer),
-        end_column: T.nilable(Integer),
-      ).void
-    end
+    #: (?file: String?, ?begin_line: Integer?, ?end_line: Integer?, ?begin_column: Integer?, ?end_column: Integer?) -> void
     def initialize(file: nil, begin_line: nil, end_line: nil, begin_column: nil, end_column: nil)
       @file = file
       @begin_line = begin_line
@@ -43,7 +35,7 @@ module RBI
       @end_column = end_column
     end
 
-    sig { returns(String) }
+    #: -> String
     def to_s
       if end_line && end_column
         "#{file}:#{begin_line}:#{begin_column}-#{end_line}:#{end_column}"
@@ -52,7 +44,7 @@ module RBI
       end
     end
 
-    sig { returns(T.nilable(String)) }
+    #: -> String?
     def source
       file = self.file
       return unless file
