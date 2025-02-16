@@ -216,6 +216,7 @@ module RBI
       visit_all(node.comments)
 
       printl("#{node.name} = #{node.value}")
+      printt(node.heredocs) if node.heredocs
     end
 
     sig { override.params(node: AttrAccessor).void }
@@ -402,6 +403,7 @@ module RBI
       print_loc(node)
       visit_all(node.comments)
 
+      printt("#{node.receiver}.") if node.receiver
       printt(node.method)
       unless node.args.empty?
         print(" ")
@@ -411,6 +413,10 @@ module RBI
         end
       end
       printn
+      if node.heredocs
+        printt(node.heredocs)
+        printn
+      end
     end
 
     sig { override.params(node: Arg).void }

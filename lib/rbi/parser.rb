@@ -144,6 +144,30 @@ module RBI
         node.slice
       end
 
+      sig { params(node: T.nilable(Prism::Node)).returns(T.nilable(T::Array[String])) }
+      def node_parts(node)
+        return unless node
+
+        fields = node.class.fields.map(&:name)
+        node.parts.map { node_string(_1) } if fields.include? :parts
+      end
+
+      sig { params(node: T.nilable(Prism::Node)).returns(T.nilable(String)) }
+      def node_opening(node)
+        return unless node
+
+        fields = node.class.fields.map(&:name)
+        node.opening if fields.include?(:opening_loc)
+      end
+
+      sig { params(node: T.nilable(Prism::Node)).returns(T.nilable(String)) }
+      def node_closing(node)
+        return unless node
+
+        fields = node.class.fields.map(&:name)
+        node.closing if fields.include? :closing_loc
+      end
+
       sig { params(node: Prism::Node).returns(String) }
       def node_string!(node)
         T.must(node_string(node))
@@ -169,6 +193,20 @@ module RBI
         @scopes_stack = T.let([@tree], T::Array[Tree])
         @last_node = T.let(nil, T.nilable(Prism::Node))
         @last_sigs = T.let([], T::Array[RBI::Sig])
+      end
+
+      sig { override.params(node: Prism::InterpolatedStringNode).void }
+      def visit_interpolated_string_node(node)
+        parts = node_parts(node)
+        if parts
+          closing = node_closing(node)
+          if closing
+            heredocs = parts.join
+            heredocs += closing
+            @heredocs ||= []
+            @heredocs << heredocs
+          end
+        end
       end
 
       sig { override.params(node: Prism::ClassNode).void }
@@ -220,6 +258,13 @@ module RBI
         @last_node = nil
       end
 
+      sig { returns(T.nilable(String)) }
+      def report_heredocs
+        heredocs = @heredocs&.join
+        @heredocs = nil
+        heredocs
+      end
+
       sig { params(node: T.any(Prism::ConstantWriteNode, Prism::ConstantPathWriteNode)).void }
       def visit_constant_assign(node)
         struct = parse_struct(node)
@@ -239,6 +284,8 @@ module RBI
             comments: node_comments(node),
           )
         else
+          comments = node_comments(node)
+          visit_and_suppress([node.value])
           Const.new(
             case node
             when Prism::ConstantWriteNode
@@ -248,7 +295,8 @@ module RBI
             end,
             node_string!(node.value),
             loc: node_loc(node),
-            comments: node_comments(node),
+            comments:,
+            heredocs: report_heredocs,
           )
         end
       end
@@ -318,6 +366,23 @@ module RBI
         collect_dangling_comments(node)
         @scopes_stack.pop
         @last_node = nil
+      end
+
+      sig { params(nodes: T.nilable(T::Array[Prism::Node])).void }
+      def visit_and_suppress(nodes)
+        return if nodes.nil?
+
+        last_node = current_scope.nodes.last
+        nodes.each do |node|
+          visit(node)
+          while current_scope.nodes.last != last_node
+            node = current_scope.nodes.pop
+            if node.heredocs
+              @heredocs ||= []
+              @heredocs << node.heredocs
+            end
+          end
+        end
       end
 
       sig { params(node: Prism::CallNode).void }
@@ -480,11 +545,15 @@ module RBI
         when "sig"
           @last_sigs << parse_sig(node)
         else
+          comments = node_comments(node)
+          visit_and_suppress(node.arguments&.arguments)
           current_scope << Send.new(
             message,
             parse_send_args(node.arguments),
             loc: node_loc(node),
-            comments: node_comments(node),
+            comments:,
+            receiver: node.receiver&.slice,
+            heredocs: report_heredocs,
           )
         end
 

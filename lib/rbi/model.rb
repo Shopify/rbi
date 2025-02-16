@@ -16,10 +16,14 @@ module RBI
     sig { returns(T.nilable(Loc)) }
     attr_accessor :loc
 
+    sig { returns(T.nilable(String)) }
+    attr_reader :heredocs
+
     sig { params(loc: T.nilable(Loc)).void }
     def initialize(loc: nil)
       @parent_tree = nil
       @loc = loc
+      @heredocs = nil
     end
 
     sig { void }
@@ -323,13 +327,15 @@ module RBI
         value: String,
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
+        heredocs: T.nilable(String),
         block: T.nilable(T.proc.params(node: Const).void),
       ).void
     end
-    def initialize(name, value, loc: nil, comments: [], &block)
+    def initialize(name, value, loc: nil, comments: [], heredocs: nil, &block)
       super(loc: loc, comments: comments)
       @name = name
       @value = value
+      @heredocs = heredocs
       block&.call(self)
     end
 
@@ -1010,19 +1016,26 @@ module RBI
     sig { returns(T::Array[Arg]) }
     attr_reader :args
 
+    sig { returns(T.nilable(String)) }
+    attr_reader :receiver
+
     sig do
       params(
         method: String,
         args: T::Array[Arg],
         loc: T.nilable(Loc),
         comments: T::Array[Comment],
+        receiver: T.nilable(String),
+        heredocs: T.nilable(String),
         block: T.nilable(T.proc.params(node: Send).void),
       ).void
     end
-    def initialize(method, args = [], loc: nil, comments: [], &block)
+    def initialize(method, args = [], loc: nil, comments: [], receiver: nil, heredocs: nil, &block)
       super(loc: loc, comments: comments)
       @method = method
       @args = args
+      @receiver = receiver
+      @heredocs = heredocs
       block&.call(self)
     end
 
@@ -1038,7 +1051,11 @@ module RBI
 
     sig { returns(String) }
     def to_s
-      "#{parent_scope&.fully_qualified_name}.#{method}(#{args.join(", ")})"
+      if receiver.nil?
+        "#{parent_scope&.fully_qualified_name}.#{method}(#{args.join(", ")})"
+      else
+        "#{receiver}.#{method}(#{args.join(", ")})"
+      end
     end
   end
 
