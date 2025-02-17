@@ -623,6 +623,13 @@ module RBI
         node.comments.empty? && node.empty?
       when Attr
         node.comments.empty? && node.sigs.empty?
+      when Const
+        return false unless node.comments.empty?
+
+        loc = node.loc
+        return true unless loc
+
+        loc.begin_line == loc.end_line
       when Method
         node.comments.empty? && node.sigs.empty? && node.params.all? { |p| p.comments.empty? }
       when Sig
