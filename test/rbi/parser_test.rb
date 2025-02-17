@@ -82,6 +82,16 @@ module RBI
         C = T.nilable(String)
         D = A::B::C
         A::B::C = Foo
+        E = <<~EOF
+          foo
+          bar
+        EOF
+        F = "foo" \\
+            "bar"
+        G = T.let(<<~EOF, T.nilable(String))
+          foo
+          bar
+        EOF
       RBI
 
       tree = parse_rbi(rbi)
