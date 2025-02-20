@@ -48,10 +48,10 @@ module RBI
     class RemoveKnownDefinitions < Visitor
       extend T::Sig
 
-      sig { returns(T::Array[Operation]) }
+      #: Array[Operation]
       attr_reader :operations
 
-      sig { params(index: Index).void }
+      #: (Index index) -> void
       def initialize(index)
         super()
         @index = index
@@ -61,12 +61,7 @@ module RBI
       class << self
         extend T::Sig
 
-        sig do
-          params(
-            tree: Tree,
-            index: Index,
-          ).returns([Tree, T::Array[Operation]])
-        end
+        #: (Tree tree, Index index) -> [Tree, Array[Operation]]
         def remove(tree, index)
           v = RemoveKnownDefinitions.new(index)
           v.visit(tree)
@@ -74,12 +69,13 @@ module RBI
         end
       end
 
-      sig { params(nodes: T::Array[Node]).void }
+      #: (Array[Node] nodes) -> void
       def visit_all(nodes)
         nodes.dup.each { |node| visit(node) }
       end
 
-      sig { override.params(node: T.nilable(Node)).void }
+      # @override
+      #: (Node? node) -> void
       def visit(node)
         return unless node
 
@@ -98,7 +94,7 @@ module RBI
 
       private
 
-      sig { params(node: Indexable).returns(T.nilable(Node)) }
+      #: (Indexable node) -> Node?
       def previous_definition_for(node)
         node.index_ids.each do |id|
           previous = @index[id].first
@@ -107,7 +103,7 @@ module RBI
         nil
       end
 
-      sig { params(node: Node, previous: Node).returns(T::Boolean) }
+      #: (Node node, Node previous) -> bool
       def can_delete_node?(node, previous)
         return false unless node.class == previous.class
 
@@ -125,7 +121,7 @@ module RBI
         end
       end
 
-      sig { params(node: Node, previous: Node).void }
+      #: (Node node, Node previous) -> void
       def delete_node(node, previous)
         node.detach
         @operations << Operation.new(deleted_node: node, duplicate_of: previous)
@@ -137,7 +133,7 @@ module RBI
         const :deleted_node, Node
         const :duplicate_of, Node
 
-        sig { returns(String) }
+        #: -> String
         def to_s
           "Deleted #{duplicate_of} at #{deleted_node.loc} (duplicate from #{duplicate_of.loc})"
         end

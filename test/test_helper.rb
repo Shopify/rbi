@@ -17,7 +17,7 @@ module TestHelper
 
   private
 
-  sig { params(rbs_string: String).returns(RBI::Tree) }
+  #: (String rbs_string) -> RBI::Tree
   def parse_rbi(rbs_string)
     RBI::Parser.parse_string(rbs_string)
   end

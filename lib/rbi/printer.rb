@@ -7,26 +7,19 @@ module RBI
   class Printer < Visitor
     extend T::Sig
 
-    sig { returns(T::Boolean) }
+    #: bool
     attr_accessor :print_locs, :in_visibility_group
 
-    sig { returns(T.nilable(Node)) }
+    #: Node?
     attr_reader :previous_node
 
-    sig { returns(Integer) }
+    #: Integer
     attr_reader :current_indent
 
-    sig { returns(T.nilable(Integer)) }
+    #: Integer?
     attr_reader :max_line_length
 
-    sig do
-      params(
-        out: T.any(IO, StringIO),
-        indent: Integer,
-        print_locs: T::Boolean,
-        max_line_length: T.nilable(Integer),
-      ).void
-    end
+    #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool, ?max_line_length: Integer?) -> void
     def initialize(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
       super()
       @out = out
@@ -39,44 +32,45 @@ module RBI
 
     # Printing
 
-    sig { void }
+    #: -> void
     def indent
       @current_indent += 2
     end
 
-    sig { void }
+    #: -> void
     def dedent
       @current_indent -= 2
     end
 
     # Print a string without indentation nor `\n` at the end.
-    sig { params(string: String).void }
+    #: (String string) -> void
     def print(string)
       @out.print(string)
     end
 
     # Print a string without indentation but with a `\n` at the end.
-    sig { params(string: T.nilable(String)).void }
+    #: (?String? string) -> void
     def printn(string = nil)
       print(string) if string
       print("\n")
     end
 
     # Print a string with indentation but without a `\n` at the end.
-    sig { params(string: T.nilable(String)).void }
+    #: (?String? string) -> void
     def printt(string = nil)
       print(" " * @current_indent)
       print(string) if string
     end
 
     # Print a string with indentation and `\n` at the end.
-    sig { params(string: String).void }
+    #: (String string) -> void
     def printl(string)
       printt
       printn(string)
     end
 
-    sig { override.params(nodes: T::Array[Node]).void }
+    # @override
+    #: (Array[Node] nodes) -> void
     def visit_all(nodes)
       previous_node = @previous_node
       @previous_node = nil
@@ -87,7 +81,8 @@ module RBI
       @previous_node = previous_node
     end
 
-    sig { override.params(file: File).void }
+    # @override
+    #: (File file) -> void
     def visit_file(file)
       strictness = file.strictness
       if strictness
@@ -106,7 +101,8 @@ module RBI
 
     private
 
-    sig { override.params(node: Comment).void }
+    # @override
+    #: (Comment node) -> void
     def visit_comment(node)
       lines = node.text.lines
 
@@ -122,39 +118,45 @@ module RBI
       end
     end
 
-    sig { override.params(node: BlankLine).void }
+    # @override
+    #: (BlankLine node) -> void
     def visit_blank_line(node)
       printn
     end
 
-    sig { override.params(node: Tree).void }
+    # @override
+    #: (Tree node) -> void
     def visit_tree(node)
       visit_all(node.comments)
       printn if !node.comments.empty? && !node.empty?
       visit_all(node.nodes)
     end
 
-    sig { override.params(node: Module).void }
+    # @override
+    #: (Module node) -> void
     def visit_module(node)
       visit_scope(node)
     end
 
-    sig { override.params(node: Class).void }
+    # @override
+    #: (Class node) -> void
     def visit_class(node)
       visit_scope(node)
     end
 
-    sig { override.params(node: Struct).void }
+    # @override
+    #: (Struct node) -> void
     def visit_struct(node)
       visit_scope(node)
     end
 
-    sig { override.params(node: SingletonClass).void }
+    # @override
+    #: (SingletonClass node) -> void
     def visit_singleton_class(node)
       visit_scope(node)
     end
 
-    sig { params(node: Scope).void }
+    #: (Scope node) -> void
     def visit_scope(node)
       print_blank_line_before(node)
       print_loc(node)
@@ -164,7 +166,7 @@ module RBI
       visit_scope_body(node)
     end
 
-    sig { params(node: Scope).void }
+    #: (Scope node) -> void
     def visit_scope_header(node)
       case node
       when Module
@@ -199,7 +201,7 @@ module RBI
       printn
     end
 
-    sig { params(node: Scope).void }
+    #: (Scope node) -> void
     def visit_scope_body(node)
       return if node.empty?
 
@@ -209,7 +211,8 @@ module RBI
       printl("end")
     end
 
-    sig { override.params(node: Const).void }
+    # @override
+    #: (Const node) -> void
     def visit_const(node)
       print_blank_line_before(node)
       print_loc(node)
@@ -218,22 +221,25 @@ module RBI
       printl("#{node.name} = #{node.value}")
     end
 
-    sig { override.params(node: AttrAccessor).void }
+    # @override
+    #: (AttrAccessor node) -> void
     def visit_attr_accessor(node)
       visit_attr(node)
     end
 
-    sig { override.params(node: AttrReader).void }
+    # @override
+    #: (AttrReader node) -> void
     def visit_attr_reader(node)
       visit_attr(node)
     end
 
-    sig { override.params(node: AttrWriter).void }
+    # @override
+    #: (AttrWriter node) -> void
     def visit_attr_writer(node)
       visit_attr(node)
     end
 
-    sig { params(node: Attr).void }
+    #: (Attr node) -> void
     def visit_attr(node)
       print_blank_line_before(node)
 
@@ -261,7 +267,8 @@ module RBI
       printn
     end
 
-    sig { override.params(node: Method).void }
+    # @override
+    #: (Method node) -> void
     def visit_method(node)
       print_blank_line_before(node)
       visit_all(node.comments)
@@ -310,52 +317,61 @@ module RBI
       printn
     end
 
-    sig { override.params(node: ReqParam).void }
+    # @override
+    #: (ReqParam node) -> void
     def visit_req_param(node)
       print(node.name)
     end
 
-    sig { override.params(node: OptParam).void }
+    # @override
+    #: (OptParam node) -> void
     def visit_opt_param(node)
       print("#{node.name} = #{node.value}")
     end
 
-    sig { override.params(node: RestParam).void }
+    # @override
+    #: (RestParam node) -> void
     def visit_rest_param(node)
       print("*#{node.name}")
     end
 
-    sig { override.params(node: KwParam).void }
+    # @override
+    #: (KwParam node) -> void
     def visit_kw_param(node)
       print("#{node.name}:")
     end
 
-    sig { override.params(node: KwOptParam).void }
+    # @override
+    #: (KwOptParam node) -> void
     def visit_kw_opt_param(node)
       print("#{node.name}: #{node.value}")
     end
 
-    sig { override.params(node: KwRestParam).void }
+    # @override
+    #: (KwRestParam node) -> void
     def visit_kw_rest_param(node)
       print("**#{node.name}")
     end
 
-    sig { override.params(node: BlockParam).void }
+    # @override
+    #: (BlockParam node) -> void
     def visit_block_param(node)
       print("&#{node.name}")
     end
 
-    sig { override.params(node: Include).void }
+    # @override
+    #: (Include node) -> void
     def visit_include(node)
       visit_mixin(node)
     end
 
-    sig { override.params(node: Extend).void }
+    # @override
+    #: (Extend node) -> void
     def visit_extend(node)
       visit_mixin(node)
     end
 
-    sig { params(node: Mixin).void }
+    #: (Mixin node) -> void
     def visit_mixin(node)
       print_blank_line_before(node)
       print_loc(node)
@@ -372,22 +388,25 @@ module RBI
       printn(" #{node.names.join(", ")}")
     end
 
-    sig { override.params(node: Public).void }
+    # @override
+    #: (Public node) -> void
     def visit_public(node)
       visit_visibility(node)
     end
 
-    sig { override.params(node: Protected).void }
+    # @override
+    #: (Protected node) -> void
     def visit_protected(node)
       visit_visibility(node)
     end
 
-    sig { override.params(node: Private).void }
+    # @override
+    #: (Private node) -> void
     def visit_private(node)
       visit_visibility(node)
     end
 
-    sig { params(node: Visibility).void }
+    #: (Visibility node) -> void
     def visit_visibility(node)
       print_blank_line_before(node)
       print_loc(node)
@@ -396,7 +415,8 @@ module RBI
       printl(node.visibility.to_s)
     end
 
-    sig { override.params(node: Send).void }
+    # @override
+    #: (Send node) -> void
     def visit_send(node)
       print_blank_line_before(node)
       print_loc(node)
@@ -413,17 +433,20 @@ module RBI
       printn
     end
 
-    sig { override.params(node: Arg).void }
+    # @override
+    #: (Arg node) -> void
     def visit_arg(node)
       print(node.value)
     end
 
-    sig { override.params(node: KwArg).void }
+    # @override
+    #: (KwArg node) -> void
     def visit_kw_arg(node)
       print("#{node.keyword}: #{node.value}")
     end
 
-    sig { override.params(node: Sig).void }
+    # @override
+    #: (Sig node) -> void
     def visit_sig(node)
       print_loc(node)
       visit_all(node.comments)
@@ -443,27 +466,31 @@ module RBI
       end
     end
 
-    sig { override.params(node: SigParam).void }
+    # @override
+    #: (SigParam node) -> void
     def visit_sig_param(node)
       print("#{node.name}: #{node.type}")
     end
 
-    sig { override.params(node: TStruct).void }
+    # @override
+    #: (TStruct node) -> void
     def visit_tstruct(node)
       visit_scope(node)
     end
 
-    sig { override.params(node: TStructConst).void }
+    # @override
+    #: (TStructConst node) -> void
     def visit_tstruct_const(node)
       visit_t_struct_field(node)
     end
 
-    sig { override.params(node: TStructProp).void }
+    # @override
+    #: (TStructProp node) -> void
     def visit_tstruct_prop(node)
       visit_t_struct_field(node)
     end
 
-    sig { params(node: TStructField).void }
+    #: (TStructField node) -> void
     def visit_t_struct_field(node)
       print_blank_line_before(node)
       print_loc(node)
@@ -481,12 +508,14 @@ module RBI
       printn
     end
 
-    sig { override.params(node: TEnum).void }
+    # @override
+    #: (TEnum node) -> void
     def visit_tenum(node)
       visit_scope(node)
     end
 
-    sig { override.params(node: TEnumBlock).void }
+    # @override
+    #: (TEnumBlock node) -> void
     def visit_tenum_block(node)
       print_loc(node)
       visit_all(node.comments)
@@ -498,7 +527,8 @@ module RBI
       printl("end")
     end
 
-    sig { override.params(node: TypeMember).void }
+    # @override
+    #: (TypeMember node) -> void
     def visit_type_member(node)
       print_blank_line_before(node)
       print_loc(node)
@@ -507,7 +537,8 @@ module RBI
       printl("#{node.name} = #{node.value}")
     end
 
-    sig { override.params(node: Helper).void }
+    # @override
+    #: (Helper node) -> void
     def visit_helper(node)
       print_blank_line_before(node)
       print_loc(node)
@@ -516,18 +547,21 @@ module RBI
       printl("#{node.name}!")
     end
 
-    sig { override.params(node: MixesInClassMethods).void }
+    # @override
+    #: (MixesInClassMethods node) -> void
     def visit_mixes_in_class_methods(node)
       visit_mixin(node)
     end
 
-    sig { override.params(node: Group).void }
+    # @override
+    #: (Group node) -> void
     def visit_group(node)
       printn unless previous_node.nil?
       visit_all(node.nodes)
     end
 
-    sig { override.params(node: VisibilityGroup).void }
+    # @override
+    #: (VisibilityGroup node) -> void
     def visit_visibility_group(node)
       self.in_visibility_group = true
       if node.visibility.public?
@@ -540,7 +574,8 @@ module RBI
       self.in_visibility_group = false
     end
 
-    sig { override.params(node: RequiresAncestor).void }
+    # @override
+    #: (RequiresAncestor node) -> void
     def visit_requires_ancestor(node)
       print_blank_line_before(node)
       print_loc(node)
@@ -549,7 +584,8 @@ module RBI
       printl("requires_ancestor { #{node.name} }")
     end
 
-    sig { override.params(node: ConflictTree).void }
+    # @override
+    #: (ConflictTree node) -> void
     def visit_conflict_tree(node)
       printl("<<<<<<< #{node.left_name}")
       visit(node.left)
@@ -558,7 +594,8 @@ module RBI
       printl(">>>>>>> #{node.right_name}")
     end
 
-    sig { override.params(node: ScopeConflict).void }
+    # @override
+    #: (ScopeConflict node) -> void
     def visit_scope_conflict(node)
       print_blank_line_before(node)
       print_loc(node)
@@ -572,7 +609,7 @@ module RBI
       visit_scope_body(node.left)
     end
 
-    sig { params(node: Node).void }
+    #: (Node node) -> void
     def print_blank_line_before(node)
       previous_node = self.previous_node
       return unless previous_node
@@ -582,13 +619,13 @@ module RBI
       printn
     end
 
-    sig { params(node: Node).void }
+    #: (Node node) -> void
     def print_loc(node)
       loc = node.loc
       printl("# #{loc}") if loc && print_locs
     end
 
-    sig { params(node: Param, last: T::Boolean).void }
+    #: (Param node, last: bool) -> void
     def print_param_comment_leading_space(node, last:)
       printn
       printt
@@ -606,7 +643,7 @@ module RBI
       end
     end
 
-    sig { params(node: SigParam, last: T::Boolean).void }
+    #: (SigParam node, last: bool) -> void
     def print_sig_param_comment_leading_space(node, last:)
       printn
       printt
@@ -614,7 +651,7 @@ module RBI
       print(" ") unless last
     end
 
-    sig { params(node: Node).returns(T::Boolean) }
+    #: (Node node) -> bool
     def oneline?(node)
       case node
       when ScopeConflict
@@ -636,7 +673,7 @@ module RBI
       end
     end
 
-    sig { params(node: Sig).void }
+    #: (Sig node) -> void
     def print_sig_as_line(node)
       printt("sig")
       print("(:final)") if node.is_final
@@ -661,7 +698,7 @@ module RBI
       printn(" }")
     end
 
-    sig { params(node: Sig).void }
+    #: (Sig node) -> void
     def print_sig_as_block(node)
       modifiers = sig_modifiers(node)
 
@@ -717,7 +754,7 @@ module RBI
       printl("end")
     end
 
-    sig { params(node: Sig).returns(T::Array[String]) }
+    #: (Sig node) -> Array[String]
     def sig_modifiers(node)
       modifiers = T.let([], T::Array[String])
       modifiers << "abstract" if node.is_abstract
@@ -740,20 +777,13 @@ module RBI
   class File
     extend T::Sig
 
-    sig do
-      params(
-        out: T.any(IO, StringIO),
-        indent: Integer,
-        print_locs: T::Boolean,
-        max_line_length: T.nilable(Integer),
-      ).void
-    end
+    #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool, ?max_line_length: Integer?) -> void
     def print(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
       p = Printer.new(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
       p.visit_file(self)
     end
 
-    sig { params(indent: Integer, print_locs: T::Boolean, max_line_length: T.nilable(Integer)).returns(String) }
+    #: (?indent: Integer, ?print_locs: bool, ?max_line_length: Integer?) -> String
     def string(indent: 0, print_locs: false, max_line_length: nil)
       out = StringIO.new
       print(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
@@ -764,20 +794,13 @@ module RBI
   class Node
     extend T::Sig
 
-    sig do
-      params(
-        out: T.any(IO, StringIO),
-        indent: Integer,
-        print_locs: T::Boolean,
-        max_line_length: T.nilable(Integer),
-      ).void
-    end
+    #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool, ?max_line_length: Integer?) -> void
     def print(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
       p = Printer.new(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
       p.visit(self)
     end
 
-    sig { params(indent: Integer, print_locs: T::Boolean, max_line_length: T.nilable(Integer)).returns(String) }
+    #: (?indent: Integer, ?print_locs: bool, ?max_line_length: Integer?) -> String
     def string(indent: 0, print_locs: false, max_line_length: nil)
       out = StringIO.new
       print(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)

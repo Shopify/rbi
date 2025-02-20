@@ -6,7 +6,7 @@ module RBI
     class Annotate < Visitor
       extend T::Sig
 
-      sig { params(annotation: String, annotate_scopes: T::Boolean, annotate_properties: T::Boolean).void }
+      #: (String annotation, ?annotate_scopes: bool, ?annotate_properties: bool) -> void
       def initialize(annotation, annotate_scopes: false, annotate_properties: false)
         super()
         @annotation = annotation
@@ -14,7 +14,8 @@ module RBI
         @annotate_properties = annotate_properties
       end
 
-      sig { override.params(node: T.nilable(Node)).void }
+      # @override
+      #: (Node? node) -> void
       def visit(node)
         case node
         when Scope
@@ -27,14 +28,14 @@ module RBI
 
       private
 
-      sig { params(node: NodeWithComments).void }
+      #: (NodeWithComments node) -> void
       def annotate_node(node)
         return if node.annotations.one?(@annotation)
 
         node.comments << Comment.new("@#{@annotation}")
       end
 
-      sig { params(node: Node).returns(T::Boolean) }
+      #: (Node node) -> bool
       def root?(node)
         parent = node.parent_tree
         parent.is_a?(Tree) && parent.parent_tree.nil?
@@ -45,7 +46,7 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { params(annotation: String, annotate_scopes: T::Boolean, annotate_properties: T::Boolean).void }
+    #: (String annotation, ?annotate_scopes: bool, ?annotate_properties: bool) -> void
     def annotate!(annotation, annotate_scopes: false, annotate_properties: false)
       visitor = Rewriters::Annotate.new(
         annotation,

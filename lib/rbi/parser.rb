@@ -7,10 +7,10 @@ module RBI
   class ParseError < Error
     extend T::Sig
 
-    sig { returns(Loc) }
+    #: Loc
     attr_reader :location
 
-    sig { params(message: String, location: Loc).void }
+    #: (String message, Loc location) -> void
     def initialize(message, location)
       super(message)
       @location = location
@@ -20,17 +20,17 @@ module RBI
   class UnexpectedParserError < Error
     extend T::Sig
 
-    sig { returns(Loc) }
+    #: Loc
     attr_reader :last_location
 
-    sig { params(parent_exception: Exception, last_location: Loc).void }
+    #: (Exception parent_exception, Loc last_location) -> void
     def initialize(parent_exception, last_location)
       super(parent_exception)
       set_backtrace(parent_exception.backtrace)
       @last_location = last_location
     end
 
-    sig { params(io: T.any(IO, StringIO)).void }
+    #: (?io: (IO | StringIO)) -> void
     def print_debug(io: $stderr)
       io.puts ""
       io.puts "##################################"
@@ -56,42 +56,42 @@ module RBI
     class << self
       extend T::Sig
 
-      sig { params(string: String).returns(Tree) }
+      #: (String string) -> Tree
       def parse_string(string)
         Parser.new.parse_string(string)
       end
 
-      sig { params(path: String).returns(Tree) }
+      #: (String path) -> Tree
       def parse_file(path)
         Parser.new.parse_file(path)
       end
 
-      sig { params(paths: T::Array[String]).returns(T::Array[Tree]) }
+      #: (Array[String] paths) -> Array[Tree]
       def parse_files(paths)
         parser = Parser.new
         paths.map { |path| parser.parse_file(path) }
       end
 
-      sig { params(strings: T::Array[String]).returns(T::Array[Tree]) }
+      #: (Array[String] strings) -> Array[Tree]
       def parse_strings(strings)
         parser = Parser.new
         strings.map { |string| parser.parse_string(string) }
       end
     end
 
-    sig { params(string: String).returns(Tree) }
+    #: (String string) -> Tree
     def parse_string(string)
       parse(string, file: "-")
     end
 
-    sig { params(path: String).returns(Tree) }
+    #: (String path) -> Tree
     def parse_file(path)
       parse(::File.read(path), file: path)
     end
 
     private
 
-    sig { params(source: String, file: String).returns(Tree) }
+    #: (String source, file: String) -> Tree
     def parse(source, file:)
       result = Prism.parse(source)
       unless result.success?
@@ -122,7 +122,7 @@ module RBI
     class Visitor < Prism::Visitor
       extend T::Sig
 
-      sig { params(source: String, file: String).void }
+      #: (String source, file: String) -> void
       def initialize(source, file:)
         super()
 
@@ -132,19 +132,19 @@ module RBI
 
       private
 
-      sig { params(node: Prism::Node).returns(Loc) }
+      #: (Prism::Node node) -> Loc
       def node_loc(node)
         Loc.from_prism(@file, node.location)
       end
 
-      sig { params(node: T.nilable(Prism::Node)).returns(T.nilable(String)) }
+      #: (Prism::Node? node) -> String?
       def node_string(node)
         return unless node
 
         node.slice
       end
 
-      sig { params(node: Prism::Node).returns(String) }
+      #: (Prism::Node node) -> String
       def node_string!(node)
         T.must(node_string(node))
       end
@@ -153,13 +153,13 @@ module RBI
     class TreeBuilder < Visitor
       extend T::Sig
 
-      sig { returns(Tree) }
+      #: Tree
       attr_reader :tree
 
-      sig { returns(T.nilable(Prism::Node)) }
+      #: Prism::Node?
       attr_reader :last_node
 
-      sig { params(source: String, comments: T::Array[Prism::Comment], file: String).void }
+      #: (String source, comments: Array[Prism::Comment], file: String) -> void
       def initialize(source, comments:, file:)
         super(source, file: file)
 
@@ -171,7 +171,8 @@ module RBI
         @last_sigs = T.let([], T::Array[RBI::Sig])
       end
 
-      sig { override.params(node: Prism::ClassNode).void }
+      # @override
+      #: (Prism::ClassNode node) -> void
       def visit_class_node(node)
         @last_node = node
         superclass_name = node_string(node.superclass)
@@ -206,21 +207,23 @@ module RBI
         @last_node = nil
       end
 
-      sig { override.params(node: Prism::ConstantWriteNode).void }
+      # @override
+      #: (Prism::ConstantWriteNode node) -> void
       def visit_constant_write_node(node)
         @last_node = node
         visit_constant_assign(node)
         @last_node = nil
       end
 
-      sig { override.params(node: Prism::ConstantPathWriteNode).void }
+      # @override
+      #: (Prism::ConstantPathWriteNode node) -> void
       def visit_constant_path_write_node(node)
         @last_node = node
         visit_constant_assign(node)
         @last_node = nil
       end
 
-      sig { params(node: T.any(Prism::ConstantWriteNode, Prism::ConstantPathWriteNode)).void }
+      #: ((Prism::ConstantWriteNode | Prism::ConstantPathWriteNode) node) -> void
       def visit_constant_assign(node)
         struct = parse_struct(node)
 
@@ -253,7 +256,8 @@ module RBI
         end
       end
 
-      sig { override.params(node: Prism::DefNode).void }
+      # @override
+      #: (Prism::DefNode node) -> void
       def visit_def_node(node)
         @last_node = node
 
@@ -274,7 +278,8 @@ module RBI
         @last_node = nil
       end
 
-      sig { override.params(node: Prism::ModuleNode).void }
+      # @override
+      #: (Prism::ModuleNode node) -> void
       def visit_module_node(node)
         @last_node = node
         scope = Module.new(
@@ -292,7 +297,8 @@ module RBI
         @last_node = nil
       end
 
-      sig { override.params(node: Prism::ProgramNode).void }
+      # @override
+      #: (Prism::ProgramNode node) -> void
       def visit_program_node(node)
         @last_node = node
         super
@@ -303,7 +309,8 @@ module RBI
         @last_node = nil
       end
 
-      sig { override.params(node: Prism::SingletonClassNode).void }
+      # @override
+      #: (Prism::SingletonClassNode node) -> void
       def visit_singleton_class_node(node)
         @last_node = node
         scope = SingletonClass.new(
@@ -320,7 +327,7 @@ module RBI
         @last_node = nil
       end
 
-      sig { params(node: Prism::CallNode).void }
+      #: (Prism::CallNode node) -> void
       def visit_call_node(node)
         @last_node = node
         message = node.name.to_s
@@ -494,7 +501,7 @@ module RBI
       private
 
       # Collect all the remaining comments within a node
-      sig { params(node: Prism::Node).void }
+      #: (Prism::Node node) -> void
       def collect_dangling_comments(node)
         first_line = node.location.start_line
         last_line = node.location.end_line
@@ -512,7 +519,7 @@ module RBI
       end
 
       # Collect all the remaining comments after visiting the tree
-      sig { void }
+      #: -> void
       def collect_orphan_comments
         last_line = T.let(nil, T.nilable(Integer))
         last_node_end = @tree.nodes.last&.loc&.end_line
@@ -535,19 +542,19 @@ module RBI
         end
       end
 
-      sig { returns(Tree) }
+      #: -> Tree
       def current_scope
         T.must(@scopes_stack.last) # Should never be nil since we create a Tree as the root
       end
 
-      sig { returns(T::Array[Sig]) }
+      #: -> Array[Sig]
       def current_sigs
         sigs = @last_sigs.dup
         @last_sigs.clear
         sigs
       end
 
-      sig { params(sigs: T::Array[Sig]).returns(T::Array[Comment]) }
+      #: (Array[Sig] sigs) -> Array[Comment]
       def detach_comments_from_sigs(sigs)
         comments = T.let([], T::Array[Comment])
 
@@ -559,7 +566,7 @@ module RBI
         comments
       end
 
-      sig { params(node: Prism::Node).returns(T::Array[Comment]) }
+      #: (Prism::Node node) -> Array[Comment]
       def node_comments(node)
         comments = []
 
@@ -577,12 +584,12 @@ module RBI
         comments
       end
 
-      sig { params(node: Prism::Comment).returns(Comment) }
+      #: (Prism::Comment node) -> Comment
       def parse_comment(node)
         Comment.new(node.location.slice.gsub(/^# ?/, "").rstrip, loc: Loc.from_prism(@file, node.location))
       end
 
-      sig { params(node: T.nilable(Prism::Node)).returns(T::Array[Arg]) }
+      #: (Prism::Node? node) -> Array[Arg]
       def parse_send_args(node)
         args = T.let([], T::Array[Arg])
         return args unless node.is_a?(Prism::ArgumentsNode)
@@ -606,7 +613,7 @@ module RBI
         args
       end
 
-      sig { params(node: T.nilable(Prism::Node)).returns(T::Array[Param]) }
+      #: (Prism::Node? node) -> Array[Param]
       def parse_params(node)
         params = []
         return params unless node.is_a?(Prism::ParametersNode)
@@ -680,7 +687,7 @@ module RBI
         params
       end
 
-      sig { params(node: Prism::CallNode).returns(Sig) }
+      #: (Prism::CallNode node) -> Sig
       def parse_sig(node)
         builder = SigBuilder.new(@source, file: @file)
         builder.current.loc = node_loc(node)
@@ -689,7 +696,7 @@ module RBI
         builder.current
       end
 
-      sig { params(node: T.any(Prism::ConstantWriteNode, Prism::ConstantPathWriteNode)).returns(T.nilable(Struct)) }
+      #: ((Prism::ConstantWriteNode | Prism::ConstantPathWriteNode) node) -> Struct?
       def parse_struct(node)
         send = node.value
         return unless send.is_a?(Prism::CallNode)
@@ -737,7 +744,7 @@ module RBI
         struct
       end
 
-      sig { params(send: Prism::CallNode).void }
+      #: (Prism::CallNode send) -> void
       def parse_tstruct_field(send)
         args = send.arguments
         return unless args.is_a?(Prism::ArgumentsNode)
@@ -774,7 +781,7 @@ module RBI
         end
       end
 
-      sig { params(name: String, node: Prism::Node).returns(Visibility) }
+      #: (String name, Prism::Node node) -> Visibility
       def parse_visibility(name, node)
         case name
         when "public"
@@ -788,7 +795,7 @@ module RBI
         end
       end
 
-      sig { void }
+      #: -> void
       def separate_header_comments
         current_scope.nodes.dup.each do |child_node|
           break unless child_node.is_a?(Comment) || child_node.is_a?(BlankLine)
@@ -798,7 +805,7 @@ module RBI
         end
       end
 
-      sig { void }
+      #: -> void
       def set_root_tree_loc
         first_loc = tree.nodes.first&.loc
         last_loc = tree.nodes.last&.loc
@@ -812,7 +819,7 @@ module RBI
         )
       end
 
-      sig { params(node: T.nilable(Prism::Node)).returns(T::Boolean) }
+      #: (Prism::Node? node) -> bool
       def type_variable_definition?(node)
         node.is_a?(Prism::CallNode) && (node.message == "type_member" || node.message == "type_template")
       end
@@ -821,17 +828,18 @@ module RBI
     class SigBuilder < Visitor
       extend T::Sig
 
-      sig { returns(Sig) }
+      #: Sig
       attr_reader :current
 
-      sig { params(content: String, file: String).void }
+      #: (String content, file: String) -> void
       def initialize(content, file:)
         super
 
         @current = T.let(Sig.new, Sig)
       end
 
-      sig { override.params(node: Prism::CallNode).void }
+      # @override
+      #: (Prism::CallNode node) -> void
       def visit_call_node(node)
         case node.message
         when "sig"
@@ -892,7 +900,8 @@ module RBI
         visit(node.block)
       end
 
-      sig { override.params(node: Prism::AssocNode).void }
+      # @override
+      #: (Prism::AssocNode node) -> void
       def visit_assoc_node(node)
         @current.params << SigParam.new(
           node_string!(node.key).delete_suffix(":"),

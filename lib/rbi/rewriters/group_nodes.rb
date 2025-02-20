@@ -8,7 +8,8 @@ module RBI
     class GroupNodes < Visitor
       extend T::Sig
 
-      sig { override.params(node: T.nilable(Node)).void }
+      # @override
+      #: (Node? node) -> void
       def visit(node)
         return unless node
 
@@ -32,7 +33,7 @@ module RBI
 
       private
 
-      sig { params(node: Node).returns(Group::Kind) }
+      #: (Node node) -> Group::Kind
       def group_kind(node)
         case node
         when Group
@@ -77,7 +78,7 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { void }
+    #: -> void
     def group_nodes!
       visitor = Rewriters::GroupNodes.new
       visitor.visit(self)
@@ -87,10 +88,10 @@ module RBI
   class Group < Tree
     extend T::Sig
 
-    sig { returns(Kind) }
+    #: Kind
     attr_reader :kind
 
-    sig { params(kind: Kind).void }
+    #: (Kind kind) -> void
     def initialize(kind)
       super()
       @kind = kind

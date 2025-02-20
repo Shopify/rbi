@@ -50,7 +50,7 @@ module RBI
       class << self
         extend T::Sig
 
-        sig { params(left: Tree, right: Tree, left_name: String, right_name: String, keep: Keep).returns(MergeTree) }
+        #: (Tree left, Tree right, ?left_name: String, ?right_name: String, ?keep: Keep) -> MergeTree
         def merge_trees(left, right, left_name: "left", right_name: "right", keep: Keep::NONE)
           left.nest_singleton_methods!
           right.nest_singleton_methods!
@@ -63,10 +63,10 @@ module RBI
         end
       end
 
-      sig { returns(MergeTree) }
+      #: MergeTree
       attr_reader :tree
 
-      sig { params(left_name: String, right_name: String, keep: Keep).void }
+      #: (?left_name: String, ?right_name: String, ?keep: Keep) -> void
       def initialize(left_name: "left", right_name: "right", keep: Keep::NONE)
         @left_name = left_name
         @right_name = right_name
@@ -75,7 +75,7 @@ module RBI
         @scope_stack = T.let([@tree], T::Array[Tree])
       end
 
-      sig { params(tree: Tree).void }
+      #: (Tree tree) -> void
       def merge(tree)
         v = TreeMerger.new(@tree, left_name: @left_name, right_name: @right_name, keep: @keep)
         v.visit(tree)
@@ -91,7 +91,7 @@ module RBI
         const :left_name, String
         const :right_name, String
 
-        sig { returns(String) }
+        #: -> String
         def to_s
           "Conflicting definitions for `#{left}`"
         end
@@ -100,10 +100,10 @@ module RBI
       class TreeMerger < Visitor
         extend T::Sig
 
-        sig { returns(T::Array[Conflict]) }
+        #: Array[Conflict]
         attr_reader :conflicts
 
-        sig { params(output: Tree, left_name: String, right_name: String, keep: Keep).void }
+        #: (Tree output, ?left_name: String, ?right_name: String, ?keep: Keep) -> void
         def initialize(output, left_name: "left", right_name: "right", keep: Keep::NONE)
           super()
           @tree = output
@@ -115,7 +115,8 @@ module RBI
           @conflicts = T.let([], T::Array[Conflict])
         end
 
-        sig { override.params(node: T.nilable(Node)).void }
+        # @override
+        #: (Node? node) -> void
         def visit(node)
           return unless node
 
@@ -164,12 +165,12 @@ module RBI
 
         private
 
-        sig { returns(Tree) }
+        #: -> Tree
         def current_scope
           T.must(@scope_stack.last)
         end
 
-        sig { params(node: Node).returns(T.nilable(Node)) }
+        #: (Node node) -> Node?
         def previous_definition(node)
           case node
           when Indexable
@@ -181,14 +182,14 @@ module RBI
           nil
         end
 
-        sig { params(left: Scope, right: Scope).void }
+        #: (Scope left, Scope right) -> void
         def make_conflict_scope(left, right)
           @conflicts << Conflict.new(left: left, right: right, left_name: @left_name, right_name: @right_name)
           scope_conflict = ScopeConflict.new(left: left, right: right, left_name: @left_name, right_name: @right_name)
           left.replace(scope_conflict)
         end
 
-        sig { params(left: Node, right: Node).void }
+        #: (Node left, Node right) -> void
         def make_conflict_tree(left, right)
           @conflicts << Conflict.new(left: left, right: right, left_name: @left_name, right_name: @right_name)
           tree = left.parent_conflict_tree
@@ -200,7 +201,7 @@ module RBI
           tree.right << right
         end
 
-        sig { params(left: Scope, right: Scope).returns(Scope) }
+        #: (Scope left, Scope right) -> Scope
         def replace_scope_header(left, right)
           right_copy = right.dup_empty
           left.replace(right_copy)
@@ -243,12 +244,14 @@ module RBI
       # end
       # ~~~
       class ConflictTreeMerger < Visitor
-        sig { override.params(node: T.nilable(Node)).void }
+        # @override
+        #: (Node? node) -> void
         def visit(node)
           visit_all(node.nodes) if node.is_a?(Tree)
         end
 
-        sig { override.params(nodes: T::Array[Node]).void }
+        # @override
+        #: (Array[Node] nodes) -> void
         def visit_all(nodes)
           last_conflict_tree = T.let(nil, T.nilable(ConflictTree))
           nodes.dup.each do |node|
@@ -269,7 +272,7 @@ module RBI
 
         private
 
-        sig { params(left: Tree, right: Tree).void }
+        #: (Tree left, Tree right) -> void
         def merge_conflict_trees(left, right)
           right.nodes.dup.each do |node|
             left << node
@@ -283,16 +286,16 @@ module RBI
     extend T::Sig
 
     # Can `self` and `_other` be merged into a single definition?
-    sig { params(_other: Node).returns(T::Boolean) }
+    #: (Node _other) -> bool
     def compatible_with?(_other)
       true
     end
 
     # Merge `self` and `other` into a single definition
-    sig { params(other: Node).void }
+    #: (Node other) -> void
     def merge_with(other); end
 
-    sig { returns(T.nilable(ConflictTree)) }
+    #: -> ConflictTree?
     def parent_conflict_tree
       parent = T.let(parent_tree, T.nilable(Node))
       while parent
@@ -307,7 +310,8 @@ module RBI
   class NodeWithComments
     extend T::Sig
 
-    sig { override.params(other: Node).void }
+    # @override
+    #: (Node other) -> void
     def merge_with(other)
       return unless other.is_a?(NodeWithComments)
 
@@ -320,7 +324,7 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { params(other: Tree, left_name: String, right_name: String, keep: Rewriters::Merge::Keep).returns(MergeTree) }
+    #: (Tree other, ?left_name: String, ?right_name: String, ?keep: Rewriters::Merge::Keep) -> MergeTree
     def merge(other, left_name: "left", right_name: "right", keep: Rewriters::Merge::Keep::NONE)
       Rewriters::Merge.merge_trees(self, other, left_name: left_name, right_name: right_name, keep: keep)
     end
@@ -330,17 +334,10 @@ module RBI
   class MergeTree < Tree
     extend T::Sig
 
-    sig { returns(T::Array[Rewriters::Merge::Conflict]) }
+    #: Array[Rewriters::Merge::Conflict]
     attr_reader :conflicts
 
-    sig do
-      params(
-        loc: T.nilable(Loc),
-        comments: T::Array[Comment],
-        conflicts: T::Array[Rewriters::Merge::Conflict],
-        block: T.nilable(T.proc.params(node: Tree).void),
-      ).void
-    end
+    #: (?loc: Loc?, ?comments: Array[Comment], ?conflicts: Array[Rewriters::Merge::Conflict]) ?{ (Tree node) -> void } -> void
     def initialize(loc: nil, comments: [], conflicts: [], &block)
       super(loc: loc, comments: comments)
       @conflicts = conflicts
@@ -354,7 +351,7 @@ module RBI
     extend T::Sig
 
     # Duplicate `self` scope without its body
-    sig { returns(T.self_type) }
+    #: -> self
     def dup_empty
       case self
       when Module
@@ -380,7 +377,8 @@ module RBI
   class Class
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(Class) && superclass_name == other.superclass_name
     end
@@ -389,7 +387,8 @@ module RBI
   class Module
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(Module)
     end
@@ -398,7 +397,8 @@ module RBI
   class Struct
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(Struct) && members == other.members && keyword_init == other.keyword_init
     end
@@ -407,7 +407,8 @@ module RBI
   class Const
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(Const) && name == other.name && value == other.value
     end
@@ -416,7 +417,8 @@ module RBI
   class Attr
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       return false unless other.is_a?(Attr)
       return false unless names == other.names
@@ -424,7 +426,8 @@ module RBI
       sigs.empty? || other.sigs.empty? || sigs == other.sigs
     end
 
-    sig { override.params(other: Node).void }
+    # @override
+    #: (Node other) -> void
     def merge_with(other)
       return unless other.is_a?(Attr)
 
@@ -438,7 +441,8 @@ module RBI
   class AttrReader
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(AttrReader) && super
     end
@@ -447,7 +451,8 @@ module RBI
   class AttrWriter
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(AttrWriter) && super
     end
@@ -456,7 +461,8 @@ module RBI
   class AttrAccessor
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(AttrAccessor) && super
     end
@@ -465,7 +471,8 @@ module RBI
   class Method
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       return false unless other.is_a?(Method)
       return false unless name == other.name
@@ -474,7 +481,8 @@ module RBI
       sigs.empty? || other.sigs.empty? || sigs == other.sigs
     end
 
-    sig { override.params(other: Node).void }
+    # @override
+    #: (Node other) -> void
     def merge_with(other)
       return unless other.is_a?(Method)
 
@@ -488,7 +496,8 @@ module RBI
   class Mixin
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(Mixin) && names == other.names
     end
@@ -497,7 +506,8 @@ module RBI
   class Include
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(Include) && super
     end
@@ -506,7 +516,8 @@ module RBI
   class Extend
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(Extend) && super
     end
@@ -515,7 +526,8 @@ module RBI
   class MixesInClassMethods
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(MixesInClassMethods) && super
     end
@@ -524,7 +536,8 @@ module RBI
   class Helper
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(Helper) && name == other.name
     end
@@ -533,7 +546,8 @@ module RBI
   class Send
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(Send) && method == other.method && args == other.args
     end
@@ -542,7 +556,8 @@ module RBI
   class TStructField
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(TStructField) && name == other.name && type == other.type && default == other.default
     end
@@ -551,7 +566,8 @@ module RBI
   class TStructConst
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(TStructConst) && super
     end
@@ -560,7 +576,8 @@ module RBI
   class TStructProp
     extend T::Sig
 
-    sig { override.params(other: Node).returns(T::Boolean) }
+    # @override
+    #: (Node other) -> bool
     def compatible_with?(other)
       other.is_a?(TStructProp) && super
     end
@@ -583,13 +600,13 @@ module RBI
   class ConflictTree < Tree
     extend T::Sig
 
-    sig { returns(Tree) }
+    #: Tree
     attr_reader :left, :right
 
-    sig { returns(String) }
+    #: String
     attr_reader :left_name, :right_name
 
-    sig { params(left_name: String, right_name: String).void }
+    #: (?left_name: String, ?right_name: String) -> void
     def initialize(left_name: "left", right_name: "right")
       super()
       @left_name = left_name
@@ -616,20 +633,13 @@ module RBI
   class ScopeConflict < Tree
     extend T::Sig
 
-    sig { returns(Scope) }
+    #: Scope
     attr_reader :left, :right
 
-    sig { returns(String) }
+    #: String
     attr_reader :left_name, :right_name
 
-    sig do
-      params(
-        left: Scope,
-        right: Scope,
-        left_name: String,
-        right_name: String,
-      ).void
-    end
+    #: (left: Scope, right: Scope, ?left_name: String, ?right_name: String) -> void
     def initialize(left:, right:, left_name: "left", right_name: "right")
       super()
       @left = left
