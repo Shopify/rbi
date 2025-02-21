@@ -133,7 +133,7 @@ module RBI
       IDX
     end
 
-    sig { params(index: Index).returns(String) }
+    #: (Index index) -> String
     def index_string(index)
       io = StringIO.new
       index.keys.sort.each do |key|

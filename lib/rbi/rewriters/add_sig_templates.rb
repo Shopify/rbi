@@ -6,13 +6,14 @@ module RBI
     class AddSigTemplates < Visitor
       extend T::Sig
 
-      sig { params(with_todo_comment: T::Boolean).void }
+      #: (?with_todo_comment: bool) -> void
       def initialize(with_todo_comment: true)
         super()
         @with_todo_comment = with_todo_comment
       end
 
-      sig { override.params(node: T.nilable(Node)).void }
+      # @override
+      #: (Node? node) -> void
       def visit(node)
         case node
         when Tree
@@ -26,7 +27,7 @@ module RBI
 
       private
 
-      sig { params(attr: Attr).void }
+      #: (Attr attr) -> void
       def add_attr_sig(attr)
         return unless attr.sigs.empty?
         return if attr.names.size > 1
@@ -41,7 +42,7 @@ module RBI
         add_todo_comment(attr)
       end
 
-      sig { params(method: Method).void }
+      #: (Method method) -> void
       def add_method_sig(method)
         return unless method.sigs.empty?
 
@@ -52,7 +53,7 @@ module RBI
         add_todo_comment(method)
       end
 
-      sig { params(node: NodeWithComments).void }
+      #: (NodeWithComments node) -> void
       def add_todo_comment(node)
         node.comments << Comment.new("TODO: fill in signature with appropriate type information") if @with_todo_comment
       end
@@ -62,7 +63,7 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { params(with_todo_comment: T::Boolean).void }
+    #: (?with_todo_comment: bool) -> void
     def add_sig_templates!(with_todo_comment: true)
       visitor = Rewriters::AddSigTemplates.new(with_todo_comment: with_todo_comment)
       visitor.visit(self)

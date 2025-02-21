@@ -5,19 +5,10 @@ module RBI
   class Formatter
     extend T::Sig
 
-    sig { returns(T.nilable(Integer)) }
+    #: Integer?
     attr_accessor :max_line_length
 
-    sig do
-      params(
-        add_sig_templates: T::Boolean,
-        group_nodes: T::Boolean,
-        max_line_length: T.nilable(Integer),
-        nest_singleton_methods: T::Boolean,
-        nest_non_public_members: T::Boolean,
-        sort_nodes: T::Boolean,
-      ).void
-    end
+    #: (?add_sig_templates: bool, ?group_nodes: bool, ?max_line_length: Integer?, ?nest_singleton_methods: bool, ?nest_non_public_members: bool, ?sort_nodes: bool) -> void
     def initialize(
       add_sig_templates: false,
       group_nodes: false,
@@ -34,18 +25,18 @@ module RBI
       @sort_nodes = sort_nodes
     end
 
-    sig { params(file: RBI::File).returns(String) }
+    #: (RBI::File file) -> String
     def print_file(file)
       format_file(file)
       file.string(max_line_length: @max_line_length)
     end
 
-    sig { params(file: RBI::File).void }
+    #: (RBI::File file) -> void
     def format_file(file)
       format_tree(file.root)
     end
 
-    sig { params(tree: RBI::Tree).void }
+    #: (RBI::Tree tree) -> void
     def format_tree(tree)
       tree.add_sig_templates! if @add_sig_templates
       tree.nest_singleton_methods! if @nest_singleton_methods

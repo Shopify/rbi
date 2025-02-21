@@ -22,14 +22,15 @@ module RBI
     class NestTopLevelMembers < Visitor
       extend T::Sig
 
-      sig { void }
+      #: -> void
       def initialize
         super
 
         @top_level_object_class = T.let(nil, T.nilable(Class))
       end
 
-      sig { override.params(node: T.nilable(Node)).void }
+      # @override
+      #: (Node? node) -> void
       def visit(node)
         return unless node
 
@@ -59,7 +60,7 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { void }
+    #: -> void
     def nest_top_level_members!
       visitor = Rewriters::NestTopLevelMembers.new
       visitor.visit(self)

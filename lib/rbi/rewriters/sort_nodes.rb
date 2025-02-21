@@ -6,7 +6,8 @@ module RBI
     class SortNodes < Visitor
       extend T::Sig
 
-      sig { override.params(node: T.nilable(Node)).void }
+      # @override
+      #: (Node? node) -> void
       def visit(node)
         sort_node_names!(node) if node
 
@@ -41,7 +42,7 @@ module RBI
 
       private
 
-      sig { params(node: Node).returns(Integer) }
+      #: (Node node) -> Integer
       def node_rank(node)
         case node
         when Group                then group_rank(node.kind)
@@ -69,7 +70,7 @@ module RBI
         end
       end
 
-      sig { params(kind: Group::Kind).returns(Integer) }
+      #: (Group::Kind kind) -> Integer
       def group_rank(kind)
         case kind
         when Group::Kind::Mixins              then 0
@@ -90,7 +91,7 @@ module RBI
         end
       end
 
-      sig { params(node: Node).returns(T.nilable(String)) }
+      #: (Node node) -> String?
       def node_name(node)
         case node
         when Module, Class, Struct, Const, Method, Helper, RequiresAncestor
@@ -102,7 +103,7 @@ module RBI
         end
       end
 
-      sig { params(node: Node).void }
+      #: (Node node) -> void
       def sort_node_names!(node)
         case node
         when Attr
@@ -115,7 +116,7 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { void }
+    #: -> void
     def sort_nodes!
       visitor = Rewriters::SortNodes.new
       visitor.visit(self)

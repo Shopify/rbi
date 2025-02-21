@@ -30,7 +30,8 @@ module RBI
     class FlattenSingletonMethods < Visitor
       extend T::Sig
 
-      sig { override.params(node: T.nilable(Node)).void }
+      # @override
+      #: (Node? node) -> void
       def visit(node)
         return unless node
 
@@ -56,7 +57,7 @@ module RBI
   class Tree
     extend T::Sig
 
-    sig { void }
+    #: -> void
     def flatten_singleton_methods!
       visitor = Rewriters::FlattenSingletonMethods.new
       visitor.visit(self)
