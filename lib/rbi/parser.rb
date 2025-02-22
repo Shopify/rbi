@@ -257,28 +257,6 @@ module RBI
       end
 
       # @override
-      #: (Prism::DefNode node) -> void
-      def visit_def_node(node)
-        @last_node = node
-
-        # We need to collect the comments with `current_sigs_comments` _before_ visiting the parameters to make sure
-        # the method comments are properly associated with the sigs and not the parameters.
-        sigs = current_sigs
-        comments = detach_comments_from_sigs(sigs) + node_comments(node)
-        params = parse_params(node.parameters)
-
-        current_scope << Method.new(
-          node.name.to_s,
-          params: params,
-          sigs: sigs,
-          loc: node_loc(node),
-          comments: comments,
-          is_singleton: !!node.receiver,
-        )
-        @last_node = nil
-      end
-
-      # @override
       #: (Prism::ModuleNode node) -> void
       def visit_module_node(node)
         @last_node = node
