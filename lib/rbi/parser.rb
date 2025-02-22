@@ -899,15 +899,6 @@ module RBI
         visit(node.receiver)
         visit(node.block)
       end
-
-      # @override
-      #: (Prism::AssocNode node) -> void
-      def visit_assoc_node(node)
-        @current.params << SigParam.new(
-          node_string!(node.key).delete_suffix(":"),
-          node_string!(node.value),
-        )
-      end
     end
   end
 end
