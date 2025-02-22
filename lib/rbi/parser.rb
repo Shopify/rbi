@@ -208,14 +208,6 @@ module RBI
       end
 
       # @override
-      #: (Prism::ConstantWriteNode node) -> void
-      def visit_constant_write_node(node)
-        @last_node = node
-        visit_constant_assign(node)
-        @last_node = nil
-      end
-
-      # @override
       #: (Prism::ConstantPathWriteNode node) -> void
       def visit_constant_path_write_node(node)
         @last_node = node
