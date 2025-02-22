@@ -309,24 +309,6 @@ module RBI
         @last_node = nil
       end
 
-      # @override
-      #: (Prism::SingletonClassNode node) -> void
-      def visit_singleton_class_node(node)
-        @last_node = node
-        scope = SingletonClass.new(
-          loc: node_loc(node),
-          comments: node_comments(node),
-        )
-
-        current_scope << scope
-        @scopes_stack << scope
-        visit(node.body)
-        scope.nodes.concat(current_sigs)
-        collect_dangling_comments(node)
-        @scopes_stack.pop
-        @last_node = nil
-      end
-
       #: (Prism::CallNode node) -> void
       def visit_call_node(node)
         @last_node = node
