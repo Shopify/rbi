@@ -172,42 +172,6 @@ module RBI
       end
 
       # @override
-      #: (Prism::ClassNode node) -> void
-      def visit_class_node(node)
-        @last_node = node
-        superclass_name = node_string(node.superclass)
-        scope = case superclass_name
-        when /^(::)?T::Struct$/
-          TStruct.new(
-            node_string!(node.constant_path),
-            loc: node_loc(node),
-            comments: node_comments(node),
-          )
-        when /^(::)?T::Enum$/
-          TEnum.new(
-            node_string!(node.constant_path),
-            loc: node_loc(node),
-            comments: node_comments(node),
-          )
-        else
-          Class.new(
-            node_string!(node.constant_path),
-            superclass_name: superclass_name,
-            loc: node_loc(node),
-            comments: node_comments(node),
-          )
-        end
-
-        current_scope << scope
-        @scopes_stack << scope
-        visit(node.body)
-        scope.nodes.concat(current_sigs)
-        collect_dangling_comments(node)
-        @scopes_stack.pop
-        @last_node = nil
-      end
-
-      # @override
       #: (Prism::ConstantWriteNode node) -> void
       def visit_constant_write_node(node)
         @last_node = node
