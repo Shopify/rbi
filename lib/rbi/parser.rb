@@ -298,18 +298,6 @@ module RBI
       end
 
       # @override
-      #: (Prism::ProgramNode node) -> void
-      def visit_program_node(node)
-        @last_node = node
-        super
-        @tree.nodes.concat(current_sigs)
-        collect_orphan_comments
-        separate_header_comments
-        set_root_tree_loc
-        @last_node = nil
-      end
-
-      # @override
       #: (Prism::SingletonClassNode node) -> void
       def visit_singleton_class_node(node)
         @last_node = node
