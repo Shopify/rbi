@@ -279,25 +279,6 @@ module RBI
       end
 
       # @override
-      #: (Prism::ModuleNode node) -> void
-      def visit_module_node(node)
-        @last_node = node
-        scope = Module.new(
-          node_string!(node.constant_path),
-          loc: node_loc(node),
-          comments: node_comments(node),
-        )
-
-        current_scope << scope
-        @scopes_stack << scope
-        visit(node.body)
-        scope.nodes.concat(current_sigs)
-        collect_dangling_comments(node)
-        @scopes_stack.pop
-        @last_node = nil
-      end
-
-      # @override
       #: (Prism::ProgramNode node) -> void
       def visit_program_node(node)
         @last_node = node
