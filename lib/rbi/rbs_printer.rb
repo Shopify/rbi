@@ -14,14 +14,18 @@ module RBI
     #: Integer
     attr_reader :current_indent
 
-    #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool) -> void
-    def initialize(out: $stdout, indent: 0, print_locs: false)
+    #: bool
+    attr_accessor :positional_names
+
+    #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool, ?positional_names: bool) -> void
+    def initialize(out: $stdout, indent: 0, print_locs: false, positional_names: true)
       super()
       @out = out
       @current_indent = indent
       @print_locs = print_locs
       @in_visibility_group = T.let(false, T::Boolean)
       @previous_node = T.let(nil, T.nilable(Node))
+      @positional_names = T.let(positional_names, T::Boolean)
     end
 
     # Printing
@@ -456,19 +460,31 @@ module RBI
     # @override
     #: (ReqParam node) -> void
     def visit_req_param(node)
-      print("untyped #{node.name}")
+      if @positional_names
+        print("untyped #{node.name}")
+      else
+        print("untyped")
+      end
     end
 
     # @override
     #: (OptParam node) -> void
     def visit_opt_param(node)
-      print("?untyped #{node.name}")
+      if @positional_names
+        print("?untyped #{node.name}")
+      else
+        print("?untyped")
+      end
     end
 
     # @override
     #: (RestParam node) -> void
     def visit_rest_param(node)
-      print("*untyped #{node.name}")
+      if @positional_names
+        print("*untyped #{node.name}")
+      else
+        print("*untyped")
+      end
     end
 
     # @override
@@ -750,11 +766,23 @@ module RBI
 
       case orig_param
       when ReqParam
-        print("#{type} #{param.name}")
+        if @positional_names
+          print("#{type} #{param.name}")
+        else
+          print(type)
+        end
       when OptParam
-        print("?#{type} #{param.name}")
+        if @positional_names
+          print("?#{type} #{param.name}")
+        else
+          print("?#{type}")
+        end
       when RestParam
-        print("*#{type} #{param.name}")
+        if @positional_names
+          print("*#{type} #{param.name}")
+        else
+          print("*#{type}")
+        end
       when KwParam
         print("#{param.name}: #{type}")
       when KwOptParam
@@ -1095,16 +1123,16 @@ module RBI
   class Node
     extend T::Sig
 
-    #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool) -> void
-    def rbs_print(out: $stdout, indent: 0, print_locs: false)
-      p = RBSPrinter.new(out: out, indent: indent, print_locs: print_locs)
+    #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool, ?positional_names: bool) -> void
+    def rbs_print(out: $stdout, indent: 0, print_locs: false, positional_names: true)
+      p = RBSPrinter.new(out: out, indent: indent, print_locs: print_locs, positional_names: positional_names)
       p.visit(self)
     end
 
-    #: (?indent: Integer, ?print_locs: bool) -> String
-    def rbs_string(indent: 0, print_locs: false)
+    #: (?indent: Integer, ?print_locs: bool, ?positional_names: bool) -> String
+    def rbs_string(indent: 0, print_locs: false, positional_names: true)
       out = StringIO.new
-      rbs_print(out: out, indent: indent, print_locs: print_locs)
+      rbs_print(out: out, indent: indent, print_locs: print_locs, positional_names: positional_names)
       out.string
     end
   end

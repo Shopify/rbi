@@ -369,6 +369,17 @@ module RBI
       RBI
     end
 
+    def test_print_methods_with_signatures_without_positional_names
+      rbi = parse_rbi(<<~RBI)
+        sig { params(a: A, b: B, c: C, d: D, e: E, f: F, g: T.proc.void).returns(R) }
+        def foo(a, b = 10, *c, d:, e: 'bar', **f, &g); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string(positional_names: false))
+        def foo: (A, ?B, *C, d: D, ?e: E, **F f) { -> void } -> R
+      RBI
+    end
+
     def test_print_methods_with_signature_with_modifiers
       rbi = parse_rbi(<<~RBI)
         sig(:final) { abstract.override.overridable.returns(void).checked(:never) }
