@@ -423,13 +423,17 @@ module RBI
     #: Array[Sig]
     attr_accessor :sigs
 
-    #: (String name, ?params: Array[Param], ?is_singleton: bool, ?visibility: Visibility, ?sigs: Array[Sig], ?loc: Loc?, ?comments: Array[Comment]) ?{ (Method node) -> void } -> void
+    #: Array[RBSSig]
+    attr_accessor :rbs_sigs
+
+    #: (String name, ?params: Array[Param], ?is_singleton: bool, ?visibility: Visibility, ?sigs: Array[Sig], ?rbs_sigs: Array[RBSSig], ?loc: Loc?, ?comments: Array[Comment]) ?{ (Method node) -> void } -> void
     def initialize(
       name,
       params: [],
       is_singleton: false,
       visibility: Public.new,
       sigs: [],
+      rbs_sigs: [],
       loc: nil,
       comments: [],
       &block
@@ -440,6 +444,7 @@ module RBI
       @is_singleton = is_singleton
       @visibility = visibility
       @sigs = sigs
+      @rbs_sigs = rbs_sigs
       block&.call(self)
     end
 
@@ -979,6 +984,21 @@ module RBI
     #: (Object other) -> bool
     def ==(other)
       other.is_a?(SigParam) && name == other.name && type.to_s == other.type.to_s
+    end
+  end
+
+  # RBS signatures
+
+  class RBSSig < Node
+    extend T::Sig
+
+    #: String
+    attr_reader :string
+
+    #: (String string, ?loc: Loc?) -> void
+    def initialize(string, loc: nil)
+      super(loc: loc)
+      @string = string
     end
   end
 

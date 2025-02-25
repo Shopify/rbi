@@ -1166,5 +1166,18 @@ module RBI
         end
       RBI
     end
+
+    def test_print_rbs_sigs
+      comments = [Comment.new("comment")]
+      rbs_sig = RBSSig.new("-> String")
+      method = Method.new("foo", comments: comments, rbs_sigs: [rbs_sig])
+      method.comments << Comment.new("comment2")
+
+      assert_equal(<<~RBI, method.string)
+        # comment
+        #: -> String
+        def foo; end
+      RBI
+    end
   end
 end

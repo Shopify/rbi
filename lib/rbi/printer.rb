@@ -273,6 +273,7 @@ module RBI
       print_blank_line_before(node)
       visit_all(node.comments)
       visit_all(node.sigs)
+      visit_all(node.rbs_sigs)
 
       print_loc(node)
       printt
@@ -464,6 +465,15 @@ module RBI
       else
         print_sig_as_block(node)
       end
+    end
+
+    # @override
+    #: (RBSSig node) -> void
+    def visit_rbs_sig(node)
+      print_loc(node)
+      printt("#: ")
+      print(node.string)
+      printn
     end
 
     # @override

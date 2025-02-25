@@ -85,6 +85,8 @@ module RBI
         visit_arg(node)
       when Sig
         visit_sig(node)
+      when RBSSig
+        visit_rbs_sig(node)
       when SigParam
         visit_sig_param(node)
       when TStructConst
@@ -199,6 +201,9 @@ module RBI
 
     #: (Sig node) -> void
     def visit_sig(node); end
+
+    #: (RBSSig node) -> void
+    def visit_rbs_sig(node); end
 
     #: (SigParam node) -> void
     def visit_sig_param(node); end
