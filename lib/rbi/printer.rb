@@ -102,6 +102,23 @@ module RBI
     private
 
     # @override
+    #: (RBSComment node) -> void
+    def visit_rbs_comment(node)
+      lines = node.text.lines
+
+      if lines.empty?
+        printl("#:")
+      end
+
+      lines.each do |line|
+        text = line.rstrip
+        printt("#:")
+        print(" #{text}") unless text.empty?
+        printn
+      end
+    end
+
+    # @override
     #: (Comment node) -> void
     def visit_comment(node)
       lines = node.text.lines

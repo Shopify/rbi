@@ -1019,6 +1019,41 @@ module RBI
       RBI
     end
 
+    def test_parse_rbs_comments
+      rbi = <<~RBI
+        #: rbs1
+        class Foo
+          #: rbs2
+          def bar; end
+
+          #: rbs3
+          def self.baz; end
+
+          #: rbs4
+          attr_accessor :a
+
+          def qux; end #: rbs5
+        end
+      RBI
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
+        #: rbs1
+        class Foo
+          #: rbs2
+          def bar; end
+
+          #: rbs3
+          def self.baz; end
+
+          #: rbs4
+          attr_accessor :a
+
+          #: rbs5
+          def qux; end
+        end
+      RBI
+    end
+
     def test_parse_strings
       trees = Parser.parse_strings([
         "class Foo; end",

@@ -82,6 +82,18 @@ module RBI
     end
   end
 
+  # A comment representing a RBS type prefixed with `#:`
+  class RBSComment < Comment
+    extend T::Sig
+
+    #: (Object other) -> bool
+    def ==(other)
+      return false unless other.is_a?(RBSComment)
+
+      text == other.text
+    end
+  end
+
   class NodeWithComments < Node
     extend T::Sig
     extend T::Helpers

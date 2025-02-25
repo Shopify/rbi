@@ -17,6 +17,8 @@ module RBI
       case node
       when BlankLine
         visit_blank_line(node)
+      when RBSComment
+        visit_rbs_comment(node)
       when Comment
         visit_comment(node)
       when TEnum
@@ -118,6 +120,9 @@ module RBI
 
     #: (Comment node) -> void
     def visit_comment(node); end
+
+    #: (RBSComment node) -> void
+    def visit_rbs_comment(node); end
 
     #: (BlankLine node) -> void
     def visit_blank_line(node); end
