@@ -1166,5 +1166,15 @@ module RBI
         end
       RBI
     end
+
+    def test_print_rbs_sigs
+      rbs_sig = RBSSig.new(" -> String")
+      method = Method.new("foo", rbs_sigs: [rbs_sig])
+
+      assert_equal(<<~RBI, method.string)
+        #: -> String
+        def foo; end
+      RBI
+    end
   end
 end
