@@ -14,10 +14,8 @@ module RBI
     #: Integer
     attr_reader :current_indent
 
-    #: bool
-    attr_accessor :positional_names
-
     #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool, ?positional_names: bool) -> void
+    attr_writer :positional_names
     def initialize(out: $stdout, indent: 0, print_locs: false, positional_names: true)
       super()
       @out = out
