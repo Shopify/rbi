@@ -163,12 +163,12 @@ module RBI
       def initialize(source, comments:, file:)
         super(source, file: file)
 
-        @comments_by_line = T.let(comments.to_h { |c| [c.location.start_line, c] }, T::Hash[Integer, Prism::Comment])
-        @tree = T.let(Tree.new, Tree)
+        @comments_by_line = comments.to_h { |c| [c.location.start_line, c] } #: Hash[Integer, Prism::Comment]
+        @tree = Tree.new #: Tree
 
-        @scopes_stack = T.let([@tree], T::Array[Tree])
-        @last_node = T.let(nil, T.nilable(Prism::Node))
-        @last_sigs = T.let([], T::Array[RBI::Sig])
+        @scopes_stack = [@tree] #: Array[Tree]
+        @last_node = nil #: Prism::Node?
+        @last_sigs = [] #: Array[RBI::Sig]
       end
 
       # @override
@@ -835,7 +835,7 @@ module RBI
       def initialize(content, file:)
         super
 
-        @current = T.let(Sig.new, Sig)
+        @current = Sig.new #: Sig
       end
 
       # @override

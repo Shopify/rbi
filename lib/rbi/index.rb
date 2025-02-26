@@ -20,7 +20,7 @@ module RBI
     #: -> void
     def initialize
       super
-      @index = T.let({}, T::Hash[String, T::Array[Node]])
+      @index = {} #: Hash[String, Array[Node]]
     end
 
     #: -> Array[String]

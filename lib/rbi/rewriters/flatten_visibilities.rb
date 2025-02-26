@@ -31,7 +31,7 @@ module RBI
       def initialize
         super
 
-        @current_visibility = T.let([Public.new], T::Array[Visibility])
+        @current_visibility = [Public.new] #: Array[Visibility]
       end
 
       # @override
