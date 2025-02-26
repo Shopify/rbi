@@ -635,7 +635,7 @@ module RBI
           end
         end
 
-        is_nilable = T.let(false, T::Boolean)
+        is_nilable = false #: bool
 
         types = flattened.filter_map do |type|
           case type

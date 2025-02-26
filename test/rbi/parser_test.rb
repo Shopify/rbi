@@ -410,7 +410,7 @@ module RBI
       tree = parse_rbi(rbi)
 
       # Make sure the helpers are properly parsed as `Helper` classes
-      cls = T.cast(tree.nodes.first, Class)
+      cls = tree.nodes.first #: Class
       assert_equal(0, cls.nodes.grep(Send).size)
       assert_equal(3, cls.nodes.grep(Helper).size)
       assert_equal(1, cls.nodes.grep(MixesInClassMethods).size)

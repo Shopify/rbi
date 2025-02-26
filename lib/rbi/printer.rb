@@ -756,7 +756,7 @@ module RBI
 
     #: (Sig node) -> Array[String]
     def sig_modifiers(node)
-      modifiers = T.let([], T::Array[String])
+      modifiers = [] #: Array[String]
       modifiers << "abstract" if node.is_abstract
 
       if node.is_override

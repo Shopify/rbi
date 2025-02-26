@@ -46,7 +46,7 @@ module RBI
 
     #: -> Scope?
     def parent_scope
-      parent = T.let(parent_tree, T.nilable(Tree))
+      parent = parent_tree #: Tree?
       parent = parent.parent_tree until parent.is_a?(Scope) || parent.nil?
       parent
     end

@@ -253,7 +253,7 @@ module RBI
         # @override
         #: (Array[Node] nodes) -> void
         def visit_all(nodes)
-          last_conflict_tree = T.let(nil, T.nilable(ConflictTree))
+          last_conflict_tree = nil #: ConflictTree?
           nodes.dup.each do |node|
             if node.is_a?(ConflictTree)
               if last_conflict_tree
@@ -297,7 +297,7 @@ module RBI
 
     #: -> ConflictTree?
     def parent_conflict_tree
-      parent = T.let(parent_tree, T.nilable(Node))
+      parent = parent_tree #: Node?
       while parent
         return parent if parent.is_a?(ConflictTree)
 
