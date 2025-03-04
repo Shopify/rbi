@@ -16,6 +16,9 @@ require "rbi/model"
 require "rbi/type"
 require "rbi/visitor"
 require "rbi/index"
+
+require "rbi/rbs/type_translator"
+
 require "rbi/rewriters/add_sig_templates"
 require "rbi/rewriters/annotate"
 require "rbi/rewriters/deannotate"
