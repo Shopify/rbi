@@ -3,6 +3,7 @@
 
 require "sorbet-runtime"
 require "stringio"
+require "rbs"
 
 module RBI
   class Error < StandardError
