@@ -586,7 +586,13 @@ module RBI
 
       #: (Prism::Comment node) -> Comment
       def parse_comment(node)
-        Comment.new(node.location.slice.gsub(/^# ?/, "").rstrip, loc: Loc.from_prism(@file, node.location))
+        loc = Loc.from_prism(@file, node.location)
+        string = node.location.slice
+        if string.start_with?("#:")
+          RBSComment.new(string.gsub(/^#: ?/, "").rstrip, loc: loc)
+        else
+          Comment.new(string.gsub(/^# ?/, "").rstrip, loc: loc)
+        end
       end
 
       #: (Prism::Node? node) -> Array[Arg]
