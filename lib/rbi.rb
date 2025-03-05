@@ -3,6 +3,7 @@
 
 require "sorbet-runtime"
 require "stringio"
+require "rbs"
 
 module RBI
   class Error < StandardError
@@ -15,6 +16,10 @@ require "rbi/model"
 require "rbi/type"
 require "rbi/visitor"
 require "rbi/index"
+
+require "rbi/rbs/method_type_translator"
+require "rbi/rbs/type_translator"
+
 require "rbi/rewriters/add_sig_templates"
 require "rbi/rewriters/annotate"
 require "rbi/rewriters/deannotate"
@@ -29,6 +34,7 @@ require "rbi/rewriters/group_nodes"
 require "rbi/rewriters/remove_known_definitions"
 require "rbi/rewriters/attr_to_methods"
 require "rbi/rewriters/sort_nodes"
+require "rbi/rewriters/translate_rbs_sigs"
 require "rbi/parser"
 require "rbi/type_parser"
 require "rbi/type_visitor"

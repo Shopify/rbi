@@ -24,6 +24,7 @@ Gem::Specification.new do |spec|
   ]
 
   spec.add_dependency("prism", "~> 1.0")
+  spec.add_dependency("rbs", ">= 3.4.4")
   spec.add_dependency("sorbet-runtime", ">= 0.5.9204")
 
   spec.required_ruby_version = ">= 3.1"
