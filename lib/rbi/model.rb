@@ -1040,8 +1040,6 @@ module RBI
   # Sorbet's misc.
 
   class Helper < NodeWithComments
-    extend T::Helpers
-
     #: String
     attr_reader :name
 
