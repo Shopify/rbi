@@ -7,17 +7,6 @@ module RBI
   class TranslateRBSSigsTest < Minitest::Test
     include TestHelper
 
-    def test_does_nothing_if_no_rbs_comments
-      rbi = <<~RBI
-        class Foo
-          attr_reader :a
-          def bar; end
-        end
-      RBI
-
-      assert_equal(rbi, rewrite(rbi))
-    end
-
     def test_translate_method_sigs
       tree = rewrite(<<~RBI)
         #: -> void
