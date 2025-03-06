@@ -55,13 +55,9 @@ module RBI
     # RBI with no versions:
     # - RBI with no version annotations are automatically counted towards ALL versions
     class FilterVersions < Visitor
-      extend T::Sig
-
       VERSION_PREFIX = "version "
 
       class << self
-        extend T::Sig
-
         #: (Tree tree, Gem::Version version) -> void
         def filter(tree, version)
           v = new(version)
@@ -113,8 +109,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: (Gem::Version version) -> void
     def filter_versions!(version)
       visitor = Rewriters::FilterVersions.new(version)

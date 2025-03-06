@@ -3,8 +3,6 @@
 
 module RBI
   class Formatter
-    extend T::Sig
-
     #: Integer?
     attr_accessor :max_line_length
 

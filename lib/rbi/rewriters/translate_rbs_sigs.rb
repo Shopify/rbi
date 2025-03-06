@@ -5,8 +5,6 @@ module RBI
   module Rewriters
     # Translate all RBS signature comments to Sorbet RBI signatures
     class TranslateRBSSigs < Visitor
-      extend T::Sig
-
       class Error < RBI::Error; end
 
       # @override
@@ -80,8 +78,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: -> void
     def translate_rbs_sigs!
       visitor = Rewriters::TranslateRBSSigs.new

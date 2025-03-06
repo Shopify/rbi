@@ -37,8 +37,6 @@ module RBI
     # end
     # ~~~
     class Merge
-      extend T::Sig
-
       class Keep < ::T::Enum
         enums do
           NONE = new
@@ -48,8 +46,6 @@ module RBI
       end
 
       class << self
-        extend T::Sig
-
         #: (Tree left, Tree right, ?left_name: String, ?right_name: String, ?keep: Keep) -> MergeTree
         def merge_trees(left, right, left_name: "left", right_name: "right", keep: Keep::NONE)
           left.nest_singleton_methods!
@@ -84,8 +80,6 @@ module RBI
 
       # Used for logging / error displaying purpose
       class Conflict < T::Struct
-        extend T::Sig
-
         const :left, Node
         const :right, Node
         const :left_name, String
@@ -98,8 +92,6 @@ module RBI
       end
 
       class TreeMerger < Visitor
-        extend T::Sig
-
         #: Array[Conflict]
         attr_reader :conflicts
 
@@ -283,8 +275,6 @@ module RBI
   end
 
   class Node
-    extend T::Sig
-
     # Can `self` and `_other` be merged into a single definition?
     #: (Node _other) -> bool
     def compatible_with?(_other)
@@ -308,8 +298,6 @@ module RBI
   end
 
   class NodeWithComments
-    extend T::Sig
-
     # @override
     #: (Node other) -> void
     def merge_with(other)
@@ -322,8 +310,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: (Tree other, ?left_name: String, ?right_name: String, ?keep: Rewriters::Merge::Keep) -> MergeTree
     def merge(other, left_name: "left", right_name: "right", keep: Rewriters::Merge::Keep::NONE)
       Rewriters::Merge.merge_trees(self, other, left_name: left_name, right_name: right_name, keep: keep)
@@ -332,8 +318,6 @@ module RBI
 
   # A tree that _might_ contain conflicts
   class MergeTree < Tree
-    extend T::Sig
-
     #: Array[Rewriters::Merge::Conflict]
     attr_reader :conflicts
 
@@ -348,8 +332,6 @@ module RBI
   class DuplicateNodeError < Error; end
 
   class Scope
-    extend T::Sig
-
     # Duplicate `self` scope without its body
     #: -> self
     def dup_empty
@@ -375,8 +357,6 @@ module RBI
   end
 
   class Class
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -385,8 +365,6 @@ module RBI
   end
 
   class Module
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -395,8 +373,6 @@ module RBI
   end
 
   class Struct
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -405,8 +381,6 @@ module RBI
   end
 
   class Const
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -415,8 +389,6 @@ module RBI
   end
 
   class Attr
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -439,8 +411,6 @@ module RBI
   end
 
   class AttrReader
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -449,8 +419,6 @@ module RBI
   end
 
   class AttrWriter
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -459,8 +427,6 @@ module RBI
   end
 
   class AttrAccessor
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -469,8 +435,6 @@ module RBI
   end
 
   class Method
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -494,8 +458,6 @@ module RBI
   end
 
   class Mixin
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -504,8 +466,6 @@ module RBI
   end
 
   class Include
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -514,8 +474,6 @@ module RBI
   end
 
   class Extend
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -524,8 +482,6 @@ module RBI
   end
 
   class MixesInClassMethods
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -534,8 +490,6 @@ module RBI
   end
 
   class Helper
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -544,8 +498,6 @@ module RBI
   end
 
   class Send
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -554,8 +506,6 @@ module RBI
   end
 
   class TStructField
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -564,8 +514,6 @@ module RBI
   end
 
   class TStructConst
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -574,8 +522,6 @@ module RBI
   end
 
   class TStructProp
-    extend T::Sig
-
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
@@ -598,8 +544,6 @@ module RBI
   # end
   # ~~~
   class ConflictTree < Tree
-    extend T::Sig
-
     #: Tree
     attr_reader :left, :right
 
@@ -631,8 +575,6 @@ module RBI
   # end
   # ~~~
   class ScopeConflict < Tree
-    extend T::Sig
-
     #: Scope
     attr_reader :left, :right
 

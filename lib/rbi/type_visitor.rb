@@ -4,8 +4,6 @@
 module RBI
   class Type
     class Visitor
-      extend T::Sig
-
       class Error < RBI::Error; end
 
       #: (Type node) -> void

@@ -6,7 +6,6 @@ module RBI
 
   class Visitor
     extend T::Helpers
-    extend T::Sig
 
     abstract!
 

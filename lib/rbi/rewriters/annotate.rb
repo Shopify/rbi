@@ -4,8 +4,6 @@
 module RBI
   module Rewriters
     class Annotate < Visitor
-      extend T::Sig
-
       #: (String annotation, ?annotate_scopes: bool, ?annotate_properties: bool) -> void
       def initialize(annotation, annotate_scopes: false, annotate_properties: false)
         super()
@@ -44,8 +42,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: (String annotation, ?annotate_scopes: bool, ?annotate_properties: bool) -> void
     def annotate!(annotation, annotate_scopes: false, annotate_properties: false)
       visitor = Rewriters::Annotate.new(

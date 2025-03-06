@@ -4,8 +4,6 @@
 module RBI
   module Rewriters
     class SortNodes < Visitor
-      extend T::Sig
-
       # @override
       #: (Node? node) -> void
       def visit(node)
@@ -114,8 +112,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: -> void
     def sort_nodes!
       visitor = Rewriters::SortNodes.new

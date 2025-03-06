@@ -4,8 +4,6 @@
 module RBI
   module Rewriters
     class NestNonPublicMembers < Visitor
-      extend T::Sig
-
       # @override
       #: (Node? node) -> void
       def visit(node)
@@ -41,8 +39,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: -> void
     def nest_non_public_members!
       visitor = Rewriters::NestNonPublicMembers.new
@@ -51,8 +47,6 @@ module RBI
   end
 
   class VisibilityGroup < Tree
-    extend T::Sig
-
     #: Visibility
     attr_reader :visibility
 

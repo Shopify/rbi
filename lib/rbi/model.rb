@@ -5,12 +5,11 @@ module RBI
   class ReplaceNodeError < Error; end
 
   class Node
-    extend T::Sig
     extend T::Helpers
 
     abstract!
 
-    sig { returns(T.nilable(Tree)) }
+    #: Tree?
     attr_accessor :parent_tree
 
     #: Loc?
@@ -53,8 +52,6 @@ module RBI
   end
 
   class Comment < Node
-    extend T::Sig
-
     #: String
     attr_accessor :text
 
@@ -74,8 +71,6 @@ module RBI
 
   # An arbitrary blank line that can be added both in trees and comments
   class BlankLine < Comment
-    extend T::Sig
-
     #: (?loc: Loc?) -> void
     def initialize(loc: nil)
       super("", loc: loc)
@@ -84,8 +79,6 @@ module RBI
 
   # A comment representing a RBS type prefixed with `#:`
   class RBSComment < Comment
-    extend T::Sig
-
     #: (Object other) -> bool
     def ==(other)
       return false unless other.is_a?(RBSComment)
@@ -95,7 +88,6 @@ module RBI
   end
 
   class NodeWithComments < Node
-    extend T::Sig
     extend T::Helpers
 
     abstract!
@@ -118,8 +110,6 @@ module RBI
   end
 
   class Tree < NodeWithComments
-    extend T::Sig
-
     #: Array[Node]
     attr_reader :nodes
 
@@ -143,8 +133,6 @@ module RBI
   end
 
   class File
-    extend T::Sig
-
     #: Tree
     attr_accessor :root
 
@@ -176,6 +164,7 @@ module RBI
   # Scopes
 
   class Scope < Tree
+    extend T::Sig
     extend T::Helpers
 
     abstract!
@@ -191,8 +180,6 @@ module RBI
   end
 
   class Module < Scope
-    extend T::Sig
-
     #: String
     attr_accessor :name
 
@@ -213,8 +200,6 @@ module RBI
   end
 
   class Class < Scope
-    extend T::Sig
-
     #: String
     attr_accessor :name
 
@@ -239,8 +224,6 @@ module RBI
   end
 
   class SingletonClass < Scope
-    extend T::Sig
-
     #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (SingletonClass node) -> void } -> void
     def initialize(loc: nil, comments: [], &block)
       super {}
@@ -255,8 +238,6 @@ module RBI
   end
 
   class Struct < Scope
-    extend T::Sig
-
     #: String
     attr_accessor :name
 
@@ -287,8 +268,6 @@ module RBI
   # Consts
 
   class Const < NodeWithComments
-    extend T::Sig
-
     #: String
     attr_reader :name, :value
 
@@ -344,8 +323,6 @@ module RBI
   end
 
   class AttrAccessor < Attr
-    extend T::Sig
-
     #: (Symbol name, *Symbol names, ?visibility: Visibility, ?sigs: Array[Sig], ?loc: Loc?, ?comments: Array[Comment]) ?{ (AttrAccessor node) -> void } -> void
     def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
@@ -368,8 +345,6 @@ module RBI
   end
 
   class AttrReader < Attr
-    extend T::Sig
-
     #: (Symbol name, *Symbol names, ?visibility: Visibility, ?sigs: Array[Sig], ?loc: Loc?, ?comments: Array[Comment]) ?{ (AttrReader node) -> void } -> void
     def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
@@ -392,8 +367,6 @@ module RBI
   end
 
   class AttrWriter < Attr
-    extend T::Sig
-
     #: (Symbol name, *Symbol names, ?visibility: Visibility, ?sigs: Array[Sig], ?loc: Loc?, ?comments: Array[Comment]) ?{ (AttrWriter node) -> void } -> void
     def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
@@ -418,8 +391,6 @@ module RBI
   # Methods and args
 
   class Method < NodeWithComments
-    extend T::Sig
-
     #: String
     attr_accessor :name
 
@@ -539,7 +510,6 @@ module RBI
 
   class Param < NodeWithComments
     extend T::Helpers
-    extend T::Sig
 
     abstract!
 
@@ -560,8 +530,6 @@ module RBI
   end
 
   class ReqParam < Param
-    extend T::Sig
-
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (ReqParam node) -> void } -> void
     def initialize(name, loc: nil, comments: [], &block)
       super(name, loc: loc, comments: comments)
@@ -575,8 +543,6 @@ module RBI
   end
 
   class OptParam < Param
-    extend T::Sig
-
     #: String
     attr_reader :value
 
@@ -594,8 +560,6 @@ module RBI
   end
 
   class RestParam < Param
-    extend T::Sig
-
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (RestParam node) -> void } -> void
     def initialize(name, loc: nil, comments: [], &block)
       super(name, loc: loc, comments: comments)
@@ -615,8 +579,6 @@ module RBI
   end
 
   class KwParam < Param
-    extend T::Sig
-
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (KwParam node) -> void } -> void
     def initialize(name, loc: nil, comments: [], &block)
       super(name, loc: loc, comments: comments)
@@ -636,8 +598,6 @@ module RBI
   end
 
   class KwOptParam < Param
-    extend T::Sig
-
     #: String
     attr_reader :value
 
@@ -661,8 +621,6 @@ module RBI
   end
 
   class KwRestParam < Param
-    extend T::Sig
-
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (KwRestParam node) -> void } -> void
     def initialize(name, loc: nil, comments: [], &block)
       super(name, loc: loc, comments: comments)
@@ -682,8 +640,6 @@ module RBI
   end
 
   class BlockParam < Param
-    extend T::Sig
-
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (BlockParam node) -> void } -> void
     def initialize(name, loc: nil, comments: [], &block)
       super(name, loc: loc, comments: comments)
@@ -705,7 +661,6 @@ module RBI
   # Mixins
 
   class Mixin < NodeWithComments
-    extend T::Sig
     extend T::Helpers
 
     abstract!
@@ -721,8 +676,6 @@ module RBI
   end
 
   class Include < Mixin
-    extend T::Sig
-
     #: (String name, *String names, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Include node) -> void } -> void
     def initialize(name, *names, loc: nil, comments: [], &block)
       super(name, names, loc: loc, comments: comments)
@@ -737,8 +690,6 @@ module RBI
   end
 
   class Extend < Mixin
-    extend T::Sig
-
     #: (String name, *String names, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Extend node) -> void } -> void
     def initialize(name, *names, loc: nil, comments: [], &block)
       super(name, names, loc: loc, comments: comments)
@@ -755,7 +706,6 @@ module RBI
   # Visibility
 
   class Visibility < NodeWithComments
-    extend T::Sig
     extend T::Helpers
 
     abstract!
@@ -793,8 +743,6 @@ module RBI
   end
 
   class Public < Visibility
-    extend T::Sig
-
     #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (Public node) -> void } -> void
     def initialize(loc: nil, comments: [], &block)
       super(:public, loc: loc, comments: comments)
@@ -803,8 +751,6 @@ module RBI
   end
 
   class Protected < Visibility
-    extend T::Sig
-
     #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (Protected node) -> void } -> void
     def initialize(loc: nil, comments: [], &block)
       super(:protected, loc: loc, comments: comments)
@@ -813,8 +759,6 @@ module RBI
   end
 
   class Private < Visibility
-    extend T::Sig
-
     #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (Private node) -> void } -> void
     def initialize(loc: nil, comments: [], &block)
       super(:private, loc: loc, comments: comments)
@@ -825,8 +769,6 @@ module RBI
   # Sends
 
   class Send < NodeWithComments
-    extend T::Sig
-
     #: String
     attr_reader :method
 
@@ -858,8 +800,6 @@ module RBI
   end
 
   class Arg < Node
-    extend T::Sig
-
     #: String
     attr_reader :value
 
@@ -881,8 +821,6 @@ module RBI
   end
 
   class KwArg < Arg
-    extend T::Sig
-
     #: String
     attr_reader :keyword
 
@@ -906,8 +844,6 @@ module RBI
   # Sorbet's sigs
 
   class Sig < NodeWithComments
-    extend T::Sig
-
     #: Array[SigParam]
     attr_reader :params
 
@@ -972,8 +908,6 @@ module RBI
   end
 
   class SigParam < NodeWithComments
-    extend T::Sig
-
     #: String
     attr_reader :name
 
@@ -997,8 +931,6 @@ module RBI
   # Sorbet's T::Struct
 
   class TStruct < Class
-    extend T::Sig
-
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (TStruct klass) -> void } -> void
     def initialize(name, loc: nil, comments: [], &block)
       super(name, superclass_name: "::T::Struct", loc: loc, comments: comments) {}
@@ -1034,8 +966,6 @@ module RBI
   end
 
   class TStructConst < TStructField
-    extend T::Sig
-
     #: (String name, (Type | String) type, ?default: String?, ?loc: Loc?, ?comments: Array[Comment]) ?{ (TStructConst node) -> void } -> void
     def initialize(name, type, default: nil, loc: nil, comments: [], &block)
       super(name, type, default: default, loc: loc, comments: comments)
@@ -1057,8 +987,6 @@ module RBI
   end
 
   class TStructProp < TStructField
-    extend T::Sig
-
     #: (String name, (Type | String) type, ?default: String?, ?loc: Loc?, ?comments: Array[Comment]) ?{ (TStructProp node) -> void } -> void
     def initialize(name, type, default: nil, loc: nil, comments: [], &block)
       super(name, type, default: default, loc: loc, comments: comments)
@@ -1082,8 +1010,6 @@ module RBI
   # Sorbet's T::Enum
 
   class TEnum < Class
-    extend T::Sig
-
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (TEnum klass) -> void } -> void
     def initialize(name, loc: nil, comments: [], &block)
       super(name, superclass_name: "::T::Enum", loc: loc, comments: comments) {}
@@ -1092,8 +1018,6 @@ module RBI
   end
 
   class TEnumBlock < Scope
-    extend T::Sig
-
     #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (TEnumBlock node) -> void } -> void
     def initialize(loc: nil, comments: [], &block)
       super {}
@@ -1116,8 +1040,6 @@ module RBI
   # Sorbet's misc.
 
   class Helper < NodeWithComments
-    extend T::Helpers
-
     #: String
     attr_reader :name
 
@@ -1136,8 +1058,6 @@ module RBI
   end
 
   class TypeMember < NodeWithComments
-    extend T::Sig
-
     #: String
     attr_reader :name, :value
 
@@ -1164,8 +1084,6 @@ module RBI
   end
 
   class MixesInClassMethods < Mixin
-    extend T::Sig
-
     #: (String name, *String names, ?loc: Loc?, ?comments: Array[Comment]) ?{ (MixesInClassMethods node) -> void } -> void
     def initialize(name, *names, loc: nil, comments: [], &block)
       super(name, names, loc: loc, comments: comments)
@@ -1180,8 +1098,6 @@ module RBI
   end
 
   class RequiresAncestor < NodeWithComments
-    extend T::Sig
-
     #: String
     attr_reader :name
 

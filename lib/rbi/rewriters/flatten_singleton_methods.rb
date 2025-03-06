@@ -28,8 +28,6 @@ module RBI
     # end
     # ~~~
     class FlattenSingletonMethods < Visitor
-      extend T::Sig
-
       # @override
       #: (Node? node) -> void
       def visit(node)
@@ -55,8 +53,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: -> void
     def flatten_singleton_methods!
       visitor = Rewriters::FlattenSingletonMethods.new

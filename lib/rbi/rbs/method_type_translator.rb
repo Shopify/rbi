@@ -4,13 +4,9 @@
 module RBI
   module RBS
     class MethodTypeTranslator
-      extend T::Sig
-
       class Error < RBI::Error; end
 
       class << self
-        extend T::Sig
-
         #: (Method, ::RBS::MethodType) -> Sig
         def translate(method, type)
           translator = new(method)

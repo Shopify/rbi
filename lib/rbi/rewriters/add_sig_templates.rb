@@ -4,8 +4,6 @@
 module RBI
   module Rewriters
     class AddSigTemplates < Visitor
-      extend T::Sig
-
       #: (?with_todo_comment: bool) -> void
       def initialize(with_todo_comment: true)
         super()
@@ -61,8 +59,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: (?with_todo_comment: bool) -> void
     def add_sig_templates!(with_todo_comment: true)
       visitor = Rewriters::AddSigTemplates.new(with_todo_comment: with_todo_comment)
