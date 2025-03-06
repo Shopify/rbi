@@ -52,6 +52,7 @@ module RBI
         assert_equal(Type.simple("Foo"), translate("Foo"))
         assert_equal(Type.simple("Foo::Bar"), translate("Foo::Bar"))
         assert_equal(Type.simple("::Foo::Bar"), translate("::Foo::Bar"))
+        assert_equal(Type.generic("Foo", Type.simple("Bar"), Type.simple("::Baz")), translate("Foo[Bar, ::Baz]"))
       end
 
       def test_translate_class_singleton

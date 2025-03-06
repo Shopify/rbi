@@ -61,7 +61,7 @@ module RBI
           when ::RBS::Types::ClassSingleton
             Type.class_of(Type.simple(type.name.to_s))
           when ::RBS::Types::ClassInstance
-            Type.simple(type.name.to_s)
+            translate_class_instance(type)
           when ::RBS::Types::Function
             translate_function(type)
           when ::RBS::Types::Interface
@@ -94,6 +94,13 @@ module RBI
         end
 
         private
+
+        #: (::RBS::Types::ClassInstance) -> Type
+        def translate_class_instance(type)
+          return Type.simple(type.name.to_s) if type.args.empty?
+
+          T.unsafe(Type).generic(type.name.to_s, *type.args.map { |arg| translate(arg) })
+        end
 
         #: (::RBS::Types::Function) -> Type
         def translate_function(type)
