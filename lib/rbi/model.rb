@@ -10,7 +10,7 @@ module RBI
 
     abstract!
 
-    sig { returns(T.nilable(Tree)) }
+    #: Tree?
     attr_accessor :parent_tree
 
     #: Loc?
