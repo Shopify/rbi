@@ -13,7 +13,7 @@ module RBI
 
       private
 
-      sig { params(node: T.any(Method, Attr)).returns(Array[RBSComment]) }
+      sig { params(node: T.any(Method, Attr)).returns(T::Array[RBSComment]) }
       def extract_rbs_comments(node); end
 
       sig { params(node: Method, comment: RBSComment).returns(Sig) }

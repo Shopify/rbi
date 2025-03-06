@@ -40,10 +40,10 @@ module RBI
       sig { params(path: String).returns(Tree) }
       def parse_file(path); end
 
-      sig { params(paths: Array[String]).returns(Array[Tree]) }
+      sig { params(paths: T::Array[String]).returns(T::Array[Tree]) }
       def parse_files(paths); end
 
-      sig { params(strings: Array[String]).returns(Array[Tree]) }
+      sig { params(strings: T::Array[String]).returns(T::Array[Tree]) }
       def parse_strings(strings); end
     end
 
@@ -81,7 +81,7 @@ module RBI
       sig { returns(T.nilable(Prism::Node)) }
       attr_reader :last_node
 
-      sig { params(source: String, comments: Array[Prism::Comment], file: String).void }
+      sig { params(source: String, comments: T::Array[Prism::Comment], file: String).void }
       def initialize(source, comments:, file:); end
 
       # @override
@@ -131,22 +131,22 @@ module RBI
       sig { returns(Tree) }
       def current_scope; end
 
-      sig { returns(Array[Sig]) }
+      sig { returns(T::Array[Sig]) }
       def current_sigs; end
 
-      sig { params(sigs: Array[Sig]).returns(Array[Comment]) }
+      sig { params(sigs: T::Array[Sig]).returns(T::Array[Comment]) }
       def detach_comments_from_sigs(sigs); end
 
-      sig { params(node: Prism::Node).returns(Array[Comment]) }
+      sig { params(node: Prism::Node).returns(T::Array[Comment]) }
       def node_comments(node); end
 
       sig { params(node: Prism::Comment).returns(Comment) }
       def parse_comment(node); end
 
-      sig { params(node: T.nilable(Prism::Node)).returns(Array[Arg]) }
+      sig { params(node: T.nilable(Prism::Node)).returns(T::Array[Arg]) }
       def parse_send_args(node); end
 
-      sig { params(node: T.nilable(Prism::Node)).returns(Array[Param]) }
+      sig { params(node: T.nilable(Prism::Node)).returns(T::Array[Param]) }
       def parse_params(node); end
 
       sig { params(node: Prism::CallNode).returns(Sig) }

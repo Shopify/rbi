@@ -85,7 +85,7 @@ module RBI
     def printl(string); end
 
     # @override
-    sig { params(nodes: Array[Node]).void }
+    sig { params(nodes: T::Array[Node]).void }
     def visit_all(nodes); end
 
     # @override

@@ -77,7 +77,7 @@ module RBI
   end
 
   class NodeWithComments
-    sig { returns(Array[Gem::Requirement]) }
+    sig { returns(T::Array[Gem::Requirement]) }
     def version_requirements; end
   end
 

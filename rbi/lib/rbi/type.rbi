@@ -199,10 +199,10 @@ module RBI
       extend T::Helpers
       abstract!
 
-      sig { returns(Array[Type]) }
+      sig { returns(T::Array[Type]) }
       attr_reader :types
 
-      sig { params(types: Array[Type]).void }
+      sig { params(types: T::Array[Type]).void }
       def initialize(types); end
 
       # @override
@@ -232,7 +232,7 @@ module RBI
       sig { returns(String) }
       attr_reader :name
 
-      sig { returns(Array[Type]) }
+      sig { returns(T::Array[Type]) }
       attr_reader :params
 
       sig { params(name: String, params: Type).void }
@@ -266,10 +266,10 @@ module RBI
 
     # A tuple type like `[String, Integer]`.
     class Tuple < Type
-      sig { returns(Array[Type]) }
+      sig { returns(T::Array[Type]) }
       attr_reader :types
 
-      sig { params(types: Array[Type]).void }
+      sig { params(types: T::Array[Type]).void }
       def initialize(types); end
 
       # @override
@@ -283,10 +283,10 @@ module RBI
 
     # A shape type like `{name: String, age: Integer}`.
     class Shape < Type
-      sig { returns(Hash[T.any(String, Symbol), Type]) }
+      sig { returns(T::Hash[T.any(String, Symbol), Type]) }
       attr_reader :types
 
-      sig { params(types: Hash[T.any(String, Symbol), Type]).void }
+      sig { params(types: T::Hash[T.any(String, Symbol), Type]).void }
       def initialize(types); end
 
       # @override
@@ -300,7 +300,7 @@ module RBI
 
     # A proc type like `T.proc.void`.
     class Proc < Type
-      sig { returns(Hash[Symbol, Type]) }
+      sig { returns(T::Hash[Symbol, Type]) }
       attr_reader :proc_params
 
       sig { returns(Type) }
@@ -398,7 +398,7 @@ module RBI
       def any(type1, type2, *types); end
 
       # Builds a type that represents a generic type like `T::Array[String]` or `T::Hash[Symbol, Integer]`.
-      sig { params(name: String, params: T.any(Type, Array[Type])).returns(Generic) }
+      sig { params(name: String, params: T.any(Type, T::Array[Type])).returns(Generic) }
       def generic(name, *params); end
 
       # Builds a type that represents a type parameter like `T.type_parameter(:U)`.
@@ -406,11 +406,11 @@ module RBI
       def type_parameter(name); end
 
       # Builds a type that represents a tuple type like `[String, Integer]`.
-      sig { params(types: T.any(Type, Array[Type])).returns(Tuple) }
+      sig { params(types: T.any(Type, T::Array[Type])).returns(Tuple) }
       def tuple(*types); end
 
       # Builds a type that represents a shape type like `{name: String, age: Integer}`.
-      sig { params(types: Hash[T.any(String, Symbol), Type]).returns(Shape) }
+      sig { params(types: T::Hash[T.any(String, Symbol), Type]).returns(Shape) }
       def shape(types = {}); end
 
       # Builds a type that represents a proc type like `T.proc.void`.

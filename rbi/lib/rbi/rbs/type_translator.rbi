@@ -51,6 +51,9 @@ module RBI
 
         sig { params(type: ::RBS::Types::Function).returns(Type) }
         def translate_function(type); end
+
+        sig { params(type_name: String).returns(String) }
+        def translate_t_generic_type(type_name); end
       end
     end
   end
