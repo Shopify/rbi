@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
     "README.md",
     "Gemfile",
     "Rakefile",
+    "rbi/rbi.rbi",
   ]
 
   spec.add_dependency("prism", "~> 1.0")
