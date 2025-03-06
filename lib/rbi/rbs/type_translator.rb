@@ -4,11 +4,7 @@
 module RBI
   module RBS
     class TypeTranslator
-      extend T::Sig
-
       class << self
-        extend T::Sig
-
         NodeType = T.type_alias do
           T.any(
             ::RBS::Types::Alias,

@@ -3,12 +3,9 @@
 
 module RBI
   class Index < Visitor
-    extend T::Sig
     include T::Enumerable
 
     class << self
-      extend T::Sig
-
       #: (*Node node) -> Index
       def index(*node)
         index = Index.new
@@ -63,8 +60,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: -> Index
     def index
       Index.index(self)
@@ -87,7 +82,6 @@ module RBI
   end
 
   class Scope
-    extend T::Sig
     include Indexable
 
     # @override
@@ -98,7 +92,6 @@ module RBI
   end
 
   class Const
-    extend T::Sig
     include Indexable
 
     # @override
@@ -109,7 +102,6 @@ module RBI
   end
 
   class Attr
-    extend T::Sig
     include Indexable
 
     # @override
@@ -120,7 +112,6 @@ module RBI
   end
 
   class Method
-    extend T::Sig
     include Indexable
 
     # @override
@@ -131,7 +122,6 @@ module RBI
   end
 
   class Include
-    extend T::Sig
     include Indexable
 
     # @override
@@ -142,7 +132,6 @@ module RBI
   end
 
   class Extend
-    extend T::Sig
     include Indexable
 
     # @override
@@ -153,7 +142,6 @@ module RBI
   end
 
   class MixesInClassMethods
-    extend T::Sig
     include Indexable
 
     # @override
@@ -164,7 +152,6 @@ module RBI
   end
 
   class RequiresAncestor
-    extend T::Sig
     include Indexable
 
     # @override
@@ -175,7 +162,6 @@ module RBI
   end
 
   class Helper
-    extend T::Sig
     include Indexable
 
     # @override
@@ -186,7 +172,6 @@ module RBI
   end
 
   class TypeMember
-    extend T::Sig
     include Indexable
 
     # @override
@@ -197,7 +182,6 @@ module RBI
   end
 
   class Send
-    extend T::Sig
     include Indexable
 
     # @override
@@ -208,7 +192,6 @@ module RBI
   end
 
   class TStructConst
-    extend T::Sig
     include Indexable
 
     # @override
@@ -219,7 +202,6 @@ module RBI
   end
 
   class TStructProp
-    extend T::Sig
     include Indexable
 
     # @override
@@ -230,7 +212,6 @@ module RBI
   end
 
   class TEnumBlock
-    extend T::Sig
     include Indexable
 
     # @override

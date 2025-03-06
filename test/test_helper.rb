@@ -13,8 +13,6 @@ unless ENV["RM_INFO"]
 end
 
 module TestHelper
-  extend T::Sig
-
   private
 
   #: (String rbs_string) -> RBI::Tree

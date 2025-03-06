@@ -20,8 +20,6 @@ module RBI
     # end
     # ~~~
     class NestTopLevelMembers < Visitor
-      extend T::Sig
-
       #: -> void
       def initialize
         super
@@ -58,8 +56,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: -> void
     def nest_top_level_members!
       visitor = Rewriters::NestTopLevelMembers.new

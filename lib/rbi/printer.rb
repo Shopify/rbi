@@ -5,8 +5,6 @@ module RBI
   class PrinterError < Error; end
 
   class Printer < Visitor
-    extend T::Sig
-
     #: bool
     attr_accessor :print_locs, :in_visibility_group
 
@@ -792,8 +790,6 @@ module RBI
   end
 
   class File
-    extend T::Sig
-
     #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool, ?max_line_length: Integer?) -> void
     def print(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
       p = Printer.new(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
@@ -809,8 +805,6 @@ module RBI
   end
 
   class Node
-    extend T::Sig
-
     #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool, ?max_line_length: Integer?) -> void
     def print(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
       p = Printer.new(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)

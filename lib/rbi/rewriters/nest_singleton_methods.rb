@@ -4,8 +4,6 @@
 module RBI
   module Rewriters
     class NestSingletonMethods < Visitor
-      extend T::Sig
-
       # @override
       #: (Node? node) -> void
       def visit(node)
@@ -31,8 +29,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: -> void
     def nest_singleton_methods!
       visitor = Rewriters::NestSingletonMethods.new

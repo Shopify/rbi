@@ -25,8 +25,6 @@ module RBI
     # end
     # ~~~
     class FlattenVisibilities < Visitor
-      extend T::Sig
-
       #: -> void
       def initialize
         super
@@ -55,8 +53,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: -> void
     def flatten_visibilities!
       visitor = Rewriters::FlattenVisibilities.new

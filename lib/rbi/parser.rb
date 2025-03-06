@@ -5,8 +5,6 @@ require "prism"
 
 module RBI
   class ParseError < Error
-    extend T::Sig
-
     #: Loc
     attr_reader :location
 
@@ -18,8 +16,6 @@ module RBI
   end
 
   class UnexpectedParserError < Error
-    extend T::Sig
-
     #: Loc
     attr_reader :last_location
 
@@ -51,11 +47,7 @@ module RBI
   end
 
   class Parser
-    extend T::Sig
-
     class << self
-      extend T::Sig
-
       #: (String string) -> Tree
       def parse_string(string)
         Parser.new.parse_string(string)
@@ -120,8 +112,6 @@ module RBI
     end
 
     class Visitor < Prism::Visitor
-      extend T::Sig
-
       #: (String source, file: String) -> void
       def initialize(source, file:)
         super()
@@ -151,8 +141,6 @@ module RBI
     end
 
     class TreeBuilder < Visitor
-      extend T::Sig
-
       #: Tree
       attr_reader :tree
 
@@ -832,8 +820,6 @@ module RBI
     end
 
     class SigBuilder < Visitor
-      extend T::Sig
-
       #: Sig
       attr_reader :current
 

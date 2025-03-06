@@ -46,8 +46,6 @@ module RBI
     # OPERATIONS
     # ~~~
     class RemoveKnownDefinitions < Visitor
-      extend T::Sig
-
       #: Array[Operation]
       attr_reader :operations
 
@@ -59,8 +57,6 @@ module RBI
       end
 
       class << self
-        extend T::Sig
-
         #: (Tree tree, Index index) -> [Tree, Array[Operation]]
         def remove(tree, index)
           v = RemoveKnownDefinitions.new(index)
@@ -128,8 +124,6 @@ module RBI
       end
 
       class Operation < T::Struct
-        extend T::Sig
-
         const :deleted_node, Node
         const :duplicate_of, Node
 

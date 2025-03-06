@@ -4,8 +4,6 @@
 module RBI
   module Rewriters
     class Deannotate < Visitor
-      extend T::Sig
-
       #: (String annotation) -> void
       def initialize(annotation)
         super()
@@ -36,8 +34,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: (String annotation) -> void
     def deannotate!(annotation)
       visitor = Rewriters::Deannotate.new(annotation)

@@ -6,8 +6,6 @@ module RBI
 
   module Rewriters
     class GroupNodes < Visitor
-      extend T::Sig
-
       # @override
       #: (Node? node) -> void
       def visit(node)
@@ -76,8 +74,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: -> void
     def group_nodes!
       visitor = Rewriters::GroupNodes.new
@@ -86,8 +82,6 @@ module RBI
   end
 
   class Group < Tree
-    extend T::Sig
-
     #: Kind
     attr_reader :kind
 

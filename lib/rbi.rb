@@ -6,9 +6,7 @@ require "stringio"
 require "rbs"
 
 module RBI
-  class Error < StandardError
-    extend T::Sig
-  end
+  class Error < StandardError; end
 end
 
 require "rbi/loc"

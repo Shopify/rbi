@@ -3,11 +3,7 @@
 
 module RBI
   class Loc
-    extend T::Sig
-
     class << self
-      extend T::Sig
-
       #: (String file, Prism::Location prism_location) -> Loc
       def from_prism(file, prism_location)
         new(

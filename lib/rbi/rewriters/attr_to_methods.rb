@@ -20,8 +20,6 @@ module RBI
 
   module Rewriters
     class AttrToMethods < Visitor
-      extend T::Sig
-
       # @override
       #: (Node? node) -> void
       def visit(node)
@@ -48,8 +46,6 @@ module RBI
   end
 
   class Tree
-    extend T::Sig
-
     #: -> void
     def replace_attributes_with_methods!
       visitor = Rewriters::AttrToMethods.new

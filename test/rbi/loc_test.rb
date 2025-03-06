@@ -5,8 +5,6 @@ require "test_helper"
 
 module RBI
   class LocTest < Minitest::Test
-    extend T::Sig
-
     TEST_FILE_PATH = "tmp/rbi/tests/source.rbi"
 
     TEST_FILE_CONTENT = <<~RBI
