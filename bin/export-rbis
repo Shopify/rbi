@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+# typed: strict
+# frozen_string_literal: true
+
+require "rbi"
+
+check = ARGV.include?("--check")
+
+rb_files = Dir.glob("lib/**/*.rb")
+rbi_dir = if check
+  "tmp/rbi/"
+else
+  "rbi/"
+end
+
+FileUtils.rm_rf(rbi_dir)
+FileUtils.mkdir_p(rbi_dir)
+
+rb_files.each do |file|
+  rbi_file = File.join(rbi_dir, file.gsub(".rb", ".rbi"))
+  rbi_path = File.dirname(rbi_file)
+
+  FileUtils.mkdir_p(rbi_path)
+
+  tree = RBI::Parser.parse_file(file)
+  tree.translate_rbs_sigs!
+
+  File.write(rbi_file, tree.string)
+end
+
+if check
+  status = system("diff -r rbi/ tmp/rbi/")
+  FileUtils.rm_rf(rbi_dir)
+
+  if status
+    $stderr.puts "Success: rbi files are in sync"
+    exit(0)
+  else
+    $stderr.puts "\nError: rbi files are out of sync"
+    $stderr.puts "\nRun `bin/export-rbis` to update the rbi files"
+    exit(1)
+  end
+end
