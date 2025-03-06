@@ -99,7 +99,8 @@ module RBI
         def translate_class_instance(type)
           return Type.simple(type.name.to_s) if type.args.empty?
 
-          T.unsafe(Type).generic(type.name.to_s, *type.args.map { |arg| translate(arg) })
+          type_name = translate_t_generic_type(type.name.to_s)
+          T.unsafe(Type).generic(type_name, *type.args.map { |arg| translate(arg) })
         end
 
         #: (::RBS::Types::Function) -> Type
@@ -147,6 +148,32 @@ module RBI
 
           proc.returns(translate(type.return_type))
           proc
+        end
+
+        #: (String type_name) -> String
+        def translate_t_generic_type(type_name)
+          case type_name.delete_prefix("::")
+          when "Array"
+            "T::Array"
+          when "Class"
+            "T::Class"
+          when "Enumerable"
+            "T::Enumerable"
+          when "Enumerator"
+            "T::Enumerator"
+          when "Enumerator::Chain"
+            "T::Enumerator::Chain"
+          when "Enumerator::Lazy"
+            "T::Enumerator::Lazy"
+          when "Hash"
+            "T::Hash"
+          when "Set"
+            "T::Set"
+          when "Range"
+            "T::Range"
+          else
+            type_name
+          end
         end
       end
     end

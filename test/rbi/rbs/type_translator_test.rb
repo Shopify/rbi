@@ -55,6 +55,28 @@ module RBI
         assert_equal(Type.generic("Foo", Type.simple("Bar"), Type.simple("::Baz")), translate("Foo[Bar, ::Baz]"))
       end
 
+      def test_translate_class_instance_generics_as_t_types
+        assert_equal(Type.generic("T::Array", Type.simple("Foo")), translate("Array[Foo]"))
+        assert_equal(Type.generic("T::Class", Type.simple("Foo")), translate("Class[Foo]"))
+        assert_equal(Type.generic("T::Enumerable", Type.simple("Foo")), translate("Enumerable[Foo]"))
+        assert_equal(Type.generic("T::Enumerator", Type.simple("Foo")), translate("Enumerator[Foo]"))
+        assert_equal(Type.generic("T::Enumerator::Chain", Type.simple("Foo")), translate("Enumerator::Chain[Foo]"))
+        assert_equal(Type.generic("T::Enumerator::Lazy", Type.simple("Foo")), translate("Enumerator::Lazy[Foo]"))
+        assert_equal(Type.generic("T::Hash", Type.simple("Foo"), Type.simple("Bar")), translate("Hash[Foo, Bar]"))
+        assert_equal(Type.generic("T::Set", Type.simple("Foo")), translate("Set[Foo]"))
+        assert_equal(Type.generic("T::Range", Type.simple("Foo"), Type.simple("Bar")), translate("Range[Foo, Bar]"))
+
+        assert_equal(Type.generic("T::Array", Type.simple("Foo")), translate("::Array[Foo]"))
+        assert_equal(Type.generic("T::Class", Type.simple("Foo")), translate("::Class[Foo]"))
+        assert_equal(Type.generic("T::Enumerable", Type.simple("Foo")), translate("::Enumerable[Foo]"))
+        assert_equal(Type.generic("T::Enumerator", Type.simple("Foo")), translate("::Enumerator[Foo]"))
+        assert_equal(Type.generic("T::Enumerator::Chain", Type.simple("Foo")), translate("::Enumerator::Chain[Foo]"))
+        assert_equal(Type.generic("T::Enumerator::Lazy", Type.simple("Foo")), translate("::Enumerator::Lazy[Foo]"))
+        assert_equal(Type.generic("T::Hash", Type.simple("Foo"), Type.simple("Bar")), translate("::Hash[Foo, Bar]"))
+        assert_equal(Type.generic("T::Set", Type.simple("Foo")), translate("::Set[Foo]"))
+        assert_equal(Type.generic("T::Range", Type.simple("Foo"), Type.simple("Bar")), translate("::Range[Foo, Bar]"))
+      end
+
       def test_translate_class_singleton
         assert_equal(Type.class_of(Type.simple("Foo")), translate("singleton(Foo)"))
         assert_equal(Type.class_of(Type.simple("Foo::Bar")), translate("singleton(Foo::Bar)"))
