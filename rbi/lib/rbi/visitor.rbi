@@ -11,7 +11,7 @@ module RBI
     sig { params(node: T.nilable(Node)).void }
     def visit(node); end
 
-    sig { params(nodes: Array).void }
+    sig { params(nodes: Array[Node]).void }
     def visit_all(nodes); end
 
     sig { params(file: File).void }

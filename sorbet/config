@@ -2,4 +2,3 @@
 --ignore=vendor/
 --enable-experimental-requires-ancestor
 --enable-experimental-rbs-signatures
---ignore=rbi/

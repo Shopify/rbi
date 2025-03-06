@@ -75,13 +75,13 @@ module RBI
       sig { params(node: Prism::CallNode).returns(Type) }
       def parse_proc(node); end
 
-      sig { params(node: Prism::CallNode, count: Integer).returns(Array) }
+      sig { params(node: Prism::CallNode, count: Integer).returns(Array[Prism::Node]) }
       def check_arguments_exactly!(node, count); end
 
-      sig { params(node: Prism::CallNode, count: Integer).returns(Array) }
+      sig { params(node: Prism::CallNode, count: Integer).returns(Array[Prism::Node]) }
       def check_arguments_at_least!(node, count); end
 
-      sig { params(node: Prism::CallNode).returns(Array) }
+      sig { params(node: Prism::CallNode).returns(Array[Prism::Node]) }
       def call_chain(node); end
 
       sig { params(node: T.nilable(Prism::Node)).returns(T::Boolean) }

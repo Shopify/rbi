@@ -75,7 +75,7 @@ module RBI
       end
 
       class TreeMerger < Visitor
-        sig { returns(Array) }
+        sig { returns(Array[Conflict]) }
         attr_reader :conflicts
 
         sig { params(output: Tree, left_name: String, right_name: String, keep: Keep).void }
@@ -139,7 +139,7 @@ module RBI
         def visit(node); end
 
         # @override
-        sig { params(nodes: Array).void }
+        sig { params(nodes: Array[Node]).void }
         def visit_all(nodes); end
 
         private
@@ -176,10 +176,10 @@ module RBI
 
   # A tree that _might_ contain conflicts
   class MergeTree < Tree
-    sig { returns(Array) }
+    sig { returns(Array[Rewriters::Merge::Conflict]) }
     attr_reader :conflicts
 
-    sig { params(loc: T.nilable(Loc), comments: Array, conflicts: Array, block: T.nilable(T.proc.params(node: Tree).void)).void }
+    sig { params(loc: T.nilable(Loc), comments: Array[Comment], conflicts: Array[Rewriters::Merge::Conflict], block: T.nilable(T.proc.params(node: Tree).void)).void }
     def initialize(loc: nil, comments: [], conflicts: [], &block); end
   end
 

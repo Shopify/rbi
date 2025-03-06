@@ -46,6 +46,9 @@ module RBI
 
         private
 
+        sig { params(type: ::RBS::Types::ClassInstance).returns(Type) }
+        def translate_class_instance(type); end
+
         sig { params(type: ::RBS::Types::Function).returns(Type) }
         def translate_function(type); end
       end

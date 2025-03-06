@@ -45,7 +45,7 @@ module RBI
     def printl(string); end
 
     # @override
-    sig { params(nodes: Array).void }
+    sig { params(nodes: Array[Node]).void }
     def visit_all(nodes); end
 
     # @override
@@ -268,7 +268,7 @@ module RBI
     sig { params(node: Sig).void }
     def print_sig_as_block(node); end
 
-    sig { params(node: Sig).returns(Array) }
+    sig { params(node: Sig).returns(Array[String]) }
     def sig_modifiers(node); end
   end
 

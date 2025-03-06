@@ -20,7 +20,7 @@ module RBI
 
       private
 
-      sig { params(node: Node, with: Array).void }
+      sig { params(node: Node, with: Array[Node]).void }
       def replace(node, with:); end
     end
   end
@@ -40,29 +40,29 @@ module RBI
     sig { returns([T.nilable(Sig), T.nilable(T.any(Type, String))]) }
     def parse_sig; end
 
-    sig { params(name: String, sig: T.nilable(Sig), visibility: Visibility, loc: T.nilable(Loc), comments: Array).returns(Method) }
+    sig { params(name: String, sig: T.nilable(Sig), visibility: Visibility, loc: T.nilable(Loc), comments: Array[Comment]).returns(Method) }
     def create_getter_method(name, sig, visibility, loc, comments); end
 
     # rubocop:disable Metrics/ParameterLists
-    sig { params(name: String, sig: T.nilable(Sig), attribute_type: T.nilable(T.any(Type, String)), visibility: Visibility, loc: T.nilable(Loc), comments: Array).returns(Method) }
+    sig { params(name: String, sig: T.nilable(Sig), attribute_type: T.nilable(T.any(Type, String)), visibility: Visibility, loc: T.nilable(Loc), comments: Array[Comment]).returns(Method) }
     def create_setter_method(name, sig, attribute_type, visibility, loc, comments); end
   end
 
   class AttrAccessor
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[Method]) }
     def convert_to_methods; end
   end
 
   class AttrReader
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[Method]) }
     def convert_to_methods; end
   end
 
   class AttrWriter
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[Method]) }
     def convert_to_methods; end
   end
 end

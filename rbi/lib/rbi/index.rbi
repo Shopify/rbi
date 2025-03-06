@@ -13,10 +13,10 @@ module RBI
     sig { void }
     def initialize; end
 
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def keys; end
 
-    sig { params(id: String).returns(Array) }
+    sig { params(id: String).returns(Array[Node]) }
     def [](id); end
 
     sig { params(nodes: Node).void }
@@ -55,7 +55,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -63,7 +63,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -71,7 +71,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -79,7 +79,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -87,7 +87,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -95,7 +95,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -103,7 +103,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -111,7 +111,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -119,7 +119,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -127,7 +127,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -135,7 +135,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -143,7 +143,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -151,7 +151,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 
@@ -159,7 +159,7 @@ module RBI
     include Indexable
 
     # @override
-    sig { returns(Array) }
+    sig { returns(Array[String]) }
     def index_ids; end
   end
 end

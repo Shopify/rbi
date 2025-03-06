@@ -46,18 +46,18 @@ module RBI
     # OPERATIONS
     # ~~~
     class RemoveKnownDefinitions < Visitor
-      sig { returns(Array) }
+      sig { returns(Array[Operation]) }
       attr_reader :operations
 
       sig { params(index: Index).void }
       def initialize(index); end
 
       class << self
-        sig { params(tree: Tree, index: Index).returns([Tree, Array]) }
+        sig { params(tree: Tree, index: Index).returns([Tree, Array[Operation]]) }
         def remove(tree, index); end
       end
 
-      sig { params(nodes: Array).void }
+      sig { params(nodes: Array[Node]).void }
       def visit_all(nodes); end
 
       # @override
