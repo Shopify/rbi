@@ -15,4 +15,5 @@ group(:development, :test) do
   gem("rubocop-sorbet", require: false)
   gem("sorbet", ">= 0.5.9204", require: false)
   gem("tapioca", require: false)
+  gem("spoom", require: false, github: "Shopify/spoom", branch: "at-rbs-to-rbi")
 end

@@ -1,3 +1,15 @@
+GIT
+  remote: https://github.com/Shopify/spoom.git
+  revision: ac597c319adf1bd3a6fcb2d03b8f6286f1291ebf
+  branch: at-rbs-to-rbi
+  specs:
+    spoom (1.5.4)
+      erubi (>= 1.10.0)
+      prism (>= 0.28.0)
+      rbi (>= 0.2.3)
+      sorbet-static-and-runtime (>= 0.5.10187)
+      thor (>= 0.19.2)
+
 PATH
   remote: .
   specs:
@@ -63,12 +75,6 @@ GEM
     sorbet-static-and-runtime (0.5.11899)
       sorbet (= 0.5.11899)
       sorbet-runtime (= 0.5.11899)
-    spoom (1.5.4)
-      erubi (>= 1.10.0)
-      prism (>= 0.28.0)
-      rbi (>= 0.2.3)
-      sorbet-static-and-runtime (>= 0.5.10187)
-      thor (>= 0.19.2)
     tapioca (0.16.11)
       benchmark
       bundler (>= 2.2.25)
@@ -104,6 +110,7 @@ DEPENDENCIES
   rubocop-shopify
   rubocop-sorbet
   sorbet (>= 0.5.9204)
+  spoom!
   tapioca
 
 BUNDLED WITH
