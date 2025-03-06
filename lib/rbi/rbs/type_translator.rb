@@ -9,34 +9,6 @@ module RBI
       class << self
         extend T::Sig
 
-        NodeType = T.type_alias do
-          T.any(
-            ::RBS::Types::Alias,
-            ::RBS::Types::Bases::Any,
-            ::RBS::Types::Bases::Bool,
-            ::RBS::Types::Bases::Bottom,
-            ::RBS::Types::Bases::Class,
-            ::RBS::Types::Bases::Instance,
-            ::RBS::Types::Bases::Nil,
-            ::RBS::Types::Bases::Self,
-            ::RBS::Types::Bases::Top,
-            ::RBS::Types::Bases::Void,
-            ::RBS::Types::ClassSingleton,
-            ::RBS::Types::ClassInstance,
-            ::RBS::Types::Function,
-            ::RBS::Types::Interface,
-            ::RBS::Types::Intersection,
-            ::RBS::Types::Literal,
-            ::RBS::Types::Optional,
-            ::RBS::Types::Proc,
-            ::RBS::Types::Record,
-            ::RBS::Types::Tuple,
-            ::RBS::Types::Union,
-            ::RBS::Types::UntypedFunction,
-            ::RBS::Types::Variable,
-          )
-        end
-
         #: (NodeType) -> Type
         def translate(type)
           case type
