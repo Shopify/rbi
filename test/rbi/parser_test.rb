@@ -88,6 +88,53 @@ module RBI
       assert_equal(rbi, tree.string)
     end
 
+    def test_parse_constants_with_heredoc
+      rbi = <<~RBI
+        A = <<-EOF
+          foo
+          foo
+        EOF
+
+        B = <<~EOF.strip
+          bar
+        EOF
+
+        C = <<-'EOF'
+          baz
+        EOF
+
+        D = %Q(
+
+          qux
+
+        )
+
+        E = T.let(<<~EOF, String)
+          foo
+        EOF
+
+        F = "foo" \\
+           "bar"
+      RBI
+
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
+    end
+
+    def test_parse_constants_multiline_calls
+      rbi = <<~RBI
+        A = foo(
+          <<~EOF,
+            bar
+          EOF
+          baz,
+        )
+      RBI
+
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
+    end
+
     def test_parse_constants_with_newlines
       rbi = <<~RBI
         sig { returns(Foo::
