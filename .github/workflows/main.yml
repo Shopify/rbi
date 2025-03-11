@@ -26,3 +26,6 @@ jobs:
 
       - name: Run tests
         run: bin/test
+
+      - name: Check exported RBI files
+        run: bin/export-rbi --check-sync

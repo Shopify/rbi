@@ -14,5 +14,6 @@ group(:development, :test) do
   gem("rubocop-shopify", require: false)
   gem("rubocop-sorbet", require: false)
   gem("sorbet", ">= 0.5.9204", require: false)
+  gem("spoom", ">= 1.6.0", require: false)
   gem("tapioca", require: false)
 end

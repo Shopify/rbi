@@ -10,6 +10,7 @@ AllCops:
   NewCops: enable
   SuggestExtensions: false
   Exclude:
+  - 'rbi/**/*'
   - 'vendor/**/*'
 
 Layout/LeadingCommentSpace:
