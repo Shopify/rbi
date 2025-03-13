@@ -1054,6 +1054,21 @@ module RBI
       RBI
     end
 
+    def test_parse_rbs_comments_ignores_rdoc_directives
+      rbi = <<~RBI
+        #:nodoc:
+        #:yields: something
+        #:start_doc:
+        def foo; end
+      RBI
+
+      tree = parse_rbi(rbi)
+      foo = T.cast(tree.nodes.first, RBI::Method)
+      assert_equal(3, foo.comments.size)
+      assert_equal(3, foo.comments.grep(Comment).size)
+      assert_equal(0, foo.comments.grep(RBSComment).size)
+    end
+
     def test_parse_strings
       trees = Parser.parse_strings([
         "class Foo; end",

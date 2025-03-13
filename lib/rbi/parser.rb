@@ -576,7 +576,9 @@ module RBI
       def parse_comment(node)
         loc = Loc.from_prism(@file, node.location)
         string = node.location.slice
-        if string.start_with?("#:")
+        # We also ignore RDoc directives such as `:nodoc:`
+        # See https://ruby.github.io/rdoc/RDoc/MarkupReference.html#class-RDoc::MarkupReference-label-Directives
+        if string.start_with?("#:") && !(string =~ /^#:[a-z_]+:/)
           RBSComment.new(string.gsub(/^#: ?/, "").rstrip, loc: loc)
         else
           Comment.new(string.gsub(/^# ?/, "").rstrip, loc: loc)
