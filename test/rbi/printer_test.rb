@@ -1113,8 +1113,10 @@ module RBI
         class TE < T::Enum; end
         # file.rbi:1:3-2:4
         class TS < T::Struct; end
+
         # file.rbi:1:3-2:4
         C = 42
+
         # file.rbi:1:3-2:4
         extend E
         # file.rbi:1:3-2:4
