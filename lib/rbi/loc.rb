@@ -50,7 +50,7 @@ module RBI
 
       string = String.new
       ::File.foreach(file).with_index do |line, line_number|
-        string << line if line_number + 1 >= begin_line && line_number + 1 <= end_line
+        string << line if (line_number + 1).between?(begin_line, end_line)
       end
       string
     end
