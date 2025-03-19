@@ -3,3 +3,4 @@
 --ignore=rbi/rbi.rbi
 --enable-experimental-requires-ancestor
 --enable-experimental-rbs-signatures
+--enable-experimental-rbs-assertions
