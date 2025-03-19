@@ -24,7 +24,7 @@ module RBI
       def initialize
         super
 
-        @top_level_object_class = T.let(nil, T.nilable(Class))
+        @top_level_object_class = nil #: Class?
       end
 
       # @override

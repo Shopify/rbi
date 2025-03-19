@@ -53,7 +53,7 @@ module RBI
       def initialize(index)
         super()
         @index = index
-        @operations = T.let([], T::Array[Operation])
+        @operations = [] #: Array[Operation]
       end
 
       class << self

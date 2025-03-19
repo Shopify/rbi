@@ -23,9 +23,9 @@ module RBI
       @out = out
       @current_indent = indent
       @print_locs = print_locs
-      @in_visibility_group = T.let(false, T::Boolean)
-      @previous_node = T.let(nil, T.nilable(Node))
-      @positional_names = T.let(positional_names, T::Boolean)
+      @in_visibility_group = false #: bool
+      @previous_node = nil #: Node?
+      @positional_names = positional_names #: bool
     end
 
     # Printing
@@ -882,7 +882,7 @@ module RBI
 
     #: -> void
     def initialize
-      @string = T.let(String.new, String)
+      @string = String.new #: String
     end
 
     #: (Type node) -> void
