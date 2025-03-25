@@ -45,7 +45,7 @@ module RBI
 
     #: -> Scope?
     def parent_scope
-      parent = T.let(parent_tree, T.nilable(Tree))
+      parent = parent_tree #: Tree?
       parent = parent.parent_tree until parent.is_a?(Scope) || parent.nil?
       parent
     end
@@ -116,7 +116,7 @@ module RBI
     #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (Tree node) -> void } -> void
     def initialize(loc: nil, comments: [], &block)
       super(loc: loc, comments: comments)
-      @nodes = T.let([], T::Array[Node])
+      @nodes = [] #: Array[Node]
       block&.call(self)
     end
 
@@ -144,7 +144,7 @@ module RBI
 
     #: (?strictness: String?, ?comments: Array[Comment]) ?{ (File file) -> void } -> void
     def initialize(strictness: nil, comments: [], &block)
-      @root = T.let(Tree.new, Tree)
+      @root = Tree.new #: Tree
       @strictness = strictness
       @comments = comments
       block&.call(self)
@@ -313,7 +313,7 @@ module RBI
     #: (Symbol name, Array[Symbol] names, ?visibility: Visibility, ?sigs: Array[Sig], ?loc: Loc?, ?comments: Array[Comment]) -> void
     def initialize(name, names, visibility: Public.new, sigs: [], loc: nil, comments: [])
       super(loc: loc, comments: comments)
-      @names = T.let([name, *names], T::Array[Symbol])
+      @names = [name, *names] #: Array[Symbol]
       @visibility = visibility
       @sigs = sigs
     end
@@ -671,7 +671,7 @@ module RBI
     #: (String name, Array[String] names, ?loc: Loc?, ?comments: Array[Comment]) -> void
     def initialize(name, names, loc: nil, comments: [])
       super(loc: loc, comments: comments)
-      @names = T.let([name, *names], T::Array[String])
+      @names = [name, *names] #: Array[String]
     end
   end
 

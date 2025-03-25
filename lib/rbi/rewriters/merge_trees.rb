@@ -67,8 +67,8 @@ module RBI
         @left_name = left_name
         @right_name = right_name
         @keep = keep
-        @tree = T.let(MergeTree.new, MergeTree)
-        @scope_stack = T.let([@tree], T::Array[Tree])
+        @tree = MergeTree.new #: MergeTree
+        @scope_stack = [@tree] #: Array[Tree]
       end
 
       #: (Tree tree) -> void
@@ -99,12 +99,12 @@ module RBI
         def initialize(output, left_name: "left", right_name: "right", keep: Keep::NONE)
           super()
           @tree = output
-          @index = T.let(output.index, Index)
-          @scope_stack = T.let([@tree], T::Array[Tree])
+          @index = output.index #: Index
+          @scope_stack = [@tree] #: Array[Tree]
           @left_name = left_name
           @right_name = right_name
           @keep = keep
-          @conflicts = T.let([], T::Array[Conflict])
+          @conflicts = [] #: Array[Conflict]
         end
 
         # @override
@@ -245,7 +245,7 @@ module RBI
         # @override
         #: (Array[Node] nodes) -> void
         def visit_all(nodes)
-          last_conflict_tree = T.let(nil, T.nilable(ConflictTree))
+          last_conflict_tree = nil #: ConflictTree?
           nodes.dup.each do |node|
             if node.is_a?(ConflictTree)
               if last_conflict_tree
@@ -287,7 +287,7 @@ module RBI
 
     #: -> ConflictTree?
     def parent_conflict_tree
-      parent = T.let(parent_tree, T.nilable(Node))
+      parent = parent_tree #: Node?
       while parent
         return parent if parent.is_a?(ConflictTree)
 
@@ -555,9 +555,9 @@ module RBI
       super()
       @left_name = left_name
       @right_name = right_name
-      @left = T.let(Tree.new, Tree)
+      @left = Tree.new #: Tree
       @left.parent_tree = self
-      @right = T.let(Tree.new, Tree)
+      @right = Tree.new #: Tree
       @right.parent_tree = self
     end
   end

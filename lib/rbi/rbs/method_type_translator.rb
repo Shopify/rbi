@@ -21,7 +21,7 @@ module RBI
       #: (Method) -> void
       def initialize(method)
         @method = method
-        @result = T.let(Sig.new, Sig)
+        @result = Sig.new #: Sig
       end
 
       #: (::RBS::MethodType) -> void

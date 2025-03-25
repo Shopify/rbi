@@ -285,7 +285,7 @@ module RBI
       def initialize(name, *params)
         super()
         @name = name
-        @params = T.let(params, T::Array[Type])
+        @params = params #: Array[Type]
       end
 
       # @override
@@ -395,9 +395,9 @@ module RBI
       #: -> void
       def initialize
         super
-        @proc_params = T.let({}, T::Hash[Symbol, Type])
-        @proc_returns = T.let(Type.void, Type)
-        @proc_bind = T.let(nil, T.nilable(Type))
+        @proc_params = {} #: Hash[Symbol, Type]
+        @proc_returns = Type.void #: Type
+        @proc_bind = nil #: Type?
       end
 
       # @override
@@ -596,7 +596,7 @@ module RBI
           end
         end
 
-        is_nilable = T.let(false, T::Boolean)
+        is_nilable = false #: bool
 
         types = flattened.filter_map do |type|
           case type
@@ -693,7 +693,7 @@ module RBI
 
     #: -> void
     def initialize
-      @nilable = T.let(false, T::Boolean)
+      @nilable = false #: bool
     end
 
     # Returns a new type that is `nilable` if it is not already.

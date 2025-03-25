@@ -35,7 +35,7 @@ module RBI
         comments = node.comments.dup
         node.comments.clear
 
-        rbs_sigs = T.let([], T::Array[RBSComment])
+        rbs_sigs = [] #: Array[RBSComment]
 
         comments.each do |comment|
           case comment

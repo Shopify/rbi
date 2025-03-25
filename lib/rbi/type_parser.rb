@@ -261,8 +261,8 @@ module RBI
 
       #: (Prism::CallNode node) -> Array[Prism::Node]
       def call_chain(node)
-        call_chain = T.let([node], T::Array[Prism::Node])
-        receiver = T.let(node.receiver, T.nilable(Prism::Node))
+        call_chain = [node] #: Array[Prism::Node]
+        receiver = node.receiver #: Prism::Node?
         while receiver
           call_chain.prepend(receiver)
           break unless receiver.is_a?(Prism::CallNode)

@@ -23,8 +23,8 @@ module RBI
       @out = out
       @current_indent = indent
       @print_locs = print_locs
-      @in_visibility_group = T.let(false, T::Boolean)
-      @previous_node = T.let(nil, T.nilable(Node))
+      @in_visibility_group = false #: bool
+      @previous_node = nil #: Node?
       @max_line_length = max_line_length
     end
 
@@ -771,7 +771,7 @@ module RBI
 
     #: (Sig node) -> Array[String]
     def sig_modifiers(node)
-      modifiers = T.let([], T::Array[String])
+      modifiers = [] #: Array[String]
       modifiers << "abstract" if node.is_abstract
 
       if node.is_override
