@@ -543,6 +543,16 @@ module RBI
     end
 
     # @override
+    #: (TEnumValue node) -> void
+    def visit_tenum_value(node)
+      print_blank_line_before(node)
+      print_loc(node)
+      visit_all(node.comments)
+
+      printl("#{node.name} = new")
+    end
+
+    # @override
     #: (TypeMember node) -> void
     def visit_type_member(node)
       print_blank_line_before(node)

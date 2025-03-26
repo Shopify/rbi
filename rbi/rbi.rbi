@@ -1129,6 +1129,9 @@ class RBI::Parser::TreeBuilder < ::RBI::Parser::Visitor
   def set_root_tree_loc; end
 
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
+  def t_enum_value?(node); end
+
+  sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
   def type_variable_definition?(node); end
 end
 
@@ -1366,6 +1369,9 @@ class RBI::Printer < ::RBI::Visitor
 
   sig { override.params(node: ::RBI::TEnumBlock).void }
   def visit_tenum_block(node); end
+
+  sig { override.params(node: ::RBI::TEnumValue).void }
+  def visit_tenum_value(node); end
 
   sig { override.params(node: ::RBI::Tree).void }
   def visit_tree(node); end
@@ -1679,6 +1685,9 @@ class RBI::RBSPrinter < ::RBI::Visitor
 
   sig { override.params(node: ::RBI::TEnumBlock).void }
   def visit_tenum_block(node); end
+
+  sig { override.params(node: ::RBI::TEnumValue).void }
+  def visit_tenum_value(node); end
 
   sig { override.params(node: ::RBI::Tree).void }
   def visit_tree(node); end
@@ -2566,6 +2575,32 @@ class RBI::TEnumBlock < ::RBI::Scope
 
   sig { override.returns(T::Array[::String]) }
   def index_ids; end
+
+  sig { override.returns(::String) }
+  def to_s; end
+end
+
+class RBI::TEnumValue < ::RBI::NodeWithComments
+  include ::RBI::Indexable
+
+  sig do
+    params(
+      name: ::String,
+      loc: T.nilable(::RBI::Loc),
+      comments: T::Array[::RBI::Comment],
+      block: T.nilable(T.proc.params(node: ::RBI::TEnumValue).void)
+    ).void
+  end
+  def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
+
+  sig { returns(::String) }
+  def fully_qualified_name; end
+
+  sig { override.returns(T::Array[::String]) }
+  def index_ids; end
+
+  sig { returns(::String) }
+  def name; end
 
   sig { override.returns(::String) }
   def to_s; end
@@ -3611,6 +3646,9 @@ class RBI::Visitor
 
   sig { params(node: ::RBI::TEnumBlock).void }
   def visit_tenum_block(node); end
+
+  sig { params(node: ::RBI::TEnumValue).void }
+  def visit_tenum_value(node); end
 
   sig { params(node: ::RBI::Tree).void }
   def visit_tree(node); end

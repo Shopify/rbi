@@ -645,19 +645,22 @@ module RBI
     # @override
     #: (TEnumBlock node) -> void
     def visit_tenum_block(node)
-      node.nodes.each do |child|
-        child = if child.is_a?(Const) && child.value == "new"
-          parent = node.parent_scope
-          Const.new(
-            child.name,
-            "T.let(nil, #{parent.is_a?(TEnum) ? parent.name : "T.untyped"})",
-            comments: child.comments,
-          )
-        else
-          child
-        end
-        visit(child)
-        @previous_node = child
+      visit_all(node.nodes)
+    end
+
+    # @override
+    #: (TEnumValue node) -> void
+    def visit_tenum_value(node)
+      print_blank_line_before(node)
+      print_loc(node)
+      visit_all(node.comments)
+
+      t_enum = node.parent_scope&.parent_scope
+
+      if t_enum.is_a?(TEnum)
+        printl("#{node.name}: #{t_enum.name}")
+      else
+        printl("#{node.name}: untyped")
       end
     end
 

@@ -300,9 +300,9 @@ module RBI
     def test_print_t_enums
       rbi = TEnum.new("Foo")
       block = TEnumBlock.new
-      block << Const.new("A", "new")
-      block << Const.new("B", "new")
-      block << Const.new("C", "new")
+      block << TEnumValue.new("A")
+      block << TEnumValue.new("B")
+      block << TEnumValue.new("C")
       block << Method.new("bar")
       rbi << block
       rbi << Method.new("baz")
@@ -418,8 +418,8 @@ module RBI
 
       enum = TEnum.new("Foo", comments: comments_multi)
       enum << TEnumBlock.new(comments: comments_single) do |block|
-        block << Const.new("A", "new")
-        block << Const.new("B", "new")
+        block << TEnumValue.new("A")
+        block << TEnumValue.new("B")
       end
 
       rbi << enum

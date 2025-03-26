@@ -356,7 +356,7 @@ module RBI
         class Foo < T::Enum
           enums do
             A = new
-            B = new
+            B = new("bar")
             C = new
           end
 
@@ -368,9 +368,26 @@ module RBI
 
       # Make sure the enums are not parsed as normal classes
       enum = tree.nodes.first
-      assert_equal(TEnum, enum.class)
+      assert_instance_of(TEnum, enum)
 
-      assert_equal(rbi, tree.string)
+      block = T.cast(enum, TEnum).nodes.first
+      assert_instance_of(TEnumBlock, block)
+
+      values = T.cast(block, TEnumBlock).nodes
+      assert_equal(3, values.size)
+      assert_equal(3, values.grep(TEnumValue).size)
+
+      assert_equal(<<~RBI, tree.string)
+        class Foo < T::Enum
+          enums do
+            A = new
+            B = new
+            C = new
+          end
+
+          def baz; end
+        end
+      RBI
     end
 
     def test_parse_t_enums_with_one_value
@@ -388,7 +405,13 @@ module RBI
 
       # Make sure the enums are not parsed as normal classes
       enum = tree.nodes.first
-      assert_equal(TEnum, enum.class)
+      assert_instance_of(TEnum, enum)
+
+      block = T.cast(enum, TEnum).nodes.first
+      assert_instance_of(TEnumBlock, block)
+
+      value = T.cast(block, TEnumBlock).nodes.first
+      assert_instance_of(TEnumValue, value)
 
       assert_equal(rbi, tree.string)
     end
