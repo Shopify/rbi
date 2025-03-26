@@ -228,6 +228,17 @@ module RBI
 
         current_scope << if struct
           struct
+        elsif t_enum_value?(node)
+          TEnumValue.new(
+            case node
+            when Prism::ConstantWriteNode
+              node.name.to_s
+            when Prism::ConstantPathWriteNode
+              node_string!(node.target)
+            end,
+            loc: node_loc(node),
+            comments: node_comments(node),
+          )
         else
           adjusted_node_location = adjust_prism_location_for_heredoc(node)
 
@@ -839,6 +850,19 @@ module RBI
       #: (Prism::Node? node) -> bool
       def type_variable_definition?(node)
         node.is_a?(Prism::CallNode) && (node.message == "type_member" || node.message == "type_template")
+      end
+
+      #: (Prism::Node? node) -> bool
+      def t_enum_value?(node)
+        return false unless current_scope.is_a?(TEnumBlock)
+
+        return false unless node.is_a?(Prism::ConstantWriteNode)
+
+        value = node.value
+        return false unless value.is_a?(Prism::CallNode)
+        return false unless value.message == "new"
+
+        true
       end
     end
 

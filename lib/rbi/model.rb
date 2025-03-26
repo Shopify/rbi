@@ -1037,6 +1037,29 @@ module RBI
     end
   end
 
+  class TEnumValue < NodeWithComments
+    #: String
+    attr_reader :name
+
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (TEnumValue node) -> void } -> void
+    def initialize(name, loc: nil, comments: [], &block)
+      super(loc: loc, comments: comments)
+      @name = name
+      block&.call(self)
+    end
+
+    #: -> String
+    def fully_qualified_name
+      "#{parent_scope&.fully_qualified_name}::#{name}"
+    end
+
+    # @override
+    #: -> String
+    def to_s
+      fully_qualified_name
+    end
+  end
+
   # Sorbet's misc.
 
   class Helper < NodeWithComments

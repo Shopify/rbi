@@ -88,6 +88,8 @@ module RBI
         visit_sig(node)
       when SigParam
         visit_sig_param(node)
+      when TEnumValue
+        visit_tenum_value(node)
       when TStructConst
         visit_tstruct_const(node)
       when TStructProp
@@ -221,6 +223,9 @@ module RBI
 
     #: (TEnumBlock node) -> void
     def visit_tenum_block(node); end
+
+    #: (TEnumValue node) -> void
+    def visit_tenum_value(node); end
 
     #: (Helper node) -> void
     def visit_helper(node); end

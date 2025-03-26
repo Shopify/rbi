@@ -217,7 +217,17 @@ module RBI
     # @override
     #: -> Array[String]
     def index_ids
-      [to_s]
+      [fully_qualified_name]
+    end
+  end
+
+  class TEnumValue
+    include Indexable
+
+    # @override
+    #: -> Array[String]
+    def index_ids
+      [fully_qualified_name]
     end
   end
 end
