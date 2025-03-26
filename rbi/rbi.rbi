@@ -1005,6 +1005,25 @@ class RBI::Parser
   end
 end
 
+class RBI::Parser::HeredocLocationVisitor < ::Prism::Visitor
+  sig { params(source: ::Prism::Source, begin_offset: ::Integer, end_offset: ::Integer).void }
+  def initialize(source, begin_offset, end_offset); end
+
+  sig { returns(::Prism::Location) }
+  def location; end
+
+  sig { params(node: ::Prism::InterpolatedStringNode).void }
+  def visit_interpolated_string_node(node); end
+
+  sig { params(node: ::Prism::StringNode).void }
+  def visit_string_node(node); end
+
+  private
+
+  sig { params(node: T.any(::Prism::InterpolatedStringNode, ::Prism::StringNode)).void }
+  def handle_string_node(node); end
+end
+
 class RBI::Parser::SigBuilder < ::RBI::Parser::Visitor
   sig { params(content: ::String, file: ::String).void }
   def initialize(content, file:); end
@@ -1118,6 +1137,9 @@ class RBI::Parser::Visitor < ::Prism::Visitor
   def initialize(source, file:); end
 
   private
+
+  sig { params(node: ::Prism::Node).returns(::Prism::Location) }
+  def adjust_prism_location_for_heredoc(node); end
 
   sig { params(node: ::Prism::Node).returns(::RBI::Loc) }
   def node_loc(node); end

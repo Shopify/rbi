@@ -138,6 +138,17 @@ module RBI
       def node_string!(node)
         T.must(node_string(node))
       end
+
+      #: (Prism::Node node) -> Prism::Location
+      def adjust_prism_location_for_heredoc(node)
+        visitor = HeredocLocationVisitor.new(
+          node.location.send(:source),
+          node.location.start_offset,
+          node.location.end_offset,
+        )
+        visitor.visit(node)
+        visitor.location
+      end
     end
 
     class TreeBuilder < Visitor
@@ -217,30 +228,40 @@ module RBI
 
         current_scope << if struct
           struct
-        elsif type_variable_definition?(node.value)
-          TypeMember.new(
-            case node
-            when Prism::ConstantWriteNode
-              node.name.to_s
-            when Prism::ConstantPathWriteNode
-              node_string!(node.target)
-            end,
-            node_string!(node.value),
-            loc: node_loc(node),
-            comments: node_comments(node),
-          )
         else
-          Const.new(
-            case node
-            when Prism::ConstantWriteNode
-              node.name.to_s
-            when Prism::ConstantPathWriteNode
-              node_string!(node.target)
-            end,
-            node_string!(node.value),
-            loc: node_loc(node),
-            comments: node_comments(node),
+          adjusted_node_location = adjust_prism_location_for_heredoc(node)
+
+          adjusted_value_location = Prism::Location.new(
+            node.value.location.send(:source),
+            node.value.location.start_offset,
+            adjusted_node_location.end_offset - node.value.location.start_offset,
           )
+
+          if type_variable_definition?(node.value)
+            TypeMember.new(
+              case node
+              when Prism::ConstantWriteNode
+                node.name.to_s
+              when Prism::ConstantPathWriteNode
+                node_string!(node.target)
+              end,
+              adjusted_value_location.slice,
+              loc: Loc.from_prism(@file, adjusted_node_location),
+              comments: node_comments(node),
+            )
+          else
+            Const.new(
+              case node
+              when Prism::ConstantWriteNode
+                node.name.to_s
+              when Prism::ConstantPathWriteNode
+                node_string!(node.target)
+              end,
+              adjusted_value_location.slice,
+              loc: Loc.from_prism(@file, adjusted_node_location),
+              comments: node_comments(node),
+            )
+          end
         end
       end
 
@@ -901,6 +922,58 @@ module RBI
           node_string!(node.key).delete_suffix(":"),
           node_string!(node.value),
         )
+      end
+    end
+
+    class HeredocLocationVisitor < Prism::Visitor
+      #: (Prism::Source source, Integer begin_offset, Integer end_offset) -> void
+      def initialize(source, begin_offset, end_offset)
+        super()
+        @source = source
+        @begin_offset = begin_offset
+        @end_offset = end_offset
+        @offset_last_newline = false #: bool
+      end
+
+      #: (Prism::StringNode node) -> void
+      def visit_string_node(node)
+        return unless node.heredoc?
+
+        closing_loc = node.closing_loc
+        return unless closing_loc
+
+        handle_string_node(node)
+      end
+
+      #: (Prism::InterpolatedStringNode node) -> void
+      def visit_interpolated_string_node(node)
+        return super unless node.heredoc?
+
+        closing_loc = node.closing_loc
+        return super unless closing_loc
+
+        handle_string_node(node)
+      end
+
+      #: -> Prism::Location
+      def location
+        Prism::Location.new(
+          @source,
+          @begin_offset,
+          @end_offset - @begin_offset - (@offset_last_newline ? 1 : 0),
+        )
+      end
+
+      private
+
+      #: (Prism::StringNode | Prism::InterpolatedStringNode node) -> void
+      def handle_string_node(node)
+        closing_loc = T.must(node.closing_loc)
+
+        if closing_loc.end_offset > @end_offset
+          @end_offset = closing_loc.end_offset
+          @offset_last_newline = true if node.closing_loc&.slice&.end_with?("\n")
+        end
       end
     end
   end
