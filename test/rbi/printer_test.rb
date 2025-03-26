@@ -96,14 +96,14 @@ module RBI
 
     def test_print_constants
       rbi = Tree.new
-      rbi << Const.new("Foo", "42")
-      rbi << Const.new("Bar", "'foo'")
-      rbi << Const.new("Baz", "Bar")
+      rbi << Const.new("Foo")
+      rbi << Const.new("Bar", type: nil)
+      rbi << Const.new("Baz", type: "String")
 
       assert_equal(<<~RBI, rbi.string)
-        Foo = 42
-        Bar = 'foo'
-        Baz = Bar
+        Foo = T.let(T.unsafe(nil), T.untyped)
+        Bar = T.let(T.unsafe(nil), T.untyped)
+        Baz = T.let(T.unsafe(nil), String)
       RBI
     end
 
@@ -401,7 +401,7 @@ module RBI
       rbi << Module.new("Foo", comments: comments_single)
       rbi << Class.new("Bar", comments: comments_multi)
       rbi << SingletonClass.new(comments: comments_single)
-      rbi << Const.new("Foo", "42", comments: comments_multi)
+      rbi << Const.new("Foo", comments: comments_multi)
       rbi << Include.new("A", comments: comments_single)
       rbi << Extend.new("A", comments: comments_multi)
 
@@ -442,7 +442,7 @@ module RBI
 
         # This is a
         # Multiline Comment
-        Foo = 42
+        Foo = T.let(T.unsafe(nil), T.untyped)
 
         # This is a single line comment
         include A
@@ -1092,7 +1092,7 @@ module RBI
       rbi << SingletonClass.new(loc: loc)
       rbi << TEnum.new("TE", loc: loc)
       rbi << TStruct.new("TS", loc: loc)
-      rbi << Const.new("C", "42", loc: loc)
+      rbi << Const.new("C", loc: loc)
       rbi << Extend.new("E", loc: loc)
       rbi << Include.new("I", loc: loc)
       rbi << Send.new("foo", loc: loc)
@@ -1113,10 +1113,8 @@ module RBI
         class TE < T::Enum; end
         # file.rbi:1:3-2:4
         class TS < T::Struct; end
-
         # file.rbi:1:3-2:4
-        C = 42
-
+        C = T.let(T.unsafe(nil), T.untyped)
         # file.rbi:1:3-2:4
         extend E
         # file.rbi:1:3-2:4

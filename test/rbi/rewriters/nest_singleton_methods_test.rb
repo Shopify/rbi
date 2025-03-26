@@ -92,7 +92,7 @@ module RBI
     def test_nest_does_not_nest_other_nodes
       rbi = <<~RBI
         module Foo
-          C1 = 42
+          C1 = T.let(T.unsafe(nil), T.untyped)
           module M1; end
           h1!
         end

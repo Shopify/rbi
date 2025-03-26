@@ -229,10 +229,9 @@ module RBI
       print_loc(node)
       visit_all(node.comments)
 
-      type = parse_t_let(node.value)
+      type = node.type
       if type
-        type = parse_type(type)
-        printl("#{node.name}: #{type.rbs_string}")
+        printl("#{node.name}: #{parse_type(type).rbs_string}")
       else
         printl("#{node.name}: untyped")
       end
@@ -852,30 +851,6 @@ module RBI
       Type.parse_string(type)
     rescue Type::Error => e
       raise Error, "Failed to parse type `#{type}` (#{e.message})"
-    end
-
-    # Parse a string containing a `T.let(x, X)` and extract the type
-    #
-    # Returns `nil` is the string is not a `T.let`.
-    #: (String? code) -> String?
-    def parse_t_let(code)
-      return unless code
-
-      res = Prism.parse(code)
-      return unless res.success?
-
-      node = res.value
-      return unless node.is_a?(Prism::ProgramNode)
-
-      node = node.statements.body.first
-      return unless node.is_a?(Prism::CallNode)
-      return unless node.name == :let
-      return unless node.receiver&.slice =~ /^(::)?T$/
-
-      arguments = node.arguments&.arguments
-      return unless arguments
-
-      arguments.fetch(1, nil)&.slice
     end
   end
 

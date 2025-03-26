@@ -17,9 +17,9 @@ module RBI
       tree.sort_nodes!
 
       assert_equal(<<~RBI, tree.string)
-        A = 42
-        B = 42
-        C = 42
+        A = T.let(T.unsafe(nil), T.untyped)
+        B = T.let(T.unsafe(nil), T.untyped)
+        C = T.let(T.unsafe(nil), T.untyped)
       RBI
     end
 
@@ -84,12 +84,12 @@ module RBI
       tree.sort_nodes!
 
       assert_equal(<<~RBI, tree.string)
-        A = 42
+        A = T.let(T.unsafe(nil), T.untyped)
         module A; end
         class A; end
         class B; end
         module B; end
-        B = 42
+        B = T.let(T.unsafe(nil), T.untyped)
       RBI
     end
 
@@ -259,7 +259,7 @@ module RBI
         def m1; end
         def m2; end
         def self.m3; end
-        A = 42
+        A = T.let(T.unsafe(nil), T.untyped)
         module B; end
         class C < T::Enum; end
         class D < T::Struct; end
@@ -319,7 +319,7 @@ module RBI
         class << self; end
         class << self; end
         class << self; end
-        A = 42
+        A = T.let(T.unsafe(nil), T.untyped)
         module B; end
         class C < T::Enum; end
         class D < T::Struct; end
