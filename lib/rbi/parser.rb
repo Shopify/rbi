@@ -969,16 +969,6 @@ module RBI
         handle_string_node(node)
       end
 
-      #: (Prism::InterpolatedStringNode node) -> void
-      def visit_interpolated_string_node(node)
-        return super unless node.heredoc?
-
-        closing_loc = node.closing_loc
-        return super unless closing_loc
-
-        handle_string_node(node)
-      end
-
       #: -> Prism::Location
       def location
         Prism::Location.new(
