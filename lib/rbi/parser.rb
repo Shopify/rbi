@@ -959,16 +959,6 @@ module RBI
         @offset_last_newline = false #: bool
       end
 
-      #: (Prism::StringNode node) -> void
-      def visit_string_node(node)
-        return unless node.heredoc?
-
-        closing_loc = node.closing_loc
-        return unless closing_loc
-
-        handle_string_node(node)
-      end
-
       #: (Prism::InterpolatedStringNode node) -> void
       def visit_interpolated_string_node(node)
         return super unless node.heredoc?
