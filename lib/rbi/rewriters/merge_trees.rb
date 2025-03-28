@@ -384,7 +384,7 @@ module RBI
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
-      other.is_a?(Const) && name == other.name && value == other.value
+      other.is_a?(Const) && name == other.name && type == other.type
     end
   end
 

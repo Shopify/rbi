@@ -233,7 +233,12 @@ module RBI
       print_loc(node)
       visit_all(node.comments)
 
-      printl("#{node.name} = #{node.value}")
+      type = node.type
+      if type
+        printl("#{node.name} = T.let(T.unsafe(nil), #{type})")
+      else
+        printl("#{node.name} = T.let(T.unsafe(nil), T.untyped)")
+      end
     end
 
     # @override
@@ -685,13 +690,6 @@ module RBI
         node.comments.empty? && node.empty?
       when Attr
         node.comments.empty? && node.sigs.empty?
-      when Const
-        return false unless node.comments.empty?
-
-        loc = node.loc
-        return true unless loc
-
-        loc.begin_line == loc.end_line
       when Method
         node.comments.empty? && node.sigs.empty? && node.params.all? { |p| p.comments.empty? }
       when Sig

@@ -269,13 +269,16 @@ module RBI
 
   class Const < NodeWithComments
     #: String
-    attr_reader :name, :value
+    attr_reader :name
 
-    #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Const node) -> void } -> void
-    def initialize(name, value, loc: nil, comments: [], &block)
+    #: (String | Type)?
+    attr_reader :type
+
+    #: (String name, (String | Type)? type, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Const node) -> void } -> void
+    def initialize(name, type: nil, loc: nil, comments: [], &block)
       super(loc: loc, comments: comments)
       @name = name
-      @value = value
+      @type = type
       block&.call(self)
     end
 

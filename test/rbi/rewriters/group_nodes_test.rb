@@ -61,7 +61,7 @@ module RBI
 
         class << self; end
 
-        C = 42
+        C = T.let(T.unsafe(nil), T.untyped)
         module S1; end
         class S2; end
         S3 = ::Struct.new
@@ -109,8 +109,8 @@ module RBI
           module Scope2
             class << self; end
 
-            C1 = 42
-            C2 = 42
+            C1 = T.let(T.unsafe(nil), T.untyped)
+            C2 = T.let(T.unsafe(nil), T.untyped)
             module M1; end
 
             Scope3 = ::Struct.new do
@@ -170,7 +170,7 @@ module RBI
 
         class << self; end
 
-        C = 42
+        C = T.let(T.unsafe(nil), T.untyped)
         module S1; end
         class S2; end
         S3 = ::Struct.new
@@ -295,7 +295,7 @@ module RBI
 
           class << self; end
 
-          C = 42
+          C = T.let(T.unsafe(nil), T.untyped)
           module S1; end
           class S2; end
           S3 = ::Struct.new
@@ -368,8 +368,8 @@ module RBI
 
         class << self; end
 
-        C1 = 42
-        C2 = 42
+        C1 = T.let(T.unsafe(nil), T.untyped)
+        C2 = T.let(T.unsafe(nil), T.untyped)
         class S1; end
         module S2; end
         S3 = ::Struct.new
@@ -383,7 +383,7 @@ module RBI
     def test_group_sort_nested_groups
       rbi = Tree.new
       sscope = Class.new("Scope2.1")
-      sscope << Const.new("C2", "42")
+      sscope << Const.new("C2")
       sscope << Module.new("S2")
       sscope << Method.new("m2")
       sscope << Include.new("I2")
@@ -395,7 +395,7 @@ module RBI
       sscope << TStructConst.new("SC2", "Type")
       sscope << TEnum.new("TE2")
       sscope << TStruct.new("TS2")
-      sscope << Const.new("C1", "42")
+      sscope << Const.new("C1")
       sscope << Class.new("S1")
       sscope << Method.new("m1")
       sscope << Include.new("I1")
@@ -413,7 +413,7 @@ module RBI
 
       scope = Class.new("Scope2")
       scope << sscope
-      scope << Const.new("C2", "42")
+      scope << Const.new("C2")
       scope << Module.new("S2")
       scope << Method.new("m2")
       scope << Include.new("I2")
@@ -425,7 +425,7 @@ module RBI
       scope << TStructConst.new("SC2", "Type")
       scope << TEnum.new("TE2")
       scope << TStruct.new("TS2")
-      scope << Const.new("C1", "42")
+      scope << Const.new("C1")
       scope << Class.new("S1")
       scope << Method.new("m1")
       scope << Include.new("I1")
@@ -443,7 +443,7 @@ module RBI
       rbi << scope
 
       scope = Class.new("Scope1")
-      scope << Const.new("C2", "42")
+      scope << Const.new("C2")
       scope << Module.new("S2")
       scope << Method.new("m2")
       scope << Include.new("I2")
@@ -455,7 +455,7 @@ module RBI
       scope << TStructConst.new("SC2", "Type")
       scope << TEnum.new("TE2")
       scope << TStruct.new("TS2")
-      scope << Const.new("C1", "42")
+      scope << Const.new("C1")
       scope << Class.new("S1")
       scope << Method.new("m1")
       scope << Include.new("I1")
@@ -502,8 +502,8 @@ module RBI
           def m1; end
           def m2; end
 
-          C1 = 42
-          C2 = 42
+          C1 = T.let(T.unsafe(nil), T.untyped)
+          C2 = T.let(T.unsafe(nil), T.untyped)
           class S1; end
           module S2; end
           S3 = ::Struct.new
@@ -539,8 +539,8 @@ module RBI
           def m1; end
           def m2; end
 
-          C1 = 42
-          C2 = 42
+          C1 = T.let(T.unsafe(nil), T.untyped)
+          C2 = T.let(T.unsafe(nil), T.untyped)
           class S1; end
           module S2; end
           S3 = ::Struct.new
@@ -571,8 +571,8 @@ module RBI
             def m1; end
             def m2; end
 
-            C1 = 42
-            C2 = 42
+            C1 = T.let(T.unsafe(nil), T.untyped)
+            C2 = T.let(T.unsafe(nil), T.untyped)
             class S1; end
             module S2; end
             S3 = ::Struct.new

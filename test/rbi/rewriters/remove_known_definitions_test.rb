@@ -19,7 +19,7 @@ module RBI
           def bar; end
         end
 
-        BAZ = 42
+        BAZ = T.let(T.unsafe(nil), T.untyped)
       RBI
 
       original = parse_rbi(shim)
@@ -97,7 +97,7 @@ module RBI
       assert_equal(<<~RBI, cleaned.string)
         class Foo
           def bar; end
-          BAR = 42
+          BAR = T.let(T.unsafe(nil), T.untyped)
         end
       RBI
 

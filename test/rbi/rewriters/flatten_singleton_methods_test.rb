@@ -125,7 +125,7 @@ module RBI
     def test_flatten_does_not_flatten_other_nodes
       rbi = <<~RBI
         module Foo
-          C1 = 42
+          C1 = T.let(T.unsafe(nil), T.untyped)
           module M1; end
           abtract!
         end

@@ -127,11 +127,11 @@ module RBI
       res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class A
-          A = 42
-          B = 42
+          A = T.let(T.unsafe(nil), T.untyped)
+          B = T.let(T.unsafe(nil), T.untyped)
         end
 
-        B = 42
+        B = T.let(T.unsafe(nil), T.untyped)
       RBI
     end
 
@@ -517,28 +517,28 @@ module RBI
     def test_merge_create_conflict_tree_for_scopes
       tree1 = parse_rbi(<<~RBI)
         class Foo
-          A = 10
+          A = T.let(T.unsafe(nil), T.untyped)
         end
 
         module Bar
-          B = 10
+          B = T.let(T.unsafe(nil), T.untyped)
 
           class Baz < Foo
-            C = 10
+            C = T.let(T.unsafe(nil), T.untyped)
           end
         end
       RBI
 
       tree2 = parse_rbi(<<~RBI)
         module Foo
-          A = 10
+          A = T.let(T.unsafe(nil), T.untyped)
         end
 
         class Bar
-          B = 10
+          B = T.let(T.unsafe(nil), T.untyped)
 
           class Baz < Bar
-            C = 10
+            C = T.let(T.unsafe(nil), T.untyped)
           end
         end
       RBI
@@ -550,7 +550,7 @@ module RBI
         =======
         module Foo
         >>>>>>> right
-          A = 10
+          A = T.let(T.unsafe(nil), T.untyped)
         end
 
         <<<<<<< left
@@ -558,14 +558,14 @@ module RBI
         =======
         class Bar
         >>>>>>> right
-          B = 10
+          B = T.let(T.unsafe(nil), T.untyped)
 
           <<<<<<< left
           class Baz < Foo
           =======
           class Baz < Bar
           >>>>>>> right
-            C = 10
+            C = T.let(T.unsafe(nil), T.untyped)
           end
         end
       RBI
@@ -627,31 +627,44 @@ module RBI
       tree1 = parse_rbi(<<~RBI)
         class Foo
           A = 10
+          B = T.let(T.unsafe(nil), Integer)
+          C = T.let(T.unsafe(nil), String)
         end
-        B = 10
+        A = 10
+        B = T.let(T.unsafe(nil), Integer)
+        C = T.let(T.unsafe(nil), String)
       RBI
 
       tree2 = parse_rbi(<<~RBI)
         class Foo
           A = 42
+          B = T.let(T.unsafe(nil), String)
+          C = T.let(T.unsafe(nil), String)
         end
-        B = 42
+        A = 42
+        B = T.let(T.unsafe(nil), String)
+        C = T.let(T.unsafe(nil), String)
       RBI
 
       res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
         class Foo
+          A = T.let(T.unsafe(nil), T.untyped)
           <<<<<<< left
-          A = 10
+          B = T.let(T.unsafe(nil), Integer)
           =======
-          A = 42
+          B = T.let(T.unsafe(nil), String)
           >>>>>>> right
+          C = T.let(T.unsafe(nil), String)
         end
+
+        A = T.let(T.unsafe(nil), T.untyped)
         <<<<<<< left
-        B = 10
+        B = T.let(T.unsafe(nil), Integer)
         =======
-        B = 42
+        B = T.let(T.unsafe(nil), String)
         >>>>>>> right
+        C = T.let(T.unsafe(nil), String)
       RBI
     end
 
@@ -689,7 +702,7 @@ module RBI
         <<<<<<< left
         module C; end
         =======
-        C = 42
+        C = T.let(T.unsafe(nil), T.untyped)
         >>>>>>> right
         <<<<<<< left
         class D < A; end
@@ -985,16 +998,16 @@ module RBI
     def test_merge_return_the_list_of_conflicts
       tree1 = parse_rbi(<<~RBI)
         class Foo
-          A = 10
+          A = T.let(T.unsafe(nil), T.untyped)
         end
-        B = 10
+        B = T.let(T.unsafe(nil), T.untyped)
       RBI
 
       tree2 = parse_rbi(<<~RBI)
         module Foo
-          A = 42
+          A = T.let(T.unsafe(nil), String)
         end
-        B = 42
+        B = T.let(T.unsafe(nil), String)
       RBI
 
       merged_tree = tree1.merge(tree2)
@@ -1009,7 +1022,7 @@ module RBI
     def test_merge_keep_left
       tree1 = parse_rbi(<<~RBI)
         module Foo
-          A = 10
+          A = T.let(T.unsafe(nil), T.untyped)
 
           class Bar
             def m1; end
@@ -1024,7 +1037,7 @@ module RBI
 
       tree2 = parse_rbi(<<~RBI)
         module Foo
-          A = 42
+          A = T.let(T.unsafe(nil), String)
 
           module Bar
             def m1(x); end
@@ -1041,7 +1054,7 @@ module RBI
 
       assert_equal(<<~RBI, res.string)
         module Foo
-          A = 10
+          A = T.let(T.unsafe(nil), T.untyped)
 
           class Bar
             def m1; end
@@ -1059,7 +1072,7 @@ module RBI
     def test_merge_keep_right
       tree1 = parse_rbi(<<~RBI)
         module Foo
-          A = 10
+          A = T.let(T.unsafe(nil), T.untyped)
 
           class Bar
             def m1; end
@@ -1074,7 +1087,7 @@ module RBI
 
       tree2 = parse_rbi(<<~RBI)
         module Foo
-          A = 42
+          A = T.let(T.unsafe(nil), String)
 
           module Bar
             def m1(x); end
@@ -1091,7 +1104,7 @@ module RBI
 
       assert_equal(<<~RBI, res.string)
         module Foo
-          A = 42
+          A = T.let(T.unsafe(nil), String)
 
           module Bar
             def m1(x); end
