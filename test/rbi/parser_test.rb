@@ -75,17 +75,26 @@ module RBI
     def test_parse_constants
       rbi = <<~RBI
         Foo = 42
-        Bar = "foo"
+        Bar = T.let("foo", String)
         Baz = Bar
         A = nil
         B = :s
-        C = T.nilable(String)
-        D = A::B::C
+        C = T.let(nil, T.nilable(String))
+        D = T.let(A::B::C, T.class_of(A::B::C))
         A::B::C = Foo
       RBI
 
       tree = parse_rbi(rbi)
-      assert_equal(rbi, tree.string)
+      assert_equal(<<~RBI, tree.string)
+        Foo = T.let(T.unsafe(nil), T.untyped)
+        Bar = T.let(T.unsafe(nil), String)
+        Baz = T.let(T.unsafe(nil), T.untyped)
+        A = T.let(T.unsafe(nil), T.untyped)
+        B = T.let(T.unsafe(nil), T.untyped)
+        C = T.let(T.unsafe(nil), T.nilable(String))
+        D = T.let(T.unsafe(nil), T.class_of(A::B::C))
+        A::B::C = T.let(T.unsafe(nil), T.untyped)
+      RBI
     end
 
     def test_parse_constants_with_heredoc
@@ -130,7 +139,16 @@ module RBI
       RBI
 
       tree = parse_rbi(rbi)
-      assert_equal(rbi, tree.string)
+      assert_equal(<<~RBI, tree.string)
+        A = T.let(T.unsafe(nil), T.untyped)
+        B = T.let(T.unsafe(nil), T.untyped)
+        C = T.let(T.unsafe(nil), T.untyped)
+        D = T.let(T.unsafe(nil), T.untyped)
+        E = T.let(T.unsafe(nil), String)
+        F = T.let(T.unsafe(nil), T.untyped)
+        G = T.let(T.unsafe(nil), T.untyped)
+        H = T.let(T.unsafe(nil), T.untyped)
+      RBI
     end
 
     def test_parse_constants_multiline_calls
@@ -144,7 +162,9 @@ module RBI
       RBI
 
       tree = parse_rbi(rbi)
-      assert_equal(rbi, tree.string)
+      assert_equal(<<~RBI, tree.string)
+        A = T.let(T.unsafe(nil), T.untyped)
+      RBI
     end
 
     def test_parse_constants_with_newlines
@@ -628,13 +648,13 @@ module RBI
       tree = parse_rbi(rbi)
       assert_equal(<<~RBI, tree.string(print_locs: true))
         # -:1:0-1:8
-        Foo = 42
+        Foo = T.let(T.unsafe(nil), T.untyped)
         # -:2:0-2:11
-        Bar = "foo"
+        Bar = T.let(T.unsafe(nil), T.untyped)
         # -:3:0-3:11
-        ::Baz = Bar
+        ::Baz = T.let(T.unsafe(nil), T.untyped)
         # -:4:0-4:13
-        A::B::C = Foo
+        A::B::C = T.let(T.unsafe(nil), T.untyped)
       RBI
     end
 
@@ -971,7 +991,7 @@ module RBI
             attr_reader :a
 
             # E comment
-            E = _
+            E = T.let(T.unsafe(nil), T.untyped)
           end
         end
       RBI

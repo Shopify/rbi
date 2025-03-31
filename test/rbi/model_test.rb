@@ -42,7 +42,7 @@ module RBI
           tree << SingletonClass.new do |node|
             node.comments << Comment.new("comment")
           end
-          tree << Const.new("C", "42") do |node|
+          tree << Const.new("C") do |node|
             node.comments << Comment.new("comment")
           end
           tree << AttrAccessor.new(:a1) do |node|
@@ -135,7 +135,7 @@ module RBI
         class << self; end
 
         # comment
-        C = 42
+        C = T.let(T.unsafe(nil), T.untyped)
 
         # comment
         attr_accessor :a1
@@ -270,19 +270,19 @@ module RBI
       cls1 << singleton_class
       assert_equal("::Foo::Bar::<self>", singleton_class.fully_qualified_name)
 
-      const = Const.new("Foo", "42")
+      const = Const.new("Foo")
       assert_equal("::Foo", const.fully_qualified_name)
 
       mod << const
       assert_equal("::Foo::Foo", const.fully_qualified_name)
 
-      const2 = Const.new("Foo::Bar", "42")
+      const2 = Const.new("Foo::Bar")
       assert_equal("::Foo::Bar", const2.fully_qualified_name)
 
       mod << const2
       assert_equal("::Foo::Foo::Bar", const2.fully_qualified_name)
 
-      const3 = Const.new("::Foo::Bar", "42")
+      const3 = Const.new("::Foo::Bar")
       assert_equal("::Foo::Bar", const3.fully_qualified_name)
 
       mod << const3
@@ -344,13 +344,13 @@ module RBI
       cls << singleton_class
       assert_equal("::Foo::Bar::<self>", singleton_class.to_s)
 
-      const = Const.new("Foo", "42")
+      const = Const.new("Foo")
       assert_equal("::Foo", const.to_s)
 
       mod << const
       assert_equal("::Foo::Foo", const.to_s)
 
-      const2 = Const.new("Foo::Bar", "42")
+      const2 = Const.new("Foo::Bar")
       assert_equal("::Foo::Bar", const2.to_s)
 
       mod << const2
