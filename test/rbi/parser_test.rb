@@ -367,13 +367,13 @@ module RBI
       tree = parse_rbi(rbi)
 
       # Make sure the enums are not parsed as normal classes
-      enum = tree.nodes.first
+      enum = tree.nodes.first #: as TEnum
       assert_instance_of(TEnum, enum)
 
-      block = T.cast(enum, TEnum).nodes.first
+      block = enum.nodes.first #: as TEnumBlock
       assert_instance_of(TEnumBlock, block)
 
-      values = T.cast(block, TEnumBlock).nodes
+      values = block.nodes
       assert_equal(3, values.size)
       assert_equal(3, values.grep(TEnumValue).size)
 
@@ -404,13 +404,13 @@ module RBI
       tree = parse_rbi(rbi)
 
       # Make sure the enums are not parsed as normal classes
-      enum = tree.nodes.first
+      enum = tree.nodes.first #: as TEnum
       assert_instance_of(TEnum, enum)
 
-      block = T.cast(enum, TEnum).nodes.first
+      block = enum.nodes.first #: as TEnumBlock
       assert_instance_of(TEnumBlock, block)
 
-      value = T.cast(block, TEnumBlock).nodes.first
+      value = block.nodes.first
       assert_instance_of(TEnumValue, value)
 
       assert_equal(rbi, tree.string)

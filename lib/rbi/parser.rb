@@ -630,11 +630,13 @@ module RBI
 
               args << KwArg.new(
                 node_string!(assoc.key).delete_suffix(":"),
-                T.must(node_string(assoc.value)),
+                node_string(assoc.value), #: as !nil
               )
             end
           else
-            args << Arg.new(T.must(node_string(arg)))
+            args << Arg.new(
+              node_string(arg), #: as !nil
+            )
           end
         end
 

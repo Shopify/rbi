@@ -31,7 +31,9 @@ module RBI
             next res if res && res != 0 # we can sort the nodes by their name, let's stop here
 
             # Finally, if the two nodes have the same rank and the same name or at least one node is anonymous then,
-            T.must(original_order[a]) <=> T.must(original_order[b]) # we keep the original order
+            original_order_a = original_order[a] #: as !nil
+            original_order_b = original_order[b] #: as !nil
+            original_order_a <=> original_order_b # we keep the original order
           end
         end
 
