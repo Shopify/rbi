@@ -159,7 +159,7 @@ module RBI
 
         #: -> Tree
         def current_scope
-          T.must(@scope_stack.last)
+          @scope_stack.last #: as !nil
         end
 
         #: (Node node) -> Node?

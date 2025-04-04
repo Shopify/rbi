@@ -105,7 +105,9 @@ module RBI
     def annotations
       comments
         .select { |comment| comment.text.start_with?("@") }
-        .map { |comment| T.must(comment.text[1..]) }
+        .map do |comment|
+          comment.text[1..] #: as !nil
+        end
     end
   end
 

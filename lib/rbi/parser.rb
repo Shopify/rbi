@@ -136,7 +136,7 @@ module RBI
 
       #: (Prism::Node node) -> String
       def node_string!(node)
-        T.must(node_string(node))
+        node_string(node) #: as !nil
       end
 
       #: (Prism::Node node) -> Prism::Location
@@ -564,7 +564,7 @@ module RBI
 
       #: -> Tree
       def current_scope
-        T.must(@scopes_stack.last) # Should never be nil since we create a Tree as the root
+        @scopes_stack.last #: as !nil # Should never be nil since we create a Tree as the root
       end
 
       #: -> Array[Sig]
@@ -630,11 +630,13 @@ module RBI
 
               args << KwArg.new(
                 node_string!(assoc.key).delete_suffix(":"),
-                T.must(node_string(assoc.value)),
+                node_string(assoc.value), #: as !nil
               )
             end
           else
-            args << Arg.new(T.must(node_string(arg)))
+            args << Arg.new(
+              node_string(arg), #: as !nil
+            )
           end
         end
 
@@ -992,7 +994,7 @@ module RBI
 
       #: (Prism::StringNode | Prism::InterpolatedStringNode node) -> void
       def handle_string_node(node)
-        closing_loc = T.must(node.closing_loc)
+        closing_loc = node.closing_loc #: as !nil
 
         if closing_loc.end_offset > @end_offset
           @end_offset = closing_loc.end_offset

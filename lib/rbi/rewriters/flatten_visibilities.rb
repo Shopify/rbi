@@ -46,7 +46,7 @@ module RBI
           visit_all(node.nodes.dup)
           @current_visibility.pop
         when Attr, Method
-          node.visibility = T.must(@current_visibility.last)
+          node.visibility = @current_visibility.last #: as !nil
         end
       end
     end

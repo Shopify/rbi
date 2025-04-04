@@ -107,10 +107,10 @@ module RBI
         when Scope
           node.empty?
         when Attr
-          previous = T.cast(previous, Attr)
+          previous = previous #: as Attr
           node.names == previous.names && node.sigs == previous.sigs
         when Method
-          previous = T.cast(previous, Method)
+          previous = previous #: as Method
           node.params == previous.params && node.sigs == previous.sigs
         else
           true

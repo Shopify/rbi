@@ -41,7 +41,8 @@ module RBI
 
             child.detach
             child.is_singleton = true
-            T.must(node.parent_tree) << child
+            parent_tree = node.parent_tree #: as !nil
+            parent_tree << child
           end
 
           node.detach if node.nodes.empty?

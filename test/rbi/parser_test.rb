@@ -367,13 +367,13 @@ module RBI
       tree = parse_rbi(rbi)
 
       # Make sure the enums are not parsed as normal classes
-      enum = tree.nodes.first
+      enum = tree.nodes.first #: as TEnum
       assert_instance_of(TEnum, enum)
 
-      block = T.cast(enum, TEnum).nodes.first
+      block = enum.nodes.first #: as TEnumBlock
       assert_instance_of(TEnumBlock, block)
 
-      values = T.cast(block, TEnumBlock).nodes
+      values = block.nodes
       assert_equal(3, values.size)
       assert_equal(3, values.grep(TEnumValue).size)
 
@@ -404,13 +404,13 @@ module RBI
       tree = parse_rbi(rbi)
 
       # Make sure the enums are not parsed as normal classes
-      enum = tree.nodes.first
+      enum = tree.nodes.first #: as TEnum
       assert_instance_of(TEnum, enum)
 
-      block = T.cast(enum, TEnum).nodes.first
+      block = enum.nodes.first #: as TEnumBlock
       assert_instance_of(TEnumBlock, block)
 
-      value = T.cast(block, TEnumBlock).nodes.first
+      value = block.nodes.first
       assert_instance_of(TEnumValue, value)
 
       assert_equal(rbi, tree.string)
@@ -492,7 +492,7 @@ module RBI
       tree = parse_rbi(rbi)
 
       # Make sure the helpers are properly parsed as `Helper` classes
-      cls = T.cast(tree.nodes.first, Class)
+      cls = tree.nodes.first #: as Class
       assert_equal(0, cls.nodes.grep(Send).size)
       assert_equal(3, cls.nodes.grep(Helper).size)
       assert_equal(1, cls.nodes.grep(MixesInClassMethods).size)
@@ -519,7 +519,7 @@ module RBI
       tree = Parser.parse_string(rbi)
 
       # Make sure the type members and templates are not parsed as constants
-      cls = T.must(tree.nodes.grep(Class).first)
+      cls = tree.nodes.grep(Class).first #: as !nil
       assert_equal(0, cls.nodes.grep(Const).size)
       assert_equal(9, cls.nodes.grep(TypeMember).size)
 
@@ -1145,7 +1145,7 @@ module RBI
       RBI
 
       tree = parse_rbi(rbi)
-      foo = T.cast(tree.nodes.first, RBI::Method)
+      foo = tree.nodes.first #: as RBI::Method
       assert_equal(3, foo.comments.size)
       assert_equal(3, foo.comments.grep(Comment).size)
       assert_equal(0, foo.comments.grep(RBSComment).size)

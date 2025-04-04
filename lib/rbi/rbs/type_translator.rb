@@ -75,7 +75,7 @@ module RBI
           when ::RBS::Types::Optional
             Type.nilable(translate(type.type))
           when ::RBS::Types::Proc
-            proc = T.cast(translate(type.type), Type::Proc)
+            proc = translate(type.type) #: as Type::Proc
             proc.bind(translate(type.self_type)) if type.self_type
             proc
           when ::RBS::Types::Record
