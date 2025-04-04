@@ -18,7 +18,7 @@ module RBI
         raise Error, "Expected a type expression, got nothing" if node.statements.body.empty?
         raise Error, "Expected a single type expression, got `#{node.slice}`" if node.statements.body.size > 1
 
-        node = T.must(node.statements.body.first)
+        node = node.statements.body.first #: as !nil
         parse_node(node)
       end
 

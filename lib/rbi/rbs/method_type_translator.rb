@@ -44,7 +44,7 @@ module RBI
         raise Error, "No block param found" unless block_param
 
         block_name = block_param.name
-        block_type = T.cast(translate_type(type.type), RBI::Type::Proc)
+        block_type = translate_type(type.type) #: as RBI::Type::Proc
 
         bind = type.self_type
         block_type.bind(translate_type(bind)) if bind

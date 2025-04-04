@@ -67,7 +67,7 @@ module RBI
             raise Error, "AttrWriter must have exactly one name"
           end
 
-          name = T.must(node.names.first)
+          name = node.names.first #: as !nil
           sig.params << SigParam.new(name.to_s, RBS::TypeTranslator.translate(attr_type))
         end
 
