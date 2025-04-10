@@ -403,10 +403,11 @@ class RBI::Formatter
       max_line_length: T.nilable(::Integer),
       nest_singleton_methods: T::Boolean,
       nest_non_public_members: T::Boolean,
-      sort_nodes: T::Boolean
+      sort_nodes: T::Boolean,
+      replace_attributes_with_methods: T::Boolean
     ).void
   end
-  def initialize(add_sig_templates: T.unsafe(nil), group_nodes: T.unsafe(nil), max_line_length: T.unsafe(nil), nest_singleton_methods: T.unsafe(nil), nest_non_public_members: T.unsafe(nil), sort_nodes: T.unsafe(nil)); end
+  def initialize(add_sig_templates: T.unsafe(nil), group_nodes: T.unsafe(nil), max_line_length: T.unsafe(nil), nest_singleton_methods: T.unsafe(nil), nest_non_public_members: T.unsafe(nil), sort_nodes: T.unsafe(nil), replace_attributes_with_methods: T.unsafe(nil)); end
 
   sig { params(file: ::RBI::File).void }
   def format_file(file); end
