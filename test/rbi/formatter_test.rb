@@ -30,6 +30,27 @@ module RBI
       RBI
     end
 
+    def test_format_replace_attributes_with_methods
+      rbi = <<~RBI
+        module Foo
+          attr_reader :a
+        end
+      RBI
+
+      file = File.new
+      file.root = parse_rbi(rbi)
+
+      out = Formatter.new(replace_attributes_with_methods: false).print_file(file)
+      assert_equal(rbi, out)
+
+      out = Formatter.new(replace_attributes_with_methods: true).print_file(file)
+      assert_equal(<<~RBI, out)
+        module Foo
+          def a; end
+        end
+      RBI
+    end
+
     def test_format_group_nodes
       rbi = <<~RBI
         module Foo
