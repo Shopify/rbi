@@ -961,6 +961,7 @@ module RBI
         @offset_last_newline = false #: bool
       end
 
+      # @override
       #: (Prism::StringNode node) -> void
       def visit_string_node(node)
         return unless node.heredoc?
@@ -971,6 +972,7 @@ module RBI
         handle_string_node(node)
       end
 
+      # @override
       #: (Prism::InterpolatedStringNode node) -> void
       def visit_interpolated_string_node(node)
         return super unless node.heredoc?
