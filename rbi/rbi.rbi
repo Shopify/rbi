@@ -1013,10 +1013,10 @@ class RBI::Parser::HeredocLocationVisitor < ::Prism::Visitor
   sig { returns(::Prism::Location) }
   def location; end
 
-  sig { params(node: ::Prism::InterpolatedStringNode).void }
+  sig { override.params(node: ::Prism::InterpolatedStringNode).void }
   def visit_interpolated_string_node(node); end
 
-  sig { params(node: ::Prism::StringNode).void }
+  sig { override.params(node: ::Prism::StringNode).void }
   def visit_string_node(node); end
 
   private
