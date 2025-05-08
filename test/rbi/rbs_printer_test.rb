@@ -385,6 +385,9 @@ module RBI
 
         sig { override(allow_incompatible: true).returns(T.nilable(String)) }
         def bar; end
+
+        T::Sig::WithoutRuntime.sig { abstract.returns(String) }
+        def baz; end
       RBI
 
       # Modifiers are ignored in RBS, but we generate comments for them
@@ -398,6 +401,10 @@ module RBI
 
         # @override(allow_incompatible: true)
         def bar: -> String?
+
+        # @without_runtime
+        # @abstract
+        def baz: -> String
       RBI
     end
 
