@@ -173,17 +173,22 @@ module RBI
       sig4.type_params << "V"
       sig4 << SigParam.new("a", "T.type_parameter(:U)")
 
+      sig5 = Sig.new(without_runtime: true)
+      sig5.return_type = "R"
+
       attr = AttrAccessor.new(:foo, :bar)
       attr.sigs << sig1
       attr.sigs << sig2
       attr.sigs << sig3
       attr.sigs << sig4
+      attr.sigs << sig5
 
       assert_equal(<<~RBI, attr.string)
         sig { void }
         sig { params(a: A, b: T.nilable(B), b: T.proc.void).returns(R) }
         sig { abstract.override.overridable.void }
         sig { type_parameters(:U, :V).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)) }
+        T::Sig::WithoutRuntime.sig { returns(R) }
         attr_accessor :foo, :bar
       RBI
     end
@@ -863,6 +868,11 @@ module RBI
             sig << SigParam.new("b", "Integer")
             sig << SigParam.new("c", "T.untyped")
           end
+          cls << Sig.new(without_runtime: true) do |sig|
+            sig << SigParam.new("a", "Integer")
+            sig << SigParam.new("b", "String")
+            sig << SigParam.new("c", "T.untyped")
+          end
           cls << Method.new("foo") do |method|
             method << ReqParam.new("a")
             method << ReqParam.new("b")
@@ -881,6 +891,13 @@ module RBI
                 b: Integer,
                 c: T.untyped
               ).void
+          end
+          T::Sig::WithoutRuntime.sig do
+            params(
+              a: Integer,
+              b: String,
+              c: T.untyped
+            ).void
           end
           def foo(a, b, c); end
         end
