@@ -201,6 +201,7 @@ module RBI
         sig { type_parameters(:U).params(step: Integer, _blk: T.proc.returns(T.type_parameter(:U))).returns(T.type_parameter(:U)) }
         sig { type_parameters(:A, :B).params(a: T::Array[T.type_parameter(:A)], fa: T.proc.params(item: T.type_parameter(:A)).returns(T.untyped), b: T::Array[T.type_parameter(:B)], fb: T.proc.params(item: T.type_parameter(:B)).returns(T.untyped)).returns(T::Array[[T.type_parameter(:A), T.type_parameter(:B)]]) }
         sig { returns({ item_id: String, tax_code: String, name: String, rate: BigDecimal, rate_type: String, amount: BigDecimal, subdivision: String, jurisdiction: String, exempt: T::Boolean, reasons: T::Array[String] }) }
+        T::Sig::WithoutRuntime.sig { returns(String) }
         def foo; end
       RBI
 
@@ -220,8 +221,47 @@ module RBI
         sig { type_parameters(:U).params(step: Integer, _blk: T.proc.returns(T.type_parameter(:U))).returns(T.type_parameter(:U)) }
         sig { type_parameters(:A, :B).params(a: T::Array[T.type_parameter(:A)], fa: T.proc.params(item: T.type_parameter(:A)).returns(T.untyped), b: T::Array[T.type_parameter(:B)], fb: T.proc.params(item: T.type_parameter(:B)).returns(T.untyped)).returns(T::Array[[T.type_parameter(:A), T.type_parameter(:B)]]) }
         sig { returns({ item_id: String, tax_code: String, name: String, rate: BigDecimal, rate_type: String, amount: BigDecimal, subdivision: String, jurisdiction: String, exempt: T::Boolean, reasons: T::Array[String] }) }
+        T::Sig::WithoutRuntime.sig { returns(String) }
         def foo; end
       RBI
+    end
+
+    def test_parse_ignore_sig_not_on_self
+      rbi = <<~RBI
+        sig { void }
+        T::Sig::WithoutRuntime.sig { void }
+        self.sig { void }
+        def with_sigs; end
+
+        T.sig { returns(String) }
+        def without_sig1; end
+
+        T::Sig.sig { returns(String) }
+        def without_sig2; end
+
+        Foo.sig { returns(String) }
+        def without_sig3; end
+
+        foo.sig { returns(String) }
+        def without_sig4; end
+      RBI
+
+      tree = parse_rbi(rbi)
+
+      def_with_sigs = tree.nodes[0] #: as Method
+      assert_equal(3, def_with_sigs.sigs.size)
+
+      def_without_sig1 = tree.nodes[1] #: as Method
+      assert_empty(def_without_sig1.sigs)
+
+      def_without_sig2 = tree.nodes[2] #: as Method
+      assert_empty(def_without_sig2.sigs)
+
+      def_without_sig3 = tree.nodes[3] #: as Method
+      assert_empty(def_without_sig3.sigs)
+
+      def_without_sig4 = tree.nodes[4] #: as Method
+      assert_empty(def_without_sig4.sigs)
     end
 
     def test_parse_dangling_sigs
