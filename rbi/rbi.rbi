@@ -1153,6 +1153,12 @@ class RBI::Parser::Visitor < ::Prism::Visitor
 
   sig { params(node: ::Prism::Node).returns(::String) }
   def node_string!(node); end
+
+  sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
+  def self?(node); end
+
+  sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
+  def t_sig_without_runtime?(node); end
 end
 
 class RBI::Printer < ::RBI::Visitor
@@ -2407,6 +2413,7 @@ class RBI::Sig < ::RBI::NodeWithComments
       is_overridable: T::Boolean,
       is_final: T::Boolean,
       allow_incompatible_override: T::Boolean,
+      without_runtime: T::Boolean,
       type_params: T::Array[::String],
       checked: T.nilable(::Symbol),
       loc: T.nilable(::RBI::Loc),
@@ -2414,7 +2421,7 @@ class RBI::Sig < ::RBI::NodeWithComments
       block: T.nilable(T.proc.params(node: ::RBI::Sig).void)
     ).void
   end
-  def initialize(params: T.unsafe(nil), return_type: T.unsafe(nil), is_abstract: T.unsafe(nil), is_override: T.unsafe(nil), is_overridable: T.unsafe(nil), is_final: T.unsafe(nil), allow_incompatible_override: T.unsafe(nil), type_params: T.unsafe(nil), checked: T.unsafe(nil), loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
+  def initialize(params: T.unsafe(nil), return_type: T.unsafe(nil), is_abstract: T.unsafe(nil), is_override: T.unsafe(nil), is_overridable: T.unsafe(nil), is_final: T.unsafe(nil), allow_incompatible_override: T.unsafe(nil), without_runtime: T.unsafe(nil), type_params: T.unsafe(nil), checked: T.unsafe(nil), loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
   sig { params(param: ::RBI::SigParam).void }
   def <<(param); end
@@ -2472,6 +2479,12 @@ class RBI::Sig < ::RBI::NodeWithComments
 
   sig { returns(T::Array[::String]) }
   def type_params; end
+
+  # @return [Boolean]
+  def without_runtime; end
+
+  # @return [Boolean]
+  def without_runtime=(_arg0); end
 end
 
 class RBI::SigParam < ::RBI::NodeWithComments
