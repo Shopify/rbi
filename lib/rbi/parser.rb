@@ -149,6 +149,16 @@ module RBI
         visitor.visit(node)
         visitor.location
       end
+
+      #: (Prism::Node? node) -> bool
+      def self?(node)
+        node.is_a?(Prism::SelfNode)
+      end
+
+      #: (Prism::Node? node) -> bool
+      def t_sig_without_runtime?(node)
+        !!(node.is_a?(Prism::ConstantPathNode) && node_string(node) =~ /(::)?T::Sig::WithoutRuntime/)
+      end
     end
 
     class TreeBuilder < Visitor
@@ -505,6 +515,10 @@ module RBI
             comments: node_comments(node),
           )
         when "sig"
+          unless node.receiver.nil? || self?(node.receiver) || t_sig_without_runtime?(node.receiver)
+            @last_node = nil
+            return
+          end
           @last_sigs << parse_sig(node)
         else
           current_scope << Send.new(
@@ -884,6 +898,8 @@ module RBI
       def visit_call_node(node)
         case node.message
         when "sig"
+          @current.without_runtime = t_sig_without_runtime?(node.receiver)
+
           args = node.arguments
           if args.is_a?(Prism::ArgumentsNode)
             args.arguments.each do |arg|

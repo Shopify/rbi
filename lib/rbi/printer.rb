@@ -707,7 +707,9 @@ module RBI
 
     #: (Sig node) -> void
     def print_sig_as_line(node)
-      printt("sig")
+      printt
+      print("T::Sig::WithoutRuntime.") if node.without_runtime
+      print("sig")
       print("(:final)") if node.is_final
       print(" { ")
       sig_modifiers(node).each do |modifier|
@@ -734,7 +736,9 @@ module RBI
     def print_sig_as_block(node)
       modifiers = sig_modifiers(node)
 
-      printt("sig")
+      printt
+      print("T::Sig::WithoutRuntime.") if node.without_runtime
+      print("sig")
       print("(:final)") if node.is_final
       printn(" do")
       indent

@@ -853,7 +853,7 @@ module RBI
     attr_accessor :return_type
 
     #: bool
-    attr_accessor :is_abstract, :is_override, :is_overridable, :is_final, :allow_incompatible_override
+    attr_accessor :is_abstract, :is_override, :is_overridable, :is_final, :allow_incompatible_override, :without_runtime
 
     #: Array[String]
     attr_reader :type_params
@@ -861,7 +861,7 @@ module RBI
     #: Symbol?
     attr_accessor :checked
 
-    #: (?params: Array[SigParam], ?return_type: (Type | String), ?is_abstract: bool, ?is_override: bool, ?is_overridable: bool, ?is_final: bool, ?allow_incompatible_override: bool, ?type_params: Array[String], ?checked: Symbol?, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Sig node) -> void } -> void
+    #: (?params: Array[SigParam], ?return_type: (Type | String), ?is_abstract: bool, ?is_override: bool, ?is_overridable: bool, ?is_final: bool, ?allow_incompatible_override: bool, ?without_runtime: bool, ?type_params: Array[String], ?checked: Symbol?, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Sig node) -> void } -> void
     def initialize(
       params: [],
       return_type: "void",
@@ -870,6 +870,7 @@ module RBI
       is_overridable: false,
       is_final: false,
       allow_incompatible_override: false,
+      without_runtime: false,
       type_params: [],
       checked: nil,
       loc: nil,
@@ -884,6 +885,7 @@ module RBI
       @is_overridable = is_overridable
       @is_final = is_final
       @allow_incompatible_override = allow_incompatible_override
+      @without_runtime = without_runtime
       @type_params = type_params
       @checked = checked
       block&.call(self)
@@ -905,7 +907,7 @@ module RBI
 
       params == other.params && return_type.to_s == other.return_type.to_s && is_abstract == other.is_abstract &&
         is_override == other.is_override && is_overridable == other.is_overridable && is_final == other.is_final &&
-        type_params == other.type_params && checked == other.checked
+        without_runtime == other.without_runtime && type_params == other.type_params && checked == other.checked
     end
   end
 

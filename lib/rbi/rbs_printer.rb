@@ -316,6 +316,10 @@ module RBI
       print_blank_line_before(node)
       visit_all(node.comments)
 
+      if node.sigs.any?(&:without_runtime)
+        printl("# @without_runtime")
+      end
+
       if node.sigs.any?(&:is_abstract)
         printl("# @abstract")
       end
