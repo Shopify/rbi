@@ -100,7 +100,7 @@ module RBI
           return Type.simple(type.name.to_s) if type.args.empty?
 
           type_name = translate_t_generic_type(type.name.to_s)
-          T.unsafe(Type).generic(type_name, *type.args.map { |arg| translate(arg) })
+          Type.generic(type_name, *type.args.map { |arg| translate(arg) })
         end
 
         #: (::RBS::Types::Function) -> Type
