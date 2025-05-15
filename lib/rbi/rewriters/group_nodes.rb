@@ -91,22 +91,22 @@ module RBI
       @kind = kind
     end
 
-    class Kind < T::Enum
-      enums do
-        Mixins              = new
-        RequiredAncestors   = new
-        Helpers             = new
-        TypeMembers         = new
-        MixesInClassMethods = new
-        Sends               = new
-        Attrs               = new
-        TStructFields       = new
-        TEnums              = new
-        Inits               = new
-        Methods             = new
-        SingletonClasses    = new
-        Consts              = new
-      end
+    class Kind
+      Mixins              = new #: Kind
+      RequiredAncestors   = new #: Kind
+      Helpers             = new #: Kind
+      TypeMembers         = new #: Kind
+      MixesInClassMethods = new #: Kind
+      Sends               = new #: Kind
+      Attrs               = new #: Kind
+      TStructFields       = new #: Kind
+      TEnums              = new #: Kind
+      Inits               = new #: Kind
+      Methods             = new #: Kind
+      SingletonClasses    = new #: Kind
+      Consts              = new #: Kind
+
+      private_class_method(:new)
     end
   end
 end

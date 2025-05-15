@@ -37,12 +37,12 @@ module RBI
     # end
     # ~~~
     class Merge
-      class Keep < ::T::Enum
-        enums do
-          NONE = new
-          LEFT = new
-          RIGHT = new
-        end
+      class Keep
+        NONE = new #: Keep
+        LEFT = new #: Keep
+        RIGHT = new #: Keep
+
+        private_class_method(:new)
       end
 
       class << self
