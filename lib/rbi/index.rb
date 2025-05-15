@@ -67,12 +67,9 @@ module RBI
   end
 
   # A Node that can be referred to by a unique ID inside an index
+  # @interface
   module Indexable
     extend T::Sig
-    extend T::Helpers
-
-    interface!
-
     # Unique IDs that refer to this node.
     #
     # Some nodes can have multiple ids, for example an attribute accessor matches the ID of the
