@@ -5,7 +5,6 @@ module RBI
   # The base class for all RBI types.
   # @abstract
   class Type
-    extend T::Sig
     # Simple
 
     # A type that represents a simple class name like `String` or `Foo`.
@@ -731,7 +730,8 @@ module RBI
       is_a?(Nilable)
     end
 
-    sig { abstract.params(other: BasicObject).returns(T::Boolean) }
+    # @abstract
+    #: (BasicObject) -> bool
     def ==(other); end
 
     #: (BasicObject other) -> bool
@@ -745,7 +745,8 @@ module RBI
       to_rbi.hash
     end
 
-    sig { abstract.returns(String) }
+    # @abstract
+    #: -> String
     def to_rbi; end
 
     # @override

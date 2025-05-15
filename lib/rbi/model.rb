@@ -161,8 +161,8 @@ module RBI
 
   # @abstract
   class Scope < Tree
-    extend T::Sig
-    sig { abstract.returns(String) }
+    # @abstract
+    #: -> String
     def fully_qualified_name; end
 
     # @override
@@ -290,7 +290,6 @@ module RBI
 
   # @abstract
   class Attr < NodeWithComments
-    extend T::Sig
     #: Array[Symbol]
     attr_reader :names
 
@@ -308,7 +307,8 @@ module RBI
       @sigs = sigs
     end
 
-    sig { abstract.returns(T::Array[String]) }
+    # @abstract
+    #: -> Array[String]
     def fully_qualified_names; end
   end
 
@@ -923,7 +923,6 @@ module RBI
 
   # @abstract
   class TStructField < NodeWithComments
-    extend T::Sig
     #: String
     attr_accessor :name
 
@@ -941,7 +940,8 @@ module RBI
       @default = default
     end
 
-    sig { abstract.returns(T::Array[String]) }
+    # @abstract
+    #: -> Array[String]
     def fully_qualified_names; end
   end
 
