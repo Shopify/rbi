@@ -17,8 +17,17 @@ module RBI
     #: bool
     attr_accessor :positional_names
 
-    #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool, ?positional_names: bool) -> void
-    def initialize(out: $stdout, indent: 0, print_locs: false, positional_names: true)
+    #: Integer?
+    attr_reader :max_line_length
+
+    #: (
+    #|   ?out: (IO | StringIO),
+    #|   ?indent: Integer,
+    #|   ?print_locs: bool,
+    #|   ?positional_names: bool,
+    #|   ?max_line_length: Integer?
+    #| ) -> void
+    def initialize(out: $stdout, indent: 0, print_locs: false, positional_names: true, max_line_length: nil)
       super()
       @out = out
       @current_indent = indent
@@ -26,6 +35,7 @@ module RBI
       @in_visibility_group = false #: bool
       @previous_node = nil #: Node?
       @positional_names = positional_names #: bool
+      @max_line_length = max_line_length #: Integer?
     end
 
     # Printing
@@ -386,6 +396,23 @@ module RBI
 
     #: (RBI::Method node, Sig sig) -> void
     def print_method_sig(node, sig)
+      old_out = @out
+      new_out = StringIO.new
+
+      @out = new_out
+      print_method_sig_inline(node, sig)
+      @out = old_out
+
+      max_line_length = @max_line_length
+      if max_line_length.nil? || new_out.string.size <= max_line_length
+        print(new_out.string)
+      else
+        print_method_sig_multiline(node, sig)
+      end
+    end
+
+    #: (RBI::Method node, Sig sig) -> void
+    def print_method_sig_inline(node, sig)
       unless sig.type_params.empty?
         print("[#{sig.type_params.join(", ")}] ")
       end
@@ -407,6 +434,72 @@ module RBI
           print_sig_param(node, param)
         end
         print(") ")
+      end
+      if sig_block_param
+        block_type = sig_block_param.type
+        block_type = Type.parse_string(block_type) if block_type.is_a?(String)
+
+        block_is_nilable = false
+        if block_type.is_a?(Type::Nilable)
+          block_is_nilable = true
+          block_type = block_type.type
+        end
+
+        type_string = parse_type(block_type).rbs_string.delete_prefix("^")
+
+        skip = false
+        case block_type
+        when Type::Untyped
+          type_string = "(?) -> untyped"
+          block_is_nilable = true
+        when Type::Simple
+          type_string = "(?) -> untyped"
+          skip = true if block_type.name == "NilClass"
+        end
+
+        if skip
+          # no-op, we skip the block definition
+        elsif block_is_nilable
+          print("?{ #{type_string} } ")
+        else
+          print("{ #{type_string} } ")
+        end
+      end
+
+      type = parse_type(sig.return_type)
+      print("-> #{type.rbs_string}")
+
+      loc = sig.loc
+      print(" # #{loc}") if loc && print_locs
+    end
+
+    #: (RBI::Method node, Sig sig) -> void
+    def print_method_sig_multiline(node, sig)
+      unless sig.type_params.empty?
+        print("[#{sig.type_params.join(", ")}] ")
+      end
+
+      block_param = node.params.find { |param| param.is_a?(BlockParam) }
+      sig_block_param = sig.params.find { |param| param.name == block_param&.name }
+
+      sig_params = sig.params.dup
+      if block_param
+        sig_params.reject! do |param|
+          param.name == block_param.name
+        end
+      end
+
+      unless sig_params.empty?
+        printl("(")
+        indent
+        sig_params.each_with_index do |param, index|
+          printt
+          print_sig_param(node, param)
+          print(",") if index < sig_params.size - 1
+          printn
+        end
+        dedent
+        printt(") ")
       end
       if sig_block_param
         block_type = sig_block_param.type
@@ -890,9 +983,10 @@ module RBI
     #: String
     attr_reader :string
 
-    #: -> void
-    def initialize
+    #: (?max_line_length: Integer?) -> void
+    def initialize(max_line_length: nil)
       @string = String.new #: String
+      @max_line_length = max_line_length
     end
 
     #: (Type node) -> void

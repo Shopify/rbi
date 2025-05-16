@@ -502,6 +502,47 @@ module RBI
       RBI
     end
 
+    def test_print_breaks_long_signatures
+      rbi_def = Method.new("foo") do |node|
+        node.params << ReqParam.new("a")
+        node.params << OptParam.new("b", "42")
+        node.params << RestParam.new("c")
+        node.params << KwParam.new("e")
+        node.params << KwOptParam.new("d", "42")
+        node.params << KwRestParam.new("f")
+        node.params << BlockParam.new("g")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.type_params << "U"
+
+        sig.params << SigParam.new("a", "U")
+        sig.params << SigParam.new("b", "Integer")
+        sig.params << SigParam.new("c", "String")
+        sig.params << SigParam.new("e", "Numeric")
+        sig.params << SigParam.new("d", "Object")
+        sig.params << SigParam.new("f", "T.untyped")
+        sig.params << SigParam.new("g", "T.proc.void")
+
+        sig.return_type = "R"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out, max_line_length: 10)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal(<<~RBI.strip, out.string)
+        [U] (
+          U a,
+          ?Integer b,
+          *String c,
+          e: Numeric,
+          ?d: Object,
+          **untyped f
+        ) { -> void } -> R
+      RBI
+    end
+
     def test_print_mixins
       rbi = parse_rbi(<<~RBI)
         class Foo
