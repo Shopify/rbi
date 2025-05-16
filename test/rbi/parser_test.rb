@@ -1176,6 +1176,46 @@ module RBI
       RBI
     end
 
+    def test_parse_rbs_comments_multiline
+      rbi = <<~RBI
+        #: [
+        #|    A < Numeric
+        #| ]
+        class Foo
+          #: (
+          #|    Integer
+          #| ) -> Integer
+          def bar; end
+
+          #| this comment is not a continuation
+          #| and should be kept
+          def baz; end
+
+          # this one
+          #| as
+          #| well
+          def baz; end
+        end
+      RBI
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
+        #: [A < Numeric]
+        class Foo
+          #: (Integer) -> Integer
+          def bar; end
+
+          # | this comment is not a continuation
+          # | and should be kept
+          def baz; end
+
+          # this one
+          # | as
+          # | well
+          def baz; end
+        end
+      RBI
+    end
+
     def test_parse_rbs_comments_ignores_rdoc_directives
       rbi = <<~RBI
         #:nodoc:

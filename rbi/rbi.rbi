@@ -667,6 +667,9 @@ class RBI::Loc
   sig { returns(T.nilable(::String)) }
   def file; end
 
+  sig { params(other: ::RBI::Loc).returns(::RBI::Loc) }
+  def join(other); end
+
   sig { returns(T.nilable(::String)) }
   def source; end
 
@@ -1485,31 +1488,11 @@ class RBI::RBS::MethodTypeTranslator::Error < ::RBI::Error; end
 
 class RBI::RBS::TypeTranslator
   class << self
-    # : (
-    # |   ::RBS::Types::Alias |
-    # |   ::RBS::Types::Bases::Any |
-    # |   ::RBS::Types::Bases::Bool |
-    # |   ::RBS::Types::Bases::Bottom |
-    # |   ::RBS::Types::Bases::Class |
-    # |   ::RBS::Types::Bases::Instance |
-    # |   ::RBS::Types::Bases::Nil |
-    # |   ::RBS::Types::Bases::Self |
-    # |   ::RBS::Types::Bases::Top |
-    # |   ::RBS::Types::Bases::Void |
-    # |   ::RBS::Types::ClassSingleton |
-    # |   ::RBS::Types::ClassInstance |
-    # |   ::RBS::Types::Function |
-    # |   ::RBS::Types::Interface |
-    # |   ::RBS::Types::Intersection |
-    # |   ::RBS::Types::Literal |
-    # |   ::RBS::Types::Optional |
-    # |   ::RBS::Types::Proc |
-    # |   ::RBS::Types::Record |
-    # |   ::RBS::Types::Tuple |
-    # |   ::RBS::Types::Union |
-    # |   ::RBS::Types::UntypedFunction |
-    # |   ::RBS::Types::Variable
-    # | ) -> Type
+    sig do
+      params(
+        type: T.any(::RBS::Types::Alias, ::RBS::Types::Bases::Any, ::RBS::Types::Bases::Bool, ::RBS::Types::Bases::Bottom, ::RBS::Types::Bases::Class, ::RBS::Types::Bases::Instance, ::RBS::Types::Bases::Nil, ::RBS::Types::Bases::Self, ::RBS::Types::Bases::Top, ::RBS::Types::Bases::Void, ::RBS::Types::ClassInstance, ::RBS::Types::ClassSingleton, ::RBS::Types::Function, ::RBS::Types::Interface, ::RBS::Types::Intersection, ::RBS::Types::Literal, ::RBS::Types::Optional, ::RBS::Types::Proc, ::RBS::Types::Record, ::RBS::Types::Tuple, ::RBS::Types::Union, ::RBS::Types::UntypedFunction, ::RBS::Types::Variable)
+      ).returns(::RBI::Type)
+    end
     def translate(type); end
 
     private
@@ -1537,10 +1520,11 @@ class RBI::RBSPrinter < ::RBI::Visitor
       out: T.any(::IO, ::StringIO),
       indent: ::Integer,
       print_locs: T::Boolean,
-      positional_names: T::Boolean
+      positional_names: T::Boolean,
+      max_line_length: T.nilable(::Integer)
     ).void
   end
-  def initialize(out: T.unsafe(nil), indent: T.unsafe(nil), print_locs: T.unsafe(nil), positional_names: T.unsafe(nil)); end
+  def initialize(out: T.unsafe(nil), indent: T.unsafe(nil), print_locs: T.unsafe(nil), positional_names: T.unsafe(nil), max_line_length: T.unsafe(nil)); end
 
   sig { returns(::Integer) }
   def current_indent; end
@@ -1557,6 +1541,9 @@ class RBI::RBSPrinter < ::RBI::Visitor
   # Printing
   sig { void }
   def indent; end
+
+  sig { returns(T.nilable(::Integer)) }
+  def max_line_length; end
 
   sig { returns(T::Boolean) }
   def positional_names; end
@@ -1582,6 +1569,12 @@ class RBI::RBSPrinter < ::RBI::Visitor
 
   sig { params(node: ::RBI::Method, sig: ::RBI::Sig).void }
   def print_method_sig(node, sig); end
+
+  sig { params(node: ::RBI::Method, sig: ::RBI::Sig).void }
+  def print_method_sig_inline(node, sig); end
+
+  sig { params(node: ::RBI::Method, sig: ::RBI::Sig).void }
+  def print_method_sig_multiline(node, sig); end
 
   # Print a string with indentation and `\n` at the end.
   sig { params(string: ::String).void }
@@ -3454,8 +3447,8 @@ class RBI::TypeMember < ::RBI::NodeWithComments
 end
 
 class RBI::TypePrinter
-  sig { void }
-  def initialize; end
+  sig { params(max_line_length: T.nilable(::Integer)).void }
+  def initialize(max_line_length: T.unsafe(nil)); end
 
   sig { returns(::String) }
   def string; end

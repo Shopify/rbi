@@ -607,28 +607,66 @@ module RBI
         start_line = node.location.start_line
         start_line -= 1 unless @comments_by_line.key?(start_line)
 
+        rbs_continuation = [] #: Array[Prism::Comment]
+
         start_line.downto(1) do |line|
           comment = @comments_by_line[line]
           break unless comment
 
-          comments.unshift(parse_comment(comment))
+          text = comment.location.slice
+
+          # If we find a RBS comment continuation `#|`, we store it until we find the start with `#:`
+          if text.start_with?("#|")
+            rbs_continuation << comment
+            @comments_by_line.delete(line)
+            next
+          end
+
+          loc = Loc.from_prism(@file, comment.location)
+
+          # If we find the start of a RBS comment, we create a new RBSComment
+          # Note that we ignore RDoc directives such as `:nodoc:`
+          # See https://ruby.github.io/rdoc/RDoc/MarkupReference.html#class-RDoc::MarkupReference-label-Directives
+          if text.start_with?("#:") && !(text =~ /^#:[a-z_]+:/)
+            text = text.sub(/^#: ?/, "").rstrip
+
+            # If we found continuation comments, we merge them in reverse order (since we go from bottom to top)
+            rbs_continuation.reverse_each do |rbs_comment|
+              continuation_text = rbs_comment.location.slice.sub(/^#\| ?/, "").strip
+              continuation_loc = Loc.from_prism(@file, rbs_comment.location)
+              loc = loc.join(continuation_loc)
+              text = "#{text}#{continuation_text}"
+            end
+
+            rbs_continuation.clear
+            comments.unshift(RBSComment.new(text, loc: loc))
+          else
+            # If we have unused continuation comments, we should inject them back to not lose them
+            rbs_continuation.each do |rbs_comment|
+              comments.unshift(parse_comment(rbs_comment))
+            end
+
+            rbs_continuation.clear
+            comments.unshift(parse_comment(comment))
+          end
+
           @comments_by_line.delete(line)
         end
+
+        # If we have unused continuation comments, we should inject them back to not lose them
+        rbs_continuation.each do |rbs_comment|
+          comments.unshift(parse_comment(rbs_comment))
+        end
+        rbs_continuation.clear
 
         comments
       end
 
       #: (Prism::Comment node) -> Comment
       def parse_comment(node)
+        text = node.location.slice.sub(/^# ?/, "").rstrip
         loc = Loc.from_prism(@file, node.location)
-        string = node.location.slice
-        # We also ignore RDoc directives such as `:nodoc:`
-        # See https://ruby.github.io/rdoc/RDoc/MarkupReference.html#class-RDoc::MarkupReference-label-Directives
-        if string.start_with?("#:") && !(string =~ /^#:[a-z_]+:/)
-          RBSComment.new(string.gsub(/^#: ?/, "").rstrip, loc: loc)
-        else
-          Comment.new(string.gsub(/^# ?/, "").rstrip, loc: loc)
-        end
+        Comment.new(text, loc: loc)
       end
 
       #: (Prism::Node? node) -> Array[Arg]

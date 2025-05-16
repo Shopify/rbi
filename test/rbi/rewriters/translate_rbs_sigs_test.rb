@@ -70,6 +70,28 @@ module RBI
       RBI
     end
 
+    def test_translate_multiline_sigs
+      tree = rewrite(<<~RBI)
+        #: Array[
+        #|   Integer
+        #| ]
+        attr_reader :a
+
+        #: (
+        #|   Integer
+        #| ) -> Integer
+        def foo(a); end
+      RBI
+
+      assert_equal(<<~RBI, tree)
+        sig { returns(T::Array[Integer]) }
+        attr_reader :a
+
+        sig { params(a: Integer).returns(Integer) }
+        def foo(a); end
+      RBI
+    end
+
     private
 
     #: (String) -> String
