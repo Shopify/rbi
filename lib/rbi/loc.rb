@@ -31,6 +31,17 @@ module RBI
       @end_column = end_column
     end
 
+    #: (Loc) -> Loc
+    def join(other)
+      Loc.new(
+        file: file,
+        begin_line: begin_line,
+        begin_column: begin_column,
+        end_line: other.end_line,
+        end_column: other.end_column,
+      )
+    end
+
     #: -> String
     def to_s
       if end_line && end_column

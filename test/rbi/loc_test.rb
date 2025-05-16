@@ -38,6 +38,12 @@ module RBI
       assert_equal("foo.rb:1:2", loc.to_s)
     end
 
+    def test_loc_join_with_other_loc
+      loc = Loc.new(file: "foo.rb", begin_line: 1, begin_column: 1, end_line: 2, end_column: 2)
+      other = Loc.new(file: "foo.rb", begin_line: 2, begin_column: 2, end_line: 3, end_column: 3)
+      assert_equal("foo.rb:1:1-3:3", loc.join(other).to_s)
+    end
+
     def test_loc_source_without_file_returns_nil
       loc = Loc.new(file: nil)
       assert_nil(loc.source)
