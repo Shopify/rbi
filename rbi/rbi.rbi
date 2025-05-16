@@ -20,13 +20,9 @@ class RBI::Arg < ::RBI::Node
   def value; end
 end
 
-# Attributes
-#
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+# @abstract
 class RBI::Attr < ::RBI::NodeWithComments
   include ::RBI::Indexable
-
-  abstract!
 
   sig do
     params(
@@ -433,23 +429,52 @@ class RBI::Group < ::RBI::Tree
   def kind; end
 end
 
-class RBI::Group::Kind < ::T::Enum
-  enums do
-    Attrs = new
-    Consts = new
-    Helpers = new
-    Inits = new
-    Methods = new
-    MixesInClassMethods = new
-    Mixins = new
-    RequiredAncestors = new
-    Sends = new
-    SingletonClasses = new
-    TEnums = new
-    TStructFields = new
-    TypeMembers = new
+class RBI::Group::Kind
+  class << self
+    private
+
+    def new(*_arg0); end
   end
 end
+
+# : Kind
+RBI::Group::Kind::Attrs = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::Consts = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::Helpers = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::Inits = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::Methods = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::MixesInClassMethods = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::Mixins = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::RequiredAncestors = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::Sends = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::SingletonClasses = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::TEnums = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::TStructFields = T.let(T.unsafe(nil), RBI::Group::Kind)
+
+# : Kind
+RBI::Group::Kind::TypeMembers = T.let(T.unsafe(nil), RBI::Group::Kind)
 
 class RBI::GroupNodesError < ::RBI::Error; end
 
@@ -532,11 +557,7 @@ class RBI::Index < ::RBI::Visitor
 end
 
 # A Node that can be referred to by a unique ID inside an index
-#
-# @abstract Subclasses must implement the `abstract` methods below.
 module RBI::Indexable
-  interface!
-
   # Unique IDs that refer to this node.
   #
   # Some nodes can have multiple ids, for example an attribute accessor matches the ID of the
@@ -798,12 +819,8 @@ class RBI::MixesInClassMethods < ::RBI::Mixin
   def to_s; end
 end
 
-# Mixins
-#
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+# @abstract
 class RBI::Mixin < ::RBI::NodeWithComments
-  abstract!
-
   sig do
     params(
       name: ::String,
@@ -845,10 +862,8 @@ class RBI::Module < ::RBI::Scope
   def name=(_arg0); end
 end
 
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+# @abstract
 class RBI::Node
-  abstract!
-
   sig { params(loc: T.nilable(::RBI::Loc)).void }
   def initialize(loc: T.unsafe(nil)); end
 
@@ -915,10 +930,8 @@ class RBI::Node
   def string(indent: T.unsafe(nil), print_locs: T.unsafe(nil), max_line_length: T.unsafe(nil)); end
 end
 
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+# @abstract
 class RBI::NodeWithComments < ::RBI::Node
-  abstract!
-
   sig { params(loc: T.nilable(::RBI::Loc), comments: T::Array[::RBI::Comment]).void }
   def initialize(loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
@@ -957,10 +970,8 @@ class RBI::OptParam < ::RBI::Param
   def value; end
 end
 
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+# @abstract
 class RBI::Param < ::RBI::NodeWithComments
-  abstract!
-
   sig { params(name: ::String, loc: T.nilable(::RBI::Loc), comments: T::Array[::RBI::Comment]).void }
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
@@ -1474,11 +1485,31 @@ class RBI::RBS::MethodTypeTranslator::Error < ::RBI::Error; end
 
 class RBI::RBS::TypeTranslator
   class << self
-    sig do
-      params(
-        type: T.any(::RBS::Types::Alias, ::RBS::Types::Bases::Any, ::RBS::Types::Bases::Bool, ::RBS::Types::Bases::Bottom, ::RBS::Types::Bases::Class, ::RBS::Types::Bases::Instance, ::RBS::Types::Bases::Nil, ::RBS::Types::Bases::Self, ::RBS::Types::Bases::Top, ::RBS::Types::Bases::Void, ::RBS::Types::ClassInstance, ::RBS::Types::ClassSingleton, ::RBS::Types::Function, ::RBS::Types::Interface, ::RBS::Types::Intersection, ::RBS::Types::Literal, ::RBS::Types::Optional, ::RBS::Types::Proc, ::RBS::Types::Record, ::RBS::Types::Tuple, ::RBS::Types::Union, ::RBS::Types::UntypedFunction, ::RBS::Types::Variable)
-      ).returns(::RBI::Type)
-    end
+    # : (
+    # |   ::RBS::Types::Alias |
+    # |   ::RBS::Types::Bases::Any |
+    # |   ::RBS::Types::Bases::Bool |
+    # |   ::RBS::Types::Bases::Bottom |
+    # |   ::RBS::Types::Bases::Class |
+    # |   ::RBS::Types::Bases::Instance |
+    # |   ::RBS::Types::Bases::Nil |
+    # |   ::RBS::Types::Bases::Self |
+    # |   ::RBS::Types::Bases::Top |
+    # |   ::RBS::Types::Bases::Void |
+    # |   ::RBS::Types::ClassSingleton |
+    # |   ::RBS::Types::ClassInstance |
+    # |   ::RBS::Types::Function |
+    # |   ::RBS::Types::Interface |
+    # |   ::RBS::Types::Intersection |
+    # |   ::RBS::Types::Literal |
+    # |   ::RBS::Types::Optional |
+    # |   ::RBS::Types::Proc |
+    # |   ::RBS::Types::Record |
+    # |   ::RBS::Types::Tuple |
+    # |   ::RBS::Types::Union |
+    # |   ::RBS::Types::UntypedFunction |
+    # |   ::RBS::Types::Variable
+    # | ) -> Type
     def translate(type); end
 
     private
@@ -2052,18 +2083,24 @@ class RBI::Rewriters::Merge
 end
 
 # Used for logging / error displaying purpose
-class RBI::Rewriters::Merge::Conflict < ::T::Struct
-  const :left, ::RBI::Node
-  const :right, ::RBI::Node
-  const :left_name, ::String
-  const :right_name, ::String
+class RBI::Rewriters::Merge::Conflict
+  sig { params(left: ::RBI::Node, right: ::RBI::Node, left_name: ::String, right_name: ::String).void }
+  def initialize(left:, right:, left_name:, right_name:); end
+
+  sig { returns(::RBI::Node) }
+  def left; end
+
+  sig { returns(::String) }
+  def left_name; end
+
+  # @return [Node]
+  def right; end
+
+  # @return [String]
+  def right_name; end
 
   sig { returns(::String) }
   def to_s; end
-
-  class << self
-    def inherited(s); end
-  end
 end
 
 # Merge adjacent conflict trees
@@ -2109,13 +2146,22 @@ class RBI::Rewriters::Merge::ConflictTreeMerger < ::RBI::Visitor
   def merge_conflict_trees(left, right); end
 end
 
-class RBI::Rewriters::Merge::Keep < ::T::Enum
-  enums do
-    LEFT = new
-    NONE = new
-    RIGHT = new
+class RBI::Rewriters::Merge::Keep
+  class << self
+    private
+
+    def new(*_arg0); end
   end
 end
+
+# : Keep
+RBI::Rewriters::Merge::Keep::LEFT = T.let(T.unsafe(nil), RBI::Rewriters::Merge::Keep)
+
+# : Keep
+RBI::Rewriters::Merge::Keep::NONE = T.let(T.unsafe(nil), RBI::Rewriters::Merge::Keep)
+
+# : Keep
+RBI::Rewriters::Merge::Keep::RIGHT = T.let(T.unsafe(nil), RBI::Rewriters::Merge::Keep)
 
 class RBI::Rewriters::Merge::TreeMerger < ::RBI::Visitor
   sig do
@@ -2263,16 +2309,18 @@ class RBI::Rewriters::RemoveKnownDefinitions < ::RBI::Visitor
   end
 end
 
-class RBI::Rewriters::RemoveKnownDefinitions::Operation < ::T::Struct
-  const :deleted_node, ::RBI::Node
-  const :duplicate_of, ::RBI::Node
+class RBI::Rewriters::RemoveKnownDefinitions::Operation
+  sig { params(deleted_node: ::RBI::Node, duplicate_of: ::RBI::Node).void }
+  def initialize(deleted_node:, duplicate_of:); end
+
+  sig { returns(::RBI::Node) }
+  def deleted_node; end
+
+  # @return [Node]
+  def duplicate_of; end
 
   sig { returns(::String) }
   def to_s; end
-
-  class << self
-    def inherited(s); end
-  end
 end
 
 class RBI::Rewriters::SortNodes < ::RBI::Visitor
@@ -2313,13 +2361,9 @@ end
 
 class RBI::Rewriters::TranslateRBSSigs::Error < ::RBI::Error; end
 
-# Scopes
-#
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+# @abstract
 class RBI::Scope < ::RBI::Tree
   include ::RBI::Indexable
-
-  abstract!
 
   # Duplicate `self` scope without its body
   sig { returns(T.self_type) }
@@ -2661,10 +2705,8 @@ class RBI::TStructConst < ::RBI::TStructField
   def to_s; end
 end
 
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+# @abstract
 class RBI::TStructField < ::RBI::NodeWithComments
-  abstract!
-
   sig do
     params(
       name: ::String,
@@ -2864,10 +2906,8 @@ end
 
 # The base class for all RBI types.
 #
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+# @abstract
 class RBI::Type
-  abstract!
-
   sig { void }
   def initialize; end
 
@@ -3013,6 +3053,10 @@ class RBI::Type
     sig { returns(::RBI::Type::Void) }
     def void; end
 
+    protected
+
+    def new(*_arg0); end
+
     private
 
     sig { params(node: ::Prism::CallNode).returns(T::Array[::Prism::Node]) }
@@ -3138,10 +3182,8 @@ end
 
 # A type that is composed of multiple types like `T.all(String, Integer)`.
 #
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+# @abstract
 class RBI::Type::Composite < ::RBI::Type
-  abstract!
-
   sig { params(types: T::Array[::RBI::Type]).void }
   def initialize(types); end
 
@@ -3502,12 +3544,8 @@ end
 
 RBI::VERSION = T.let(T.unsafe(nil), String)
 
-# Visibility
-#
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+# @abstract
 class RBI::Visibility < ::RBI::NodeWithComments
-  abstract!
-
   sig { params(visibility: ::Symbol, loc: T.nilable(::RBI::Loc), comments: T::Array[::RBI::Comment]).void }
   def initialize(visibility, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
@@ -3535,10 +3573,8 @@ class RBI::VisibilityGroup < ::RBI::Tree
   def visibility; end
 end
 
-# @abstract It cannot be directly instantiated. Subclasses must implement the `abstract` methods below.
+# @abstract
 class RBI::Visitor
-  abstract!
-
   sig { params(node: T.nilable(::RBI::Node)).void }
   def visit(node); end
 

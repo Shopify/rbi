@@ -380,7 +380,7 @@ module RBI
           comments = detach_comments_from_sigs(sigs) + node_comments(node)
 
           current_scope << AttrReader.new(
-            *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
+            *args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym },
             sigs: sigs,
             loc: node_loc(node),
             comments: comments,
@@ -397,7 +397,7 @@ module RBI
           comments = detach_comments_from_sigs(sigs) + node_comments(node)
 
           current_scope << AttrWriter.new(
-            *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
+            *args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym },
             sigs: sigs,
             loc: node_loc(node),
             comments: comments,
@@ -414,7 +414,7 @@ module RBI
           comments = detach_comments_from_sigs(sigs) + node_comments(node)
 
           current_scope << AttrAccessor.new(
-            *T.unsafe(args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym }),
+            *args.arguments.map { |arg| node_string!(arg).delete_prefix(":").to_sym },
             sigs: sigs,
             loc: node_loc(node),
             comments: comments,
@@ -443,7 +443,7 @@ module RBI
           end
 
           current_scope << Extend.new(
-            *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
+            *args.arguments.map { |arg| node_string!(arg) },
             loc: node_loc(node),
             comments: node_comments(node),
           )
@@ -456,7 +456,7 @@ module RBI
           end
 
           current_scope << Include.new(
-            *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
+            *args.arguments.map { |arg| node_string!(arg) },
             loc: node_loc(node),
             comments: node_comments(node),
           )
@@ -469,7 +469,7 @@ module RBI
           end
 
           current_scope << MixesInClassMethods.new(
-            *T.unsafe(args.arguments.map { |arg| node_string!(arg) }),
+            *args.arguments.map { |arg| node_string!(arg) },
             loc: node_loc(node),
             comments: node_comments(node),
           )

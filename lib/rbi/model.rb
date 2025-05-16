@@ -4,11 +4,8 @@
 module RBI
   class ReplaceNodeError < Error; end
 
+  # @abstract
   class Node
-    extend T::Helpers
-
-    abstract!
-
     #: Tree?
     attr_accessor :parent_tree
 
@@ -87,11 +84,8 @@ module RBI
     end
   end
 
+  # @abstract
   class NodeWithComments < Node
-    extend T::Helpers
-
-    abstract!
-
     #: Array[Comment]
     attr_accessor :comments
 
@@ -165,13 +159,10 @@ module RBI
 
   # Scopes
 
+  # @abstract
   class Scope < Tree
-    extend T::Sig
-    extend T::Helpers
-
-    abstract!
-
-    sig { abstract.returns(String) }
+    # @abstract
+    #: -> String
     def fully_qualified_name; end
 
     # @override
@@ -297,12 +288,8 @@ module RBI
 
   # Attributes
 
+  # @abstract
   class Attr < NodeWithComments
-    extend T::Sig
-    extend T::Helpers
-
-    abstract!
-
     #: Array[Symbol]
     attr_reader :names
 
@@ -320,7 +307,8 @@ module RBI
       @sigs = sigs
     end
 
-    sig { abstract.returns(T::Array[String]) }
+    # @abstract
+    #: -> Array[String]
     def fully_qualified_names; end
   end
 
@@ -510,11 +498,8 @@ module RBI
     end
   end
 
+  # @abstract
   class Param < NodeWithComments
-    extend T::Helpers
-
-    abstract!
-
     #: String
     attr_reader :name
 
@@ -662,11 +647,8 @@ module RBI
 
   # Mixins
 
+  # @abstract
   class Mixin < NodeWithComments
-    extend T::Helpers
-
-    abstract!
-
     #: Array[String]
     attr_reader :names
 
@@ -707,11 +689,8 @@ module RBI
 
   # Visibility
 
+  # @abstract
   class Visibility < NodeWithComments
-    extend T::Helpers
-
-    abstract!
-
     #: Symbol
     attr_reader :visibility
 
@@ -942,12 +921,8 @@ module RBI
     end
   end
 
+  # @abstract
   class TStructField < NodeWithComments
-    extend T::Sig
-    extend T::Helpers
-
-    abstract!
-
     #: String
     attr_accessor :name
 
@@ -965,7 +940,8 @@ module RBI
       @default = default
     end
 
-    sig { abstract.returns(T::Array[String]) }
+    # @abstract
+    #: -> Array[String]
     def fully_qualified_names; end
   end
 

@@ -37,12 +37,12 @@ module RBI
     # end
     # ~~~
     class Merge
-      class Keep < ::T::Enum
-        enums do
-          NONE = new
-          LEFT = new
-          RIGHT = new
-        end
+      class Keep
+        NONE = new #: Keep
+        LEFT = new #: Keep
+        RIGHT = new #: Keep
+
+        private_class_method(:new)
       end
 
       class << self
@@ -79,11 +79,20 @@ module RBI
       end
 
       # Used for logging / error displaying purpose
-      class Conflict < T::Struct
-        const :left, Node
-        const :right, Node
-        const :left_name, String
-        const :right_name, String
+      class Conflict
+        #: Node
+        attr_reader :left, :right
+
+        #: String
+        attr_reader :left_name, :right_name
+
+        #: (left: Node, right: Node, left_name: String, right_name: String) -> void
+        def initialize(left:, right:, left_name:, right_name:)
+          @left = left
+          @right = right
+          @left_name = left_name
+          @right_name = right_name
+        end
 
         #: -> String
         def to_s

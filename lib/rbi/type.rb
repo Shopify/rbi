@@ -3,12 +3,8 @@
 
 module RBI
   # The base class for all RBI types.
+  # @abstract
   class Type
-    extend T::Sig
-    extend T::Helpers
-
-    abstract!
-
     # Simple
 
     # A type that represents a simple class name like `String` or `Foo`.
@@ -227,11 +223,8 @@ module RBI
     end
 
     # A type that is composed of multiple types like `T.all(String, Integer)`.
+    # @abstract
     class Composite < Type
-      extend T::Helpers
-
-      abstract!
-
       #: Array[Type]
       attr_reader :types
 
@@ -649,7 +642,7 @@ module RBI
       # Builds a type that represents a generic type like `T::Array[String]` or `T::Hash[Symbol, Integer]`.
       #: (String name, *(Type | Array[Type]) params) -> Generic
       def generic(name, *params)
-        T.unsafe(Generic).new(name, *params.flatten)
+        Generic.new(name, *params.flatten)
       end
 
       # Builds a type that represents a type parameter like `T.type_parameter(:U)`.
@@ -737,7 +730,8 @@ module RBI
       is_a?(Nilable)
     end
 
-    sig { abstract.params(other: BasicObject).returns(T::Boolean) }
+    # @abstract
+    #: (BasicObject) -> bool
     def ==(other); end
 
     #: (BasicObject other) -> bool
@@ -751,7 +745,8 @@ module RBI
       to_rbi.hash
     end
 
-    sig { abstract.returns(String) }
+    # @abstract
+    #: -> String
     def to_rbi; end
 
     # @override

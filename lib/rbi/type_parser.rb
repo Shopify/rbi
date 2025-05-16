@@ -81,7 +81,7 @@ module RBI
           when Prism::ConstantReadNode
             # `Foo[Bar]` or `Foo[Bar, Baz]`
             args = check_arguments_at_least!(node, 1)
-            return T.unsafe(Type::Generic).new(recv.slice, *args.map { |arg| parse_node(arg) })
+            return Type::Generic.new(recv.slice, *args.map { |arg| parse_node(arg) })
           when Prism::ConstantPathNode
             if t_class?(recv)
               # `T::Class[Foo]` or `::T::Class[Foo]`
@@ -94,7 +94,7 @@ module RBI
             else
               # `::Foo[Bar]` or `::Foo[Bar, Baz]`
               args = check_arguments_at_least!(node, 1)
-              return T.unsafe(Type::Generic).new(recv.slice, *args.map { |arg| parse_node(arg) })
+              return Type::Generic.new(recv.slice, *args.map { |arg| parse_node(arg) })
             end
           when Prism::CallNode
             # `T.class_of(Foo)[Bar]`
@@ -183,7 +183,7 @@ module RBI
 
       #: (Prism::ArrayNode node) -> Type
       def parse_tuple(node)
-        T.unsafe(Type).tuple(*node.elements.map { |elem| parse_node(elem) })
+        Type.tuple(*node.elements.map { |elem| parse_node(elem) })
       end
 
       #: ((Prism::HashNode | Prism::KeywordHashNode) node) -> Type
@@ -204,7 +204,7 @@ module RBI
           end
           [key, parse_node(elem.value)]
         end.to_h
-        T.unsafe(Type).shape(**hash)
+        Type.shape(**hash)
       end
 
       #: (Prism::CallNode node) -> Type
@@ -229,7 +229,9 @@ module RBI
 
               [elem.key.slice.delete_suffix(":").to_sym, parse_node(elem.value)]
             end.to_h
-            T.unsafe(type).params(**params)
+            type.params(
+              **params, #: untyped
+            )
           when :returns
             args = check_arguments_exactly!(call, 1)
             type.returns(

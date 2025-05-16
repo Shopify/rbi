@@ -54,7 +54,8 @@ module RBI
   end
 
   class Attr
-    sig { abstract.returns(T::Array[Method]) }
+    # @abstract
+    #: -> Array[Method]
     def convert_to_methods; end
 
     private

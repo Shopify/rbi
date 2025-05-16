@@ -4,11 +4,8 @@
 module RBI
   class VisitorError < Error; end
 
+  # @abstract
   class Visitor
-    extend T::Helpers
-
-    abstract!
-
     #: (Node? node) -> void
     def visit(node)
       return unless node

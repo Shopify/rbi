@@ -3,8 +3,6 @@
 
 module RBI
   class Index < Visitor
-    include T::Enumerable
-
     class << self
       #: (*Node node) -> Index
       def index(*node)
@@ -67,17 +65,14 @@ module RBI
   end
 
   # A Node that can be referred to by a unique ID inside an index
+  # @interface
   module Indexable
-    extend T::Sig
-    extend T::Helpers
-
-    interface!
-
     # Unique IDs that refer to this node.
     #
     # Some nodes can have multiple ids, for example an attribute accessor matches the ID of the
     # getter and the setter.
-    sig { abstract.returns(T::Array[String]) }
+    # @abstract
+    #: -> Array[String]
     def index_ids; end
   end
 
