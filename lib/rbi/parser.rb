@@ -697,76 +697,68 @@ module RBI
 
       #: (Prism::Node? node) -> Array[Param]
       def parse_params(node)
-        params = []
-        return params unless node.is_a?(Prism::ParametersNode)
+        return [] unless node.is_a?(Prism::ParametersNode)
 
-        node.requireds.each do |param|
-          next unless param.is_a?(Prism::RequiredParameterNode)
+        node_params = [
+          *node.requireds,
+          *node.optionals,
+          *node.rest,
+          *node.posts,
+          *node.keywords,
+          *node.keyword_rest,
+          *node.block,
+        ].flatten
 
-          params << ReqParam.new(
-            param.name.to_s,
-            loc: node_loc(param),
-            comments: node_comments(param),
-          )
-        end
-
-        node.optionals.each do |param|
-          next unless param.is_a?(Prism::OptionalParameterNode)
-
-          params << OptParam.new(
-            param.name.to_s,
-            node_string!(param.value),
-            loc: node_loc(param),
-            comments: node_comments(param),
-          )
-        end
-
-        rest = node.rest
-        if rest.is_a?(Prism::RestParameterNode)
-          params << RestParam.new(
-            rest.name&.to_s || "*args",
-            loc: node_loc(rest),
-            comments: node_comments(rest),
-          )
-        end
-
-        node.keywords.each do |param|
+        node_params.map do |param|
           case param
+          when Prism::RequiredParameterNode
+            ReqParam.new(
+              param.name.to_s,
+              loc: node_loc(param),
+              comments: node_comments(param),
+            )
+          when Prism::OptionalParameterNode
+            OptParam.new(
+              param.name.to_s,
+              node_string!(param.value),
+              loc: node_loc(param),
+              comments: node_comments(param),
+            )
+          when Prism::RestParameterNode
+            RestParam.new(
+              param.name&.to_s || "*args",
+              loc: node_loc(param),
+              comments: node_comments(param),
+            )
           when Prism::RequiredKeywordParameterNode
-            params << KwParam.new(
+            KwParam.new(
               param.name.to_s.delete_suffix(":"),
               loc: node_loc(param),
               comments: node_comments(param),
             )
           when Prism::OptionalKeywordParameterNode
-            params << KwOptParam.new(
+            KwOptParam.new(
               param.name.to_s.delete_suffix(":"),
               node_string!(param.value),
               loc: node_loc(param),
               comments: node_comments(param),
             )
+          when Prism::KeywordRestParameterNode
+            KwRestParam.new(
+              param.name&.to_s || "**kwargs",
+              loc: node_loc(param),
+              comments: node_comments(param),
+            )
+          when Prism::BlockParameterNode
+            BlockParam.new(
+              param.name&.to_s || "&block",
+              loc: node_loc(param),
+              comments: node_comments(param),
+            )
+          else
+            raise ParseError.new("Unexpected parameter node `#{param.class}`", node_loc(param))
           end
         end
-
-        rest_kw = node.keyword_rest
-        if rest_kw.is_a?(Prism::KeywordRestParameterNode)
-          params << KwRestParam.new(
-            rest_kw.name&.to_s || "**kwargs",
-            loc: node_loc(rest_kw),
-            comments: node_comments(rest_kw),
-          )
-        end
-
-        block = node.block
-        if block.is_a?(Prism::BlockParameterNode)
-          params << BlockParam.new(
-            block.name&.to_s || "&block",
-            loc: node_loc(block),
-            comments: node_comments(block),
-          )
-        end
-
-        params
       end
 
       #: (Prism::CallNode node) -> Sig

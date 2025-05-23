@@ -185,6 +185,15 @@ module RBI
       assert_equal(rbi, tree.string)
     end
 
+    def test_parse_methods_with_vararg_followed_by_positional_arg
+      rbi = <<~RBI
+        def m1(*a, b); end
+      RBI
+
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
+    end
+
     def test_parse_sigs
       rbi = <<~RBI
         sig { void }
