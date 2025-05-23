@@ -320,6 +320,17 @@ module RBI
       RBI
     end
 
+    def test_print_methods_with_vararg_followed_by_positional_arg
+      rbi = parse_rbi(<<~RBI)
+        sig { params(a: Integer, b: String).void }
+        def foo(*a, b); end
+      RBI
+
+      assert_equal(<<~RBS, rbi.rbs_string)
+        def foo: (*Integer a, String b) -> void
+      RBS
+    end
+
     def test_print_methods_with_signature_params_mismatch_raises_error
       rbi = parse_rbi(<<~RBI)
         sig { params(a: A).returns(R) }
