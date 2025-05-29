@@ -718,9 +718,6 @@ module RBI
     end
 
     #: -> bool
-    def private?
-      visibility == :private
-    end
   end
 
   class Public < Visibility
