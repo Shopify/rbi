@@ -14,10 +14,8 @@ module RBI
     #: Integer
     attr_reader :current_indent
 
-    #: bool
-    attr_accessor :positional_names
-
     #: Integer?
+    attr_writer :positional_names
     attr_reader :max_line_length
 
     #: (
