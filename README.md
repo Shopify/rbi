@@ -1,3 +1,7 @@
+# ⚠️ DEPRECATED ⚠️
+
+This project is no longer maintained.
+
 # RBI generation framework
 
 `RBI` provides a Ruby API to compose Ruby interface files consumed by Sorbet.
