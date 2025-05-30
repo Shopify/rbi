@@ -734,11 +734,6 @@ module RBI
     #: (BasicObject) -> bool
     def ==(other); end
 
-    #: (BasicObject other) -> bool
-    def eql?(other)
-      self == other
-    end
-
     # @override
     #: -> Integer
     def hash
