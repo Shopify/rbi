@@ -9,7 +9,7 @@ group(:development, :test) do
   gem("byebug")
   gem("minitest")
   gem("minitest-reporters")
-  gem("rake", "~> 13.2")
+  gem("rake", "~> 13.3")
   gem("rubocop", "~> 1.75", require: false)
   gem("rubocop-shopify", require: false)
   gem("rubocop-sorbet", require: false)
