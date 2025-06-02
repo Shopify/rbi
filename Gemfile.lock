@@ -32,11 +32,11 @@ GEM
     prism (1.4.0)
     racc (1.8.1)
     rainbow (3.1.1)
-    rake (13.2.1)
+    rake (13.3.0)
     rbs (3.9.4)
       logger
     regexp_parser (2.10.0)
-    rubocop (1.75.7)
+    rubocop (1.75.8)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
@@ -55,14 +55,14 @@ GEM
     rubocop-sorbet (0.10.0)
       rubocop (>= 1)
     ruby-progressbar (1.13.0)
-    sorbet (0.5.12130)
-      sorbet-static (= 0.5.12130)
-    sorbet-runtime (0.5.12130)
-    sorbet-static (0.5.12130-universal-darwin)
-    sorbet-static (0.5.12130-x86_64-linux)
-    sorbet-static-and-runtime (0.5.12130)
-      sorbet (= 0.5.12130)
-      sorbet-runtime (= 0.5.12130)
+    sorbet (0.5.12142)
+      sorbet-static (= 0.5.12142)
+    sorbet-runtime (0.5.12142)
+    sorbet-static (0.5.12142-universal-darwin)
+    sorbet-static (0.5.12142-x86_64-linux)
+    sorbet-static-and-runtime (0.5.12142)
+      sorbet (= 0.5.12142)
+      sorbet-runtime (= 0.5.12142)
     spoom (1.6.1)
       erubi (>= 1.10.0)
       prism (>= 0.28.0)
@@ -98,7 +98,7 @@ DEPENDENCIES
   byebug
   minitest
   minitest-reporters
-  rake (~> 13.2)
+  rake (~> 13.3)
   rbi!
   rubocop (~> 1.75)
   rubocop-shopify
