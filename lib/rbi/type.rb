@@ -673,9 +673,6 @@ module RBI
         Proc.new
       end
 
-      # We mark the constructor as `protected` because we want to force the use of factories on `Type` to create types
-      protected :new
-
       private
 
       #: (String name) -> bool

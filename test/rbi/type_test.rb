@@ -5,12 +5,6 @@ require "test_helper"
 
 module RBI
   class TypeTest < Minitest::Test
-    def test_build_cant_call_new
-      assert_raises(NoMethodError) do
-        Type::Simple.new("String")
-      end
-    end
-
     def test_build_type_simple_raises_if_incorrect_name
       Type.simple("String")
       Type.simple("::String")
