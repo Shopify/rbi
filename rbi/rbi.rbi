@@ -2943,8 +2943,32 @@ class RBI::Type
   sig { returns(::RBI::Type) }
   def non_nilable; end
 
+  # Returns a normalized version of the type.
+  #
+  # Normalized types are meant to be easier to process, not to read.
+  # For example, `T.any(TrueClass, FalseClass)` instead of `T::Boolean` or
+  # `T.any(String, NilClass)` instead of `T.nilable(String)`.
+  #
+  # This is the inverse of `#simplify`.
+  #
+  # @abstract
+  sig { abstract.returns(::RBI::Type) }
+  def normalize; end
+
   sig { returns(::String) }
   def rbs_string; end
+
+  # Returns a simplified version of the type.
+  #
+  # Simplified types are meant to be easier to read, not to process.
+  # For example, `T::Boolean` instead of `T.any(TrueClass, FalseClass)` or
+  # `T.nilable(String)` instead of `T.any(String, NilClass)`.
+  #
+  # This is the inverse of `#normalize`.
+  #
+  # @abstract
+  sig { abstract.returns(::RBI::Type) }
+  def simplify; end
 
   # @abstract
   sig { abstract.returns(::String) }
@@ -3046,10 +3070,6 @@ class RBI::Type
     sig { returns(::RBI::Type::Void) }
     def void; end
 
-    protected
-
-    def new(*_arg0); end
-
     private
 
     sig { params(node: ::Prism::CallNode).returns(T::Array[::Prism::Node]) }
@@ -3100,6 +3120,12 @@ end
 
 # A type that is intersection of multiple types like `T.all(String, Integer)`.
 class RBI::Type::All < ::RBI::Type::Composite
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
+
   sig { override.returns(::String) }
   def to_rbi; end
 end
@@ -3108,6 +3134,12 @@ end
 class RBI::Type::Any < ::RBI::Type::Composite
   sig { returns(T::Boolean) }
   def nilable?; end
+
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
 
   sig { override.returns(::String) }
   def to_rbi; end
@@ -3118,6 +3150,12 @@ class RBI::Type::Anything < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
 
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
+
   sig { override.returns(::String) }
   def to_rbi; end
 end
@@ -3127,6 +3165,12 @@ class RBI::Type::AttachedClass < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
 
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
+
   sig { override.returns(::String) }
   def to_rbi; end
 end
@@ -3135,6 +3179,12 @@ end
 class RBI::Type::Boolean < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
+
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
 
   sig { override.returns(::String) }
   def to_rbi; end
@@ -3147,6 +3197,12 @@ class RBI::Type::Class < ::RBI::Type
 
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
+
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
 
   sig { override.returns(::String) }
   def to_rbi; end
@@ -3162,6 +3218,12 @@ class RBI::Type::ClassOf < ::RBI::Type
 
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
+
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
 
   sig { override.returns(::String) }
   def to_rbi; end
@@ -3200,8 +3262,14 @@ class RBI::Type::Generic < ::RBI::Type
   sig { returns(::String) }
   def name; end
 
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
   sig { returns(T::Array[::RBI::Type]) }
   def params; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
 
   sig { override.returns(::String) }
   def to_rbi; end
@@ -3215,6 +3283,12 @@ class RBI::Type::Nilable < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
 
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
+
   sig { override.returns(::String) }
   def to_rbi; end
 
@@ -3226,6 +3300,12 @@ end
 class RBI::Type::NoReturn < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
+
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
 
   sig { override.returns(::String) }
   def to_rbi; end
@@ -3242,6 +3322,9 @@ class RBI::Type::Proc < ::RBI::Type
   sig { params(type: T.untyped).returns(T.self_type) }
   def bind(type); end
 
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
   sig { params(params: ::RBI::Type).returns(T.self_type) }
   def params(**params); end
 
@@ -3257,6 +3340,9 @@ class RBI::Type::Proc < ::RBI::Type
   sig { params(type: T.untyped).returns(T.self_type) }
   def returns(type); end
 
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
+
   sig { override.returns(::String) }
   def to_rbi; end
 
@@ -3269,6 +3355,12 @@ class RBI::Type::SelfType < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
 
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
+
   sig { override.returns(::String) }
   def to_rbi; end
 end
@@ -3280,6 +3372,12 @@ class RBI::Type::Shape < ::RBI::Type
 
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
+
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
 
   sig { override.returns(::String) }
   def to_rbi; end
@@ -3301,6 +3399,12 @@ class RBI::Type::Simple < ::RBI::Type
   sig { returns(::String) }
   def name; end
 
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
+
   sig { override.returns(::String) }
   def to_rbi; end
 end
@@ -3312,6 +3416,12 @@ class RBI::Type::Tuple < ::RBI::Type
 
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
+
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
 
   sig { override.returns(::String) }
   def to_rbi; end
@@ -3331,6 +3441,12 @@ class RBI::Type::TypeParameter < ::RBI::Type
   sig { returns(::Symbol) }
   def name; end
 
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
+
   sig { override.returns(::String) }
   def to_rbi; end
 end
@@ -3339,6 +3455,12 @@ end
 class RBI::Type::Untyped < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
+
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
 
   sig { override.returns(::String) }
   def to_rbi; end
@@ -3411,6 +3533,12 @@ class RBI::Type::Visitor::Error < ::RBI::Error; end
 class RBI::Type::Void < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
+
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
 
   sig { override.returns(::String) }
   def to_rbi; end

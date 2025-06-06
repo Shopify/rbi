@@ -554,6 +554,17 @@ module RBI
       RBI
     end
 
+    def test_print_simplified_types
+      rbi = parse_rbi(<<~RBI)
+        sig { returns(T.any(String, String, NilClass, T.nilable(T.nilable(Integer)), TrueClass, FalseClass)) }
+        def foo; end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: -> (String | Integer | bool)?
+      RBI
+    end
+
     def test_print_mixins
       rbi = parse_rbi(<<~RBI)
         class Foo

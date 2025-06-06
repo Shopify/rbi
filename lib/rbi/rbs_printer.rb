@@ -949,7 +949,7 @@ module RBI
     def parse_type(type)
       return type if type.is_a?(Type)
 
-      Type.parse_string(type)
+      Type.parse_string(type).simplify
     rescue Type::Error => e
       raise Error, "Failed to parse type `#{type}` (#{e.message})"
     end
