@@ -31,6 +31,18 @@ module RBI
       def to_rbi
         @name
       end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
+      end
     end
 
     # Literals
@@ -48,6 +60,18 @@ module RBI
       def to_rbi
         "T.anything"
       end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
+      end
     end
 
     # `T.attached_class`.
@@ -62,6 +86,18 @@ module RBI
       #: -> String
       def to_rbi
         "T.attached_class"
+      end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
       end
     end
 
@@ -78,6 +114,18 @@ module RBI
       def to_rbi
         "T::Boolean"
       end
+
+      # @override
+      #: -> Type
+      def normalize
+        Type::Any.new([Type.simple("TrueClass"), Type.simple("FalseClass")])
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
+      end
     end
 
     # `T.noreturn`.
@@ -92,6 +140,18 @@ module RBI
       #: -> String
       def to_rbi
         "T.noreturn"
+      end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
       end
     end
 
@@ -108,6 +168,18 @@ module RBI
       def to_rbi
         "T.self_type"
       end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
+      end
     end
 
     # `T.untyped`.
@@ -123,6 +195,18 @@ module RBI
       def to_rbi
         "T.untyped"
       end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
+      end
     end
 
     # `void`.
@@ -137,6 +221,18 @@ module RBI
       #: -> String
       def to_rbi
         "void"
+      end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
       end
     end
 
@@ -163,6 +259,18 @@ module RBI
       #: -> String
       def to_rbi
         "T::Class[#{@type}]"
+      end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
       end
     end
 
@@ -196,6 +304,18 @@ module RBI
           "T.class_of(#{@type.to_rbi})"
         end
       end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
+      end
     end
 
     # A type that can be `nil` like `T.nilable(String)`.
@@ -219,6 +339,25 @@ module RBI
       #: -> String
       def to_rbi
         "T.nilable(#{@type.to_rbi})"
+      end
+
+      # @override
+      #: -> Type
+      def normalize
+        Type::Any.new([Type.simple("NilClass"), @type.normalize])
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        case @type
+        when Nilable
+          @type.simplify
+        when Untyped
+          @type.simplify
+        else
+          self
+        end
       end
     end
 
@@ -248,6 +387,39 @@ module RBI
       def to_rbi
         "T.all(#{@types.map(&:to_rbi).join(", ")})"
       end
+
+      # @override
+      #: -> Type
+      def normalize
+        flattened = @types.flat_map do |type|
+          type = type.normalize
+          case type
+          when All
+            type.types.map(&:normalize)
+          else
+            type
+          end
+        end.uniq
+
+        if flattened.size == 1
+          return flattened.first #: as !nil
+        end
+
+        All.new(flattened)
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        type = normalize
+
+        case type
+        when All
+          All.new(type.types.map(&:simplify))
+        else
+          type.simplify
+        end
+      end
     end
 
     # A type that is union of multiple types like `T.any(String, Integer)`.
@@ -261,6 +433,75 @@ module RBI
       #: -> bool
       def nilable?
         @types.any? { |type| type.nilable? || (type.is_a?(Simple) && type.name == "NilClass") }
+      end
+
+      # @override
+      #: -> Type
+      def normalize
+        flattened = @types.flat_map do |type|
+          type = type.normalize
+          case type
+          when Any
+            type.types.map(&:normalize)
+          else
+            type
+          end
+        end.uniq
+
+        if flattened.size == 1
+          flattened.first #: as !nil
+        else
+          Any.new(flattened)
+        end
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        type = normalize
+        return type.simplify unless type.is_a?(Any)
+
+        types = type.types.map(&:simplify)
+        return Untyped.new if types.any? { |type| type.is_a?(Untyped) }
+
+        has_true_class = types.any? { |type| type.is_a?(Simple) && type.name == "TrueClass" }
+        has_false_class = types.any? { |type| type.is_a?(Simple) && type.name == "FalseClass" }
+
+        if has_true_class && has_false_class
+          types = types.reject { |type| type.is_a?(Simple) && (type.name == "TrueClass" || type.name == "FalseClass") }
+          types << Type.boolean
+        end
+
+        is_nilable = false #: bool
+
+        types = types.filter_map do |type|
+          case type
+          when Simple
+            if type.name == "NilClass"
+              is_nilable = true
+              nil
+            else
+              type
+            end
+          when Nilable
+            is_nilable = true
+            type.type
+          else
+            type
+          end
+        end.uniq
+
+        final_type = if types.size == 1
+          types.first #: as !nil
+        else
+          Any.new(types)
+        end
+
+        if is_nilable
+          return Nilable.new(final_type)
+        end
+
+        final_type
       end
     end
 
@@ -292,6 +533,18 @@ module RBI
       def to_rbi
         "#{@name}[#{@params.map(&:to_rbi).join(", ")}]"
       end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
+      end
     end
 
     # A type parameter like `T.type_parameter(:U)`.
@@ -315,6 +568,18 @@ module RBI
       #: -> String
       def to_rbi
         "T.type_parameter(#{@name.inspect})"
+      end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
       end
     end
 
@@ -341,6 +606,18 @@ module RBI
       #: -> String
       def to_rbi
         "[#{@types.map(&:to_rbi).join(", ")}]"
+      end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
       end
     end
 
@@ -369,6 +646,18 @@ module RBI
         else
           "{ " + @types.map { |name, type| "#{name}: #{type.to_rbi}" }.join(", ") + " }"
         end
+      end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
       end
     end
 
@@ -452,6 +741,18 @@ module RBI
 
         rbi
       end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
+      end
     end
 
     # Type builder
@@ -534,14 +835,8 @@ module RBI
       # it may return something other than a `RBI::Type::Nilable`.
       #: (Type type) -> Type
       def nilable(type)
-        # TODO: should we move this logic to a `flatten!`, `normalize!` or `simplify!` method?
-        return type if type.is_a?(Untyped)
-
-        if type.nilable?
-          type
-        else
-          Nilable.new(type)
-        end
+        nilable = Nilable.new(type)
+        nilable.simplify
       end
 
       # Builds a type that represents an intersection of multiple types like `T.all(String, Integer)`.
@@ -550,25 +845,7 @@ module RBI
       # it may return something other than a `All`.
       #: (Type type1, Type type2, *Type types) -> Type
       def all(type1, type2, *types)
-        types = [type1, type2, *types]
-
-        # TODO: should we move this logic to a `flatten!`, `normalize!` or `simplify!` method?
-        flattened = types.flatten.flat_map do |type|
-          case type
-          when All
-            type.types
-          else
-            type
-          end
-        end.uniq
-
-        if flattened.size == 1
-          flattened.first #: as !nil
-        else
-          raise ArgumentError, "RBI::Type.all should have at least 2 types supplied" if flattened.size < 2
-
-          All.new(flattened)
-        end
+        All.new([type1, type2, *types]).simplify
       end
 
       # Builds a type that represents a union of multiple types like `T.any(String, Integer)`.
@@ -577,64 +854,7 @@ module RBI
       # it may return something other than a `Any`.
       #: (Type type1, Type type2, *Type types) -> Type
       def any(type1, type2, *types)
-        types = [type1, type2, *types]
-
-        # TODO: should we move this logic to a `flatten!`, `normalize!` or `simplify!` method?
-        flattened = types.flatten.flat_map do |type|
-          case type
-          when Any
-            type.types
-          else
-            type
-          end
-        end
-
-        is_nilable = false #: bool
-
-        types = flattened.filter_map do |type|
-          case type
-          when Simple
-            if type.name == "NilClass"
-              is_nilable = true
-              nil
-            else
-              type
-            end
-          when Nilable
-            is_nilable = true
-            type.type
-          else
-            type
-          end
-        end.uniq
-
-        has_true_class = types.any? { |type| type.is_a?(Simple) && type.name == "TrueClass" }
-        has_false_class = types.any? { |type| type.is_a?(Simple) && type.name == "FalseClass" }
-
-        if has_true_class && has_false_class
-          types = types.reject { |type| type.is_a?(Simple) && (type.name == "TrueClass" || type.name == "FalseClass") }
-          types << boolean
-        end
-
-        type = case types.size
-        when 0
-          if is_nilable
-            is_nilable = false
-            simple("NilClass")
-          else
-            raise ArgumentError, "RBI::Type.any should have at least 2 types supplied"
-          end
-        when 1
-          types.first #: as !nil
-        else
-          Any.new(types)
-        end
-
-        if is_nilable
-          nilable(type)
-        else
-          type
-        end
+        Any.new([type1, type2, *types]).simplify
       end
 
       # Generics
@@ -672,9 +892,6 @@ module RBI
       def proc
         Proc.new
       end
-
-      # We mark the constructor as `protected` because we want to force the use of factories on `Type` to create types
-      protected :new
 
       private
 
@@ -729,6 +946,30 @@ module RBI
     def nilable?
       is_a?(Nilable)
     end
+
+    # Returns a normalized version of the type.
+    #
+    # Normalized types are meant to be easier to process, not to read.
+    # For example, `T.any(TrueClass, FalseClass)` instead of `T::Boolean` or
+    # `T.any(String, NilClass)` instead of `T.nilable(String)`.
+    #
+    # This is the inverse of `#simplify`.
+    #
+    # @abstract
+    #: -> Type
+    def normalize; end
+
+    # Returns a simplified version of the type.
+    #
+    # Simplified types are meant to be easier to read, not to process.
+    # For example, `T::Boolean` instead of `T.any(TrueClass, FalseClass)` or
+    # `T.nilable(String)` instead of `T.any(String, NilClass)`.
+    #
+    # This is the inverse of `#normalize`.
+    #
+    # @abstract
+    #: -> Type
+    def simplify; end
 
     # @abstract
     #: (BasicObject) -> bool
