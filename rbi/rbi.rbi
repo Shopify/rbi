@@ -20,9 +20,10 @@ class RBI::Arg < ::RBI::Node
   def value; end
 end
 
-# @abstract
 class RBI::Attr < ::RBI::NodeWithComments
   include ::RBI::Indexable
+
+  abstract!
 
   sig do
     params(
@@ -39,11 +40,9 @@ class RBI::Attr < ::RBI::NodeWithComments
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
 
-  # @abstract
   sig { abstract.returns(T::Array[::RBI::Method]) }
   def convert_to_methods; end
 
-  # @abstract
   sig { abstract.returns(T::Array[::String]) }
   def fully_qualified_names; end
 
@@ -62,7 +61,6 @@ class RBI::Attr < ::RBI::NodeWithComments
   sig { returns(::RBI::Visibility) }
   def visibility; end
 
-  # @return [Visibility]
   def visibility=(_arg0); end
 
   private
@@ -90,7 +88,6 @@ class RBI::Attr < ::RBI::NodeWithComments
   end
   def create_setter_method(name, sig, attribute_type, visibility, loc, comments); end
 
-  # @raise [UnexpectedMultipleSigsError]
   sig(:final) { returns([T.nilable(::RBI::Sig), T.nilable(T.any(::RBI::Type, ::String))]) }
   def parse_sig; end
 end
@@ -176,7 +173,6 @@ class RBI::AttrWriter < ::RBI::Attr
   def to_s; end
 end
 
-# An arbitrary blank line that can be added both in trees and comments
 class RBI::BlankLine < ::RBI::Comment
   sig { params(loc: T.nilable(::RBI::Loc)).void }
   def initialize(loc: T.unsafe(nil)); end
@@ -221,13 +217,11 @@ class RBI::Class < ::RBI::Scope
   sig { returns(::String) }
   def name; end
 
-  # @return [String]
   def name=(_arg0); end
 
   sig { returns(T.nilable(::String)) }
   def superclass_name; end
 
-  # @return [String, nil]
   def superclass_name=(_arg0); end
 end
 
@@ -241,24 +235,9 @@ class RBI::Comment < ::RBI::Node
   sig { returns(::String) }
   def text; end
 
-  # @return [String]
   def text=(_arg0); end
 end
 
-# A tree showing incompatibles nodes
-#
-# Is rendered as a merge conflict between `left` and` right`:
-# ~~~rb
-# class Foo
-#   <<<<<<< left
-#   def m1; end
-#   def m2(a); end
-#   =======
-#   def m1(a); end
-#   def m2; end
-#   >>>>>>> right
-# end
-# ~~~
 class RBI::ConflictTree < ::RBI::Tree
   sig { params(left_name: ::String, right_name: ::String).void }
   def initialize(left_name: T.unsafe(nil), right_name: T.unsafe(nil)); end
@@ -269,14 +248,10 @@ class RBI::ConflictTree < ::RBI::Tree
   sig { returns(::String) }
   def left_name; end
 
-  # @return [Tree]
   def right; end
-
-  # @return [String]
   def right_name; end
 end
 
-# Consts
 class RBI::Const < ::RBI::NodeWithComments
   include ::RBI::Indexable
 
@@ -306,7 +281,6 @@ class RBI::Const < ::RBI::NodeWithComments
   sig { override.returns(::String) }
   def to_s; end
 
-  # @return [String]
   def value; end
 end
 
@@ -353,7 +327,6 @@ class RBI::File
   sig { returns(T::Array[::RBI::Comment]) }
   def comments; end
 
-  # @return [Array<Comment>]
   def comments=(_arg0); end
 
   sig { returns(T::Boolean) }
@@ -378,13 +351,11 @@ class RBI::File
   sig { returns(::RBI::Tree) }
   def root; end
 
-  # @return [Tree]
   def root=(_arg0); end
 
   sig { returns(T.nilable(::String)) }
   def strictness; end
 
-  # @return [String, nil]
   def strictness=(_arg0); end
 
   sig { params(indent: ::Integer, print_locs: T::Boolean, max_line_length: T.nilable(::Integer)).returns(::String) }
@@ -414,7 +385,6 @@ class RBI::Formatter
   sig { returns(T.nilable(::Integer)) }
   def max_line_length; end
 
-  # @return [Integer, nil]
   def max_line_length=(_arg0); end
 
   sig { params(file: ::RBI::File).returns(::String) }
@@ -437,48 +407,21 @@ class RBI::Group::Kind
   end
 end
 
-# : Kind
 RBI::Group::Kind::Attrs = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::Consts = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::Helpers = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::Inits = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::Methods = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::MixesInClassMethods = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::Mixins = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::RequiredAncestors = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::Sends = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::SingletonClasses = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::TEnums = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::TStructFields = T.let(T.unsafe(nil), RBI::Group::Kind)
-
-# : Kind
 RBI::Group::Kind::TypeMembers = T.let(T.unsafe(nil), RBI::Group::Kind)
-
 class RBI::GroupNodesError < ::RBI::Error; end
 
-# Sorbet's misc.
 class RBI::Helper < ::RBI::NodeWithComments
   include ::RBI::Indexable
 
@@ -556,14 +499,9 @@ class RBI::Index < ::RBI::Visitor
   end
 end
 
-# A Node that can be referred to by a unique ID inside an index
 module RBI::Indexable
-  # Unique IDs that refer to this node.
-  #
-  # Some nodes can have multiple ids, for example an attribute accessor matches the ID of the
-  # getter and the setter.
-  #
-  # @abstract
+  interface!
+
   sig { abstract.returns(T::Array[::String]) }
   def index_ids; end
 end
@@ -652,16 +590,12 @@ class RBI::Loc
   end
   def initialize(file: T.unsafe(nil), begin_line: T.unsafe(nil), end_line: T.unsafe(nil), begin_column: T.unsafe(nil), end_column: T.unsafe(nil)); end
 
-  # @return [Integer, nil]
   def begin_column; end
 
   sig { returns(T.nilable(::Integer)) }
   def begin_line; end
 
-  # @return [Integer, nil]
   def end_column; end
-
-  # @return [Integer, nil]
   def end_line; end
 
   sig { returns(T.nilable(::String)) }
@@ -682,7 +616,6 @@ class RBI::Loc
   end
 end
 
-# A tree that _might_ contain conflicts
 class RBI::MergeTree < ::RBI::Tree
   sig do
     params(
@@ -698,7 +631,6 @@ class RBI::MergeTree < ::RBI::Tree
   def conflicts; end
 end
 
-# Methods and args
 class RBI::Method < ::RBI::NodeWithComments
   include ::RBI::Indexable
 
@@ -767,7 +699,6 @@ class RBI::Method < ::RBI::NodeWithComments
   sig { returns(T::Boolean) }
   def is_singleton; end
 
-  # @return [Boolean]
   def is_singleton=(_arg0); end
 
   sig { override.params(other: ::RBI::Node).void }
@@ -776,7 +707,6 @@ class RBI::Method < ::RBI::NodeWithComments
   sig { returns(::String) }
   def name; end
 
-  # @return [String]
   def name=(_arg0); end
 
   sig { returns(T::Array[::RBI::Param]) }
@@ -785,7 +715,6 @@ class RBI::Method < ::RBI::NodeWithComments
   sig { returns(T::Array[::RBI::Sig]) }
   def sigs; end
 
-  # @return [Array<Sig>]
   def sigs=(_arg0); end
 
   sig { override.returns(::String) }
@@ -794,7 +723,6 @@ class RBI::Method < ::RBI::NodeWithComments
   sig { returns(::RBI::Visibility) }
   def visibility; end
 
-  # @return [Visibility]
   def visibility=(_arg0); end
 end
 
@@ -822,8 +750,9 @@ class RBI::MixesInClassMethods < ::RBI::Mixin
   def to_s; end
 end
 
-# @abstract
 class RBI::Mixin < ::RBI::NodeWithComments
+  abstract!
+
   sig do
     params(
       name: ::String,
@@ -861,16 +790,15 @@ class RBI::Module < ::RBI::Scope
   sig { returns(::String) }
   def name; end
 
-  # @return [String]
   def name=(_arg0); end
 end
 
-# @abstract
 class RBI::Node
+  abstract!
+
   sig { params(loc: T.nilable(::RBI::Loc)).void }
   def initialize(loc: T.unsafe(nil)); end
 
-  # Can `self` and `_other` be merged into a single definition?
   sig { params(_other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(_other); end
 
@@ -880,10 +808,8 @@ class RBI::Node
   sig { returns(T.nilable(::RBI::Loc)) }
   def loc; end
 
-  # @return [Loc, nil]
   def loc=(_arg0); end
 
-  # Merge `self` and `other` into a single definition
   sig { params(other: ::RBI::Node).void }
   def merge_with(other); end
 
@@ -896,7 +822,6 @@ class RBI::Node
   sig { returns(T.nilable(::RBI::Tree)) }
   def parent_tree; end
 
-  # @return [Tree, nil]
   def parent_tree=(_arg0); end
 
   sig do
@@ -922,7 +847,6 @@ class RBI::Node
   sig { params(indent: ::Integer, print_locs: T::Boolean, positional_names: T::Boolean).returns(::String) }
   def rbs_string(indent: T.unsafe(nil), print_locs: T.unsafe(nil), positional_names: T.unsafe(nil)); end
 
-  # @raise [ReplaceNodeError]
   sig { params(node: ::RBI::Node).void }
   def replace(node); end
 
@@ -933,8 +857,9 @@ class RBI::Node
   def string(indent: T.unsafe(nil), print_locs: T.unsafe(nil), max_line_length: T.unsafe(nil)); end
 end
 
-# @abstract
 class RBI::NodeWithComments < ::RBI::Node
+  abstract!
+
   sig { params(loc: T.nilable(::RBI::Loc), comments: T::Array[::RBI::Comment]).void }
   def initialize(loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
@@ -944,7 +869,6 @@ class RBI::NodeWithComments < ::RBI::Node
   sig { returns(T::Array[::RBI::Comment]) }
   def comments; end
 
-  # @return [Array<Comment>]
   def comments=(_arg0); end
 
   sig { override.params(other: ::RBI::Node).void }
@@ -973,8 +897,9 @@ class RBI::OptParam < ::RBI::Param
   def value; end
 end
 
-# @abstract
 class RBI::Param < ::RBI::NodeWithComments
+  abstract!
+
   sig { params(name: ::String, loc: T.nilable(::RBI::Loc), comments: T::Array[::RBI::Comment]).void }
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
@@ -1092,11 +1017,9 @@ class RBI::Parser::TreeBuilder < ::RBI::Parser::Visitor
 
   private
 
-  # Collect all the remaining comments within a node
   sig { params(node: ::Prism::Node).void }
   def collect_dangling_comments(node); end
 
-  # Collect all the remaining comments after visiting the tree
   sig { void }
   def collect_orphan_comments; end
 
@@ -1192,13 +1115,9 @@ class RBI::Printer < ::RBI::Visitor
   sig { void }
   def dedent; end
 
-  # @return [Boolean]
   def in_visibility_group; end
-
-  # @return [Boolean]
   def in_visibility_group=(_arg0); end
 
-  # Printing
   sig { void }
   def indent; end
 
@@ -1208,25 +1127,20 @@ class RBI::Printer < ::RBI::Visitor
   sig { returns(T.nilable(::RBI::Node)) }
   def previous_node; end
 
-  # Print a string without indentation nor `\n` at the end.
   sig { params(string: ::String).void }
   def print(string); end
 
   sig { returns(T::Boolean) }
   def print_locs; end
 
-  # @return [Boolean]
   def print_locs=(_arg0); end
 
-  # Print a string with indentation and `\n` at the end.
   sig { params(string: ::String).void }
   def printl(string); end
 
-  # Print a string without indentation but with a `\n` at the end.
   sig { params(string: T.nilable(::String)).void }
   def printn(string = T.unsafe(nil)); end
 
-  # Print a string with indentation but without a `\n` at the end.
   sig { params(string: T.nilable(::String)).void }
   def printt(string = T.unsafe(nil)); end
 
@@ -1471,7 +1385,6 @@ class RBI::RBS::MethodTypeTranslator
   sig { params(type: T.untyped).returns(::RBI::Type) }
   def translate_type(type); end
 
-  # @raise [Error]
   sig { params(type: ::RBS::Types::Block).void }
   def visit_block_type(type); end
 
@@ -1508,7 +1421,6 @@ class RBI::RBS::TypeTranslator
   end
 end
 
-# A comment representing a RBS type prefixed with `#:`
 class RBI::RBSComment < ::RBI::Comment
   sig { params(other: ::Object).returns(T::Boolean) }
   def ==(other); end
@@ -1532,13 +1444,9 @@ class RBI::RBSPrinter < ::RBI::Visitor
   sig { void }
   def dedent; end
 
-  # @return [Boolean]
   def in_visibility_group; end
-
-  # @return [Boolean]
   def in_visibility_group=(_arg0); end
 
-  # Printing
   sig { void }
   def indent; end
 
@@ -1548,13 +1456,11 @@ class RBI::RBSPrinter < ::RBI::Visitor
   sig { returns(T::Boolean) }
   def positional_names; end
 
-  # @return [Boolean]
   def positional_names=(_arg0); end
 
   sig { returns(T.nilable(::RBI::Node)) }
   def previous_node; end
 
-  # Print a string without indentation nor `\n` at the end.
   sig { params(string: ::String).void }
   def print(string); end
 
@@ -1564,7 +1470,6 @@ class RBI::RBSPrinter < ::RBI::Visitor
   sig { returns(T::Boolean) }
   def print_locs; end
 
-  # @return [Boolean]
   def print_locs=(_arg0); end
 
   sig { params(node: ::RBI::Method, sig: ::RBI::Sig).void }
@@ -1576,15 +1481,12 @@ class RBI::RBSPrinter < ::RBI::Visitor
   sig { params(node: ::RBI::Method, sig: ::RBI::Sig).void }
   def print_method_sig_multiline(node, sig); end
 
-  # Print a string with indentation and `\n` at the end.
   sig { params(string: ::String).void }
   def printl(string); end
 
-  # Print a string without indentation but with a `\n` at the end.
   sig { params(string: T.nilable(::String)).void }
   def printn(string = T.unsafe(nil)); end
 
-  # Print a string with indentation but without a `\n` at the end.
   sig { params(string: T.nilable(::String)).void }
   def printt(string = T.unsafe(nil)); end
 
@@ -1746,9 +1648,6 @@ class RBI::RBSPrinter < ::RBI::Visitor
   sig { params(node: ::RBI::Node).returns(T::Boolean) }
   def oneline?(node); end
 
-  # Parse a string containing a `T.let(x, X)` and extract the type
-  #
-  # Returns `nil` is the string is not a `T.let`.
   sig { params(code: T.nilable(::String)).returns(T.nilable(::String)) }
   def parse_t_let(code); end
 
@@ -1866,7 +1765,6 @@ class RBI::Rewriters::AttrToMethods < ::RBI::Visitor
 
   private
 
-  # @raise [ReplaceNodeError]
   sig { params(node: ::RBI::Node, with: T::Array[::RBI::Node]).void }
   def replace(node, with:); end
 end
@@ -1884,57 +1782,6 @@ class RBI::Rewriters::Deannotate < ::RBI::Visitor
   def deannotate_node(node); end
 end
 
-# Take a gem version and filter out all RBI that is not relevant to that version based on @version annotations
-# in comments. As an example:
-#
-# ~~~rb
-# tree = Parser.parse_string(<<~RBI)
-#   class Foo
-#     # @version > 0.3.0
-#     def bar
-#     end
-#
-#     # @version <= 0.3.0
-#     def bar(arg1)
-#     end
-#   end
-# RBI
-#
-# Rewriters::FilterVersions.filter(tree, Gem::Version.new("0.3.1"))
-#
-# assert_equal(<<~RBI, tree.string)
-#   class Foo
-#     # @version > 0.3.0
-#     def bar
-#     end
-#   end
-# RBI
-# ~~~
-#
-# Supported operators:
-# - equals `=`
-# - not equals `!=`
-# - greater than `>`
-# - greater than or equal to `>=`
-# - less than `<`
-# - less than or equal to `<=`
-# - pessimistic or twiddle-wakka`~>`
-#
-# And/or logic:
-# - "And" logic: put multiple versions on the same line
-#   - e.g. `@version > 0.3.0, <1.0.0` means version must be greater than 0.3.0 AND less than 1.0.0
-# - "Or" logic: put multiple versions on subsequent lines
-#   - e.g. the following means version must be less than 0.3.0 OR greater than 1.0.0
-#       ```
-#       # @version < 0.3.0
-#       # @version > 1.0.0
-#       ```
-# Prerelease versions:
-# - Prerelease versions are considered less than their non-prerelease counterparts
-#   - e.g. `0.4.0-prerelease` is less than `0.4.0`
-#
-# RBI with no versions:
-# - RBI with no version annotations are automatically counted towards ALL versions
 class RBI::Rewriters::FilterVersions < ::RBI::Visitor
   sig { params(version: ::Gem::Version).void }
   def initialize(version); end
@@ -1950,56 +1797,11 @@ end
 
 RBI::Rewriters::FilterVersions::VERSION_PREFIX = T.let(T.unsafe(nil), String)
 
-# Rewrite non-singleton methods inside singleton classes to singleton methods
-#
-# Example:
-# ~~~rb
-# class << self
-#  def m1; end
-#  def self.m2; end
-#
-#  class << self
-#    def m3; end
-#  end
-# end
-# ~~~
-#
-# will be rewritten to:
-#
-# ~~~rb
-# def self.m1; end
-#
-# class << self
-#   def self.m2; end
-#   def self.m3; end
-# end
-# ~~~
 class RBI::Rewriters::FlattenSingletonMethods < ::RBI::Visitor
   sig { override.params(node: T.nilable(::RBI::Node)).void }
   def visit(node); end
 end
 
-# Flattens visibility nodes into method nodes
-#
-# Example:
-# ~~~rb
-# class A
-#   def m1; end
-#   private
-#   def m2; end
-#   def m3; end
-# end
-# ~~~
-#
-# will be transformed into:
-#
-# ~~~rb
-# class A
-#   def m1; end
-#   private def m2; end
-#   private def m3; end
-# end
-# ~~~
 class RBI::Rewriters::FlattenVisibilities < ::RBI::Visitor
   sig { void }
   def initialize; end
@@ -2018,39 +1820,6 @@ class RBI::Rewriters::GroupNodes < ::RBI::Visitor
   def group_kind(node); end
 end
 
-# Merge two RBI trees together
-#
-# Be this `Tree`:
-# ~~~rb
-# class Foo
-#   attr_accessor :a
-#   def m; end
-#   C = 10
-# end
-# ~~~
-#
-# Merged with this one:
-# ~~~rb
-# class Foo
-#   attr_reader :a
-#   def m(x); end
-#   C = 10
-# end
-# ~~~
-#
-# Compatible definitions are merged together while incompatible definitions are moved into a `ConflictTree`:
-# ~~~rb
-# class Foo
-#   <<<<<<< left
-#   attr_accessor :a
-#   def m; end
-#   =======
-#   attr_reader :a
-#   def m(x); end
-#   >>>>>>> right
-#   C = 10
-# end
-# ~~~
 class RBI::Rewriters::Merge
   sig { params(left_name: ::String, right_name: ::String, keep: ::RBI::Rewriters::Merge::Keep).void }
   def initialize(left_name: T.unsafe(nil), right_name: T.unsafe(nil), keep: T.unsafe(nil)); end
@@ -2075,7 +1844,6 @@ class RBI::Rewriters::Merge
   end
 end
 
-# Used for logging / error displaying purpose
 class RBI::Rewriters::Merge::Conflict
   sig { params(left: ::RBI::Node, right: ::RBI::Node, left_name: ::String, right_name: ::String).void }
   def initialize(left:, right:, left_name:, right_name:); end
@@ -2086,46 +1854,13 @@ class RBI::Rewriters::Merge::Conflict
   sig { returns(::String) }
   def left_name; end
 
-  # @return [Node]
   def right; end
-
-  # @return [String]
   def right_name; end
 
   sig { returns(::String) }
   def to_s; end
 end
 
-# Merge adjacent conflict trees
-#
-# Transform this:
-# ~~~rb
-# class Foo
-#   <<<<<<< left
-#   def m1; end
-#   =======
-#   def m1(a); end
-#   >>>>>>> right
-#   <<<<<<< left
-#   def m2(a); end
-#   =======
-#   def m2; end
-#   >>>>>>> right
-# end
-# ~~~
-#
-# Into this:
-# ~~~rb
-# class Foo
-#   <<<<<<< left
-#   def m1; end
-#   def m2(a); end
-#   =======
-#   def m1(a); end
-#   def m2; end
-#   >>>>>>> right
-# end
-# ~~~
 class RBI::Rewriters::Merge::ConflictTreeMerger < ::RBI::Visitor
   sig { override.params(node: T.nilable(::RBI::Node)).void }
   def visit(node); end
@@ -2147,13 +1882,8 @@ class RBI::Rewriters::Merge::Keep
   end
 end
 
-# : Keep
 RBI::Rewriters::Merge::Keep::LEFT = T.let(T.unsafe(nil), RBI::Rewriters::Merge::Keep)
-
-# : Keep
 RBI::Rewriters::Merge::Keep::NONE = T.let(T.unsafe(nil), RBI::Rewriters::Merge::Keep)
-
-# : Keep
 RBI::Rewriters::Merge::Keep::RIGHT = T.let(T.unsafe(nil), RBI::Rewriters::Merge::Keep)
 
 class RBI::Rewriters::Merge::TreeMerger < ::RBI::Visitor
@@ -2201,22 +1931,6 @@ class RBI::Rewriters::NestSingletonMethods < ::RBI::Visitor
   def visit(node); end
 end
 
-# This rewriter moves top-level members into a top-level Object class
-#
-# Example:
-# ~~~rb
-# def foo; end
-# attr_reader :bar
-# ~~~
-#
-# will be rewritten to:
-#
-# ~~~rb
-# class Object
-#  def foo; end
-#  attr_reader :bar
-# end
-# ~~~
 class RBI::Rewriters::NestTopLevelMembers < ::RBI::Visitor
   sig { void }
   def initialize; end
@@ -2225,48 +1939,6 @@ class RBI::Rewriters::NestTopLevelMembers < ::RBI::Visitor
   def visit(node); end
 end
 
-# Remove all definitions existing in the index from the current tree
-#
-# Let's create an `Index` from two different `Tree`s:
-# ~~~rb
-# tree1 = Parse.parse_string(<<~RBI)
-#   class Foo
-#     def foo; end
-#   end
-# RBI
-#
-# tree2 = Parse.parse_string(<<~RBI)
-#   FOO = 10
-# RBI
-#
-# index = Index.index(tree1, tree2)
-# ~~~
-#
-# We can use `RemoveKnownDefinitions` to remove the definitions found in the `index` from the `Tree` to clean:
-# ~~~rb
-# tree_to_clean = Parser.parse_string(<<~RBI)
-#   class Foo
-#     def foo; end
-#     def bar; end
-#   end
-#   FOO = 10
-#   BAR = 42
-# RBI
-#
-# cleaned_tree, operations = RemoveKnownDefinitions.remove(tree_to_clean, index)
-#
-# assert_equal(<<~RBI, cleaned_tree)
-#   class Foo
-#     def bar; end
-#   end
-#   BAR = 42
-# RBI
-#
-# assert_equal(<<~OPERATIONS, operations.join("\n"))
-#   Deleted ::Foo#foo at -:2:2-2-16 (duplicate from -:2:2-2:16)
-#   Deleted ::FOO at -:5:0-5:8 (duplicate from -:1:0-1:8)
-# OPERATIONS
-# ~~~
 class RBI::Rewriters::RemoveKnownDefinitions < ::RBI::Visitor
   sig { params(index: ::RBI::Index).void }
   def initialize(index); end
@@ -2309,7 +1981,6 @@ class RBI::Rewriters::RemoveKnownDefinitions::Operation
   sig { returns(::RBI::Node) }
   def deleted_node; end
 
-  # @return [Node]
   def duplicate_of; end
 
   sig { returns(::String) }
@@ -2335,7 +2006,6 @@ class RBI::Rewriters::SortNodes < ::RBI::Visitor
   def sort_node_names!(node); end
 end
 
-# Translate all RBS signature comments to Sorbet RBI signatures
 class RBI::Rewriters::TranslateRBSSigs < ::RBI::Visitor
   sig { override.params(node: T.nilable(::RBI::Node)).void }
   def visit(node); end
@@ -2354,15 +2024,14 @@ end
 
 class RBI::Rewriters::TranslateRBSSigs::Error < ::RBI::Error; end
 
-# @abstract
 class RBI::Scope < ::RBI::Tree
   include ::RBI::Indexable
 
-  # Duplicate `self` scope without its body
+  abstract!
+
   sig { returns(T.self_type) }
   def dup_empty; end
 
-  # @abstract
   sig { abstract.returns(::String) }
   def fully_qualified_name; end
 
@@ -2373,18 +2042,6 @@ class RBI::Scope < ::RBI::Tree
   def to_s; end
 end
 
-# A conflict between two scope headers
-#
-# Is rendered as a merge conflict between `left` and` right` for scope definitions:
-# ~~~rb
-# <<<<<<< left
-# class Foo
-# =======
-# module Foo
-# >>>>>>> right
-#   def m1; end
-# end
-# ~~~
 class RBI::ScopeConflict < ::RBI::Tree
   sig { params(left: ::RBI::Scope, right: ::RBI::Scope, left_name: ::String, right_name: ::String).void }
   def initialize(left:, right:, left_name: T.unsafe(nil), right_name: T.unsafe(nil)); end
@@ -2395,14 +2052,10 @@ class RBI::ScopeConflict < ::RBI::Tree
   sig { returns(::String) }
   def left_name; end
 
-  # @return [Scope]
   def right; end
-
-  # @return [String]
   def right_name; end
 end
 
-# Sends
 class RBI::Send < ::RBI::NodeWithComments
   include ::RBI::Indexable
 
@@ -2439,7 +2092,6 @@ class RBI::Send < ::RBI::NodeWithComments
   def to_s; end
 end
 
-# Sorbet's sigs
 class RBI::Sig < ::RBI::NodeWithComments
   sig do
     params(
@@ -2469,40 +2121,23 @@ class RBI::Sig < ::RBI::NodeWithComments
   sig { params(name: ::String, type: T.any(::RBI::Type, ::String)).void }
   def add_param(name, type); end
 
-  # @return [Boolean]
   def allow_incompatible_override; end
-
-  # @return [Boolean]
   def allow_incompatible_override=(_arg0); end
 
   sig { returns(T.nilable(::Symbol)) }
   def checked; end
 
-  # @return [Symbol, nil]
   def checked=(_arg0); end
 
   sig { returns(T::Boolean) }
   def is_abstract; end
 
-  # @return [Boolean]
   def is_abstract=(_arg0); end
-
-  # @return [Boolean]
   def is_final; end
-
-  # @return [Boolean]
   def is_final=(_arg0); end
-
-  # @return [Boolean]
   def is_overridable; end
-
-  # @return [Boolean]
   def is_overridable=(_arg0); end
-
-  # @return [Boolean]
   def is_override; end
-
-  # @return [Boolean]
   def is_override=(_arg0); end
 
   sig { returns(T::Array[::RBI::SigParam]) }
@@ -2511,16 +2146,12 @@ class RBI::Sig < ::RBI::NodeWithComments
   sig { returns(T.any(::RBI::Type, ::String)) }
   def return_type; end
 
-  # @return [Type, String]
   def return_type=(_arg0); end
 
   sig { returns(T::Array[::String]) }
   def type_params; end
 
-  # @return [Boolean]
   def without_runtime; end
-
-  # @return [Boolean]
   def without_runtime=(_arg0); end
 end
 
@@ -2582,23 +2213,19 @@ class RBI::Struct < ::RBI::Scope
   sig { returns(T::Boolean) }
   def keyword_init; end
 
-  # @return [Boolean]
   def keyword_init=(_arg0); end
 
   sig { returns(T::Array[::Symbol]) }
   def members; end
 
-  # @return [Array<Symbol>]
   def members=(_arg0); end
 
   sig { returns(::String) }
   def name; end
 
-  # @return [String]
   def name=(_arg0); end
 end
 
-# Sorbet's T::Enum
 class RBI::TEnum < ::RBI::Class
   sig do
     params(
@@ -2657,7 +2284,6 @@ class RBI::TEnumValue < ::RBI::NodeWithComments
   def to_s; end
 end
 
-# Sorbet's T::Struct
 class RBI::TStruct < ::RBI::Class
   sig do
     params(
@@ -2698,8 +2324,9 @@ class RBI::TStructConst < ::RBI::TStructField
   def to_s; end
 end
 
-# @abstract
 class RBI::TStructField < ::RBI::NodeWithComments
+  abstract!
+
   sig do
     params(
       name: ::String,
@@ -2717,23 +2344,19 @@ class RBI::TStructField < ::RBI::NodeWithComments
   sig { returns(T.nilable(::String)) }
   def default; end
 
-  # @return [String, nil]
   def default=(_arg0); end
 
-  # @abstract
   sig { abstract.returns(T::Array[::String]) }
   def fully_qualified_names; end
 
   sig { returns(::String) }
   def name; end
 
-  # @return [String]
   def name=(_arg0); end
 
   sig { returns(T.any(::RBI::Type, ::String)) }
   def type; end
 
-  # @return [Type, String]
   def type=(_arg0); end
 end
 
@@ -2897,14 +2520,12 @@ class RBI::Tree < ::RBI::NodeWithComments
   def nodes_cache; end
 end
 
-# The base class for all RBI types.
-#
-# @abstract
 class RBI::Type
+  abstract!
+
   sig { void }
   def initialize; end
 
-  # @abstract
   sig { abstract.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
 
@@ -2914,63 +2535,24 @@ class RBI::Type
   sig { override.returns(::Integer) }
   def hash; end
 
-  # Returns a new type that is `nilable` if it is not already.
-  #
-  # If the type is already nilable, it returns itself.
-  # ```ruby
-  # type = RBI::Type.simple("String")
-  # type.to_rbi # => "String"
-  # type.nilable.to_rbi # => "T.nilable(String)"
-  # type.nilable.nilable.to_rbi # => "T.nilable(String)"
-  # ```
   sig { returns(::RBI::Type) }
   def nilable; end
 
-  # Returns whether the type is nilable.
   sig { returns(T::Boolean) }
   def nilable?; end
 
-  # Returns the non-nilable version of the type.
-  # If the type is already non-nilable, it returns itself.
-  # If the type is nilable, it returns the inner type.
-  #
-  # ```ruby
-  # type = RBI::Type.nilable(RBI::Type.simple("String"))
-  # type.to_rbi # => "T.nilable(String)"
-  # type.non_nilable.to_rbi # => "String"
-  # type.non_nilable.non_nilable.to_rbi # => "String"
-  # ```
   sig { returns(::RBI::Type) }
   def non_nilable; end
 
-  # Returns a normalized version of the type.
-  #
-  # Normalized types are meant to be easier to process, not to read.
-  # For example, `T.any(TrueClass, FalseClass)` instead of `T::Boolean` or
-  # `T.any(String, NilClass)` instead of `T.nilable(String)`.
-  #
-  # This is the inverse of `#simplify`.
-  #
-  # @abstract
   sig { abstract.returns(::RBI::Type) }
   def normalize; end
 
   sig { returns(::String) }
   def rbs_string; end
 
-  # Returns a simplified version of the type.
-  #
-  # Simplified types are meant to be easier to read, not to process.
-  # For example, `T::Boolean` instead of `T.any(TrueClass, FalseClass)` or
-  # `T.nilable(String)` instead of `T.any(String, NilClass)`.
-  #
-  # This is the inverse of `#normalize`.
-  #
-  # @abstract
   sig { abstract.returns(::RBI::Type) }
   def simplify; end
 
-  # @abstract
   sig { abstract.returns(::String) }
   def to_rbi; end
 
@@ -2978,95 +2560,63 @@ class RBI::Type
   def to_s; end
 
   class << self
-    # Builds a type that represents an intersection of multiple types like `T.all(String, Integer)`.
-    #
-    # Note that this method transforms types such as `T.all(String, String)` into `String`, so
-    # it may return something other than a `All`.
     sig { params(type1: ::RBI::Type, type2: ::RBI::Type, types: ::RBI::Type).returns(::RBI::Type) }
     def all(type1, type2, *types); end
 
-    # Builds a type that represents a union of multiple types like `T.any(String, Integer)`.
-    #
-    # Note that this method transforms types such as `T.any(String, NilClass)` into `T.nilable(String)`, so
-    # it may return something other than a `Any`.
     sig { params(type1: ::RBI::Type, type2: ::RBI::Type, types: ::RBI::Type).returns(::RBI::Type) }
     def any(type1, type2, *types); end
 
-    # Builds a type that represents `T.anything`.
     sig { returns(::RBI::Type::Anything) }
     def anything; end
 
-    # Builds a type that represents `T.attached_class`.
     sig { returns(::RBI::Type::AttachedClass) }
     def attached_class; end
 
-    # Builds a type that represents `T::Boolean`.
     sig { returns(::RBI::Type::Boolean) }
     def boolean; end
 
-    # Builds a type that represents the singleton class of another type like `T.class_of(Foo)`.
     sig { params(type: ::RBI::Type::Simple, type_parameter: T.nilable(::RBI::Type)).returns(::RBI::Type::ClassOf) }
     def class_of(type, type_parameter = T.unsafe(nil)); end
 
-    # Builds a type that represents a generic type like `T::Array[String]` or `T::Hash[Symbol, Integer]`.
     sig { params(name: ::String, params: T.any(::RBI::Type, T::Array[::RBI::Type])).returns(::RBI::Type::Generic) }
     def generic(name, *params); end
 
-    # Builds a type that represents a nilable of another type like `T.nilable(String)`.
-    #
-    # Note that this method transforms types such as `T.nilable(T.untyped)` into `T.untyped`, so
-    # it may return something other than a `RBI::Type::Nilable`.
     sig { params(type: ::RBI::Type).returns(::RBI::Type) }
     def nilable(type); end
 
-    # Builds a type that represents `T.noreturn`.
     sig { returns(::RBI::Type::NoReturn) }
     def noreturn; end
 
     sig { params(node: ::Prism::Node).returns(::RBI::Type) }
     def parse_node(node); end
 
-    # @raise [Error]
     sig { params(string: ::String).returns(::RBI::Type) }
     def parse_string(string); end
 
-    # Builds a type that represents a proc type like `T.proc.void`.
     sig { returns(::RBI::Type::Proc) }
     def proc; end
 
-    # Builds a type that represents `T.self_type`.
     sig { returns(::RBI::Type::SelfType) }
     def self_type; end
 
-    # Builds a type that represents a shape type like `{name: String, age: Integer}`.
     sig { params(types: T::Hash[T.any(::String, ::Symbol), ::RBI::Type]).returns(::RBI::Type::Shape) }
     def shape(types = T.unsafe(nil)); end
 
-    # Builds a simple type like `String` or `::Foo::Bar`.
-    #
-    # It raises a `NameError` if the name is not a valid Ruby class identifier.
-    #
-    # @raise [NameError]
     sig { params(name: ::String).returns(::RBI::Type::Simple) }
     def simple(name); end
 
-    # Builds a type that represents the class of another type like `T::Class[Foo]`.
     sig { params(type: ::RBI::Type).returns(::RBI::Type::Class) }
     def t_class(type); end
 
-    # Builds a type that represents a tuple type like `[String, Integer]`.
     sig { params(types: T.any(::RBI::Type, T::Array[::RBI::Type])).returns(::RBI::Type::Tuple) }
     def tuple(*types); end
 
-    # Builds a type that represents a type parameter like `T.type_parameter(:U)`.
     sig { params(name: ::Symbol).returns(::RBI::Type::TypeParameter) }
     def type_parameter(name); end
 
-    # Builds a type that represents `T.untyped`.
     sig { returns(::RBI::Type::Untyped) }
     def untyped; end
 
-    # Builds a type that represents `void`.
     sig { returns(::RBI::Type::Void) }
     def void; end
 
@@ -3081,14 +2631,12 @@ class RBI::Type
     sig { params(node: ::Prism::CallNode, count: ::Integer).returns(T::Array[::Prism::Node]) }
     def check_arguments_exactly!(node, count); end
 
-    # @raise [Error]
     sig { params(node: ::Prism::CallNode).returns(::RBI::Type) }
     def parse_call(node); end
 
     sig { params(node: T.any(::Prism::ConstantPathNode, ::Prism::ConstantReadNode)).returns(::RBI::Type) }
     def parse_constant(node); end
 
-    # @raise [Error]
     sig { params(node: ::Prism::CallNode).returns(::RBI::Type) }
     def parse_proc(node); end
 
@@ -3118,7 +2666,6 @@ class RBI::Type
   end
 end
 
-# A type that is intersection of multiple types like `T.all(String, Integer)`.
 class RBI::Type::All < ::RBI::Type::Composite
   sig { override.returns(::RBI::Type) }
   def normalize; end
@@ -3130,7 +2677,6 @@ class RBI::Type::All < ::RBI::Type::Composite
   def to_rbi; end
 end
 
-# A type that is union of multiple types like `T.any(String, Integer)`.
 class RBI::Type::Any < ::RBI::Type::Composite
   sig { returns(T::Boolean) }
   def nilable?; end
@@ -3145,7 +2691,6 @@ class RBI::Type::Any < ::RBI::Type::Composite
   def to_rbi; end
 end
 
-# `T.anything`.
 class RBI::Type::Anything < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
@@ -3160,7 +2705,6 @@ class RBI::Type::Anything < ::RBI::Type
   def to_rbi; end
 end
 
-# `T.attached_class`.
 class RBI::Type::AttachedClass < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
@@ -3175,7 +2719,6 @@ class RBI::Type::AttachedClass < ::RBI::Type
   def to_rbi; end
 end
 
-# `T::Boolean`.
 class RBI::Type::Boolean < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
@@ -3190,7 +2733,6 @@ class RBI::Type::Boolean < ::RBI::Type
   def to_rbi; end
 end
 
-# The class of another type like `T::Class[Foo]`.
 class RBI::Type::Class < ::RBI::Type
   sig { params(type: ::RBI::Type).void }
   def initialize(type); end
@@ -3211,7 +2753,6 @@ class RBI::Type::Class < ::RBI::Type
   def type; end
 end
 
-# The singleton class of another type like `T.class_of(Foo)`.
 class RBI::Type::ClassOf < ::RBI::Type
   sig { params(type: ::RBI::Type::Simple, type_parameter: T.nilable(::RBI::Type)).void }
   def initialize(type, type_parameter = T.unsafe(nil)); end
@@ -3235,10 +2776,9 @@ class RBI::Type::ClassOf < ::RBI::Type
   def type_parameter; end
 end
 
-# A type that is composed of multiple types like `T.all(String, Integer)`.
-#
-# @abstract
 class RBI::Type::Composite < ::RBI::Type
+  abstract!
+
   sig { params(types: T::Array[::RBI::Type]).void }
   def initialize(types); end
 
@@ -3251,7 +2791,6 @@ end
 
 class RBI::Type::Error < ::RBI::Error; end
 
-# A generic type like `T::Array[String]` or `T::Hash[Symbol, Integer]`.
 class RBI::Type::Generic < ::RBI::Type
   sig { params(name: ::String, params: ::RBI::Type).void }
   def initialize(name, *params); end
@@ -3275,7 +2814,6 @@ class RBI::Type::Generic < ::RBI::Type
   def to_rbi; end
 end
 
-# A type that can be `nil` like `T.nilable(String)`.
 class RBI::Type::Nilable < ::RBI::Type
   sig { params(type: ::RBI::Type).void }
   def initialize(type); end
@@ -3296,7 +2834,6 @@ class RBI::Type::Nilable < ::RBI::Type
   def type; end
 end
 
-# `T.noreturn`.
 class RBI::Type::NoReturn < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
@@ -3311,7 +2848,6 @@ class RBI::Type::NoReturn < ::RBI::Type
   def to_rbi; end
 end
 
-# A proc type like `T.proc.void`.
 class RBI::Type::Proc < ::RBI::Type
   sig { void }
   def initialize; end
@@ -3350,7 +2886,6 @@ class RBI::Type::Proc < ::RBI::Type
   def void; end
 end
 
-# `T.self_type`.
 class RBI::Type::SelfType < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
@@ -3365,7 +2900,6 @@ class RBI::Type::SelfType < ::RBI::Type
   def to_rbi; end
 end
 
-# A shape type like `{name: String, age: Integer}`.
 class RBI::Type::Shape < ::RBI::Type
   sig { params(types: T::Hash[T.any(::String, ::Symbol), ::RBI::Type]).void }
   def initialize(types); end
@@ -3386,9 +2920,6 @@ class RBI::Type::Shape < ::RBI::Type
   def types; end
 end
 
-# A type that represents a simple class name like `String` or `Foo`.
-#
-# It can also be a qualified name like `::Foo` or `Foo::Bar`.
 class RBI::Type::Simple < ::RBI::Type
   sig { params(name: ::String).void }
   def initialize(name); end
@@ -3409,7 +2940,6 @@ class RBI::Type::Simple < ::RBI::Type
   def to_rbi; end
 end
 
-# A tuple type like `[String, Integer]`.
 class RBI::Type::Tuple < ::RBI::Type
   sig { params(types: T::Array[::RBI::Type]).void }
   def initialize(types); end
@@ -3430,7 +2960,6 @@ class RBI::Type::Tuple < ::RBI::Type
   def types; end
 end
 
-# A type parameter like `T.type_parameter(:U)`.
 class RBI::Type::TypeParameter < ::RBI::Type
   sig { params(name: ::Symbol).void }
   def initialize(name); end
@@ -3451,7 +2980,6 @@ class RBI::Type::TypeParameter < ::RBI::Type
   def to_rbi; end
 end
 
-# `T.untyped`.
 class RBI::Type::Untyped < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
@@ -3529,7 +3057,6 @@ end
 
 class RBI::Type::Visitor::Error < ::RBI::Error; end
 
-# `void`.
 class RBI::Type::Void < ::RBI::Type
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
@@ -3570,7 +3097,6 @@ class RBI::TypeMember < ::RBI::NodeWithComments
   sig { override.returns(::String) }
   def to_s; end
 
-  # @return [String]
   def value; end
 end
 
@@ -3665,8 +3191,9 @@ end
 
 RBI::VERSION = T.let(T.unsafe(nil), String)
 
-# @abstract
 class RBI::Visibility < ::RBI::NodeWithComments
+  abstract!
+
   sig { params(visibility: ::Symbol, loc: T.nilable(::RBI::Loc), comments: T::Array[::RBI::Comment]).void }
   def initialize(visibility, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
@@ -3694,8 +3221,9 @@ class RBI::VisibilityGroup < ::RBI::Tree
   def visibility; end
 end
 
-# @abstract
 class RBI::Visitor
+  abstract!
+
   sig { params(node: T.nilable(::RBI::Node)).void }
   def visit(node); end
 
