@@ -73,7 +73,7 @@ module RBI
     # getter and the setter.
     # @abstract
     #: -> Array[String]
-    def index_ids = raise("Abstract method called")
+    def index_ids = raise NotImplementedError, "Abstract method called"
   end
 
   class Scope

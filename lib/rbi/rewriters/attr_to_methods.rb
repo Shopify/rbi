@@ -56,7 +56,7 @@ module RBI
   class Attr
     # @abstract
     #: -> Array[Method]
-    def convert_to_methods = raise("Abstract method called")
+    def convert_to_methods = raise NotImplementedError, "Abstract method called"
 
     private
 
