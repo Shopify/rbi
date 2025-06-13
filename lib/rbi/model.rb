@@ -163,7 +163,7 @@ module RBI
   class Scope < Tree
     # @abstract
     #: -> String
-    def fully_qualified_name; end
+    def fully_qualified_name = raise("Abstract method called")
 
     # @override
     #: -> String
@@ -309,7 +309,7 @@ module RBI
 
     # @abstract
     #: -> Array[String]
-    def fully_qualified_names; end
+    def fully_qualified_names = raise("Abstract method called")
   end
 
   class AttrAccessor < Attr
@@ -942,7 +942,7 @@ module RBI
 
     # @abstract
     #: -> Array[String]
-    def fully_qualified_names; end
+    def fully_qualified_names = raise("Abstract method called")
   end
 
   class TStructConst < TStructField
