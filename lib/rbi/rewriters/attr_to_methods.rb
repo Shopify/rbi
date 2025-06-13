@@ -56,7 +56,7 @@ module RBI
   class Attr
     # @abstract
     #: -> Array[Method]
-    def convert_to_methods; end
+    def convert_to_methods = raise("Abstract method called")
 
     private
 

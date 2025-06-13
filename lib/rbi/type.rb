@@ -957,7 +957,7 @@ module RBI
     #
     # @abstract
     #: -> Type
-    def normalize; end
+    def normalize = raise("Abstract method called")
 
     # Returns a simplified version of the type.
     #
@@ -969,11 +969,11 @@ module RBI
     #
     # @abstract
     #: -> Type
-    def simplify; end
+    def simplify = raise("Abstract method called")
 
     # @abstract
     #: (BasicObject) -> bool
-    def ==(other); end
+    def ==(other) = raise("Abstract method called")
 
     #: (BasicObject other) -> bool
     def eql?(other)
@@ -988,7 +988,7 @@ module RBI
 
     # @abstract
     #: -> String
-    def to_rbi; end
+    def to_rbi = raise("Abstract method called")
 
     # @override
     #: -> String
