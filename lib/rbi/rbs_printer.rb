@@ -399,12 +399,22 @@ module RBI
       old_out = @out
       new_out = StringIO.new
 
+      if sig.params.any? { |param| param.comments.any? }
+        print_method_sig_multiline(node, sig)
+        return
+      end
+
+      max_line_length = @max_line_length
+      if max_line_length.nil?
+        print_method_sig_inline(node, sig)
+        return
+      end
+
       @out = new_out
       print_method_sig_inline(node, sig)
       @out = old_out
 
-      max_line_length = @max_line_length
-      if max_line_length.nil? || new_out.string.size <= max_line_length
+      if new_out.string.size <= max_line_length
         print(new_out.string)
       else
         print_method_sig_multiline(node, sig)
@@ -489,18 +499,35 @@ module RBI
         end
       end
 
-      unless sig_params.empty?
+      if sig_params.any?
         printl("(")
         indent
         sig_params.each_with_index do |param, index|
           printt
+
+          out = @out
+          param_out = StringIO.new
+          @out = param_out
           print_sig_param(node, param)
+          @out = out
+          print(param_out.string)
+
           print(",") if index < sig_params.size - 1
+
+          first_comment, *other_comments = param.comments
+          print(" # #{first_comment.text}") if first_comment
+          other_comments.each do |comment|
+            spacing = param_out.string.size + 2
+            spacing -= 1 if index == sig_params.size - 1
+            printn
+            printt("#{" " * spacing}# #{comment.text}")
+          end
           printn
         end
         dedent
-        printt(") ")
+        printt(")")
       end
+
       if sig_block_param
         block_type = sig_block_param.type
         block_type = Type.parse_string(block_type) if block_type.is_a?(String)
@@ -525,11 +552,41 @@ module RBI
 
         if skip
           # no-op, we skip the block definition
-        elsif block_is_nilable
-          print("?{ #{type_string} } ")
         else
-          print("{ #{type_string} } ")
+          if sig_block_param.comments.any?
+            printn
+            printt
+          else
+            print(" ")
+          end
+          out = @out
+          block_out = StringIO.new
+          @out = block_out
+          if block_is_nilable
+            print("?{ #{type_string} }")
+          else
+            print("{ #{type_string} }")
+          end
+          @out = out
+          print(block_out.string)
+          if sig_block_param.comments.any?
+            first_comment, *other_comments = sig_block_param.comments
+            print(" # #{first_comment.text}") if first_comment
+            other_comments.each do |comment|
+              spacing = block_out.string.size + 1
+              printn
+              printt("#{" " * spacing}# #{comment.text}")
+            end
+            printn
+            printt
+          else
+            print(" ")
+          end
         end
+      end
+
+      if sig_params.any? && (sig_block_param.nil? || sig_block_param.comments.empty?)
+        print(" ")
       end
 
       type = parse_type(sig.return_type)

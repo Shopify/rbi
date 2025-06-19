@@ -554,6 +554,114 @@ module RBI
       RBI
     end
 
+    def test_print_signature_with_comments
+      comment = Comment.new("This is a comment")
+
+      rbi_def = Method.new("foo") do |node|
+        node.params << ReqParam.new("a")
+        node.params << OptParam.new("b", "42")
+        node.params << RestParam.new("c")
+        node.params << KwParam.new("e")
+        node.params << KwOptParam.new("d", "42")
+        node.params << KwRestParam.new("f")
+        node.params << BlockParam.new("g")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.type_params << "U"
+
+        sig.params << SigParam.new("a", "U", comments: [comment])
+        sig.params << SigParam.new("b", "Integer", comments: [comment])
+        sig.params << SigParam.new("c", "String", comments: [comment])
+        sig.params << SigParam.new("e", "Numeric", comments: [comment])
+        sig.params << SigParam.new("d", "Object", comments: [comment])
+        sig.params << SigParam.new("f", "T.untyped", comments: [comment])
+        sig.params << SigParam.new("g", "T.proc.void", comments: [comment])
+
+        sig.return_type = "R"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal(<<~RBI.strip, out.string)
+        [U] (
+          U a, # This is a comment
+          ?Integer b, # This is a comment
+          *String c, # This is a comment
+          e: Numeric, # This is a comment
+          ?d: Object, # This is a comment
+          **untyped f # This is a comment
+        )
+        { -> void } # This is a comment
+        -> R
+      RBI
+    end
+
+    def test_print_signature_with_multiline_comments
+      comments = [
+        Comment.new("This is a comment"),
+        Comment.new("This is another comment"),
+        Comment.new("This is yet another comment"),
+      ]
+
+      rbi_def = Method.new("foo") do |node|
+        node.params << ReqParam.new("a")
+        node.params << OptParam.new("b", "42")
+        node.params << RestParam.new("c")
+        node.params << KwParam.new("e")
+        node.params << KwOptParam.new("d", "42")
+        node.params << KwRestParam.new("f")
+        node.params << BlockParam.new("g")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.type_params << "U"
+
+        sig.params << SigParam.new("a", "U", comments: comments)
+        sig.params << SigParam.new("b", "Integer", comments: comments)
+        sig.params << SigParam.new("c", "String", comments: comments)
+        sig.params << SigParam.new("e", "Numeric", comments: comments)
+        sig.params << SigParam.new("d", "Object", comments: comments)
+        sig.params << SigParam.new("f", "T.untyped", comments: comments)
+        sig.params << SigParam.new("g", "T.proc.void", comments: comments)
+
+        sig.return_type = "R"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal(<<~RBI.strip, out.string)
+        [U] (
+          U a, # This is a comment
+               # This is another comment
+               # This is yet another comment
+          ?Integer b, # This is a comment
+                      # This is another comment
+                      # This is yet another comment
+          *String c, # This is a comment
+                     # This is another comment
+                     # This is yet another comment
+          e: Numeric, # This is a comment
+                      # This is another comment
+                      # This is yet another comment
+          ?d: Object, # This is a comment
+                      # This is another comment
+                      # This is yet another comment
+          **untyped f # This is a comment
+                      # This is another comment
+                      # This is yet another comment
+        )
+        { -> void } # This is a comment
+                    # This is another comment
+                    # This is yet another comment
+        -> R
+      RBI
+    end
+
     def test_print_simplified_types
       rbi = parse_rbi(<<~RBI)
         sig { returns(T.any(String, String, NilClass, T.nilable(T.nilable(Integer)), TrueClass, FalseClass)) }
