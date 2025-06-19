@@ -85,7 +85,7 @@ module RBI
           when ::RBS::Types::Variable
             Type.type_parameter(type.name)
           else
-            T.absurd(type)
+            type #: absurd
           end
         end
 
