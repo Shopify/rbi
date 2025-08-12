@@ -34,7 +34,7 @@ module RBI
           case type
           when ::RBS::Types::Alias
             # TODO: unsupported yet
-            Type.untyped
+            translate_type_alias(type)
           when ::RBS::Types::Bases::Any
             Type.untyped
           when ::RBS::Types::Bases::Bool
@@ -90,6 +90,18 @@ module RBI
         end
 
         private
+
+        #: (::RBS::Types::Alias) -> Type
+        def translate_type_alias(type)
+          name = ::RBS::TypeName.new(
+            namespace: type.name.namespace,
+            name: type.name.name.to_s.gsub(/(?:^|_)([a-z\d]*)/i) do |match|
+              match = match.delete_prefix("_")
+              !match.empty? ? match[0].upcase.concat(match[1..-1]) : +""
+            end,
+          )
+          Type.simple(name.to_s)
+        end
 
         #: (::RBS::Types::ClassInstance) -> Type
         def translate_class_instance(type)
