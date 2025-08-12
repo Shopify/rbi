@@ -583,6 +583,46 @@ module RBI
       end
     end
 
+    # A type alias that references another type by name like `MyTypeAlias`.
+    class TypeAlias < Type
+      #: String
+      attr_reader :name
+
+      #: Type
+      attr_reader :aliased_type
+
+      #: (String name, Type aliased_type) -> void
+      def initialize(name, aliased_type)
+        super()
+        @name = name
+        @aliased_type = aliased_type
+      end
+
+      # @override
+      #: (BasicObject other) -> bool
+      def ==(other)
+        TypeAlias === other && @name == other.name && @aliased_type == other.aliased_type
+      end
+
+      # @override
+      #: -> String
+      def to_rbi
+        "#{name} = T.type_alias { #{aliased_type.to_rbi} }"
+      end
+
+      # @override
+      #: -> Type
+      def normalize
+        TypeAlias.new(name, aliased_type.normalize)
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        TypeAlias.new(name, aliased_type.simplify)
+      end
+    end
+
     # Tuples and shapes
 
     # A tuple type like `[String, Integer]`.
@@ -869,6 +909,12 @@ module RBI
       #: (Symbol name) -> TypeParameter
       def type_parameter(name)
         TypeParameter.new(name)
+      end
+
+      # Builds a type that represents a type alias like `MyTypeAlias`.
+      #: (String name, Type aliased_type) -> TypeAlias
+      def type_alias(name, aliased_type)
+        TypeAlias.new(name, aliased_type)
       end
 
       # Tuples and shapes

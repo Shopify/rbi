@@ -27,6 +27,8 @@ module RBI
         case node
         when Prism::ConstantReadNode, Prism::ConstantPathNode
           parse_constant(node)
+        when Prism::ConstantWriteNode, Prism::ConstantPathWriteNode
+          parse_constant_assignment(node)
         when Prism::CallNode
           parse_call(node)
         when Prism::ArrayNode
@@ -64,6 +66,29 @@ module RBI
             # `::Foo` or `::Foo::Bar`
             Type::Simple.new(node.slice)
           end
+        end
+      end
+
+      #: (Prism::ConstantWriteNode | Prism::ConstantPathWriteNode node) -> Type
+      def parse_constant_assignment(node)
+        if t_type_alias?(node.value)
+          value = node.value #: as Prism::CallNode
+          name = if node.is_a?(Prism::ConstantPathWriteNode)
+            node.target.full_name
+          else
+            node.full_name
+          end
+
+          body = value.block
+
+          if body.is_a?(Prism::BlockNode) && (stmts = body.body).is_a?(Prism::StatementsNode)
+            body_node = stmts.body.first #: as !nil
+            Type::TypeAlias.new(name, parse_node(body_node))
+          else
+            Type::Simple.new(node.slice)
+          end
+        else
+          Type::Simple.new(node.slice)
         end
       end
 
@@ -308,6 +333,13 @@ module RBI
         end
 
         false
+      end
+
+      #: (Prism::Node? node) -> bool
+      def t_type_alias?(node)
+        return false unless node.is_a?(Prism::CallNode)
+
+        t?(node.receiver) && node.name == :type_alias
       end
 
       #: (Prism::Node? node) -> bool
