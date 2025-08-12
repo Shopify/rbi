@@ -9,7 +9,15 @@ module RBI
       include TestHelper
 
       def test_translate_alias
-        assert_equal(Type.untyped, translate("foo"))
+        assert_equal(Type.simple("Foo"), translate("foo"))
+        assert_equal(Type.simple("FooBar"), translate("fooBar"))
+        assert_equal(Type.simple("FooBar"), translate("foo_bar"))
+        assert_equal(Type.simple("FooBarBaz"), translate("foo_bar_baz"))
+        assert_equal(Type.simple("FooBarBazQux"), translate("foo_barBazQux"))
+        assert_equal(Type.any(Type.simple("Foo"), Type.simple("String")), translate("foo | String"))
+        assert_equal(Type.all(Type.simple("Foo"), Type.simple("::String")), translate("foo & ::String"))
+        assert_equal(Type.any(Type.simple("::Bar::Foo"), Type.simple("String")), translate("::Bar::foo | String"))
+        assert_equal(Type.all(Type.simple("Bar::Foo"), Type.simple("::String")), translate("Bar::foo & ::String"))
       end
 
       def test_translate_bases_any

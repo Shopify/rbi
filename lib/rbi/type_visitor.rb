@@ -45,6 +45,8 @@ module RBI
           visit_type_parameter(node)
         when Type::Class
           visit_class(node)
+        when Type::TypeAlias
+          visit_type_alias(node)
         else
           raise Error, "Unhandled node: #{node.class}"
         end
@@ -105,6 +107,9 @@ module RBI
 
       #: (Type::Untyped type) -> void
       def visit_untyped(type); end
+
+      #: (Type::TypeAlias type) -> void
+      def visit_type_alias(type); end
     end
   end
 end

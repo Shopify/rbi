@@ -361,6 +361,90 @@ module RBI
       assert_equal("T.type_parameter(:\" !\")", type.to_rbi)
     end
 
+    def test_build_type_alias
+      type = Type.type_alias("MyCustomType", Type.simple("String"))
+      refute_predicate(type, :nilable?)
+      assert_equal("MyCustomType = T.type_alias { String }", type.to_rbi)
+
+      type = Type.type_alias("UserType", Type.generic("T::Array", Type.simple("String")))
+      refute_predicate(type, :nilable?)
+      assert_equal("UserType = T.type_alias { T::Array[String] }", type.to_rbi)
+
+      type = Type.type_alias("ComplexType", Type.any(Type.simple("String"), Type.simple("Integer")))
+      refute_predicate(type, :nilable?)
+      assert_equal("ComplexType = T.type_alias { T.any(String, Integer) }", type.to_rbi)
+    end
+
+    def test_build_type_alias_with_nilable_type
+      type = Type.type_alias("OptionalType", Type.nilable(Type.simple("String")))
+      refute_predicate(type, :nilable?)
+      assert_equal("OptionalType = T.type_alias { T.nilable(String) }", type.to_rbi)
+    end
+
+    def test_build_type_alias_with_composite_types
+      type = Type.type_alias("IntersectionType", Type.all(Type.simple("String"), Type.simple("Integer")))
+      refute_predicate(type, :nilable?)
+      assert_equal("IntersectionType = T.type_alias { T.all(String, Integer) }", type.to_rbi)
+
+      type = Type.type_alias("UnionType", Type.any(Type.simple("String"), Type.simple("Integer")))
+      refute_predicate(type, :nilable?)
+      assert_equal("UnionType = T.type_alias { T.any(String, Integer) }", type.to_rbi)
+    end
+
+    def test_build_type_alias_with_proc_type
+      proc_type = Type.proc.params(foo: Type.simple("String")).returns(Type.simple("Integer"))
+      type = Type.type_alias("ProcType", proc_type)
+      refute_predicate(type, :nilable?)
+      assert_equal("ProcType = T.type_alias { T.proc.params(foo: String).returns(Integer) }", type.to_rbi)
+    end
+
+    def test_build_type_alias_with_shape_type
+      shape_type = Type.shape(foo: Type.simple("String"), bar: Type.simple("Integer"))
+      type = Type.type_alias("ShapeType", shape_type)
+      refute_predicate(type, :nilable?)
+      assert_equal("ShapeType = T.type_alias { { foo: String, bar: Integer } }", type.to_rbi)
+    end
+
+    def test_build_type_alias_with_tuple_type
+      tuple_type = Type.tuple(Type.simple("String"), Type.simple("Integer"))
+      type = Type.type_alias("TupleType", tuple_type)
+      refute_predicate(type, :nilable?)
+      assert_equal("TupleType = T.type_alias { [String, Integer] }", type.to_rbi)
+    end
+
+    def test_build_type_alias_with_class_of_type
+      class_of_type = Type.class_of(Type.simple("String"))
+      type = Type.type_alias("ClassOfType", class_of_type)
+      refute_predicate(type, :nilable?)
+      assert_equal("ClassOfType = T.type_alias { T.class_of(String) }", type.to_rbi)
+    end
+
+    def test_build_type_alias_with_t_class_type
+      t_class_type = Type.t_class(Type.simple("String"))
+      type = Type.type_alias("TClassType", t_class_type)
+      refute_predicate(type, :nilable?)
+      assert_equal("TClassType = T.type_alias { T::Class[String] }", type.to_rbi)
+    end
+
+    def test_build_type_alias_with_boolean_type
+      boolean_type = Type.boolean
+      type = Type.type_alias("BooleanType", boolean_type)
+      refute_predicate(type, :nilable?)
+      assert_equal("BooleanType = T.type_alias { T::Boolean }", type.to_rbi)
+    end
+
+    def test_build_type_alias_with_literal_types
+      anything_type = Type.anything
+      type = Type.type_alias("AnythingType", anything_type)
+      refute_predicate(type, :nilable?)
+      assert_equal("AnythingType = T.type_alias { T.anything }", type.to_rbi)
+
+      untyped_type = Type.untyped
+      type = Type.type_alias("UntypedType", untyped_type)
+      refute_predicate(type, :nilable?)
+      assert_equal("UntypedType = T.type_alias { T.untyped }", type.to_rbi)
+    end
+
     def test_build_type_class_of
       type = Type.class_of(Type.simple("String"))
       assert_equal("T.class_of(String)", type.to_rbi)
@@ -394,6 +478,32 @@ module RBI
     def test_buid_type_noreturn
       type = Type.noreturn
       assert_equal("T.noreturn", type.to_rbi)
+    end
+
+    def test_type_alias_normalize_and_simplify
+      # Test that normalize and simplify return self for TypeAlias
+      type = Type.type_alias("MyType", Type.simple("String"))
+
+      normalized = type.normalize
+      assert_instance_of(Type::TypeAlias, normalized)
+      assert_equal("MyType = T.type_alias { String }", normalized.to_rbi)
+
+      simplified = type.simplify
+      assert_instance_of(Type::TypeAlias, simplified)
+      assert_equal("MyType = T.type_alias { String }", simplified.to_rbi)
+
+      # Test with complex types
+      simplified_type_alias = Type.type_alias("ComplexType", Type.nilable(Type.simple("String")))
+
+      normalized_complex = simplified_type_alias.normalize
+      assert_instance_of(Type::TypeAlias, normalized_complex)
+      assert_equal("ComplexType = T.type_alias { T.any(NilClass, String) }", normalized_complex.to_rbi)
+
+      normalized_type_alias = Type.type_alias("ComplexType", Type.any(Type.simple("String"), Type.simple("NilClass")))
+
+      simplified_complex = normalized_type_alias.simplify
+      assert_instance_of(Type::TypeAlias, simplified_complex)
+      assert_equal("ComplexType = T.type_alias { T.nilable(String) }", simplified_complex.to_rbi)
     end
 
     def test_types_comparison
@@ -462,6 +572,31 @@ module RBI
 
       type27 = Type.tuple(Type.simple("Integer"), Type.simple("String"))
       refute_equal(type25, type27)
+
+      # TypeAlias equality tests
+      type28 = Type.type_alias("MyType", Type.simple("String"))
+      type29 = Type.type_alias("MyType", Type.simple("String"))
+      assert_equal(type28, type29)
+
+      type30 = Type.type_alias("DifferentName", Type.simple("String"))
+      refute_equal(type28, type30)
+
+      type31 = Type.type_alias("MyType", Type.simple("Integer"))
+      refute_equal(type28, type31)
+
+      type32 = Type.type_alias("MyType", Type.nilable(Type.simple("String")))
+      refute_equal(type28, type32)
+
+      # TypeAlias with complex types
+      type33 = Type.type_alias("ComplexType", Type.any(Type.simple("String"), Type.simple("Integer")))
+      type34 = Type.type_alias("ComplexType", Type.any(Type.simple("String"), Type.simple("Integer")))
+      assert_equal(type33, type34)
+
+      type35 = Type.type_alias("ComplexType", Type.any(Type.simple("Integer"), Type.simple("String")))
+      assert_equal(type33, type35)
+
+      type36 = Type.type_alias("ComplexType", Type.any(Type.simple("String"), Type.simple("Symbol")))
+      refute_equal(type33, type36)
     end
   end
 end

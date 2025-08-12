@@ -1418,6 +1418,9 @@ class RBI::RBS::TypeTranslator
 
     sig { params(type_name: ::String).returns(::String) }
     def translate_t_generic_type(type_name); end
+
+    sig { params(type: ::RBS::Types::Alias).returns(::RBI::Type) }
+    def translate_type_alias(type); end
   end
 end
 
@@ -2611,6 +2614,9 @@ class RBI::Type
     sig { params(types: T.any(::RBI::Type, T::Array[::RBI::Type])).returns(::RBI::Type::Tuple) }
     def tuple(*types); end
 
+    sig { params(name: ::String, aliased_type: ::RBI::Type).returns(::RBI::Type::TypeAlias) }
+    def type_alias(name, aliased_type); end
+
     sig { params(name: ::Symbol).returns(::RBI::Type::TypeParameter) }
     def type_parameter(name); end
 
@@ -2637,6 +2643,9 @@ class RBI::Type
     sig { params(node: T.any(::Prism::ConstantPathNode, ::Prism::ConstantReadNode)).returns(::RBI::Type) }
     def parse_constant(node); end
 
+    sig { params(node: T.any(::Prism::ConstantPathWriteNode, ::Prism::ConstantWriteNode)).returns(::RBI::Type) }
+    def parse_constant_assignment(node); end
+
     sig { params(node: ::Prism::CallNode).returns(::RBI::Type) }
     def parse_proc(node); end
 
@@ -2660,6 +2669,9 @@ class RBI::Type
 
     sig { params(node: ::Prism::CallNode).returns(T::Boolean) }
     def t_proc?(node); end
+
+    sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
+    def t_type_alias?(node); end
 
     sig { params(name: ::String).returns(T::Boolean) }
     def valid_identifier?(name); end
@@ -2960,6 +2972,29 @@ class RBI::Type::Tuple < ::RBI::Type
   def types; end
 end
 
+class RBI::Type::TypeAlias < ::RBI::Type
+  sig { params(name: ::String, aliased_type: ::RBI::Type).void }
+  def initialize(name, aliased_type); end
+
+  sig { override.params(other: ::BasicObject).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { returns(::RBI::Type) }
+  def aliased_type; end
+
+  sig { returns(::String) }
+  def name; end
+
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
+
+  sig { override.returns(::String) }
+  def to_rbi; end
+end
+
 class RBI::Type::TypeParameter < ::RBI::Type
   sig { params(name: ::Symbol).void }
   def initialize(name); end
@@ -3044,6 +3079,9 @@ class RBI::Type::Visitor
 
   sig { params(type: ::RBI::Type::Tuple).void }
   def visit_tuple(type); end
+
+  sig { params(type: ::RBI::Type::TypeAlias).void }
+  def visit_type_alias(type); end
 
   sig { params(type: ::RBI::Type::TypeParameter).void }
   def visit_type_parameter(type); end
