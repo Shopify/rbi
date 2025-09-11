@@ -1106,6 +1106,57 @@ module RBI
       RBI
     end
 
+    def test_merge_keep_right_with_namespaced_scopes
+      # Like test_merge_keep_right but where one side uses Foo::Bar syntax and the other uses nested syntax.
+      tree1 = parse_rbi(<<~RBI)
+        module Foo
+          A = 10
+        end
+
+        class Foo::Bar
+          def m1; end
+
+          sig { void }
+          def m2; end
+
+          def m3; end
+        end
+      RBI
+
+      tree2 = parse_rbi(<<~RBI)
+        module Foo
+          A = 42
+
+          module Bar
+            def m1(x); end
+
+            sig { returns(Integer) }
+            def m2; end
+
+            def m4; end
+          end
+        end
+      RBI
+
+      res = tree1.merge(tree2, keep: Rewriters::Merge::Keep::RIGHT)
+
+      assert_equal(<<~RBI, res.string)
+        module Foo
+          A = 42
+
+          module Bar
+            def m1(x); end
+
+            sig { returns(Integer) }
+            def m2; end
+
+            def m3; end
+            def m4; end
+          end
+        end
+      RBI
+    end
+
     def test_merge_trees_with_singleton_classes
       tree1 = parse_rbi(<<~RBI)
         module Foo
