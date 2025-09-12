@@ -75,13 +75,10 @@ module RBI
 
       res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
-        class A
-          class B; end
-        end
-
-        class C
-          class D; end
-        end
+        class A; end
+        class A::B; end
+        class C; end
+        class C::D; end
       RBI
     end
 
@@ -101,10 +98,9 @@ module RBI
 
       res = tree1.merge(tree2)
       assert_equal(<<~RBI, res.string)
-        class A
-          class B; end
-          class C; end
-        end
+        class A; end
+        class A::B; end
+        class A::C; end
       RBI
     end
 
@@ -559,14 +555,14 @@ module RBI
         class Bar
         >>>>>>> right
           B = 10
+        end
 
-          <<<<<<< left
-          class Baz < Foo
-          =======
-          class Baz < Bar
-          >>>>>>> right
-            C = 10
-          end
+        <<<<<<< left
+        class Bar::Baz < Foo
+        =======
+        class Bar::Baz < Bar
+        >>>>>>> right
+          C = 10
         end
       RBI
     end
@@ -696,10 +692,8 @@ module RBI
         =======
         class D; end
         >>>>>>> right
-
-        module E
-          module F; end
-        end
+        module E; end
+        module E::F; end
       RBI
     end
 
@@ -1042,16 +1036,16 @@ module RBI
       assert_equal(<<~RBI, res.string)
         module Foo
           A = 10
+        end
 
-          class Bar
-            def m1; end
+        class Foo::Bar
+          def m1; end
 
-            sig { void }
-            def m2; end
+          sig { void }
+          def m2; end
 
-            def m3; end
-            def m4; end
-          end
+          def m3; end
+          def m4; end
         end
       RBI
     end
@@ -1092,67 +1086,63 @@ module RBI
       assert_equal(<<~RBI, res.string)
         module Foo
           A = 42
+        end
 
-          module Bar
-            def m1(x); end
+        module Foo::Bar
+          def m1(x); end
 
-            sig { returns(Integer) }
-            def m2; end
+          sig { returns(Integer) }
+          def m2; end
 
-            def m3; end
-            def m4; end
-          end
+          def m3; end
+          def m4; end
         end
       RBI
     end
 
-    def test_merge_keep_right_with_namespaced_scopes
-      # Like test_merge_keep_right but where one side uses Foo::Bar syntax and the other uses nested syntax.
+    def test_merge_namespaced_and_nested_scopes
       tree1 = parse_rbi(<<~RBI)
-        module Foo
-          A = 10
-        end
+        module Foo; end
+        class Foo::Bar; end
 
-        class Foo::Bar
+        class Foo::Baz < Foo::Bar
+          sig { returns(Foo::Bar) }
           def m1; end
 
           sig { void }
           def m2; end
-
-          def m3; end
         end
       RBI
 
       tree2 = parse_rbi(<<~RBI)
         module Foo
-          A = 42
+          class Bar; end
 
-          module Bar
-            def m1(x); end
+          class Baz < Bar
+            sig { returns(Bar) }
+            def m1; end
 
             sig { returns(Integer) }
-            def m2; end
-
-            def m4; end
+            def m3; end
           end
         end
       RBI
 
-      res = tree1.merge(tree2, keep: Rewriters::Merge::Keep::RIGHT)
+      res = tree1.merge(tree2)
 
       assert_equal(<<~RBI, res.string)
-        module Foo
-          A = 42
+        module Foo; end
+        class Foo::Bar; end
 
-          module Bar
-            def m1(x); end
+        class Foo::Baz < Foo::Bar
+          sig { returns(Foo::Bar) }
+          def m1; end
 
-            sig { returns(Integer) }
-            def m2; end
+          sig { void }
+          def m2; end
 
-            def m3; end
-            def m4; end
-          end
+          sig { returns(Integer) }
+          def m3; end
         end
       RBI
     end

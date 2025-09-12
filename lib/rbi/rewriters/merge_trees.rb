@@ -50,6 +50,8 @@ module RBI
         def merge_trees(left, right, left_name: "left", right_name: "right", keep: Keep::NONE)
           left.nest_singleton_methods!
           right.nest_singleton_methods!
+          left.flatten_namespaces!
+          right.flatten_namespaces!
           rewriter = Rewriters::Merge.new(left_name: left_name, right_name: right_name, keep: keep)
           rewriter.merge(left)
           rewriter.merge(right)
