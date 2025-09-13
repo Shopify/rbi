@@ -895,7 +895,7 @@ module RBI
     attr_reader :name
 
     #: (Type | String)
-    attr_reader :type
+    attr_accessor :type
 
     #: (String name, (Type | String) type, ?loc: Loc?, ?comments: Array[Comment]) ?{ (SigParam node) -> void } -> void
     def initialize(name, type, loc: nil, comments: [], &block)

@@ -15,9 +15,14 @@ module RBI
           class Y; end
           module N; end
           class B < X; end
+
           class C < Y
             include M
             extend N
+            extend T::Sig
+
+            sig { params(c: C).returns(B) }
+            def m(c); end
           end
         end
       RBI
@@ -35,6 +40,10 @@ module RBI
         class A::C < A::Y
           include M
           extend A::N
+          extend T::Sig
+
+          sig { params(c: A::C).returns(A::B) }
+          def m(c); end
         end
       RBI
     end
