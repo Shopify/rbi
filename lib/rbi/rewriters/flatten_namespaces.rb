@@ -3,7 +3,7 @@
 
 module RBI
   module Rewriters
-    # Flattens nested scopes to fully-qualified names.modulemodulemodulemodulemodulemodule
+    # Flattens nested scopes to fully-qualified names.
     #
     # Example:
     # ~~~rb
