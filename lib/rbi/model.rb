@@ -650,7 +650,7 @@ module RBI
   # @abstract
   class Mixin < NodeWithComments
     #: Array[String]
-    attr_reader :names
+    attr_accessor :names
 
     #: (String name, Array[String] names, ?loc: Loc?, ?comments: Array[Comment]) -> void
     def initialize(name, names, loc: nil, comments: [])
@@ -895,7 +895,7 @@ module RBI
     attr_reader :name
 
     #: (Type | String)
-    attr_reader :type
+    attr_accessor :type
 
     #: (String name, (Type | String) type, ?loc: Loc?, ?comments: Array[Comment]) ?{ (SigParam node) -> void } -> void
     def initialize(name, type, loc: nil, comments: [], &block)
