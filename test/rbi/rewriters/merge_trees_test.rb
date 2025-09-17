@@ -1203,7 +1203,7 @@ module RBI
         class Foo::Bar; end
 
         class Foo::Baz < Foo::Bar
-          sig { returns(T.nilable(Foo::Bar)) }
+          sig { returns(T.nilable(::Foo::Bar)) }
           def a; end
 
           def b; end
@@ -1237,7 +1237,7 @@ module RBI
       assert_equal(<<~RBI, res.string)
         module Foo
           class Baz < Bar
-            sig { returns(T.nilable(Bar)) }
+            sig { returns(T.nilable(::Foo::Bar)) }
             def a; end
 
             def b; end

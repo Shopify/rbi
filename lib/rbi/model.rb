@@ -297,7 +297,7 @@ module RBI
     attr_accessor :visibility
 
     #: Array[Sig]
-    attr_reader :sigs
+    attr_accessor :sigs
 
     #: (Symbol name, Array[Symbol] names, ?visibility: Visibility, ?sigs: Array[Sig], ?loc: Loc?, ?comments: Array[Comment]) -> void
     def initialize(name, names, visibility: Public.new, sigs: [], loc: nil, comments: [])

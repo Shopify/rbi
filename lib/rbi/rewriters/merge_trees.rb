@@ -37,6 +37,8 @@ module RBI
     # end
     # ~~~
     class Merge
+      ASSUME_GLOBAL_CLASS = ["String", "Symbol", "Integer", "Float", "NilClass", "TrueClass", "FalseClass"].freeze
+
       class Keep
         NONE = new #: Keep
         LEFT = new #: Keep
@@ -56,6 +58,90 @@ module RBI
           tree = rewriter.tree
           ConflictTreeMerger.new.visit(tree)
           tree
+        end
+
+        # Returns a node from in_index that corresponds to the given type name
+        # when referenced from the given referrer Node. The referrer can be
+        # in a different tree, but its scope chain names will be used to find
+        # the referent in in_index.
+        #: (name: String?, referrer: Node, in_index: Index) -> Node?
+        def lookup_type(name:, referrer:, in_index:)
+          return unless name
+
+          return in_index[name] if name.start_with?("::")
+
+          referrer_scope = referrer.is_a?(Scope) ? referrer : referrer.parent_scope
+          loop do
+            scoped_name = "#{referrer_scope&.fully_qualified_name}::#{name}"
+            referent = in_index[scoped_name].last
+            break referent if referent
+            break unless referrer_scope
+
+            referrer_scope = referrer_scope.parent_scope
+          end
+        end
+
+        #: ((Type | String) type, referrer: Node, in_index: Index) -> Type
+        def fully_qualify_type(type, referrer:, in_index:)
+          case type
+          when String
+            fully_qualify_type(Type.parse_string(type), referrer:, in_index:)
+          when Type::Simple
+            # Heuristic perf optimization: assume some common Ruby global classes like
+            # Symbol, String, Integer, Float, etc, are global to skip the namespace lookup.
+            if ASSUME_GLOBAL_CLASS.include?(type.name)
+              type
+            else
+              referent = lookup_type(
+                name: type.name,
+                referrer: referrer,
+                in_index:,
+              )
+              Type.simple(referent&.fully_qualified_name || type.name)
+            end
+          when Type::Nilable
+            Type.nilable(fully_qualify_type(type.type, referrer:, in_index:))
+          when Type::Composite, Type::Tuple
+            type.class.new(type.types.map { fully_qualify_type(_1, referrer:, in_index:) })
+          when Type::Generic
+            Type.generic(type.name, *type.params.map { fully_qualify_type(_1, referrer:, in_index:) })
+          when Type::TypeAlias
+            Type.type_alias(type.name, fully_qualify_type(type.aliased_type, referrer:, in_index:))
+          when Type::Shape
+            Type.shape(type.types.transform_values { fully_qualify_type(_1, referrer:, in_index:) })
+          when Type::Proc
+            Type.proc
+              .params(type.proc_params.transform_values { fully_qualify_type(_1, referrer:, in_index:) })
+              .returns(fully_qualify_type(type.proc_returns, referrer:, in_index:))
+              .bind(fully_qualify_type(type.proc_bind, referrer:, in_index:))
+          else
+            type
+          end
+        end
+
+        #: (Sig sig, referrer: Node, in_index: Index) -> Sig
+        def fully_qualify_sig(sig, referrer:, in_index:)
+          Sig.new(
+            params: sig.params.map do |param|
+              SigParam.new(
+                param.name,
+                fully_qualify_type(param.type, referrer:, in_index:),
+                loc: param.loc,
+                comments: param.comments,
+              )
+            end,
+            return_type: fully_qualify_type(sig.return_type, referrer:, in_index:),
+            is_abstract: sig.is_abstract,
+            is_override: sig.is_override,
+            is_overridable: sig.is_overridable,
+            is_final: sig.is_final,
+            allow_incompatible_override: sig.allow_incompatible_override,
+            without_runtime: sig.without_runtime,
+            type_params: sig.type_params,
+            checked: sig.checked,
+            loc: sig.loc,
+            comments: sig.comments,
+          )
         end
       end
 
@@ -126,8 +212,8 @@ module RBI
             prev = previous_definition(node)
 
             if prev.is_a?(Scope)
-              if node.compatible_with?(prev)
-                prev.merge_with(node)
+              if node.compatible_with?(prev, in_index: @index)
+                prev.merge_with(node, in_index: @index)
               elsif @keep == Keep::LEFT
                 # do nothing it's already merged
               elsif @keep == Keep::RIGHT
@@ -139,18 +225,19 @@ module RBI
             else
               copy = node.dup_empty
               current_scope << copy
+              @index.index(copy)
               @scope_stack << copy
             end
             visit_all(node.nodes)
             @scope_stack.pop
           when Tree
-            current_scope.merge_with(node)
+            current_scope.merge_with(node, in_index: @index)
             visit_all(node.nodes)
           when Indexable
             prev = previous_definition(node)
             if prev
-              if node.compatible_with?(prev)
-                prev.merge_with(node)
+              if node.compatible_with?(prev, in_index: @index)
+                prev.merge_with(node, in_index: @index)
               elsif @keep == Keep::LEFT
                 # do nothing it's already merged
               elsif @keep == Keep::RIGHT
@@ -159,7 +246,9 @@ module RBI
                 make_conflict_tree(prev, node)
               end
             else
-              current_scope << node.dup
+              copy = node.dup
+              current_scope << copy
+              @index.index(copy)
             end
           end
         end
@@ -284,15 +373,15 @@ module RBI
   end
 
   class Node
-    # Can `self` and `_other` be merged into a single definition?
-    #: (Node _other) -> bool
-    def compatible_with?(_other)
+    # Can `self` be merged into `_prev`?
+    #: (Node _prev, in_index: Index) -> bool
+    def compatible_with?(_prev, in_index:)
       true
     end
 
     # Merge `self` and `other` into a single definition
-    #: (Node other) -> void
-    def merge_with(other); end
+    #: (Node other, in_index: Index) -> void
+    def merge_with(other, in_index:); end
 
     #: -> ConflictTree?
     def parent_conflict_tree
@@ -309,7 +398,7 @@ module RBI
   class NodeWithComments
     # @override
     #: (Node other) -> void
-    def merge_with(other)
+    def merge_with(other, **)
       return unless other.is_a?(NodeWithComments)
 
       other.comments.each do |comment|
@@ -367,16 +456,28 @@ module RBI
 
   class Class
     # @override
-    #: (Node other) -> bool
-    def compatible_with?(other)
-      other.is_a?(Class) && superclass_name == other.superclass_name
+    #: (Node prev, in_index: Index) -> bool
+    def compatible_with?(prev, in_index:)
+      return false unless prev.is_a?(Class)
+
+      self_superclass = Rewriters::Merge.lookup_type(
+        name: superclass_name,
+        referrer: self,
+        in_index:,
+      )
+      prev_superclass = Rewriters::Merge.lookup_type(
+        name: prev.superclass_name,
+        referrer: prev,
+        in_index:,
+      )
+      self_superclass == prev_superclass
     end
   end
 
   class Module
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(Module)
     end
   end
@@ -384,7 +485,7 @@ module RBI
   class Struct
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(Struct) && members == other.members && keyword_init == other.keyword_init
     end
   end
@@ -392,37 +493,52 @@ module RBI
   class Const
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(Const) && name == other.name && value == other.value
     end
   end
 
   class Attr
     # @override
-    #: (Node other) -> bool
-    def compatible_with?(other)
-      return false unless other.is_a?(Attr)
-      return false unless names == other.names
+    #: (Node other, in_index: Index) -> bool
+    def compatible_with?(prev, in_index:)
+      return false unless prev.is_a?(Attr)
+      return false unless names == prev.names
 
-      sigs.empty? || other.sigs.empty? || sigs == other.sigs
+      lhs_sigs = sigs.map do |sig|
+        Rewriters::Merge.fully_qualify_sig(sig, referrer: self, in_index:)
+      end
+      rhs_sigs = prev.sigs.map do |sig|
+        Rewriters::Merge.fully_qualify_sig(sig, referrer: prev, in_index:)
+      end
+
+      lhs_sigs.empty? || rhs_sigs.empty? || lhs_sigs == rhs_sigs
     end
 
     # @override
-    #: (Node other) -> void
-    def merge_with(other)
+    #: (Node other, in_index: Index) -> void
+    def merge_with(other, in_index:)
       return unless other.is_a?(Attr)
 
       super
-      other.sigs.each do |sig|
-        sigs << sig unless sigs.include?(sig)
+
+      merged_sigs = sigs.map do |sig|
+        Rewriters::Merge.fully_qualify_sig(sig, referrer: self, in_index:)
       end
+      rhs_sigs = other.sigs.map do |sig|
+        Rewriters::Merge.fully_qualify_sig(sig, referrer: other, in_index:)
+      end
+      rhs_sigs.each do |sig|
+        merged_sigs << sig unless merged_sigs.include?(sig)
+      end
+      self.sigs = merged_sigs
     end
   end
 
   class AttrReader
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(AttrReader) && super
     end
   end
@@ -430,7 +546,7 @@ module RBI
   class AttrWriter
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(AttrWriter) && super
     end
   end
@@ -438,46 +554,77 @@ module RBI
   class AttrAccessor
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(AttrAccessor) && super
     end
   end
 
   class Method
     # @override
-    #: (Node other) -> bool
-    def compatible_with?(other)
-      return false unless other.is_a?(Method)
-      return false unless name == other.name
-      return false unless params == other.params
+    #: (Node prev, in_index: Index) -> bool
+    def compatible_with?(prev, in_index:)
+      return false unless prev.is_a?(Method)
+      return false unless name == prev.name
+      return false unless params == prev.params
 
-      sigs.empty? || other.sigs.empty? || sigs == other.sigs
+      lhs_sigs = sigs.map do |sig|
+        Rewriters::Merge.fully_qualify_sig(sig, referrer: self, in_index:)
+      end
+      rhs_sigs = prev.sigs.map do |sig|
+        Rewriters::Merge.fully_qualify_sig(sig, referrer: prev, in_index:)
+      end
+
+      lhs_sigs.empty? || rhs_sigs.empty? || lhs_sigs == rhs_sigs
     end
 
     # @override
-    #: (Node other) -> void
-    def merge_with(other)
+    #: (Node other, in_index: Index) -> void
+    def merge_with(other, in_index:)
       return unless other.is_a?(Method)
 
       super
-      other.sigs.each do |sig|
-        sigs << sig unless sigs.include?(sig)
+
+      merged_sigs = sigs.map do |sig|
+        Rewriters::Merge.fully_qualify_sig(sig, referrer: self, in_index:)
       end
+      rhs_sigs = other.sigs.map do |sig|
+        Rewriters::Merge.fully_qualify_sig(sig, referrer: other, in_index:)
+      end
+      rhs_sigs.each do |sig|
+        merged_sigs << sig unless merged_sigs.include?(sig)
+      end
+      self.sigs = merged_sigs
     end
   end
 
   class Mixin
     # @override
-    #: (Node other) -> bool
-    def compatible_with?(other)
-      other.is_a?(Mixin) && names == other.names
+    #: (Node other, in_index: Index) -> bool
+    def compatible_with?(other, in_index:)
+      return false unless other.is_a?(Mixin)
+
+      lhs_mixins = names.map do |name|
+        Rewriters::Merge.lookup_type(
+          name:,
+          referrer: self,
+          in_index:,
+        )
+      end
+      rhs_mixins = other.names.map do |name|
+        Rewriters::Merge.lookup_type(
+          name:,
+          referrer: other,
+          in_index:,
+        )
+      end
+      lhs_mixins == rhs_mixins
     end
   end
 
   class Include
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(Include) && super
     end
   end
@@ -485,7 +632,7 @@ module RBI
   class Extend
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(Extend) && super
     end
   end
@@ -493,7 +640,7 @@ module RBI
   class MixesInClassMethods
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(MixesInClassMethods) && super
     end
   end
@@ -501,7 +648,7 @@ module RBI
   class Helper
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(Helper) && name == other.name
     end
   end
@@ -509,7 +656,7 @@ module RBI
   class Send
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(Send) && method == other.method && args == other.args
     end
   end
@@ -517,7 +664,7 @@ module RBI
   class TStructField
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(TStructField) && name == other.name && type == other.type && default == other.default
     end
   end
@@ -525,7 +672,7 @@ module RBI
   class TStructConst
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(TStructConst) && super
     end
   end
@@ -533,7 +680,7 @@ module RBI
   class TStructProp
     # @override
     #: (Node other) -> bool
-    def compatible_with?(other)
+    def compatible_with?(other, **)
       other.is_a?(TStructProp) && super
     end
   end
