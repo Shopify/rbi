@@ -49,6 +49,7 @@ module RBI
       end
     end
 
+    #: -> String
     def to_s
       "#<RBI::Index #{@index.filter { |_, v| v.any? }.keys.sort}>"
     end
