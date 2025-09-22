@@ -228,20 +228,24 @@ module RBI
         def merge_nodes?(left, right)
           return false unless left.class == right.class
 
-          merge_comments(left, right) if left.is_a?(NodeWithComments)
+          merge_comments(left, right) if left.is_a?(NodeWithComments) && right.is_a?(NodeWithComments)
 
           case left
           when Class
+            right = right #: as Class
             left_superclass = lookup_type(name: left.superclass_name, referrer: left)
             right_superclass = lookup_type(name: right.superclass_name, referrer: right)
             left_superclass == right_superclass
           when Struct
+            right = right #: as Struct
             left.members == right.members && left.keyword_init == right.keyword_init
           when Const
+            right = right #: as Const
             left.name == right.name && left.value == right.value
           when Attr, Method
-            return false if left.is_a?(Method) && left.params != right.params
-            return false if left.is_a?(Attr) && left.names != right.names
+            right = right #: as Attr | Method
+            return false if left.is_a?(Method) && right.is_a?(Method) && left.params != right.params
+            return false if left.is_a?(Attr) && right.is_a?(Attr) && left.names != right.names
 
             left_sigs = left.sigs.map { fully_qualify_sig(_1, referrer: left) }
             right_sigs = right.sigs.map { fully_qualify_sig(_1, referrer: right) }
@@ -255,15 +259,19 @@ module RBI
               false
             end
           when Mixin
+            right = right #: as Mixin
             left_mixins = left.names.map { lookup_type(name: _1, referrer: left) }
             right_mixins = right.names.map { lookup_type(name: _1, referrer: right) }
             left_mixins == right_mixins
           when Helper
             # Do Helper names need to be resolved to types?
+            right = right #: as Helper
             left.name == right.name
           when Send
+            right = right #: as Send
             left.method == right.method && left.args == right.args
           when TStructField
+            right = right #: as TStructField
             left.name == right.name && left.type == right.type && left.default == right.default
           else
             true
@@ -274,17 +282,30 @@ module RBI
         # when referenced from the given referrer Node. The referrer can be
         # in a different tree, but its scope chain names will be used to find
         # the referent in this merge tree.
-        #: (name: String?, referrer: Node) -> Node?
+        #: (name: String?, referrer: Node) -> (Scope | Const)?
         def lookup_type(name:, referrer:)
           return unless name
 
-          return @index[name] if name.start_with?("::")
+          if name.start_with?("::")
+            referent = @index[name].last #: Node?
+            if referent.is_a?(Scope) || referent.is_a?(Const)
+              return referent
+            elsif referent
+              raise "Unexpected type #{referent} for #{name} with referrer #{referrer}"
+            else
+              return
+            end
+          end
 
-          referrer_scope = referrer.is_a?(Scope) ? referrer : referrer.parent_scope
+          referrer_scope = referrer.is_a?(Scope) ? referrer : referrer.parent_scope #: Scope?
           loop do
             scoped_name = "#{referrer_scope&.fully_qualified_name}::#{name}"
-            referent = @index[scoped_name].last
-            break referent if referent
+            referent = @index[scoped_name].last #: Node?
+            if referent.is_a?(Scope) || referent.is_a?(Const)
+              return referent
+            elsif referent
+              raise "Unexpected type #{referent} for #{name} with referrer #{referrer}"
+            end
             break unless referrer_scope
 
             referrer_scope = referrer_scope.parent_scope
@@ -319,10 +340,11 @@ module RBI
           when Type::Shape
             Type.shape(type.types.transform_values { fully_qualify_type(_1, referrer:) })
           when Type::Proc
-            Type.proc
-              .params(type.proc_params.transform_values { fully_qualify_type(_1, referrer:) })
-              .returns(fully_qualify_type(type.proc_returns, referrer:))
-              .bind(fully_qualify_type(type.proc_bind, referrer:))
+            copy = Type.proc
+            params = type.proc_params.transform_values { fully_qualify_type(_1, referrer:) }
+            copy.params(*params) # This should be **params but sorbet seems to get tripped up?
+            copy.returns(fully_qualify_type(type.proc_returns, referrer:))
+            copy.bind(fully_qualify_type(T.must(type.proc_bind), referrer:)) if type.proc_bind
           else
             type
           end
