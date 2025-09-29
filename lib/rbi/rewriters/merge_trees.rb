@@ -342,7 +342,8 @@ module RBI
           when Type::Proc
             copy = Type.proc
             params = type.proc_params.transform_values { fully_qualify_type(_1, referrer:) }
-            copy.params(**params) # This should be **params but sorbet seems to get tripped up?
+            # Using unsafe below becauses splatting kwargs appears to trip up type checking
+            T.unsafe(copy).params(**params)
             copy.returns(fully_qualify_type(type.proc_returns, referrer:))
             copy.bind(fully_qualify_type(T.must(type.proc_bind), referrer:)) if type.proc_bind
             copy
