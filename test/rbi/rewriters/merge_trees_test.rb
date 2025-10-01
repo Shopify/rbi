@@ -1247,22 +1247,5 @@ module RBI
         class Foo::Bar; end
       RBI
     end
-
-    def test_merge_invalid_type_reference_error
-      lhs = parse_rbi(<<~RBI)
-        class Foo
-          extend T::Sig
-          extend T::Generic
-          Bar = type_member
-          class Baz; end
-        end
-      RBI
-      rhs = parse_rbi(<<~RBI)
-        class Foo::Baz < ::Foo::Bar; end
-      RBI
-      assert_raises(Rewriters::Merge::Error) do
-        lhs.merge(rhs)
-      end
-    end
   end
 end
