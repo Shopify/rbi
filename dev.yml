@@ -22,7 +22,6 @@ commands:
   typecheck:
     desc: 'run Sorbet typechecking'
     aliases: ['tc']
-    depends-isogun: false
     run: bundle exec srb tc
   sanity: 'bin/typecheck; bin/test; bin/style'
   rbi:
