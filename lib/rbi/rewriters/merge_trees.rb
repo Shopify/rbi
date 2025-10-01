@@ -294,13 +294,13 @@ module RBI
         # when referenced from the given referrer Node. The referrer can be
         # in a different tree, but its scope chain names will be used to find
         # the referent in this merge tree.
-        #: (name: String?, referrer: Node) -> (Scope | Const)?
+        #: (name: String?, referrer: Node) -> (Scope | Const | TypeMember)?
         def lookup_type(name:, referrer:)
           return unless name
 
           if name.start_with?("::")
             referent = @index[name].last #: Node?
-            if referent.is_a?(Scope) || referent.is_a?(Const)
+            if referent.is_a?(Scope) || referent.is_a?(Const) || referent.is_a?(TypeMember)
               return referent
             elsif referent
               raise Error, "Unexpected type #{referent} for #{name} with referrer #{referrer}"
@@ -313,7 +313,7 @@ module RBI
           loop do
             scoped_name = "#{referrer_scope&.fully_qualified_name}::#{name}"
             referent = @index[scoped_name].last #: Node?
-            if referent.is_a?(Scope) || referent.is_a?(Const)
+            if referent.is_a?(Scope) || referent.is_a?(Const) || referent.is_a?(TypeMember)
               return referent
             elsif referent
               raise Error, "Unexpected type #{referent} for #{name} with referrer #{referrer}"
