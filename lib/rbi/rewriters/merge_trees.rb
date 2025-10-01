@@ -39,6 +39,8 @@ module RBI
     class Merge
       ASSUME_GLOBAL_CLASS = ["String", "Symbol", "Integer", "Float", "NilClass", "TrueClass", "FalseClass"].freeze
 
+      class Error < RBI::Error; end
+
       class Keep
         NONE = new #: Keep
         LEFT = new #: Keep
@@ -301,7 +303,7 @@ module RBI
             if referent.is_a?(Scope) || referent.is_a?(Const)
               return referent
             elsif referent
-              raise "Unexpected type #{referent} for #{name} with referrer #{referrer}"
+              raise Error, "Unexpected type #{referent} for #{name} with referrer #{referrer}"
             else
               return
             end
@@ -314,7 +316,7 @@ module RBI
             if referent.is_a?(Scope) || referent.is_a?(Const)
               return referent
             elsif referent
-              raise "Unexpected type #{referent} for #{name} with referrer #{referrer}"
+              raise Error, "Unexpected type #{referent} for #{name} with referrer #{referrer}"
             end
             break unless referrer_scope
 
