@@ -128,7 +128,7 @@ module RBI
             prev = previous_definition(node)
 
             if prev.is_a?(Scope)
-              if merge_nodes?(prev, node) || @keep == Keep::LEFT
+              if merge_nodes(prev, node) == :compatible || @keep == Keep::LEFT
                 # do nothing it's already merged
               elsif @keep == Keep::RIGHT
                 prev = replace_scope_header(prev, node)
@@ -150,7 +150,7 @@ module RBI
           when Indexable
             prev = previous_definition(node)
             if prev
-              if merge_nodes?(prev, node) || @keep == Keep::LEFT
+              if merge_nodes(prev, node) == :compatible || @keep == Keep::LEFT
                 # do nothing it's already merged
               elsif @keep == Keep::RIGHT
                 prev.replace(node)
@@ -221,12 +221,13 @@ module RBI
           end
         end
 
-        # Returns false if nodes are incompatible. This method merges any
+        # Returns `:incompatible` or `:compatible` depending on whether the two nodes
+        # should be merged together. This method merges any
         # type references in the node, but the caller is responsible for
-        # merging children if the return value is true.
-        #: (Node left, Node right) -> bool
-        def merge_nodes?(left, right)
-          return false unless left.class == right.class
+        # merging children if the return value is :compatible.
+        #: (Node left, Node right) -> Symbol
+        def merge_nodes(left, right)
+          return :incompatible unless left.class == right.class
 
           merge_comments(left, right) if left.is_a?(NodeWithComments) && right.is_a?(NodeWithComments)
 
@@ -235,17 +236,21 @@ module RBI
             right = right #: as Class
             left_superclass = lookup_type(name: left.superclass_name, referrer: left)
             right_superclass = lookup_type(name: right.superclass_name, referrer: right)
-            left_superclass == right_superclass
+            left_superclass == right_superclass ? :compatible : :incompatible
+
           when Struct
             right = right #: as Struct
-            left.members == right.members && left.keyword_init == right.keyword_init
+            left.members == right.members && left.keyword_init == right.keyword_init ? :compatible : :incompatible
+
           when Const
             right = right #: as Const
-            left.name == right.name && left.value == right.value
+            left.name == right.name && left.value == right.value ? :compatible : :incompatible
+
           when Attr, Method
             right = right #: as Attr | Method
-            return false if left.is_a?(Method) && right.is_a?(Method) && left.params != right.params
-            return false if left.is_a?(Attr) && right.is_a?(Attr) && left.names != right.names
+
+            return :incompatible if left.is_a?(Method) && right.is_a?(Method) && left.params != right.params
+            return :incompatible if left.is_a?(Attr) && right.is_a?(Attr) && left.names != right.names
 
             left_sigs = left.sigs.map { fully_qualify_sig(_1, referrer: left) }
             right_sigs = right.sigs.map { fully_qualify_sig(_1, referrer: right) }
@@ -254,27 +259,32 @@ module RBI
                 left_sigs << sig unless left_sigs.include?(sig)
               end
               left.sigs = left_sigs
-              true
+              :compatible
             else
-              false
+              :incompatible
             end
+
           when Mixin
             right = right #: as Mixin
             left_mixins = left.names.map { lookup_type(name: _1, referrer: left) }
             right_mixins = right.names.map { lookup_type(name: _1, referrer: right) }
-            left_mixins == right_mixins
+            left_mixins == right_mixins ? :compatible : :incompatible
+
           when Helper
             # Do Helper names need to be resolved to types?
             right = right #: as Helper
-            left.name == right.name
+            left.name == right.name ? :compatible : :incompatible
+
           when Send
             right = right #: as Send
-            left.method == right.method && left.args == right.args
+            left.method == right.method && left.args == right.args ? :compatible : :incompatible
+
           when TStructField
             right = right #: as TStructField
-            left.name == right.name && left.type == right.type && left.default == right.default
+            left.class == right.class && left.name == right.name && left.type == right.type && left.default == right.default ? :compatible : :incompatible
+
           else
-            true
+            :compatible
           end
         end
 
