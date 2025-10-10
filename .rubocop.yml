@@ -3,7 +3,7 @@
 inherit_gem:
   rubocop-shopify: rubocop.yml
 
-require:
+plugins:
  - rubocop-sorbet
 
 AllCops:
@@ -17,8 +17,8 @@ Layout/LeadingCommentSpace:
   AllowRBSInlineAnnotation: true
 
 Layout/LineLength:
+  Enabled: true
   Max: 120
-  AllowedPatterns: ['\A\s*#:']
 
 Sorbet:
   Enabled: true

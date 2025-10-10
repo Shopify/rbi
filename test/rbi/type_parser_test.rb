@@ -400,13 +400,22 @@ module RBI
       assert_equal(Type.type_alias("MyType", Type.any(Type.simple("String"), Type.simple("Integer"))), type)
 
       type = Type.parse_string("MyType = T.type_alias { T.all(T.any(String, Integer), T::Boolean) }")
-      assert_equal(Type.type_alias("MyType", Type.all(Type.any(Type.simple("String"), Type.simple("Integer")), Type.boolean)), type)
+      assert_equal(
+        Type.type_alias("MyType", Type.all(Type.any(Type.simple("String"), Type.simple("Integer")), Type.boolean)),
+        type,
+      )
 
       type = Type.parse_string("MyType = T.type_alias { T.proc.void }")
       assert_equal(Type.type_alias("MyType", Type.proc.void), type)
 
       type = Type.parse_string("MyType = T.type_alias { T.proc.params(foo: Foo).returns(Baz).bind(Baz) }")
-      assert_equal(Type.type_alias("MyType", Type.proc.params(foo: Type.simple("Foo")).returns(Type.simple("Baz")).bind(Type.simple("Baz"))), type)
+      assert_equal(
+        Type.type_alias(
+          "MyType",
+          Type.proc.params(foo: Type.simple("Foo")).returns(Type.simple("Baz")).bind(Type.simple("Baz")),
+        ),
+        type,
+      )
 
       type = Type.parse_string("::Foo::MyType = T.type_alias { String }")
       assert_equal(Type.type_alias("::Foo::MyType", Type.simple("String")), type)

@@ -240,7 +240,13 @@ module RBI
     #: bool
     attr_accessor :keyword_init
 
-    #: (String name, ?members: Array[Symbol], ?keyword_init: bool, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Struct struct) -> void } -> void
+    #: (
+    #|   String name,
+    #|   ?members: Array[Symbol],
+    #|   ?keyword_init: bool,
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]
+    #| ) ?{ (Struct struct) -> void } -> void
     def initialize(name, members: [], keyword_init: false, loc: nil, comments: [], &block)
       super(loc: loc, comments: comments) {}
       @name = name
@@ -299,7 +305,14 @@ module RBI
     #: Array[Sig]
     attr_reader :sigs
 
-    #: (Symbol name, Array[Symbol] names, ?visibility: Visibility, ?sigs: Array[Sig], ?loc: Loc?, ?comments: Array[Comment]) -> void
+    #: (
+    #|   Symbol name,
+    #|   Array[Symbol] names,
+    #|   ?visibility: Visibility,
+    #|   ?sigs: Array[Sig],
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]
+    #| ) -> void
     def initialize(name, names, visibility: Public.new, sigs: [], loc: nil, comments: [])
       super(loc: loc, comments: comments)
       @names = [name, *names] #: Array[Symbol]
@@ -313,7 +326,14 @@ module RBI
   end
 
   class AttrAccessor < Attr
-    #: (Symbol name, *Symbol names, ?visibility: Visibility, ?sigs: Array[Sig], ?loc: Loc?, ?comments: Array[Comment]) ?{ (AttrAccessor node) -> void } -> void
+    #: (
+    #|   Symbol name,
+    #|   *Symbol names,
+    #|   ?visibility: Visibility,
+    #|   ?sigs: Array[Sig],
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]
+    #| ) ?{ (AttrAccessor node) -> void } -> void
     def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
       block&.call(self)
@@ -335,7 +355,14 @@ module RBI
   end
 
   class AttrReader < Attr
-    #: (Symbol name, *Symbol names, ?visibility: Visibility, ?sigs: Array[Sig], ?loc: Loc?, ?comments: Array[Comment]) ?{ (AttrReader node) -> void } -> void
+    #: (
+    #|   Symbol name,
+    #|   *Symbol names,
+    #|   ?visibility: Visibility,
+    #|   ?sigs: Array[Sig],
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]
+    #| ) ?{ (AttrReader node) -> void } -> void
     def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
       block&.call(self)
@@ -357,7 +384,14 @@ module RBI
   end
 
   class AttrWriter < Attr
-    #: (Symbol name, *Symbol names, ?visibility: Visibility, ?sigs: Array[Sig], ?loc: Loc?, ?comments: Array[Comment]) ?{ (AttrWriter node) -> void } -> void
+    #: (
+    #|   Symbol name,
+    #|   *Symbol names,
+    #|   ?visibility: Visibility,
+    #|   ?sigs: Array[Sig],
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]
+    #| ) ?{ (AttrWriter node) -> void } -> void
     def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
       block&.call(self)
@@ -396,7 +430,15 @@ module RBI
     #: Array[Sig]
     attr_accessor :sigs
 
-    #: (String name, ?params: Array[Param], ?is_singleton: bool, ?visibility: Visibility, ?sigs: Array[Sig], ?loc: Loc?, ?comments: Array[Comment]) ?{ (Method node) -> void } -> void
+    #: (
+    #|   String name,
+    #|   ?params: Array[Param],
+    #|   ?is_singleton: bool,
+    #|   ?visibility: Visibility,
+    #|   ?sigs: Array[Sig],
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]
+    #| ) ?{ (Method node) -> void } -> void
     def initialize(
       name,
       params: [],
@@ -456,7 +498,15 @@ module RBI
       @params << BlockParam.new(name)
     end
 
-    #: (?params: Array[SigParam], ?return_type: (String | Type), ?is_abstract: bool, ?is_override: bool, ?is_overridable: bool, ?is_final: bool, ?type_params: Array[String], ?checked: Symbol?) ?{ (Sig node) -> void } -> void
+    #: (
+    #|   ?params: Array[SigParam],
+    #|   ?return_type: (String | Type),
+    #|   ?is_abstract: bool,
+    #|   ?is_override: bool,
+    #|   ?is_overridable: bool,
+    #|   ?is_final: bool,
+    #|   ?type_params: Array[String],
+    #|   ?checked: Symbol?) ?{ (Sig node) -> void } -> void
     def add_sig(
       params: [],
       return_type: "void",
@@ -840,7 +890,20 @@ module RBI
     #: Symbol?
     attr_accessor :checked
 
-    #: (?params: Array[SigParam], ?return_type: (Type | String), ?is_abstract: bool, ?is_override: bool, ?is_overridable: bool, ?is_final: bool, ?allow_incompatible_override: bool, ?without_runtime: bool, ?type_params: Array[String], ?checked: Symbol?, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Sig node) -> void } -> void
+    #: (
+    #|   ?params: Array[SigParam],
+    #|   ?return_type: (Type | String),
+    #|   ?is_abstract: bool,
+    #|   ?is_override: bool,
+    #|   ?is_overridable: bool,
+    #|   ?is_final: bool,
+    #|   ?allow_incompatible_override: bool,
+    #|   ?without_runtime: bool,
+    #|   ?type_params: Array[String],
+    #|   ?checked: Symbol?,
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]
+    #| ) ?{ (Sig node) -> void } -> void
     def initialize(
       params: [],
       return_type: "void",
@@ -946,7 +1009,13 @@ module RBI
   end
 
   class TStructConst < TStructField
-    #: (String name, (Type | String) type, ?default: String?, ?loc: Loc?, ?comments: Array[Comment]) ?{ (TStructConst node) -> void } -> void
+    #: (
+    #|   String name,
+    #|   (Type | String) type,
+    #|   ?default: String?,
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]
+    #| ) ?{ (TStructConst node) -> void } -> void
     def initialize(name, type, default: nil, loc: nil, comments: [], &block)
       super(name, type, default: default, loc: loc, comments: comments)
       block&.call(self)
@@ -967,7 +1036,13 @@ module RBI
   end
 
   class TStructProp < TStructField
-    #: (String name, (Type | String) type, ?default: String?, ?loc: Loc?, ?comments: Array[Comment]) ?{ (TStructProp node) -> void } -> void
+    #: (
+    #|   String name,
+    #|   (Type | String) type,
+    #|   ?default: String?,
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]
+    #| ) ?{ (TStructProp node) -> void } -> void
     def initialize(name, type, default: nil, loc: nil, comments: [], &block)
       super(name, type, default: default, loc: loc, comments: comments)
       block&.call(self)
@@ -1087,7 +1162,12 @@ module RBI
   end
 
   class MixesInClassMethods < Mixin
-    #: (String name, *String names, ?loc: Loc?, ?comments: Array[Comment]) ?{ (MixesInClassMethods node) -> void } -> void
+    #: (
+    #|   String name,
+    #|   *String names,
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]
+    #| ) ?{ (MixesInClassMethods node) -> void } -> void
     def initialize(name, *names, loc: nil, comments: [], &block)
       super(name, names, loc: loc, comments: comments)
       block&.call(self)

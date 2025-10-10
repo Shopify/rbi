@@ -330,7 +330,11 @@ module RBI
     #: Array[Rewriters::Merge::Conflict]
     attr_reader :conflicts
 
-    #: (?loc: Loc?, ?comments: Array[Comment], ?conflicts: Array[Rewriters::Merge::Conflict]) ?{ (Tree node) -> void } -> void
+    #: (
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment],
+    #|   ?conflicts: Array[Rewriters::Merge::Conflict]
+    #| ) ?{ (Tree node) -> void } -> void
     def initialize(loc: nil, comments: [], conflicts: [], &block)
       super(loc: loc, comments: comments)
       @conflicts = conflicts
