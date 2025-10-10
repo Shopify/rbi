@@ -22,7 +22,13 @@ module RBI
     #: Integer?
     attr_reader :begin_line, :end_line, :begin_column, :end_column
 
-    #: (?file: String?, ?begin_line: Integer?, ?end_line: Integer?, ?begin_column: Integer?, ?end_column: Integer?) -> void
+    #: (
+    #|   ?file: String?,
+    #|   ?begin_line: Integer?,
+    #|   ?end_line: Integer?,
+    #|   ?begin_column: Integer?,
+    #|   ?end_column: Integer?
+    #| ) -> void
     def initialize(file: nil, begin_line: nil, end_line: nil, begin_column: nil, end_column: nil)
       @file = file
       @begin_line = begin_line
