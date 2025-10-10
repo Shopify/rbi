@@ -337,6 +337,8 @@ module RBI
       if node.sigs.any?(&:is_override)
         if node.sigs.any?(&:allow_incompatible_override)
           printl("# @override(allow_incompatible: true)")
+        elsif node.sigs.any?(&:allow_incompatible_override_visibility)
+          printl("# @override(allow_incompatible: :visibility)")
         else
           printl("# @override")
         end

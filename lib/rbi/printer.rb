@@ -800,6 +800,8 @@ module RBI
       if node.is_override
         modifiers << if node.allow_incompatible_override
           "override(allow_incompatible: true)"
+        elsif node.allow_incompatible_override_visibility
+          "override(allow_incompatible: :visibility)"
         else
           "override"
         end

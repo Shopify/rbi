@@ -397,8 +397,11 @@ module RBI
         sig { override(allow_incompatible: true).returns(T.nilable(String)) }
         def bar; end
 
-        T::Sig::WithoutRuntime.sig { abstract.returns(String) }
+        sig { override(allow_incompatible: :visibility).returns(T.nilable(String)) }
         def baz; end
+
+        T::Sig::WithoutRuntime.sig { abstract.returns(String) }
+        def qux; end
       RBI
 
       # Modifiers are ignored in RBS, but we generate comments for them
@@ -413,9 +416,12 @@ module RBI
         # @override(allow_incompatible: true)
         def bar: -> String?
 
+        # @override(allow_incompatible: :visibility)
+        def baz: -> String?
+
         # @without_runtime
         # @abstract
-        def baz: -> String
+        def qux: -> String
       RBI
     end
 

@@ -882,7 +882,25 @@ module RBI
     attr_accessor :return_type
 
     #: bool
-    attr_accessor :is_abstract, :is_override, :is_overridable, :is_final, :allow_incompatible_override, :without_runtime
+    attr_accessor :is_abstract
+
+    #: bool
+    attr_accessor :is_override
+
+    #: bool
+    attr_accessor :is_overridable
+
+    #: bool
+    attr_accessor :is_final
+
+    #: bool
+    attr_accessor :allow_incompatible_override
+
+    #: bool
+    attr_accessor :allow_incompatible_override_visibility
+
+    #: bool
+    attr_accessor :without_runtime
 
     #: Array[String]
     attr_reader :type_params
@@ -898,6 +916,7 @@ module RBI
     #|   ?is_overridable: bool,
     #|   ?is_final: bool,
     #|   ?allow_incompatible_override: bool,
+    #|   ?allow_incompatible_override_visibility: bool,
     #|   ?without_runtime: bool,
     #|   ?type_params: Array[String],
     #|   ?checked: Symbol?,
@@ -912,6 +931,7 @@ module RBI
       is_overridable: false,
       is_final: false,
       allow_incompatible_override: false,
+      allow_incompatible_override_visibility: false,
       without_runtime: false,
       type_params: [],
       checked: nil,
@@ -927,6 +947,7 @@ module RBI
       @is_overridable = is_overridable
       @is_final = is_final
       @allow_incompatible_override = allow_incompatible_override
+      @allow_incompatible_override_visibility = allow_incompatible_override_visibility
       @without_runtime = without_runtime
       @type_params = type_params
       @checked = checked
