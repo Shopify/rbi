@@ -946,22 +946,8 @@ module RBI
           end
         when "override"
           @current.is_override = true
-
-          args = node.arguments&.arguments
-
-          keywords_hash = args
-            &.grep(Prism::KeywordHashNode)
-            &.first
-
-          allow_incompatible_override = keywords_hash
-            &.elements
-            &.any? do |assoc|
-              assoc.is_a?(Prism::AssocNode) &&
-                node_string(assoc.key) == "allow_incompatible:" &&
-                node_string(assoc.value) == "true"
-            end
-
-          @current.allow_incompatible_override = !!allow_incompatible_override
+          @current.allow_incompatible_override = allow_incompatible_override?(node, "true")
+          @current.allow_incompatible_override_visibility = allow_incompatible_override?(node, ":visibility")
         when "overridable"
           @current.is_overridable = true
         when "params"
@@ -994,6 +980,23 @@ module RBI
           node_string!(node.key).delete_suffix(":"),
           node_string!(node.value),
         )
+      end
+
+      #: (Prism::CallNode node, String value) -> bool
+      def allow_incompatible_override?(node, value)
+        args = node.arguments&.arguments
+
+        keywords_hash = args
+          &.grep(Prism::KeywordHashNode)
+          &.first
+
+        !!keywords_hash
+          &.elements
+          &.any? do |assoc|
+            assoc.is_a?(Prism::AssocNode) &&
+              node_string(assoc.key) == "allow_incompatible:" &&
+              node_string(assoc.value) == value
+          end
       end
     end
 
