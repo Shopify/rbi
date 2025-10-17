@@ -33,7 +33,6 @@ module RBI
         def translate(type)
           case type
           when ::RBS::Types::Alias
-            # TODO: unsupported yet
             translate_type_alias(type)
           when ::RBS::Types::Bases::Any
             Type.untyped
