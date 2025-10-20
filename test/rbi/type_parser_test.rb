@@ -160,7 +160,7 @@ module RBI
       e = assert_raises(RBI::Type::Error) do
         Type.parse_string("T.class_of(T.nilable(Foo))")
       end
-      assert_equal("Expected a simple type, got `T.nilable(Foo)`", e.message)
+      assert_equal("Expected a simple type, got `::T.nilable(Foo)`", e.message)
 
       e = assert_raises(RBI::Type::Error) do
         Type.parse_string("T.class_of(Foo)[]")
