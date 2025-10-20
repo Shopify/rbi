@@ -58,7 +58,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T.anything"
+        "::T.anything"
       end
 
       # @override
@@ -85,7 +85,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T.attached_class"
+        "::T.attached_class"
       end
 
       # @override
@@ -139,7 +139,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T.noreturn"
+        "::T.noreturn"
       end
 
       # @override
@@ -166,7 +166,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T.self_type"
+        "::T.self_type"
       end
 
       # @override
@@ -193,7 +193,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T.untyped"
+        "::T.untyped"
       end
 
       # @override
@@ -299,9 +299,9 @@ module RBI
       #: -> String
       def to_rbi
         if @type_parameter
-          "T.class_of(#{@type.to_rbi})[#{@type_parameter.to_rbi}]"
+          "::T.class_of(#{@type.to_rbi})[#{@type_parameter.to_rbi}]"
         else
-          "T.class_of(#{@type.to_rbi})"
+          "::T.class_of(#{@type.to_rbi})"
         end
       end
 
@@ -338,7 +338,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T.nilable(#{@type.to_rbi})"
+        "::T.nilable(#{@type.to_rbi})"
       end
 
       # @override
@@ -385,7 +385,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T.all(#{@types.map(&:to_rbi).join(", ")})"
+        "::T.all(#{@types.map(&:to_rbi).join(", ")})"
       end
 
       # @override
@@ -427,7 +427,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T.any(#{@types.map(&:to_rbi).join(", ")})"
+        "::T.any(#{@types.map(&:to_rbi).join(", ")})"
       end
 
       #: -> bool
@@ -567,7 +567,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T.type_parameter(#{@name.inspect})"
+        "::T.type_parameter(#{@name.inspect})"
       end
 
       # @override
@@ -607,7 +607,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "#{name} = T.type_alias { #{aliased_type.to_rbi} }"
+        "#{name} = ::T.type_alias { #{aliased_type.to_rbi} }"
       end
 
       # @override
@@ -760,7 +760,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        rbi = +"T.proc"
+        rbi = +"::T.proc"
 
         if @proc_bind
           rbi << ".bind(#{@proc_bind})"
@@ -958,8 +958,8 @@ module RBI
     # ```ruby
     # type = RBI::Type.simple("String")
     # type.to_rbi # => "String"
-    # type.nilable.to_rbi # => "T.nilable(String)"
-    # type.nilable.nilable.to_rbi # => "T.nilable(String)"
+    # type.nilable.to_rbi # => "::T.nilable(String)"
+    # type.nilable.nilable.to_rbi # => "::T.nilable(String)"
     # ```
     #: -> Type
     def nilable
@@ -972,7 +972,7 @@ module RBI
     #
     # ```ruby
     # type = RBI::Type.nilable(RBI::Type.simple("String"))
-    # type.to_rbi # => "T.nilable(String)"
+    # type.to_rbi # => "::T.nilable(String)"
     # type.non_nilable.to_rbi # => "String"
     # type.non_nilable.non_nilable.to_rbi # => "String"
     # ```

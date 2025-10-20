@@ -161,23 +161,23 @@ module RBI
         def translate_t_generic_type(type_name)
           case type_name.delete_prefix("::")
           when "Array"
-            "T::Array"
+            "::T::Array"
           when "Class"
-            "T::Class"
+            "::T::Class"
           when "Enumerable"
-            "T::Enumerable"
+            "::T::Enumerable"
           when "Enumerator"
-            "T::Enumerator"
+            "::T::Enumerator"
           when "Enumerator::Chain"
-            "T::Enumerator::Chain"
+            "::T::Enumerator::Chain"
           when "Enumerator::Lazy"
-            "T::Enumerator::Lazy"
+            "::T::Enumerator::Lazy"
           when "Hash"
-            "T::Hash"
+            "::T::Hash"
           when "Set"
-            "T::Set"
+            "::T::Set"
           when "Range"
-            "T::Range"
+            "::T::Range"
           else
             type_name
           end

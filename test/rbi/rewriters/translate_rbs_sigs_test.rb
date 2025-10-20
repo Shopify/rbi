@@ -37,7 +37,7 @@ module RBI
         def foo; end
 
         class Foo
-          sig { params(a: T.nilable(Integer), b: Integer, c: Integer, d: Integer, e: Integer, f: Integer, g: T.proc.params(arg0: Integer).returns(String)).returns(::Foo) }
+          sig { params(a: ::T.nilable(Integer), b: Integer, c: Integer, d: Integer, e: Integer, f: Integer, g: ::T.proc.params(arg0: Integer).returns(String)).returns(::Foo) }
           def bar(a, b = 42, *c, d:, e: 43, **f, &g); end
 
           sig { params(a: Integer, b: Integer).returns(Foo::Bar) }
@@ -84,7 +84,7 @@ module RBI
       RBI
 
       assert_equal(<<~RBI, tree)
-        sig { returns(T::Array[Integer]) }
+        sig { returns(::T::Array[Integer]) }
         attr_reader :a
 
         sig { params(a: Integer).returns(Integer) }

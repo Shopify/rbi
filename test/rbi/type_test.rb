@@ -38,7 +38,7 @@ module RBI
 
     def test_build_type_anything
       type = Type.anything
-      assert_equal("T.anything", type.to_rbi)
+      assert_equal("::T.anything", type.to_rbi)
     end
 
     def test_build_type_void
@@ -53,19 +53,19 @@ module RBI
 
       type = type.nilable
       assert_predicate(type, :nilable?)
-      assert_equal("T.nilable(String)", type.to_rbi)
+      assert_equal("::T.nilable(String)", type.to_rbi)
     end
 
     def test_build_type_nilable_of_untyped
       type = Type.nilable(Type.untyped)
       assert_instance_of(Type::Untyped, type)
-      assert_equal("T.untyped", type.to_rbi)
+      assert_equal("::T.untyped", type.to_rbi)
     end
 
     def test_build_type_nilable_of_nilable
       type = Type.nilable(Type.nilable(Type.simple("String")))
       assert_predicate(type, :nilable?)
-      assert_equal("T.nilable(String)", type.to_rbi)
+      assert_equal("::T.nilable(String)", type.to_rbi)
     end
 
     def test_build_non_nilable_of_simple_type
@@ -86,7 +86,7 @@ module RBI
         Type.simple("Integer"),
       )
       refute_predicate(type, :nilable?)
-      assert_equal("T.all(String, Integer)", type.to_rbi)
+      assert_equal("::T.all(String, Integer)", type.to_rbi)
     end
 
     def test_build_type_all_of_all
@@ -99,7 +99,7 @@ module RBI
         ),
       )
       assert_instance_of(Type::All, type)
-      assert_equal("T.all(String, Integer, Numeric)", type.to_rbi)
+      assert_equal("::T.all(String, Integer, Numeric)", type.to_rbi)
     end
 
     def test_build_type_all_of_dup
@@ -117,7 +117,7 @@ module RBI
         Type.simple("Integer"),
       )
       refute_predicate(type, :nilable?)
-      assert_equal("T.any(String, Integer)", type.to_rbi)
+      assert_equal("::T.any(String, Integer)", type.to_rbi)
 
       type = Type.any(
         Type.simple("String"),
@@ -126,7 +126,7 @@ module RBI
         Type.simple("Integer"),
       )
       refute_predicate(type, :nilable?)
-      assert_equal("T.any(String, Integer)", type.to_rbi)
+      assert_equal("::T.any(String, Integer)", type.to_rbi)
     end
 
     def test_build_type_any_of_any
@@ -142,7 +142,7 @@ module RBI
       )
 
       assert_instance_of(Type::Any, type)
-      assert_equal("T.any(String, Integer, Symbol)", type.to_rbi)
+      assert_equal("::T.any(String, Integer, Symbol)", type.to_rbi)
     end
 
     def test_build_type_any_of_any_of_any
@@ -161,7 +161,7 @@ module RBI
       )
 
       assert_instance_of(Type::Any, type)
-      assert_equal("T.any(String, Integer, Numeric, Symbol)", type.to_rbi)
+      assert_equal("::T.any(String, Integer, Numeric, Symbol)", type.to_rbi)
     end
 
     def test_build_type_any_of_uniq
@@ -180,7 +180,7 @@ module RBI
         Type.nilable(Type.simple("String")),
       )
       assert_predicate(type, :nilable?)
-      assert_equal("T.nilable(String)", type.to_rbi)
+      assert_equal("::T.nilable(String)", type.to_rbi)
     end
 
     def test_build_type_any_of_nilclass
@@ -189,7 +189,7 @@ module RBI
         Type.simple("NilClass"),
       )
       assert_predicate(type, :nilable?)
-      assert_equal("T.nilable(String)", type.to_rbi)
+      assert_equal("::T.nilable(String)", type.to_rbi)
     end
 
     def test_build_type_any_of_nilable
@@ -198,7 +198,7 @@ module RBI
         Type.nilable(Type.simple("Integer")),
       )
       assert_predicate(type, :nilable?)
-      assert_equal("T.nilable(T.any(String, Integer))", type.to_rbi)
+      assert_equal("::T.nilable(::T.any(String, Integer))", type.to_rbi)
     end
 
     def test_build_type_any_of_trueclass_and_falseclass
@@ -207,7 +207,7 @@ module RBI
         Type.simple("String"),
         Type.simple("FalseClass"),
       )
-      assert_equal("T.any(String, T::Boolean)", type.to_rbi)
+      assert_equal("::T.any(String, T::Boolean)", type.to_rbi)
     end
 
     def test_build_type_any_of_trueclass_and_falseclass_and_nilclass
@@ -217,7 +217,7 @@ module RBI
         Type.simple("FalseClass"),
       )
       assert_predicate(type, :nilable?)
-      assert_equal("T.nilable(T::Boolean)", type.to_rbi)
+      assert_equal("::T.nilable(T::Boolean)", type.to_rbi)
     end
 
     def test_build_type_any_of_trueclass_and_falseclass_with_nilable
@@ -226,7 +226,7 @@ module RBI
         Type.nilable(Type.simple("FalseClass")),
       )
       assert_predicate(type, :nilable?)
-      assert_equal("T.nilable(T::Boolean)", type.to_rbi)
+      assert_equal("::T.nilable(T::Boolean)", type.to_rbi)
     end
 
     def test_build_type_tuple
@@ -273,49 +273,49 @@ module RBI
     def test_build_type_void_proc
       type = Type.proc
       refute_predicate(type, :nilable?)
-      assert_equal("T.proc.void", type.to_rbi)
+      assert_equal("::T.proc.void", type.to_rbi)
     end
 
     def test_build_type_void_proc_with_explicit_void_return_type
       type = Type.proc.void
       refute_predicate(type, :nilable?)
-      assert_equal("T.proc.void", type.to_rbi)
+      assert_equal("::T.proc.void", type.to_rbi)
     end
 
     def test_build_type_void_proc_with_explicit_returns_with_void
       type = Type.proc.returns(Type.void)
       refute_predicate(type, :nilable?)
-      assert_equal("T.proc.void", type.to_rbi)
+      assert_equal("::T.proc.void", type.to_rbi)
     end
 
     def test_build_type_void_proc_with_multiple_returns_specified
       type = Type.proc.returns(Type.simple("Integer")).void
       refute_predicate(type, :nilable?)
-      assert_equal("T.proc.void", type.to_rbi)
+      assert_equal("::T.proc.void", type.to_rbi)
     end
 
     def test_build_type_void_nilable_proc
       type = Type.proc.nilable
       assert_predicate(type, :nilable?)
-      assert_equal("T.nilable(T.proc.void)", type.to_rbi)
+      assert_equal("::T.nilable(::T.proc.void)", type.to_rbi)
     end
 
     def test_build_type_void_proc_with_params
       type = Type.proc.params(foo: Type.simple("String"), bar: Type.simple("Integer"))
       refute_predicate(type, :nilable?)
-      assert_equal("T.proc.params(foo: String, bar: Integer).void", type.to_rbi)
+      assert_equal("::T.proc.params(foo: String, bar: Integer).void", type.to_rbi)
     end
 
     def test_build_type_void_nilable_proc_with_params
       type = Type.proc.params(foo: Type.simple("String"), bar: Type.simple("Integer")).nilable
       assert_predicate(type, :nilable?)
-      assert_equal("T.nilable(T.proc.params(foo: String, bar: Integer).void)", type.to_rbi)
+      assert_equal("::T.nilable(::T.proc.params(foo: String, bar: Integer).void)", type.to_rbi)
     end
 
     def test_build_type_symbol_returning_proc_with_params
       type = Type.proc.params(foo: Type.simple("String"), bar: Type.simple("Integer")).returns(Type.simple("Symbol"))
       refute_predicate(type, :nilable?)
-      assert_equal("T.proc.params(foo: String, bar: Integer).returns(Symbol)", type.to_rbi)
+      assert_equal("::T.proc.params(foo: String, bar: Integer).returns(Symbol)", type.to_rbi)
     end
 
     def test_build_type_symbol_returning_proc_with_params_and_bind
@@ -327,14 +327,14 @@ module RBI
         .returns(Type.simple("Symbol"))
         .bind(Type.class_of(Type.simple("Base")))
       refute_predicate(type, :nilable?)
-      assert_equal("T.proc.bind(T.class_of(Base)).params(foo: String, bar: Integer).returns(Symbol)", type.to_rbi)
+      assert_equal("::T.proc.bind(::T.class_of(Base)).params(foo: String, bar: Integer).returns(Symbol)", type.to_rbi)
     end
 
     def test_build_type_void_proc_with_bind
       type = Type.proc
         .bind(Type.class_of(Type.simple("Base")))
       refute_predicate(type, :nilable?)
-      assert_equal("T.proc.bind(T.class_of(Base)).void", type.to_rbi)
+      assert_equal("::T.proc.bind(::T.class_of(Base)).void", type.to_rbi)
     end
 
     def test_build_type_empty_shape
@@ -355,104 +355,104 @@ module RBI
 
     def test_build_type_parameter
       type = Type.type_parameter(:U)
-      assert_equal("T.type_parameter(:U)", type.to_rbi)
+      assert_equal("::T.type_parameter(:U)", type.to_rbi)
 
       type = Type.type_parameter(:" !")
-      assert_equal("T.type_parameter(:\" !\")", type.to_rbi)
+      assert_equal("::T.type_parameter(:\" !\")", type.to_rbi)
     end
 
     def test_build_type_alias
       type = Type.type_alias("MyCustomType", Type.simple("String"))
       refute_predicate(type, :nilable?)
-      assert_equal("MyCustomType = T.type_alias { String }", type.to_rbi)
+      assert_equal("MyCustomType = ::T.type_alias { String }", type.to_rbi)
 
-      type = Type.type_alias("UserType", Type.generic("T::Array", Type.simple("String")))
+      type = Type.type_alias("UserType", Type.generic("::T::Array", Type.simple("String")))
       refute_predicate(type, :nilable?)
-      assert_equal("UserType = T.type_alias { T::Array[String] }", type.to_rbi)
+      assert_equal("UserType = ::T.type_alias { ::T::Array[String] }", type.to_rbi)
 
       type = Type.type_alias("ComplexType", Type.any(Type.simple("String"), Type.simple("Integer")))
       refute_predicate(type, :nilable?)
-      assert_equal("ComplexType = T.type_alias { T.any(String, Integer) }", type.to_rbi)
+      assert_equal("ComplexType = ::T.type_alias { ::T.any(String, Integer) }", type.to_rbi)
     end
 
     def test_build_type_alias_with_nilable_type
       type = Type.type_alias("OptionalType", Type.nilable(Type.simple("String")))
       refute_predicate(type, :nilable?)
-      assert_equal("OptionalType = T.type_alias { T.nilable(String) }", type.to_rbi)
+      assert_equal("OptionalType = ::T.type_alias { ::T.nilable(String) }", type.to_rbi)
     end
 
     def test_build_type_alias_with_composite_types
       type = Type.type_alias("IntersectionType", Type.all(Type.simple("String"), Type.simple("Integer")))
       refute_predicate(type, :nilable?)
-      assert_equal("IntersectionType = T.type_alias { T.all(String, Integer) }", type.to_rbi)
+      assert_equal("IntersectionType = ::T.type_alias { ::T.all(String, Integer) }", type.to_rbi)
 
       type = Type.type_alias("UnionType", Type.any(Type.simple("String"), Type.simple("Integer")))
       refute_predicate(type, :nilable?)
-      assert_equal("UnionType = T.type_alias { T.any(String, Integer) }", type.to_rbi)
+      assert_equal("UnionType = ::T.type_alias { ::T.any(String, Integer) }", type.to_rbi)
     end
 
     def test_build_type_alias_with_proc_type
       proc_type = Type.proc.params(foo: Type.simple("String")).returns(Type.simple("Integer"))
       type = Type.type_alias("ProcType", proc_type)
       refute_predicate(type, :nilable?)
-      assert_equal("ProcType = T.type_alias { T.proc.params(foo: String).returns(Integer) }", type.to_rbi)
+      assert_equal("ProcType = ::T.type_alias { ::T.proc.params(foo: String).returns(Integer) }", type.to_rbi)
     end
 
     def test_build_type_alias_with_shape_type
       shape_type = Type.shape(foo: Type.simple("String"), bar: Type.simple("Integer"))
       type = Type.type_alias("ShapeType", shape_type)
       refute_predicate(type, :nilable?)
-      assert_equal("ShapeType = T.type_alias { { foo: String, bar: Integer } }", type.to_rbi)
+      assert_equal("ShapeType = ::T.type_alias { { foo: String, bar: Integer } }", type.to_rbi)
     end
 
     def test_build_type_alias_with_tuple_type
       tuple_type = Type.tuple(Type.simple("String"), Type.simple("Integer"))
       type = Type.type_alias("TupleType", tuple_type)
       refute_predicate(type, :nilable?)
-      assert_equal("TupleType = T.type_alias { [String, Integer] }", type.to_rbi)
+      assert_equal("TupleType = ::T.type_alias { [String, Integer] }", type.to_rbi)
     end
 
     def test_build_type_alias_with_class_of_type
       class_of_type = Type.class_of(Type.simple("String"))
       type = Type.type_alias("ClassOfType", class_of_type)
       refute_predicate(type, :nilable?)
-      assert_equal("ClassOfType = T.type_alias { T.class_of(String) }", type.to_rbi)
+      assert_equal("ClassOfType = ::T.type_alias { ::T.class_of(String) }", type.to_rbi)
     end
 
     def test_build_type_alias_with_t_class_type
       t_class_type = Type.t_class(Type.simple("String"))
       type = Type.type_alias("TClassType", t_class_type)
       refute_predicate(type, :nilable?)
-      assert_equal("TClassType = T.type_alias { T::Class[String] }", type.to_rbi)
+      assert_equal("TClassType = ::T.type_alias { T::Class[String] }", type.to_rbi)
     end
 
     def test_build_type_alias_with_boolean_type
       boolean_type = Type.boolean
       type = Type.type_alias("BooleanType", boolean_type)
       refute_predicate(type, :nilable?)
-      assert_equal("BooleanType = T.type_alias { T::Boolean }", type.to_rbi)
+      assert_equal("BooleanType = ::T.type_alias { T::Boolean }", type.to_rbi)
     end
 
     def test_build_type_alias_with_literal_types
       anything_type = Type.anything
       type = Type.type_alias("AnythingType", anything_type)
       refute_predicate(type, :nilable?)
-      assert_equal("AnythingType = T.type_alias { T.anything }", type.to_rbi)
+      assert_equal("AnythingType = ::T.type_alias { ::T.anything }", type.to_rbi)
 
       untyped_type = Type.untyped
       type = Type.type_alias("UntypedType", untyped_type)
       refute_predicate(type, :nilable?)
-      assert_equal("UntypedType = T.type_alias { T.untyped }", type.to_rbi)
+      assert_equal("UntypedType = ::T.type_alias { ::T.untyped }", type.to_rbi)
     end
 
     def test_build_type_class_of
       type = Type.class_of(Type.simple("String"))
-      assert_equal("T.class_of(String)", type.to_rbi)
+      assert_equal("::T.class_of(String)", type.to_rbi)
     end
 
     def test_build_type_class_of_generic
       type = Type.class_of(Type.simple("String"), Type.simple("Integer"))
-      assert_equal("T.class_of(String)[Integer]", type.to_rbi)
+      assert_equal("::T.class_of(String)[Integer]", type.to_rbi)
     end
 
     def test_buid_type_t_class
@@ -462,22 +462,22 @@ module RBI
 
     def test_build_type_self_type
       type = Type.self_type
-      assert_equal("T.self_type", type.to_rbi)
+      assert_equal("::T.self_type", type.to_rbi)
     end
 
     def test_build_type_attached_class
       type = Type.attached_class
-      assert_equal("T.attached_class", type.to_rbi)
+      assert_equal("::T.attached_class", type.to_rbi)
     end
 
     def test_build_type_untyped
       type = Type.untyped
-      assert_equal("T.untyped", type.to_rbi)
+      assert_equal("::T.untyped", type.to_rbi)
     end
 
     def test_buid_type_noreturn
       type = Type.noreturn
-      assert_equal("T.noreturn", type.to_rbi)
+      assert_equal("::T.noreturn", type.to_rbi)
     end
 
     def test_type_alias_normalize_and_simplify
@@ -486,24 +486,24 @@ module RBI
 
       normalized = type.normalize
       assert_instance_of(Type::TypeAlias, normalized)
-      assert_equal("MyType = T.type_alias { String }", normalized.to_rbi)
+      assert_equal("MyType = ::T.type_alias { String }", normalized.to_rbi)
 
       simplified = type.simplify
       assert_instance_of(Type::TypeAlias, simplified)
-      assert_equal("MyType = T.type_alias { String }", simplified.to_rbi)
+      assert_equal("MyType = ::T.type_alias { String }", simplified.to_rbi)
 
       # Test with complex types
       simplified_type_alias = Type.type_alias("ComplexType", Type.nilable(Type.simple("String")))
 
       normalized_complex = simplified_type_alias.normalize
       assert_instance_of(Type::TypeAlias, normalized_complex)
-      assert_equal("ComplexType = T.type_alias { T.any(NilClass, String) }", normalized_complex.to_rbi)
+      assert_equal("ComplexType = ::T.type_alias { ::T.any(NilClass, String) }", normalized_complex.to_rbi)
 
       normalized_type_alias = Type.type_alias("ComplexType", Type.any(Type.simple("String"), Type.simple("NilClass")))
 
       simplified_complex = normalized_type_alias.simplify
       assert_instance_of(Type::TypeAlias, simplified_complex)
-      assert_equal("ComplexType = T.type_alias { T.nilable(String) }", simplified_complex.to_rbi)
+      assert_equal("ComplexType = ::T.type_alias { ::T.nilable(String) }", simplified_complex.to_rbi)
     end
 
     def test_types_comparison

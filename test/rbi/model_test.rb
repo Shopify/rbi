@@ -449,7 +449,7 @@ module RBI
       end
 
       assert_equal(<<~RBI, rbi.string)
-        sig { params(x: T.untyped).void }
+        sig { params(x: ::T.untyped).void }
         def foo(x); end
       RBI
     end
@@ -460,7 +460,7 @@ module RBI
       node.return_type = Type.simple("Integer")
 
       assert_equal(<<~RBI, node.string)
-        sig { params(x: T.untyped).returns(Integer) }
+        sig { params(x: ::T.untyped).returns(Integer) }
       RBI
     end
 
