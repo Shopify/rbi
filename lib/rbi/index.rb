@@ -1,6 +1,13 @@
 # typed: strict
 # frozen_string_literal: true
 
+# X.foo(Integer)
+
+# #: (recv: X, arg0: Integer) -> void
+# def check_blah(recv, arg0)
+#   recv.foo(arg0)
+# end
+
 module RBI
   class Index < Visitor
     class << self

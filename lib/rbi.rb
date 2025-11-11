@@ -13,6 +13,7 @@ require "rbi/model"
 require "rbi/type"
 require "rbi/visitor"
 require "rbi/index"
+require "rbi/tracer"
 
 require "rbi/rbs/method_type_translator"
 require "rbi/rbs/type_translator"

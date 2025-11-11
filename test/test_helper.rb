@@ -12,6 +12,9 @@ unless ENV["RM_INFO"]
   Minitest::Reporters.use!(Minitest::Reporters::SpecReporter.new(color: true))
 end
 
+tracer = RBI::Tracer.new
+tracer.start
+
 module TestHelper
   private
 
@@ -19,4 +22,8 @@ module TestHelper
   def parse_rbi(rbs_string)
     RBI::Parser.parse_string(rbs_string)
   end
+end
+
+Minitest.after_run do
+  tracer.stop
 end
