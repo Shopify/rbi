@@ -460,6 +460,11 @@ module RBI
       assert_equal("T::Class[String]", type.to_rbi)
     end
 
+    def test_buid_type_t_module
+      type = Type.t_module(Type.simple("String"))
+      assert_equal("T::Module[String]", type.to_rbi)
+    end
+
     def test_build_type_self_type
       type = Type.self_type
       assert_equal("::T.self_type", type.to_rbi)

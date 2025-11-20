@@ -141,6 +141,20 @@ module RBI
       )
     end
 
+    def test_normalize_module
+      assert_equal(
+        parse_type("T::Module[String]"),
+        parse_and_normalize("T::Module[String]"),
+      )
+    end
+
+    def test_simplify_module
+      assert_equal(
+        parse_type("T::Module[String]"),
+        parse_and_simplify("T::Module[String]"),
+      )
+    end
+
     def test_normalize_class_of
       assert_equal(
         parse_type("T.class_of(String)"),
