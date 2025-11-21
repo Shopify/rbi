@@ -174,6 +174,8 @@ module RBI
             "::T::Enumerator::Lazy"
           when "Hash"
             "::T::Hash"
+          when "Module"
+            "::T::Module"
           when "Set"
             "::T::Set"
           when "Range"

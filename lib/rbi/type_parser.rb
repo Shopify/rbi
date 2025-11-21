@@ -116,6 +116,14 @@ module RBI
                   args.first, #: as !nil
                 ),
               )
+            elsif t_module?(recv)
+              # `T::Module[Foo]` or `::T::Module[Foo]`
+              args = check_arguments_exactly!(node, 1)
+              return Type::Module.new(
+                parse_node(
+                  args.first, #: as !nil
+                ),
+              )
             else
               # `::Foo[Bar]` or `::Foo[Bar, Baz]`
               args = check_arguments_at_least!(node, 1)
@@ -352,6 +360,11 @@ module RBI
       #: (Prism::ConstantPathNode node) -> bool
       def t_class?(node)
         t?(node.parent) && node.name == :Class
+      end
+
+      #: (Prism::ConstantPathNode node) -> bool
+      def t_module?(node)
+        t?(node.parent) && node.name == :Module
       end
 
       #: (Prism::Node? node) -> bool

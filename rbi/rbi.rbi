@@ -2573,6 +2573,9 @@ class RBI::Type
     sig { params(type: ::RBI::Type).returns(::RBI::Type::Class) }
     def t_class(type); end
 
+    sig { params(type: ::RBI::Type).returns(::RBI::Type::Module) }
+    def t_module(type); end
+
     sig { params(types: T.any(::RBI::Type, T::Array[::RBI::Type])).returns(::RBI::Type::Tuple) }
     def tuple(*types); end
 
@@ -2628,6 +2631,9 @@ class RBI::Type
 
     sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
     def t_class_of?(node); end
+
+    sig { params(node: ::Prism::ConstantPathNode).returns(T::Boolean) }
+    def t_module?(node); end
 
     sig { params(node: ::Prism::CallNode).returns(T::Boolean) }
     def t_proc?(node); end
@@ -2786,6 +2792,26 @@ class RBI::Type::Generic < ::RBI::Type
 
   sig { override.returns(::String) }
   def to_rbi; end
+end
+
+class RBI::Type::Module < ::RBI::Type
+  sig { params(type: ::RBI::Type).void }
+  def initialize(type); end
+
+  sig { override.params(other: ::BasicObject).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { override.returns(::RBI::Type) }
+  def normalize; end
+
+  sig { override.returns(::RBI::Type) }
+  def simplify; end
+
+  sig { override.returns(::String) }
+  def to_rbi; end
+
+  sig { returns(::RBI::Type) }
+  def type; end
 end
 
 class RBI::Type::Nilable < ::RBI::Type
@@ -3133,6 +3159,9 @@ class RBI::TypePrinter
 
   sig { params(type: ::RBI::Type::Generic).void }
   def visit_generic(type); end
+
+  sig { params(type: ::RBI::Type::Module).void }
+  def visit_module(type); end
 
   sig { params(type: ::RBI::Type::Nilable).void }
   def visit_nilable(type); end

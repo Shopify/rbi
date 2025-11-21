@@ -701,6 +701,32 @@ module RBI
       RBI
     end
 
+    def test_print_module_type
+      rbi = parse_rbi(<<~RBI)
+        sig { returns(T::Module[String]) }
+        def a; end
+
+        sig { returns(Module) }
+        def b; end
+
+        sig { returns(T::Module[T.anything]) }
+        def c; end
+
+        sig { returns(T::Module[T.untyped]) }
+        def d; end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def a: -> Module[String]
+
+        def b: -> Module
+
+        def c: -> Module[top]
+
+        def d: -> Module[untyped]
+      RBI
+    end
+
     def test_print_procs
       rbi = parse_rbi(<<~RBI)
         sig { params(x: T.nilable(T.proc.void)) }

@@ -1030,6 +1030,8 @@ module RBI
         visit_type_parameter(node)
       when Type::Class
         visit_class(node)
+      when Type::Module
+        visit_module(node)
       else
         raise Error, "Unhandled node: #{node.class}"
       end
@@ -1186,6 +1188,13 @@ module RBI
     #: (Type::Class type) -> void
     def visit_class(type)
       @string << "Class["
+      visit(type.type)
+      @string << "]"
+    end
+
+    #: (Type::Module type) -> void
+    def visit_module(type)
+      @string << "Module["
       visit(type.type)
       @string << "]"
     end

@@ -274,6 +274,42 @@ module RBI
       end
     end
 
+    # The module of another type like `T::Module[Foo]`.
+    class Module < Type
+      #: Type
+      attr_reader :type
+
+      #: (Type type) -> void
+      def initialize(type)
+        super()
+        @type = type
+      end
+
+      # @override
+      #: (BasicObject other) -> bool
+      def ==(other)
+        Module === other && @type == other.type
+      end
+
+      # @override
+      #: -> String
+      def to_rbi
+        "T::Module[#{@type}]"
+      end
+
+      # @override
+      #: -> Type
+      def normalize
+        self
+      end
+
+      # @override
+      #: -> Type
+      def simplify
+        self
+      end
+    end
+
     # The singleton class of another type like `T.class_of(Foo)`.
     class ClassOf < Type
       #: Simple
@@ -861,6 +897,12 @@ module RBI
       #: (Type type) -> Class
       def t_class(type)
         Class.new(type)
+      end
+
+      # Builds a type that represents the module of another type like `T::Module[Foo]`.
+      #: (Type type) -> Module
+      def t_module(type)
+        Module.new(type)
       end
 
       # Builds a type that represents the singleton class of another type like `T.class_of(Foo)`.

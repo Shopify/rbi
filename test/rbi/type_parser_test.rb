@@ -134,6 +134,16 @@ module RBI
       assert_equal(Type.t_class(Type.simple("Foo")), type)
     end
 
+    def test_parse_module
+      e = assert_raises(RBI::Type::Error) do
+        Type.parse_string("T::Module[]")
+      end
+      assert_equal("Expected exactly 1 argument, got 0", e.message)
+
+      type = Type.parse_string("T::Module[Foo]")
+      assert_equal(Type.t_module(Type.simple("Foo")), type)
+    end
+
     def test_parse_class_of
       e = assert_raises(RBI::Type::Error) do
         Type.parse_string("T.class_of")

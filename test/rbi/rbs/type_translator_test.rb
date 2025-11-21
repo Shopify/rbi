@@ -71,6 +71,7 @@ module RBI
         assert_equal(Type.generic("::T::Enumerator::Chain", Type.simple("Foo")), translate("Enumerator::Chain[Foo]"))
         assert_equal(Type.generic("::T::Enumerator::Lazy", Type.simple("Foo")), translate("Enumerator::Lazy[Foo]"))
         assert_equal(Type.generic("::T::Hash", Type.simple("Foo"), Type.simple("Bar")), translate("Hash[Foo, Bar]"))
+        assert_equal(Type.generic("::T::Module", Type.simple("Foo")), translate("Module[Foo]"))
         assert_equal(Type.generic("::T::Set", Type.simple("Foo")), translate("Set[Foo]"))
         assert_equal(Type.generic("::T::Range", Type.simple("Foo"), Type.simple("Bar")), translate("Range[Foo, Bar]"))
 
@@ -81,6 +82,7 @@ module RBI
         assert_equal(Type.generic("::T::Enumerator::Chain", Type.simple("Foo")), translate("::Enumerator::Chain[Foo]"))
         assert_equal(Type.generic("::T::Enumerator::Lazy", Type.simple("Foo")), translate("::Enumerator::Lazy[Foo]"))
         assert_equal(Type.generic("::T::Hash", Type.simple("Foo"), Type.simple("Bar")), translate("::Hash[Foo, Bar]"))
+        assert_equal(Type.generic("::T::Module", Type.simple("Foo")), translate("::Module[Foo]"))
         assert_equal(Type.generic("::T::Set", Type.simple("Foo")), translate("::Set[Foo]"))
         assert_equal(Type.generic("::T::Range", Type.simple("Foo"), Type.simple("Bar")), translate("::Range[Foo, Bar]"))
       end
