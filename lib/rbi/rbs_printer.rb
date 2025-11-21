@@ -1206,10 +1206,20 @@ module RBI
       case type_name
       when "T::Array"
         "Array"
+      when "T::Enumerable"
+        "Enumerable"
+      when "T::Enumerator"
+        "Enumerator"
+      when "T::Enumerator::Chain"
+        "Enumerator::Chain"
+      when "T::Enumerator::Lazy"
+        "Enumerator::Lazy"
       when "T::Hash"
         "Hash"
       when "T::Set"
         "Set"
+      when "T::Range"
+        "Range"
       else
         type_name
       end

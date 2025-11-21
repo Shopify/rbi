@@ -727,6 +727,52 @@ module RBI
       RBI
     end
 
+    def test_print_t_builtin_types
+      rbi = parse_rbi(<<~RBI)
+        sig { returns(T::Array[String]) }
+        def a; end
+
+        sig { returns(T::Enumerable[String]) }
+        def b; end
+
+        sig { returns(T::Enumerator[String]) }
+        def c; end
+
+        sig { returns(T::Enumerator::Chain[String]) }
+        def d; end
+
+        sig { returns(T::Enumerator::Lazy[String]) }
+        def e; end
+
+        sig { returns(T::Hash[String, Integer]) }
+        def h; end
+
+        sig { returns(T::Set[String]) }
+        def i; end
+
+        sig { returns(T::Range[String, Integer]) }
+        def j; end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def a: -> Array[String]
+
+        def b: -> Enumerable[String]
+
+        def c: -> Enumerator[String]
+
+        def d: -> Enumerator::Chain[String]
+
+        def e: -> Enumerator::Lazy[String]
+
+        def h: -> Hash[String, Integer]
+
+        def i: -> Set[String]
+
+        def j: -> Range[String, Integer]
+      RBI
+    end
+
     def test_print_procs
       rbi = parse_rbi(<<~RBI)
         sig { params(x: T.nilable(T.proc.void)) }
