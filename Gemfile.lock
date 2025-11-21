@@ -38,7 +38,7 @@ GEM
       prism (>= 1.3.0)
     regexp_parser (2.11.3)
     require-hooks (0.2.2)
-    rexml (3.4.2)
+    rexml (3.4.4)
     rubocop (1.81.7)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
@@ -67,7 +67,7 @@ GEM
     sorbet-static-and-runtime (0.6.12690)
       sorbet (= 0.6.12690)
       sorbet-runtime (= 0.6.12690)
-    spoom (1.7.9)
+    spoom (1.7.10)
       erubi (>= 1.10.0)
       prism (>= 0.28.0)
       rbi (>= 0.3.3)
@@ -111,7 +111,7 @@ DEPENDENCIES
   rubocop-shopify
   rubocop-sorbet
   sorbet (>= 0.5.9204)
-  spoom (>= 1.6.0)
+  spoom (>= 1.7.10)
   tapioca (>= 0.17.9)
 
 BUNDLED WITH
