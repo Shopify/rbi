@@ -54,9 +54,25 @@ end
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
 This repo uses itself (`rbi`) to retrieve and generate gem RBIs. You can run `dev rbi` to update local gem RBIs with RBIs from the central repo.
+
+## Releasing
+
+### Bump the gem version
+
+- [ ] Locally, update the version number in [`version.rb`](https://github.com/Shopify/spoom/blob/main/lib/rbi/version.rb)
+- [ ] Run `bundle install` to update the version number in `Gemfile.lock`
+- [ ] Commit this change with the message `Bump version to vx.y.z`
+- [ ] Push this change directly to main or open a PR
+
+### Create a new tag
+
+- [ ] Locally, create a new tag with the new version number: `git tag vx.y.z`
+- [ ] Push this tag up to the remote `git push origin vx.y.z`
+
+### Release workflow will run automatically
+
+We have a [release workflow](https://github.com/Shopify/rbi/actions/workflows/release.yml) that will publish your new gem version to rubygems.org via [Trusted Publishing](https://guides.rubygems.org/trusted-publishing/). This workflow must be approved by a member of the Ruby and Rails Infrastructure team at Shopify before it will run. Once it is approved, it will automatically publish a new gem version to rubygems.org and create a new GitHub release.
 
 ## Contributing
 
