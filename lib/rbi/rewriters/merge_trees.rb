@@ -136,6 +136,17 @@ module RBI
                 make_conflict_scope(prev, node)
               end
               @scope_stack << prev
+            elsif prev
+              # prev exists but is not a Scope (e.g., a Const)
+              # This is a conflict between different node types
+              if @keep == Keep::LEFT
+                # do nothing, keep the existing non-scope
+              elsif @keep == Keep::RIGHT
+                prev.replace(node.dup)
+              else
+                make_conflict_tree(prev, node)
+              end
+              return # Don't visit children, the whole scope is in conflict
             else
               copy = node.dup_empty
               current_scope << copy
@@ -265,6 +276,8 @@ module RBI
               else
                 last_conflict_tree = node
               end
+            else
+              last_conflict_tree = nil
             end
 
             visit(node)
