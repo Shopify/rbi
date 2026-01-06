@@ -664,6 +664,7 @@ module RBI
         module E
           module F; end
         end
+        G = C
       RBI
 
       tree2 = parse_rbi(<<~RBI)
@@ -672,6 +673,7 @@ module RBI
         C = 42
         class D; end
         module E::F; end
+        class G < B; end
       RBI
 
       res = tree1.merge(tree2)
@@ -700,6 +702,11 @@ module RBI
         module E
           module F; end
         end
+        <<<<<<< left
+        G = C
+        =======
+        class G < B; end
+        >>>>>>> right
       RBI
     end
 
