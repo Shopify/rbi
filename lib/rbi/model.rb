@@ -303,7 +303,7 @@ module RBI
     attr_accessor :visibility
 
     #: Array[Sig]
-    attr_reader :sigs
+    attr_accessor :sigs
 
     #: (
     #|   Symbol name,
