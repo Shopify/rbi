@@ -92,6 +92,17 @@ module RBI
       RBI
     end
 
+    def test_translate_generic_singleton
+      e = assert_raises(::RBS::ParsingError) do
+        rewrite(<<~RBI)
+          #: -> singleton(Foo)[Bar]
+          def foo; end
+        RBI
+      end
+
+      assert_equal("a.rbs:1:17...1:18: Syntax error: expected a token `pEOF`, token=`[` (pLBRACKET)", e.message)
+    end
+
     private
 
     #: (String) -> String
