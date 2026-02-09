@@ -59,7 +59,7 @@ module RBI
 
       #: (Attr, RBSComment) -> Sig
       def translate_rbs_attr_type(node, comment)
-        attr_type = ::RBS::Parser.parse_type(comment.text)
+        attr_type = ::RBS::Parser.parse_type(comment.text, require_eof: true)
         sig = Sig.new
 
         if node.is_a?(AttrWriter)
