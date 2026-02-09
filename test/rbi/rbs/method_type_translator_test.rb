@@ -186,11 +186,22 @@ module RBI
         )
       end
 
+      def test_translate_generic_singleton
+        e = assert_raises(::RBS::ParsingError) do
+          translate(
+            "-> singleton(Foo)[Bar]",
+            Method.new("foo"),
+          )
+        end
+
+        assert_equal("a.rbs:1:17...1:18: Syntax error: expected a token `pEOF`, token=`[` (pLBRACKET)", e.message)
+      end
+
       private
 
       #: (String, Method) -> RBI::Sig
       def translate(rbs_string, method)
-        node = ::RBS::Parser.parse_method_type(rbs_string)
+        node = ::RBS::Parser.parse_method_type(rbs_string, require_eof: true)
         RBS::MethodTypeTranslator.translate(method, node)
       end
     end
