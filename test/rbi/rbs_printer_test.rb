@@ -701,6 +701,19 @@ module RBI
       RBI
     end
 
+    def test_print_generic_class_of
+      rbi = parse_rbi(<<~RBI)
+        sig { returns(T.class_of(Foo)[Bar]) }
+        def foo; end
+      RBI
+
+      e = assert_raises(RBI::Error) do
+        rbi.rbs_string
+      end
+
+      assert_equal("Unsupported type: ::T.class_of(Foo)[Bar] (no RBS equivalent yet)", e.message)
+    end
+
     def test_print_module_type
       rbi = parse_rbi(<<~RBI)
         sig { returns(T::Module[String]) }
