@@ -135,6 +135,64 @@ module RBI
       assert_instance_of(VisibilityGroup, inner_class.nodes[0])
     end
 
+    def test_enables_sorting_within_visibility_groups
+      tree = parse_rbi(<<~RBI)
+        class Foo
+          private
+          def zebra; end
+          def apple; end
+          def middle; end
+        end
+      RBI
+
+      Rewriters::GroupVisibilityNodes.group(tree)
+      tree.sort_nodes!
+
+      foo_class = tree.nodes.first
+      private_group = foo_class.nodes.first
+
+      # Methods should be sorted within the visibility group
+      assert_instance_of(VisibilityGroup, private_group)
+      assert_equal(3, private_group.nodes.size)
+      assert_equal("apple", private_group.nodes[0].name)
+      assert_equal("middle", private_group.nodes[1].name)
+      assert_equal("zebra", private_group.nodes[2].name)
+    end
+
+    def test_sorting_respects_visibility_group_boundaries
+      tree = parse_rbi(<<~RBI)
+        class Foo
+          def public_method_z; end
+
+          private
+          def private_method_a; end
+
+          public
+          def public_method_a; end
+        end
+      RBI
+
+      Rewriters::GroupVisibilityNodes.group(tree)
+      tree.sort_nodes!
+
+      foo_class = tree.nodes.first
+
+      # Should maintain visibility group order but sort within each
+      assert_equal(3, foo_class.nodes.size)
+
+      # First: public method before any visibility groups
+      assert_instance_of(Method, foo_class.nodes[0])
+      assert_equal("public_method_z", foo_class.nodes[0].name)
+
+      # Second: private group
+      assert_instance_of(VisibilityGroup, foo_class.nodes[1])
+      assert(foo_class.nodes[1].private?)
+
+      # Third: public group
+      assert_instance_of(VisibilityGroup, foo_class.nodes[2])
+      assert(foo_class.nodes[2].public?)
+    end
+
     private
 
     def parse_rbi(content)
