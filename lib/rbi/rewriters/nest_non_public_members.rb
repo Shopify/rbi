@@ -45,15 +45,4 @@ module RBI
       visitor.visit(self)
     end
   end
-
-  class VisibilityGroup < Tree
-    #: Visibility
-    attr_reader :visibility
-
-    #: (Visibility visibility) -> void
-    def initialize(visibility)
-      super()
-      @visibility = visibility
-    end
-  end
 end

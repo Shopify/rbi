@@ -41,8 +41,7 @@ module RBI
           when ::RBS::Types::Bases::Bottom
             Type.noreturn
           when ::RBS::Types::Bases::Class
-            # TODO: unsupported yet
-            Type.untyped
+            Type.simple("Class")
           when ::RBS::Types::Bases::Instance
             Type.attached_class
           when ::RBS::Types::Bases::Nil
@@ -60,13 +59,19 @@ module RBI
           when ::RBS::Types::Function
             translate_function(type)
           when ::RBS::Types::Interface
-            # TODO: unsupported yet
+            # RBS interfaces (like _Foo) don't have a direct Sorbet equivalent
+            # and the names aren't valid Ruby identifiers
             Type.untyped
           when ::RBS::Types::Intersection
             Type.all(*type.types.map { |t| translate(t) })
           when ::RBS::Types::Literal
-            # TODO: unsupported yet
-            Type.untyped
+            # Sorbet doesn't support literal types, so map to their base type
+            case type.literal
+            when true, false
+              Type.boolean
+            else
+              Type.simple(type.literal.class.to_s)
+            end
           when ::RBS::Types::Optional
             Type.nilable(translate(type.type))
           when ::RBS::Types::Proc
