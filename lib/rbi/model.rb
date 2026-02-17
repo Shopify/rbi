@@ -797,6 +797,44 @@ module RBI
     end
   end
 
+  # A group of nodes under a specific visibility level
+  #
+  # This represents a visibility modifier and all the nodes that follow it
+  # until another visibility modifier is encountered or the scope ends.
+  class VisibilityGroup < Tree
+    #: Visibility
+    attr_reader :visibility
+
+    #: (Visibility visibility, ?loc: Loc?, ?comments: Array[Comment]) ?{ (VisibilityGroup node) -> void } -> void
+    def initialize(visibility, loc: nil, comments: [], &block)
+      super(loc: loc, comments: comments)
+      @visibility = visibility
+      block&.call(self)
+    end
+
+    #: (Object? other) -> bool
+    def ==(other)
+      return false unless other.is_a?(VisibilityGroup)
+
+      visibility == other.visibility
+    end
+
+    #: -> bool
+    def public?
+      visibility.public?
+    end
+
+    #: -> bool
+    def protected?
+      visibility.protected?
+    end
+
+    #: -> bool
+    def private?
+      visibility.private?
+    end
+  end
+
   # Sends
 
   class Send < NodeWithComments
