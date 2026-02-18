@@ -709,52 +709,74 @@ module RBI
           *node.block,
         ].flatten
 
-        node_params.map do |param|
+        node_params.flat_map do |param|
           case param
           when Prism::RequiredParameterNode
-            ReqParam.new(
-              param.name.to_s,
-              loc: node_loc(param),
-              comments: node_comments(param),
-            )
+            [
+              ReqParam.new(
+                param.name.to_s,
+                loc: node_loc(param),
+                comments: node_comments(param),
+              )
+            ]
           when Prism::OptionalParameterNode
-            OptParam.new(
-              param.name.to_s,
-              node_string!(param.value),
-              loc: node_loc(param),
-              comments: node_comments(param),
-            )
+            [
+              OptParam.new(
+                param.name.to_s,
+                node_string!(param.value),
+                loc: node_loc(param),
+                comments: node_comments(param),
+              )
+            ]
           when Prism::RestParameterNode
-            RestParam.new(
-              param.name&.to_s || "*args",
-              loc: node_loc(param),
-              comments: node_comments(param),
-            )
+            [
+              RestParam.new(
+                param.name&.to_s || "args",
+                loc: node_loc(param),
+                comments: node_comments(param),
+              )
+            ]
           when Prism::RequiredKeywordParameterNode
-            KwParam.new(
-              param.name.to_s.delete_suffix(":"),
-              loc: node_loc(param),
-              comments: node_comments(param),
-            )
+            [
+              KwParam.new(
+                param.name.to_s.delete_suffix(":"),
+                loc: node_loc(param),
+                comments: node_comments(param),
+              )
+            ]
           when Prism::OptionalKeywordParameterNode
-            KwOptParam.new(
-              param.name.to_s.delete_suffix(":"),
-              node_string!(param.value),
-              loc: node_loc(param),
-              comments: node_comments(param),
-            )
+            [
+              KwOptParam.new(
+                param.name.to_s.delete_suffix(":"),
+                node_string!(param.value),
+                loc: node_loc(param),
+                comments: node_comments(param),
+              )
+            ]
           when Prism::KeywordRestParameterNode
-            KwRestParam.new(
-              param.name&.to_s || "**kwargs",
-              loc: node_loc(param),
-              comments: node_comments(param),
-            )
+            [
+              KwRestParam.new(
+                param.name&.to_s || "kwargs",
+                loc: node_loc(param),
+                comments: node_comments(param),
+              )
+            ]
           when Prism::BlockParameterNode
-            BlockParam.new(
-              param.name&.to_s || "&block",
-              loc: node_loc(param),
-              comments: node_comments(param),
-            )
+            [
+              BlockParam.new(
+                param.name&.to_s || "block",
+                loc: node_loc(param),
+                comments: node_comments(param),
+              )
+            ]
+          when Prism::ForwardingParameterNode
+            loc = node_loc(param)
+
+            [
+              RestParam.new("args", loc: loc, comments: []),
+              KwRestParam.new("kwargs", loc: loc, comments: []),
+              BlockParam.new("block", loc: loc, comments: node_comments(param)),
+            ]
           else
             raise ParseError.new("Unexpected parameter node `#{param.class}`", node_loc(param))
           end
