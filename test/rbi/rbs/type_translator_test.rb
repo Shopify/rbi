@@ -33,7 +33,7 @@ module RBI
       end
 
       def test_translate_bases_class
-        assert_equal(Type.untyped, translate("class"))
+        assert_equal(Type.simple("Class"), translate("class"))
       end
 
       def test_translate_bases_instance
@@ -107,11 +107,11 @@ module RBI
       end
 
       def test_translate_literal
-        assert_equal(Type.untyped, translate("1"))
-        assert_equal(Type.untyped, translate("\"foo\""))
-        assert_equal(Type.untyped, translate("true"))
-        assert_equal(Type.untyped, translate("false"))
-        assert_equal(Type.untyped, translate(":foo"))
+        assert_equal(Type.simple("Integer"), translate("1"))
+        assert_equal(Type.simple("String"), translate("\"foo\""))
+        assert_equal(Type.boolean, translate("true"))
+        assert_equal(Type.boolean, translate("false"))
+        assert_equal(Type.simple("Symbol"), translate(":foo"))
       end
 
       def test_translate_optional
