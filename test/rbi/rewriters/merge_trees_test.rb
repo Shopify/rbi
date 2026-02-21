@@ -1182,5 +1182,77 @@ module RBI
         end
       RBI
     end
+
+    def test_merge_rhs_referencing_type_in_lhs
+      lhs = parse_rbi(<<~RBI)
+        module Foo; end
+        class Foo::Bar; end
+
+        class Foo::Baz < Foo::Bar;
+          def a; end
+        end
+      RBI
+
+      rhs = parse_rbi(<<~RBI)
+        module Foo
+          class Baz < Bar
+            sig { returns(T.nilable(Bar)) }
+            def a; end
+            def b; end
+          end
+        end
+      RBI
+
+      res = lhs.merge(rhs)
+
+      assert_equal(<<~RBI, res.string)
+        module Foo; end
+        class Foo::Bar; end
+
+        class Foo::Baz < Foo::Bar
+          sig { returns(T.nilable(::Foo::Bar)) }
+          def a; end
+
+          def b; end
+        end
+      RBI
+    end
+
+    def test_merge_lhs_referencing_type_in_rhs
+      # Note how lhs.merge(rhs) is a different result vs rhs.merge(lhs)
+      lhs = parse_rbi(<<~RBI)
+        module Foo
+          class Baz < Bar
+            sig { returns(T.nilable(Bar)) }
+            def a; end
+            def b; end
+          end
+        end
+      RBI
+
+      rhs = parse_rbi(<<~RBI)
+        module Foo; end
+        class Foo::Bar; end
+
+        class Foo::Baz < Foo::Bar;
+          def a; end
+        end
+      RBI
+
+      res = lhs.merge(rhs)
+
+      assert_equal(<<~RBI, res.string)
+        module Foo
+          class Baz < Bar
+            sig { returns(T.nilable(::Foo::Bar)) }
+            def a; end
+
+            def b; end
+          end
+        end
+
+        class Foo::Bar; end
+      RBI
+    end
   end
 end
