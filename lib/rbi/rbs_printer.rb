@@ -1103,6 +1103,8 @@ module RBI
 
     #: (Type::ClassOf type) -> void
     def visit_class_of(type)
+      raise Error, "Unsupported type: #{type} (no RBS equivalent yet)" if type.type_parameter
+
       @string << "singleton("
       visit(type.type)
       @string << ")"
