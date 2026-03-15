@@ -13,27 +13,21 @@ module RBI
 
         case node
         when Tree
-          kinds = node.nodes.map { |child| group_kind(child) }
-          kinds.uniq!
-
-          groups = {}
-          kinds.each { |kind| groups[kind] = Group.new(kind) }
-
-          # Visit children first, then classify into groups in a single pass.
+          # Single-pass: visit each child, compute its group_kind once, and classify.
           # We avoid calling `child.detach` in a loop (which is O(n) per call due to
           # Array#delete), and instead clear the parent's nodes array in O(1) after
           # all children have been classified.
+          groups = {} #: Hash[Group::Kind, Group]
           node.nodes.each do |child|
             visit(child)
-          end
-
-          node.nodes.each do |child|
+            kind = group_kind(child)
+            group = groups[kind] ||= Group.new(kind)
             child.parent_tree = nil
-            groups[group_kind(child)] << child
+            group << child
           end
           node.nodes.clear
 
-          groups.each { |_, group| node << group }
+          groups.each_value { |group| node << group }
         end
       end
 
