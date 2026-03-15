@@ -13,22 +13,28 @@ module RBI
 
         visit_all(node.nodes)
 
-        # The child nodes could contain private/protected markers. If so, they should not be moved in the file.
-        # Otherwise, some methods could see their privacy change. To avoid that problem, divide the array of child
-        # nodes into chunks based on whether any Visibility nodes appear, and sort the chunks independently. This
-        # applies the ordering rules from the node_rank method as much as possible, while preserving visibility.
-        sorted_nodes = node.nodes.chunk do |n|
-          n.is_a?(Visibility)
-        end.flat_map do |_, nodes|
-          # Use a Schwartzian transform: precompute [rank, name, original_index] sort keys
-          # once per node, then sort by the composite key. This reduces node_rank/node_name
-          # calls from O(n log n) to O(n).
+        nodes = node.nodes
+        return if nodes.size <= 1
+
+        # Fast path: if no Visibility nodes are present (common after group_nodes!/nest_non_public_members!),
+        # skip the chunk and sort directly.
+        has_visibility = nodes.any? { |n| n.is_a?(Visibility) }
+
+        if has_visibility
+          # The child nodes contain private/protected markers. Divide into chunks
+          # and sort each chunk independently to preserve visibility semantics.
+          sorted_nodes = nodes.chunk { |n| n.is_a?(Visibility) }.flat_map do |_, chunk_nodes|
+            chunk_nodes.sort_by!.with_index do |n, i|
+              [node_rank(n), node_name(n) || "", i]
+            end
+          end
+          nodes.replace(sorted_nodes)
+        else
+          # No visibility nodes — sort in place with Schwartzian transform.
           nodes.sort_by!.with_index do |n, i|
             [node_rank(n), node_name(n) || "", i]
           end
         end
-
-        node.nodes.replace(sorted_nodes)
       end
 
       private
