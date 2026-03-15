@@ -36,7 +36,7 @@ def build_large_tree(num_methods: 200, num_attrs: 20, num_includes: 5, num_scope
   # Add methods (mix of public, private, singleton)
   num_methods.times do |i|
     visibility = case i % 10
-    when 0..6 then RBI::Public.new
+    when 0..6 then RBI::Public::DEFAULT
     when 7..8 then RBI::Private.new
     else RBI::Protected.new
     end #: RBI::Visibility
