@@ -5,6 +5,17 @@ module RBI
   class PrinterError < Error; end
 
   class Printer < Visitor
+    # Pre-computed indentation strings to avoid allocating " " * indent on every line.
+    MAX_CACHED_INDENT = 50 #: Integer
+    INDENT_CACHE = Array.new(MAX_CACHED_INDENT + 1) { |i| (" " * i).freeze }.freeze #: Array[String]
+
+    # Cached symbol-to-string mapping for visibility, avoiding Symbol#to_s allocation.
+    VISIBILITY_NAMES = {
+      public: "public",
+      protected: "protected",
+      private: "private",
+    }.freeze #: Hash[Symbol, String]
+
     #: bool
     attr_accessor :print_locs, :in_visibility_group
 
@@ -40,6 +51,11 @@ module RBI
       @current_indent -= 2
     end
 
+    #: -> String
+    def current_indent_string
+      INDENT_CACHE[@current_indent] || " " * @current_indent
+    end
+
     # Print a string without indentation nor `\n` at the end.
     #: (String string) -> void
     def print(string)
@@ -49,27 +65,35 @@ module RBI
     # Print a string without indentation but with a `\n` at the end.
     #: (?String? string) -> void
     def printn(string = nil)
-      print(string) if string
-      print("\n")
+      if string
+        @out.print(string)
+        @out.print("\n")
+      else
+        @out.print("\n")
+      end
+      @out << "\n"
     end
 
     # Print a string with indentation but without a `\n` at the end.
     #: (?String? string) -> void
     def printt(string = nil)
-      print(" " * @current_indent)
-      print(string) if string
+      @out.print(INDENT_CACHE[@current_indent] || " " * @current_indent)
+      @out.print(string) if string
     end
 
     # Print a string with indentation and `\n` at the end.
     #: (String string) -> void
     def printl(string)
-      printt
-      printn(string)
+      @out.print(INDENT_CACHE[@current_indent] || " " * @current_indent)
+      @out.print(string)
+      @out.print("\n")
     end
 
     # @override
     #: (Array[Node] nodes) -> void
     def visit_all(nodes)
+      return if nodes.empty?
+
       previous_node = @previous_node
       @previous_node = nil
       nodes.each do |node|
@@ -102,16 +126,20 @@ module RBI
     # @override
     #: (RBSComment node) -> void
     def visit_rbs_comment(node)
-      lines = node.text.lines
-
-      if lines.empty?
+      text = node.text
+      if text.empty?
         printl("#:")
+        return
       end
 
-      lines.each do |line|
-        text = line.rstrip
+      # Use each_line to avoid allocating an intermediate array from .lines
+      text.each_line do |line|
+        stripped = line.rstrip
         printt("#:")
-        print(" #{text}") unless text.empty?
+        unless stripped.empty?
+          print(" ")
+          print(stripped)
+        end
         printn
       end
     end
@@ -119,16 +147,20 @@ module RBI
     # @override
     #: (Comment node) -> void
     def visit_comment(node)
-      lines = node.text.lines
-
-      if lines.empty?
+      text = node.text
+      if text.empty?
         printl("#")
+        return
       end
 
-      lines.each do |line|
-        text = line.rstrip
+      # Use each_line to avoid allocating an intermediate array from .lines
+      text.each_line do |line|
+        stripped = line.rstrip
         printt("#")
-        print(" #{text}") unless text.empty?
+        unless stripped.empty?
+          print(" ")
+          print(stripped)
+        end
         printn
       end
     end
@@ -264,7 +296,7 @@ module RBI
       print_loc(node)
       printt
       unless in_visibility_group || node.visibility.public?
-        self.print(node.visibility.visibility.to_s)
+        self.print(VISIBILITY_NAMES[node.visibility.visibility] || node.visibility.visibility.to_s)
         print(" ")
       end
       case node
@@ -275,9 +307,15 @@ module RBI
       when AttrWriter
         print("attr_writer")
       end
-      unless node.names.empty?
+      names = node.names
+      unless names.empty?
         print(" ")
-        print(node.names.map { |name| ":#{name}" }.join(", "))
+        if names.size == 1
+          print(":")
+          print(names.first.to_s) # rubocop:disable Lint/RedundantStringCoercion
+        else
+          print(names.map { |name| ":#{name}" }.join(", "))
+        end
       end
       printn
     end
@@ -292,7 +330,7 @@ module RBI
       print_loc(node)
       printt
       unless in_visibility_group || node.visibility.public?
-        self.print(node.visibility.visibility.to_s)
+        self.print(VISIBILITY_NAMES[node.visibility.visibility] || node.visibility.visibility.to_s)
         print(" ")
       end
       print("def ")
@@ -427,7 +465,7 @@ module RBI
       print_loc(node)
       visit_all(node.comments)
 
-      printl(node.visibility.to_s)
+      printl(VISIBILITY_NAMES[node.visibility] || node.visibility.to_s)
     end
 
     # @override
@@ -457,7 +495,9 @@ module RBI
     # @override
     #: (KwArg node) -> void
     def visit_kw_arg(node)
-      print("#{node.keyword}: #{node.value}")
+      print(node.keyword)
+      print(": ")
+      print(node.value)
     end
 
     # @override
@@ -484,7 +524,9 @@ module RBI
     # @override
     #: (SigParam node) -> void
     def visit_sig_param(node)
-      print("#{node.name}: #{node.type}")
+      print(node.name)
+      print(": ")
+      print(node.type.to_s) # rubocop:disable Lint/RedundantStringCoercion
     end
 
     # @override
@@ -713,7 +755,8 @@ module RBI
       print("(:final)") if node.is_final
       print(" { ")
       sig_modifiers(node).each do |modifier|
-        print("#{modifier}.")
+        print(modifier)
+        print(".")
       end
       unless node.params.empty?
         print("params(")
@@ -724,10 +767,12 @@ module RBI
         print(").")
       end
       return_type = node.return_type
-      if node.return_type.to_s == "void"
+      if return_type == "void" || return_type.to_s == "void"
         print("void")
       else
-        print("returns(#{return_type})")
+        print("returns(")
+        print(return_type.to_s) # rubocop:disable Lint/RedundantStringCoercion
+        print(")")
       end
       printn(" }")
     end
@@ -735,6 +780,7 @@ module RBI
     #: (Sig node) -> void
     def print_sig_as_block(node)
       modifiers = sig_modifiers(node)
+      has_modifiers = !modifiers.empty?
 
       printt
       print("T::Sig::WithoutRuntime.") if node.without_runtime
@@ -742,7 +788,7 @@ module RBI
       print("(:final)") if node.is_final
       printn(" do")
       indent
-      if modifiers.any?
+      if has_modifiers
         printl(
           modifiers.first, #: as !nil
         )
@@ -753,47 +799,60 @@ module RBI
       end
 
       params = node.params
-      if params.any?
+      has_params = !params.empty?
+      if has_params
         printt
-        print(".") if modifiers.any?
+        print(".") if has_modifiers
         printn("params(")
         indent
+        last_pindex = params.size - 1
         params.each_with_index do |param, pindex|
           printt
           visit(param)
-          print(",") if pindex < params.size - 1
+          is_last = pindex == last_pindex
+          print(",") unless is_last
 
-          comment_lines = param.comments.flat_map { |comment| comment.text.lines.map(&:rstrip) }
-          comment_lines.each_with_index do |comment, cindex|
-            if cindex == 0
-              print(" ")
-            else
-              print_sig_param_comment_leading_space(param, last: pindex == params.size - 1)
+          unless param.comments.empty?
+            comment_lines = param.comments.flat_map { |comment| comment.text.lines.map(&:rstrip) }
+            comment_lines.each_with_index do |comment, cindex|
+              if cindex == 0
+                print(" ")
+              else
+                print_sig_param_comment_leading_space(param, last: is_last)
+              end
+              print("# #{comment}")
             end
-            print("# #{comment}")
           end
           printn
         end
         dedent
         printt(")")
       end
-      printt if params.empty?
-      print(".") if modifiers.any? || params.any?
+      printt unless has_params
+      print(".") if has_modifiers || has_params
 
       return_type = node.return_type
-      if return_type.to_s == "void"
+      if return_type == "void" || return_type.to_s == "void"
         print("void")
       else
-        print("returns(#{return_type})")
+        print("returns(")
+        print(return_type.to_s) # rubocop:disable Lint/RedundantStringCoercion
+        print(")")
       end
       printn
       dedent
-      dedent if modifiers.any?
+      dedent if has_modifiers
       printl("end")
     end
 
+    EMPTY_MODIFIERS = [].freeze #: Array[String]
+
     #: (Sig node) -> Array[String]
     def sig_modifiers(node)
+      # Fast path: most DSL-generated sigs have no modifiers
+      return EMPTY_MODIFIERS unless node.is_abstract || node.is_override || node.is_overridable ||
+        node.type_params.any? || node.checked
+
       modifiers = [] #: Array[String]
       modifiers << "abstract" if node.is_abstract
 
