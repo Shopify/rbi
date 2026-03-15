@@ -379,37 +379,45 @@ module RBI
     # @override
     #: (OptParam node) -> void
     def visit_opt_param(node)
-      print("#{node.name} = #{node.value}")
+      print(node.name)
+      print(" = ")
+      print(node.value)
     end
 
     # @override
     #: (RestParam node) -> void
     def visit_rest_param(node)
-      print("*#{node.name}")
+      print("*")
+      print(node.name)
     end
 
     # @override
     #: (KwParam node) -> void
     def visit_kw_param(node)
-      print("#{node.name}:")
+      print(node.name)
+      print(":")
     end
 
     # @override
     #: (KwOptParam node) -> void
     def visit_kw_opt_param(node)
-      print("#{node.name}: #{node.value}")
+      print(node.name)
+      print(": ")
+      print(node.value)
     end
 
     # @override
     #: (KwRestParam node) -> void
     def visit_kw_rest_param(node)
-      print("**#{node.name}")
+      print("**")
+      print(node.name)
     end
 
     # @override
     #: (BlockParam node) -> void
     def visit_block_param(node)
-      print("&#{node.name}")
+      print("&")
+      print(node.name)
     end
 
     # @override
