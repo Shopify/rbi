@@ -94,6 +94,13 @@ module RBI
       @comments ||= []
     end
 
+    # Returns true if this node has any comments, without allocating
+    # an empty array for nodes that have never had comments set.
+    #: -> bool
+    def comments?
+      !@comments.nil? && !@comments.empty?
+    end
+
     #: (?loc: Loc?, ?comments: Array[Comment]?) -> void
     def initialize(loc: nil, comments: nil)
       super(loc: loc)
@@ -146,6 +153,11 @@ module RBI
     #: -> Array[Comment]
     def comments
       @comments ||= []
+    end
+
+    #: -> bool
+    def comments?
+      !@comments.nil? && !@comments.empty?
     end
 
     #: (?strictness: String?, ?comments: Array[Comment]?) ?{ (File file) -> void } -> void
@@ -322,6 +334,11 @@ module RBI
       @sigs ||= []
     end
 
+    #: -> bool
+    def sigs?
+      !@sigs.nil? && !@sigs.empty?
+    end
+
     #: Array[Sig]
     attr_writer :sigs
 
@@ -452,6 +469,11 @@ module RBI
     #: -> Array[Sig]
     def sigs
       @sigs ||= []
+    end
+
+    #: -> bool
+    def sigs?
+      !@sigs.nil? && !@sigs.empty?
     end
 
     #: Array[Sig]

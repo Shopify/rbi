@@ -107,13 +107,13 @@ module RBI
       if strictness
         printl("# typed: #{strictness}")
       end
-      unless file.comments.empty?
+      if file.comments?
         printn if strictness
         visit_all(file.comments)
       end
 
-      unless file.root.empty? && file.root.comments.empty?
-        printn if strictness || !file.comments.empty?
+      unless file.root.empty? && !file.root.comments?
+        printn if strictness || file.comments?
         visit(file.root)
       end
     end
@@ -171,8 +171,8 @@ module RBI
     # @override
     #: (Tree node) -> void
     def visit_tree(node)
-      visit_all(node.comments)
-      printn if !node.comments.empty? && !node.empty?
+      visit_all(node.comments) if node.comments?
+      printn if node.comments? && !node.empty?
       visit_all(node.nodes)
     end
 
@@ -204,7 +204,7 @@ module RBI
     def visit_scope(node)
       print_blank_line_before(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       visit_scope_header(node)
       visit_scope_body(node)
@@ -260,7 +260,7 @@ module RBI
     def visit_const(node)
       print_blank_line_before(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       printl("#{node.name} = #{node.value}")
     end
@@ -287,8 +287,8 @@ module RBI
     def visit_attr(node)
       print_blank_line_before(node)
 
-      visit_all(node.comments)
-      node.sigs.each { |sig| visit(sig) }
+      visit_all(node.comments) if node.comments?
+      node.sigs.each { |sig| visit(sig) } if node.sigs?
 
       print_loc(node)
       printt
@@ -321,7 +321,7 @@ module RBI
     #: (Method node) -> void
     def visit_method(node)
       print_blank_line_before(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
       visit_all(node.sigs)
 
       print_loc(node)
@@ -335,7 +335,7 @@ module RBI
       print(node.name)
       unless node.params.empty?
         print("(")
-        if node.params.all? { |p| p.comments.empty? }
+        if node.params.all? { |p| !p.comments? }
           node.params.each_with_index do |param, index|
             print(", ") if index > 0
             visit(param)
@@ -433,7 +433,7 @@ module RBI
     def visit_mixin(node)
       print_blank_line_before(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       case node
       when Include
@@ -468,7 +468,7 @@ module RBI
     def visit_visibility(node)
       print_blank_line_before(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       printl(VISIBILITY_NAMES[node.visibility] || node.visibility.to_s)
     end
@@ -478,7 +478,7 @@ module RBI
     def visit_send(node)
       print_blank_line_before(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       printt(node.method)
       unless node.args.empty?
@@ -509,7 +509,7 @@ module RBI
     #: (Sig node) -> void
     def visit_sig(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       max_line_length = self.max_line_length
       if oneline?(node) && max_line_length.nil?
@@ -556,7 +556,7 @@ module RBI
     def visit_t_struct_field(node)
       print_blank_line_before(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       case node
       when TStructProp
@@ -580,7 +580,7 @@ module RBI
     #: (TEnumBlock node) -> void
     def visit_tenum_block(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       printl("enums do")
       indent
@@ -594,7 +594,7 @@ module RBI
     def visit_tenum_value(node)
       print_blank_line_before(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       printl("#{node.name} = new")
     end
@@ -604,7 +604,7 @@ module RBI
     def visit_type_member(node)
       print_blank_line_before(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       printl("#{node.name} = #{node.value}")
     end
@@ -614,7 +614,7 @@ module RBI
     def visit_helper(node)
       print_blank_line_before(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       printl("#{node.name}!")
     end
@@ -651,7 +651,7 @@ module RBI
     def visit_requires_ancestor(node)
       print_blank_line_before(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       printl("requires_ancestor { #{node.name} }")
     end
@@ -671,7 +671,7 @@ module RBI
     def visit_scope_conflict(node)
       print_blank_line_before(node)
       print_loc(node)
-      visit_all(node.comments)
+      visit_all(node.comments) if node.comments?
 
       printl("<<<<<<< #{node.left_name}")
       visit_scope_header(node.left)
@@ -729,22 +729,22 @@ module RBI
       when ScopeConflict
         oneline?(node.left)
       when Tree
-        node.comments.empty? && node.empty?
+        !node.comments? && node.empty?
       when Attr
-        node.comments.empty? && node.sigs.empty?
+        !node.comments? && !node.sigs?
       when Const
-        return false unless node.comments.empty?
+        return false if node.comments?
 
         loc = node.loc
         return true unless loc
 
         loc.begin_line == loc.end_line
       when Method
-        node.comments.empty? && node.sigs.empty? && node.params.all? { |p| p.comments.empty? }
+        !node.comments? && !node.sigs? && node.params.all? { |p| !p.comments? }
       when Sig
-        node.params.all? { |p| p.comments.empty? }
+        node.params.all? { |p| !p.comments? }
       when NodeWithComments
-        node.comments.empty?
+        !node.comments?
       when VisibilityGroup
         false
       else
@@ -817,7 +817,7 @@ module RBI
           is_last = pindex == last_pindex
           print(",") unless is_last
 
-          unless param.comments.empty?
+          if param.comments?
             comment_lines = param.comments.flat_map { |comment| comment.text.lines.map(&:rstrip) }
             comment_lines.each_with_index do |comment, cindex|
               if cindex == 0
@@ -854,9 +854,12 @@ module RBI
 
     #: (Sig node) -> Array[String]
     def sig_modifiers(node)
-      # Fast path: most DSL-generated sigs have no modifiers
+      # Fast path: most DSL-generated sigs have no modifiers.
+      # Access type_params via instance variable to avoid triggering lazy init
+      # when it's nil (which is the common case — avoids an array allocation per sig).
+      type_params = node.instance_variable_get(:@type_params)
       return EMPTY_MODIFIERS unless node.is_abstract || node.is_override || node.is_overridable ||
-        node.type_params.any? || node.checked
+        type_params&.any? || node.checked
 
       modifiers = [] #: Array[String]
       modifiers << "abstract" if node.is_abstract
@@ -872,7 +875,9 @@ module RBI
       end
 
       modifiers << "overridable" if node.is_overridable
-      modifiers << "type_parameters(#{node.type_params.map { |type| ":#{type}" }.join(", ")})" if node.type_params.any?
+      if type_params&.any?
+        modifiers << "type_parameters(#{type_params.map { |type| ":#{type}" }.join(", ")})"
+      end
       modifiers << "checked(:#{node.checked})" if node.checked
       modifiers
     end
