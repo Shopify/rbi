@@ -19,11 +19,19 @@ module RBI
           groups = {}
           kinds.each { |kind| groups[kind] = Group.new(kind) }
 
-          node.nodes.dup.each do |child|
+          # Visit children first, then classify into groups in a single pass.
+          # We avoid calling `child.detach` in a loop (which is O(n) per call due to
+          # Array#delete), and instead clear the parent's nodes array in O(1) after
+          # all children have been classified.
+          node.nodes.each do |child|
             visit(child)
-            child.detach
+          end
+
+          node.nodes.each do |child|
+            child.parent_tree = nil
             groups[group_kind(child)] << child
           end
+          node.nodes.clear
 
           groups.each { |_, group| node << group }
         end

@@ -15,24 +15,33 @@ module RBI
           protected_group = VisibilityGroup.new(Protected.new)
           private_group = VisibilityGroup.new(Private.new)
 
-          node.nodes.dup.each do |child|
+          # Classify children in a single pass, avoiding O(n) Array#delete
+          # calls from `detach` in a loop.
+          remaining = []
+          node.nodes.each do |child|
             visit(child)
-            next unless child.is_a?(Attr) || child.is_a?(Method)
-
-            child.detach
-            case child.visibility
-            when Protected
-              protected_group << child
-            when Private
-              private_group << child
+            if child.is_a?(Attr) || child.is_a?(Method)
+              child.parent_tree = nil
+              case child.visibility
+              when Protected
+                protected_group << child
+              when Private
+                private_group << child
+              else
+                public_group << child
+              end
             else
-              public_group << child
+              remaining << child
             end
           end
 
-          node << public_group unless public_group.empty?
-          node << protected_group unless protected_group.empty?
-          node << private_group unless private_group.empty?
+          has_groups = !public_group.empty? || !protected_group.empty? || !private_group.empty?
+          if has_groups
+            node.nodes.replace(remaining)
+            node << public_group unless public_group.empty?
+            node << protected_group unless protected_group.empty?
+            node << private_group unless private_group.empty?
+          end
         end
       end
     end
