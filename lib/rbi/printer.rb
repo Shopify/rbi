@@ -28,7 +28,7 @@ module RBI
     #: Integer?
     attr_reader :max_line_length
 
-    #: (?out: (IO | StringIO), ?indent: Integer, ?print_locs: bool, ?max_line_length: Integer?) -> void
+    #: (?out: (IO | StringIO | String), ?indent: Integer, ?print_locs: bool, ?max_line_length: Integer?) -> void
     def initialize(out: $stdout, indent: 0, print_locs: false, max_line_length: nil)
       super()
       @out = out
@@ -59,17 +59,14 @@ module RBI
     # Print a string without indentation nor `\n` at the end.
     #: (String string) -> void
     def print(string)
-      @out.print(string)
+      @out << string
     end
 
     # Print a string without indentation but with a `\n` at the end.
     #: (?String? string) -> void
     def printn(string = nil)
       if string
-        @out.print(string)
-        @out.print("\n")
-      else
-        @out.print("\n")
+        @out << string
       end
       @out << "\n"
     end
@@ -77,16 +74,16 @@ module RBI
     # Print a string with indentation but without a `\n` at the end.
     #: (?String? string) -> void
     def printt(string = nil)
-      @out.print(INDENT_CACHE[@current_indent] || " " * @current_indent)
-      @out.print(string) if string
+      @out << current_indent_string
+      @out << string if string
     end
 
     # Print a string with indentation and `\n` at the end.
     #: (String string) -> void
     def printl(string)
-      @out.print(INDENT_CACHE[@current_indent] || " " * @current_indent)
-      @out.print(string)
-      @out.print("\n")
+      @out << current_indent_string
+      @out << string
+      @out << "\n"
     end
 
     # @override
@@ -890,9 +887,12 @@ module RBI
 
     #: (?indent: Integer, ?print_locs: bool, ?max_line_length: Integer?) -> String
     def string(indent: 0, print_locs: false, max_line_length: nil)
-      out = StringIO.new
-      print(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
-      out.string
+      # Use a mutable String buffer instead of StringIO for faster concatenation.
+      # String#<< is ~2x faster than StringIO#print for many small writes.
+      out = +""
+      p = Printer.new(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
+      p.visit_file(self)
+      out
     end
   end
 
@@ -905,9 +905,11 @@ module RBI
 
     #: (?indent: Integer, ?print_locs: bool, ?max_line_length: Integer?) -> String
     def string(indent: 0, print_locs: false, max_line_length: nil)
-      out = StringIO.new
-      print(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
-      out.string
+      # Use a mutable String buffer instead of StringIO for faster concatenation.
+      out = +""
+      p = Printer.new(out: out, indent: indent, print_locs: print_locs, max_line_length: max_line_length)
+      p.visit(self)
+      out
     end
   end
 end
