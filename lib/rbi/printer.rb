@@ -9,13 +9,6 @@ module RBI
     MAX_CACHED_INDENT = 50 #: Integer
     INDENT_CACHE = Array.new(MAX_CACHED_INDENT + 1) { |i| (" " * i).freeze }.freeze #: Array[String]
 
-    # Cached symbol-to-string mapping for visibility, avoiding Symbol#to_s allocation.
-    VISIBILITY_NAMES = {
-      public: "public",
-      protected: "protected",
-      private: "private",
-    }.freeze #: Hash[Symbol, String]
-
     #: bool
     attr_accessor :print_locs, :in_visibility_group
 
@@ -293,7 +286,7 @@ module RBI
       print_loc(node)
       printt
       unless in_visibility_group || node.visibility.public?
-        self.print(VISIBILITY_NAMES[node.visibility.visibility] || node.visibility.visibility.to_s)
+        print(node.visibility.visibility.name)
         print(" ")
       end
       case node
@@ -327,7 +320,7 @@ module RBI
       print_loc(node)
       printt
       unless in_visibility_group || node.visibility.public?
-        self.print(VISIBILITY_NAMES[node.visibility.visibility] || node.visibility.visibility.to_s)
+        print(node.visibility.visibility.name)
         print(" ")
       end
       print("def ")
@@ -470,7 +463,7 @@ module RBI
       print_loc(node)
       visit_all(node.comments) if node.comments?
 
-      printl(VISIBILITY_NAMES[node.visibility] || node.visibility.to_s)
+      printl(node.visibility.name)
     end
 
     # @override
