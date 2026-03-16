@@ -275,7 +275,7 @@ module RBI
         print_loc(node)
         printt
         unless in_visibility_group || node.visibility.public? || node.visibility.protected?
-          self.print(node.visibility.visibility.to_s)
+          print(node.visibility.visibility.name)
           print(" ")
         end
         case node
@@ -355,7 +355,7 @@ module RBI
       print_loc(node)
       printt
       unless in_visibility_group || node.visibility.public?
-        self.print(node.visibility.visibility.to_s)
+        print(node.visibility.visibility.name)
         print(" ")
       end
       print("def ")
@@ -666,7 +666,7 @@ module RBI
       print_loc(node)
       visit_all(node.comments)
 
-      printl(node.visibility.to_s)
+      printl(node.visibility.name)
     end
 
     # @override

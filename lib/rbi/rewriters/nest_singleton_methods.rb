@@ -13,16 +13,24 @@ module RBI
         when Tree
           singleton_class = SingletonClass.new
 
-          node.nodes.dup.each do |child|
+          # Collect singleton methods and remaining nodes in a single pass,
+          # avoiding O(n) Array#delete calls from `detach` in a loop.
+          remaining = []
+          node.nodes.each do |child|
             visit(child)
-            next unless child.is_a?(Method) && child.is_singleton
-
-            child.detach
-            child.is_singleton = false
-            singleton_class << child
+            if child.is_a?(Method) && child.is_singleton
+              child.parent_tree = nil
+              child.is_singleton = false
+              singleton_class << child
+            else
+              remaining << child
+            end
           end
 
-          node << singleton_class unless singleton_class.empty?
+          unless singleton_class.empty?
+            node.nodes.replace(remaining)
+            node << singleton_class
+          end
         end
       end
     end

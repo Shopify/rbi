@@ -30,9 +30,9 @@ class RBI::Attr < ::RBI::NodeWithComments
       name: ::Symbol,
       names: T::Array[::Symbol],
       visibility: ::RBI::Visibility,
-      sigs: T::Array[::RBI::Sig],
+      sigs: T.nilable(T::Array[::RBI::Sig]),
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment]
+      comments: T.nilable(T::Array[::RBI::Comment])
     ).void
   end
   def initialize(name, names, visibility: T.unsafe(nil), sigs: T.unsafe(nil), loc: T.unsafe(nil), comments: T.unsafe(nil)); end
@@ -57,6 +57,12 @@ class RBI::Attr < ::RBI::NodeWithComments
 
   sig { returns(T::Array[::RBI::Sig]) }
   def sigs; end
+
+  sig { params(sigs: T::Array[::RBI::Sig]).returns(T::Array[::RBI::Sig]) }
+  def sigs=(sigs); end
+
+  sig { returns(T::Boolean) }
+  def sigs?; end
 
   sig { returns(::RBI::Visibility) }
   def visibility; end
@@ -98,9 +104,9 @@ class RBI::AttrAccessor < ::RBI::Attr
       name: ::Symbol,
       names: ::Symbol,
       visibility: ::RBI::Visibility,
-      sigs: T::Array[::RBI::Sig],
+      sigs: T.nilable(T::Array[::RBI::Sig]),
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::AttrAccessor).void)
     ).void
   end
@@ -125,9 +131,9 @@ class RBI::AttrReader < ::RBI::Attr
       name: ::Symbol,
       names: ::Symbol,
       visibility: ::RBI::Visibility,
-      sigs: T::Array[::RBI::Sig],
+      sigs: T.nilable(T::Array[::RBI::Sig]),
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::AttrReader).void)
     ).void
   end
@@ -152,9 +158,9 @@ class RBI::AttrWriter < ::RBI::Attr
       name: ::Symbol,
       names: ::Symbol,
       visibility: ::RBI::Visibility,
-      sigs: T::Array[::RBI::Sig],
+      sigs: T.nilable(T::Array[::RBI::Sig]),
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::AttrWriter).void)
     ).void
   end
@@ -183,7 +189,7 @@ class RBI::BlockParam < ::RBI::Param
     params(
       name: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::BlockParam).void)
     ).void
   end
@@ -202,7 +208,7 @@ class RBI::Class < ::RBI::Scope
       name: ::String,
       superclass_name: T.nilable(::String),
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Class).void)
     ).void
   end
@@ -260,7 +266,7 @@ class RBI::Const < ::RBI::NodeWithComments
       name: ::String,
       value: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Const).void)
     ).void
   end
@@ -295,7 +301,7 @@ class RBI::Extend < ::RBI::Mixin
       name: ::String,
       names: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Extend).void)
     ).void
   end
@@ -315,7 +321,7 @@ class RBI::File
   sig do
     params(
       strictness: T.nilable(::String),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(file: ::RBI::File).void)
     ).void
   end
@@ -327,7 +333,11 @@ class RBI::File
   sig { returns(T::Array[::RBI::Comment]) }
   def comments; end
 
-  def comments=(_arg0); end
+  sig { params(comments: T::Array[::RBI::Comment]).returns(T::Array[::RBI::Comment]) }
+  def comments=(comments); end
+
+  sig { returns(T::Boolean) }
+  def comments?; end
 
   sig { returns(T::Boolean) }
   def empty?; end
@@ -429,7 +439,7 @@ class RBI::Helper < ::RBI::NodeWithComments
     params(
       name: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Helper).void)
     ).void
   end
@@ -456,7 +466,7 @@ class RBI::Include < ::RBI::Mixin
       name: ::String,
       names: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Include).void)
     ).void
   end
@@ -526,7 +536,7 @@ class RBI::KwOptParam < ::RBI::Param
       name: ::String,
       value: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::KwOptParam).void)
     ).void
   end
@@ -547,7 +557,7 @@ class RBI::KwParam < ::RBI::Param
     params(
       name: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::KwParam).void)
     ).void
   end
@@ -565,7 +575,7 @@ class RBI::KwRestParam < ::RBI::Param
     params(
       name: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::KwRestParam).void)
     ).void
   end
@@ -637,12 +647,12 @@ class RBI::Method < ::RBI::NodeWithComments
   sig do
     params(
       name: ::String,
-      params: T::Array[::RBI::Param],
+      params: T.nilable(T::Array[::RBI::Param]),
       is_singleton: T::Boolean,
       visibility: ::RBI::Visibility,
-      sigs: T::Array[::RBI::Sig],
+      sigs: T.nilable(T::Array[::RBI::Sig]),
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Method).void)
     ).void
   end
@@ -674,13 +684,13 @@ class RBI::Method < ::RBI::NodeWithComments
 
   sig do
     params(
-      params: T::Array[::RBI::SigParam],
+      params: T.nilable(T::Array[::RBI::SigParam]),
       return_type: T.any(::RBI::Type, ::String),
       is_abstract: T::Boolean,
       is_override: T::Boolean,
       is_overridable: T::Boolean,
       is_final: T::Boolean,
-      type_params: T::Array[::String],
+      type_params: T.nilable(T::Array[::String]),
       checked: T.nilable(::Symbol),
       block: T.nilable(T.proc.params(node: ::RBI::Sig).void)
     ).void
@@ -715,7 +725,11 @@ class RBI::Method < ::RBI::NodeWithComments
   sig { returns(T::Array[::RBI::Sig]) }
   def sigs; end
 
-  def sigs=(_arg0); end
+  sig { params(sigs: T::Array[::RBI::Sig]).returns(T::Array[::RBI::Sig]) }
+  def sigs=(sigs); end
+
+  sig { returns(T::Boolean) }
+  def sigs?; end
 
   sig { override.returns(::String) }
   def to_s; end
@@ -734,7 +748,7 @@ class RBI::MixesInClassMethods < ::RBI::Mixin
       name: ::String,
       names: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::MixesInClassMethods).void)
     ).void
   end
@@ -758,7 +772,7 @@ class RBI::Mixin < ::RBI::NodeWithComments
       name: ::String,
       names: T::Array[::String],
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment]
+      comments: T.nilable(T::Array[::RBI::Comment])
     ).void
   end
   def initialize(name, names, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
@@ -775,7 +789,7 @@ class RBI::Module < ::RBI::Scope
     params(
       name: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Module).void)
     ).void
   end
@@ -860,7 +874,7 @@ end
 class RBI::NodeWithComments < ::RBI::Node
   abstract!
 
-  sig { params(loc: T.nilable(::RBI::Loc), comments: T::Array[::RBI::Comment]).void }
+  sig { params(loc: T.nilable(::RBI::Loc), comments: T.nilable(T::Array[::RBI::Comment])).void }
   def initialize(loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
   sig { returns(T::Array[::String]) }
@@ -869,7 +883,11 @@ class RBI::NodeWithComments < ::RBI::Node
   sig { returns(T::Array[::RBI::Comment]) }
   def comments; end
 
-  def comments=(_arg0); end
+  sig { params(comments: T::Array[::RBI::Comment]).returns(T::Array[::RBI::Comment]) }
+  def comments=(comments); end
+
+  sig { returns(T::Boolean) }
+  def comments?; end
 
   sig { override.params(other: ::RBI::Node).void }
   def merge_with(other); end
@@ -884,7 +902,7 @@ class RBI::OptParam < ::RBI::Param
       name: ::String,
       value: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::OptParam).void)
     ).void
   end
@@ -900,7 +918,7 @@ end
 class RBI::Param < ::RBI::NodeWithComments
   abstract!
 
-  sig { params(name: ::String, loc: T.nilable(::RBI::Loc), comments: T::Array[::RBI::Comment]).void }
+  sig { params(name: ::String, loc: T.nilable(::RBI::Loc), comments: T.nilable(T::Array[::RBI::Comment])).void }
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
   sig { returns(::String) }
@@ -1104,7 +1122,7 @@ end
 class RBI::Printer < ::RBI::Visitor
   sig do
     params(
-      out: T.any(::IO, ::StringIO),
+      out: T.any(::IO, ::String, ::StringIO),
       indent: ::Integer,
       print_locs: T::Boolean,
       max_line_length: T.nilable(::Integer)
@@ -1114,6 +1132,9 @@ class RBI::Printer < ::RBI::Visitor
 
   sig { returns(::Integer) }
   def current_indent; end
+
+  sig { returns(::String) }
+  def current_indent_string; end
 
   sig { void }
   def dedent; end
@@ -1333,13 +1354,16 @@ class RBI::Printer < ::RBI::Visitor
   def visit_visibility_group(node); end
 end
 
+RBI::Printer::EMPTY_MODIFIERS = T.let(T.unsafe(nil), Array)
+RBI::Printer::INDENT_CACHE = T.let(T.unsafe(nil), Array)
+RBI::Printer::MAX_CACHED_INDENT = T.let(T.unsafe(nil), Integer)
 class RBI::PrinterError < ::RBI::Error; end
 
 class RBI::Private < ::RBI::Visibility
   sig do
     params(
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Private).void)
     ).void
   end
@@ -1350,7 +1374,7 @@ class RBI::Protected < ::RBI::Visibility
   sig do
     params(
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Protected).void)
     ).void
   end
@@ -1361,13 +1385,14 @@ class RBI::Public < ::RBI::Visibility
   sig do
     params(
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Public).void)
     ).void
   end
   def initialize(loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 end
 
+RBI::Public::DEFAULT = T.let(T.unsafe(nil), RBI::Public)
 module RBI::RBS; end
 
 class RBI::RBS::MethodTypeTranslator
@@ -1684,7 +1709,7 @@ class RBI::ReqParam < ::RBI::Param
     params(
       name: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::ReqParam).void)
     ).void
   end
@@ -1697,7 +1722,7 @@ end
 class RBI::RequiresAncestor < ::RBI::NodeWithComments
   include ::RBI::Indexable
 
-  sig { params(name: ::String, loc: T.nilable(::RBI::Loc), comments: T::Array[::RBI::Comment]).void }
+  sig { params(name: ::String, loc: T.nilable(::RBI::Loc), comments: T.nilable(T::Array[::RBI::Comment])).void }
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
   sig { override.returns(T::Array[::String]) }
@@ -1715,7 +1740,7 @@ class RBI::RestParam < ::RBI::Param
     params(
       name: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::RestParam).void)
     ).void
   end
@@ -2070,7 +2095,7 @@ class RBI::Send < ::RBI::NodeWithComments
       method: ::String,
       args: T::Array[::RBI::Arg],
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Send).void)
     ).void
   end
@@ -2101,7 +2126,7 @@ end
 class RBI::Sig < ::RBI::NodeWithComments
   sig do
     params(
-      params: T::Array[::RBI::SigParam],
+      params: T.nilable(T::Array[::RBI::SigParam]),
       return_type: T.any(::RBI::Type, ::String),
       is_abstract: T::Boolean,
       is_override: T::Boolean,
@@ -2110,10 +2135,10 @@ class RBI::Sig < ::RBI::NodeWithComments
       allow_incompatible_override: T::Boolean,
       allow_incompatible_override_visibility: T::Boolean,
       without_runtime: T::Boolean,
-      type_params: T::Array[::String],
+      type_params: T.nilable(T::Array[::String]),
       checked: T.nilable(::Symbol),
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Sig).void)
     ).void
   end
@@ -2175,6 +2200,9 @@ class RBI::Sig < ::RBI::NodeWithComments
   def type_params; end
 
   sig { returns(T::Boolean) }
+  def type_params?; end
+
+  sig { returns(T::Boolean) }
   def without_runtime; end
 
   def without_runtime=(_arg0); end
@@ -2186,7 +2214,7 @@ class RBI::SigParam < ::RBI::NodeWithComments
       name: ::String,
       type: T.any(::RBI::Type, ::String),
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::SigParam).void)
     ).void
   end
@@ -2206,7 +2234,7 @@ class RBI::SingletonClass < ::RBI::Scope
   sig do
     params(
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::SingletonClass).void)
     ).void
   end
@@ -2223,7 +2251,7 @@ class RBI::Struct < ::RBI::Scope
       members: T::Array[::Symbol],
       keyword_init: T::Boolean,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(struct: ::RBI::Struct).void)
     ).void
   end
@@ -2256,7 +2284,7 @@ class RBI::TEnum < ::RBI::Class
     params(
       name: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(klass: ::RBI::TEnum).void)
     ).void
   end
@@ -2267,7 +2295,7 @@ class RBI::TEnumBlock < ::RBI::Scope
   sig do
     params(
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::TEnumBlock).void)
     ).void
   end
@@ -2290,7 +2318,7 @@ class RBI::TEnumValue < ::RBI::NodeWithComments
     params(
       name: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::TEnumValue).void)
     ).void
   end
@@ -2314,7 +2342,7 @@ class RBI::TStruct < ::RBI::Class
     params(
       name: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(klass: ::RBI::TStruct).void)
     ).void
   end
@@ -2330,7 +2358,7 @@ class RBI::TStructConst < ::RBI::TStructField
       type: T.any(::RBI::Type, ::String),
       default: T.nilable(::String),
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::TStructConst).void)
     ).void
   end
@@ -2358,7 +2386,7 @@ class RBI::TStructField < ::RBI::NodeWithComments
       type: T.any(::RBI::Type, ::String),
       default: T.nilable(::String),
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment]
+      comments: T.nilable(T::Array[::RBI::Comment])
     ).void
   end
   def initialize(name, type, default: T.unsafe(nil), loc: T.unsafe(nil), comments: T.unsafe(nil)); end
@@ -2394,7 +2422,7 @@ class RBI::TStructProp < ::RBI::TStructField
       type: T.any(::RBI::Type, ::String),
       default: T.nilable(::String),
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::TStructProp).void)
     ).void
   end
@@ -2417,7 +2445,7 @@ class RBI::Tree < ::RBI::NodeWithComments
   sig do
     params(
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::Tree).void)
     ).void
   end
@@ -3105,7 +3133,7 @@ class RBI::TypeMember < ::RBI::NodeWithComments
       name: ::String,
       value: ::String,
       loc: T.nilable(::RBI::Loc),
-      comments: T::Array[::RBI::Comment],
+      comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::TypeMember).void)
     ).void
   end
@@ -3223,7 +3251,7 @@ RBI::VERSION = T.let(T.unsafe(nil), String)
 class RBI::Visibility < ::RBI::NodeWithComments
   abstract!
 
-  sig { params(visibility: ::Symbol, loc: T.nilable(::RBI::Loc), comments: T::Array[::RBI::Comment]).void }
+  sig { params(visibility: ::Symbol, loc: T.nilable(::RBI::Loc), comments: T.nilable(T::Array[::RBI::Comment])).void }
   def initialize(visibility, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
   sig { params(other: T.nilable(::Object)).returns(T::Boolean) }

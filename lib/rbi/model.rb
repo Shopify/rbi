@@ -87,12 +87,24 @@ module RBI
   # @abstract
   class NodeWithComments < Node
     #: Array[Comment]
-    attr_accessor :comments
+    attr_writer :comments
 
-    #: (?loc: Loc?, ?comments: Array[Comment]) -> void
-    def initialize(loc: nil, comments: [])
+    #: -> Array[Comment]
+    def comments
+      @comments ||= []
+    end
+
+    # Returns true if this node has any comments, without allocating
+    # an empty array for nodes that have never had comments set.
+    #: -> bool
+    def comments?
+      !@comments.nil? && !@comments.empty?
+    end
+
+    #: (?loc: Loc?, ?comments: Array[Comment]?) -> void
+    def initialize(loc: nil, comments: nil)
       super(loc: loc)
-      @comments = comments
+      @comments = comments #: Array[Comment]?
     end
 
     #: -> Array[String]
@@ -109,8 +121,8 @@ module RBI
     #: Array[Node]
     attr_reader :nodes
 
-    #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (Tree node) -> void } -> void
-    def initialize(loc: nil, comments: [], &block)
+    #: (?loc: Loc?, ?comments: Array[Comment]?) ?{ (Tree node) -> void } -> void
+    def initialize(loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
       @nodes = [] #: Array[Node]
       block&.call(self)
@@ -136,10 +148,20 @@ module RBI
     attr_accessor :strictness
 
     #: Array[Comment]
-    attr_accessor :comments
+    attr_writer :comments
 
-    #: (?strictness: String?, ?comments: Array[Comment]) ?{ (File file) -> void } -> void
-    def initialize(strictness: nil, comments: [], &block)
+    #: -> Array[Comment]
+    def comments
+      @comments ||= []
+    end
+
+    #: -> bool
+    def comments?
+      !@comments.nil? && !@comments.empty?
+    end
+
+    #: (?strictness: String?, ?comments: Array[Comment]?) ?{ (File file) -> void } -> void
+    def initialize(strictness: nil, comments: nil, &block)
       @root = Tree.new #: Tree
       @strictness = strictness
       @comments = comments
@@ -176,8 +198,8 @@ module RBI
     #: String
     attr_accessor :name
 
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Module node) -> void } -> void
-    def initialize(name, loc: nil, comments: [], &block)
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (Module node) -> void } -> void
+    def initialize(name, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments) {}
       @name = name
       block&.call(self)
@@ -199,8 +221,13 @@ module RBI
     #: String?
     attr_accessor :superclass_name
 
-    #: (String name, ?superclass_name: String?, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Class node) -> void } -> void
-    def initialize(name, superclass_name: nil, loc: nil, comments: [], &block)
+    #: (
+    #|   String name,
+    #|   ?superclass_name: String?,
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]?
+    #| ) ?{ (Class node) -> void } -> void
+    def initialize(name, superclass_name: nil, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments) {}
       @name = name
       @superclass_name = superclass_name
@@ -217,8 +244,8 @@ module RBI
   end
 
   class SingletonClass < Scope
-    #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (SingletonClass node) -> void } -> void
-    def initialize(loc: nil, comments: [], &block)
+    #: (?loc: Loc?, ?comments: Array[Comment]?) ?{ (SingletonClass node) -> void } -> void
+    def initialize(loc: nil, comments: nil, &block)
       super {}
       block&.call(self)
     end
@@ -245,9 +272,9 @@ module RBI
     #|   ?members: Array[Symbol],
     #|   ?keyword_init: bool,
     #|   ?loc: Loc?,
-    #|   ?comments: Array[Comment]
+    #|   ?comments: Array[Comment]?
     #| ) ?{ (Struct struct) -> void } -> void
-    def initialize(name, members: [], keyword_init: false, loc: nil, comments: [], &block)
+    def initialize(name, members: [], keyword_init: false, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments) {}
       @name = name
       @members = members
@@ -270,8 +297,8 @@ module RBI
     #: String
     attr_reader :name, :value
 
-    #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Const node) -> void } -> void
-    def initialize(name, value, loc: nil, comments: [], &block)
+    #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (Const node) -> void } -> void
+    def initialize(name, value, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
       @name = name
       @value = value
@@ -302,22 +329,32 @@ module RBI
     #: Visibility
     attr_accessor :visibility
 
+    #: -> Array[Sig]
+    def sigs
+      @sigs ||= []
+    end
+
+    #: -> bool
+    def sigs?
+      !@sigs.nil? && !@sigs.empty?
+    end
+
     #: Array[Sig]
-    attr_reader :sigs
+    attr_writer :sigs
 
     #: (
     #|   Symbol name,
     #|   Array[Symbol] names,
     #|   ?visibility: Visibility,
-    #|   ?sigs: Array[Sig],
+    #|   ?sigs: Array[Sig]?,
     #|   ?loc: Loc?,
-    #|   ?comments: Array[Comment]
+    #|   ?comments: Array[Comment]?
     #| ) -> void
-    def initialize(name, names, visibility: Public.new, sigs: [], loc: nil, comments: [])
+    def initialize(name, names, visibility: Public::DEFAULT, sigs: nil, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
       @names = [name, *names] #: Array[Symbol]
       @visibility = visibility
-      @sigs = sigs
+      @sigs = sigs #: Array[Sig]?
     end
 
     # @abstract
@@ -330,11 +367,11 @@ module RBI
     #|   Symbol name,
     #|   *Symbol names,
     #|   ?visibility: Visibility,
-    #|   ?sigs: Array[Sig],
+    #|   ?sigs: Array[Sig]?,
     #|   ?loc: Loc?,
-    #|   ?comments: Array[Comment]
+    #|   ?comments: Array[Comment]?
     #| ) ?{ (AttrAccessor node) -> void } -> void
-    def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
+    def initialize(name, *names, visibility: Public::DEFAULT, sigs: nil, loc: nil, comments: nil, &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
       block&.call(self)
     end
@@ -359,11 +396,11 @@ module RBI
     #|   Symbol name,
     #|   *Symbol names,
     #|   ?visibility: Visibility,
-    #|   ?sigs: Array[Sig],
+    #|   ?sigs: Array[Sig]?,
     #|   ?loc: Loc?,
-    #|   ?comments: Array[Comment]
+    #|   ?comments: Array[Comment]?
     #| ) ?{ (AttrReader node) -> void } -> void
-    def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
+    def initialize(name, *names, visibility: Public::DEFAULT, sigs: nil, loc: nil, comments: nil, &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
       block&.call(self)
     end
@@ -388,11 +425,11 @@ module RBI
     #|   Symbol name,
     #|   *Symbol names,
     #|   ?visibility: Visibility,
-    #|   ?sigs: Array[Sig],
+    #|   ?sigs: Array[Sig]?,
     #|   ?loc: Loc?,
-    #|   ?comments: Array[Comment]
+    #|   ?comments: Array[Comment]?
     #| ) ?{ (AttrWriter node) -> void } -> void
-    def initialize(name, *names, visibility: Public.new, sigs: [], loc: nil, comments: [], &block)
+    def initialize(name, *names, visibility: Public::DEFAULT, sigs: nil, loc: nil, comments: nil, &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
       block&.call(self)
     end
@@ -418,8 +455,10 @@ module RBI
     #: String
     attr_accessor :name
 
-    #: Array[Param]
-    attr_reader :params
+    #: -> Array[Param]
+    def params
+      @params ||= []
+    end
 
     #: bool
     attr_accessor :is_singleton
@@ -427,85 +466,95 @@ module RBI
     #: Visibility
     attr_accessor :visibility
 
+    #: -> Array[Sig]
+    def sigs
+      @sigs ||= []
+    end
+
+    #: -> bool
+    def sigs?
+      !@sigs.nil? && !@sigs.empty?
+    end
+
     #: Array[Sig]
-    attr_accessor :sigs
+    attr_writer :sigs
 
     #: (
     #|   String name,
-    #|   ?params: Array[Param],
+    #|   ?params: Array[Param]?,
     #|   ?is_singleton: bool,
     #|   ?visibility: Visibility,
-    #|   ?sigs: Array[Sig],
+    #|   ?sigs: Array[Sig]?,
     #|   ?loc: Loc?,
-    #|   ?comments: Array[Comment]
+    #|   ?comments: Array[Comment]?
     #| ) ?{ (Method node) -> void } -> void
     def initialize(
       name,
-      params: [],
+      params: nil,
       is_singleton: false,
-      visibility: Public.new,
-      sigs: [],
+      visibility: Public::DEFAULT,
+      sigs: nil,
       loc: nil,
-      comments: [],
+      comments: nil,
       &block
     )
       super(loc: loc, comments: comments)
       @name = name
-      @params = params
+      @params = params #: Array[Param]?
       @is_singleton = is_singleton
       @visibility = visibility
-      @sigs = sigs
+      @sigs = sigs #: Array[Sig]?
       block&.call(self)
     end
 
     #: (Param param) -> void
     def <<(param)
-      @params << param
+      params << param
     end
 
     #: (String name) -> void
     def add_param(name)
-      @params << ReqParam.new(name)
+      params << ReqParam.new(name)
     end
 
     #: (String name, String default_value) -> void
     def add_opt_param(name, default_value)
-      @params << OptParam.new(name, default_value)
+      params << OptParam.new(name, default_value)
     end
 
     #: (String name) -> void
     def add_rest_param(name)
-      @params << RestParam.new(name)
+      params << RestParam.new(name)
     end
 
     #: (String name) -> void
     def add_kw_param(name)
-      @params << KwParam.new(name)
+      params << KwParam.new(name)
     end
 
     #: (String name, String default_value) -> void
     def add_kw_opt_param(name, default_value)
-      @params << KwOptParam.new(name, default_value)
+      params << KwOptParam.new(name, default_value)
     end
 
     #: (String name) -> void
     def add_kw_rest_param(name)
-      @params << KwRestParam.new(name)
+      params << KwRestParam.new(name)
     end
 
     #: (String name) -> void
     def add_block_param(name)
-      @params << BlockParam.new(name)
+      params << BlockParam.new(name)
     end
 
     #: (
-    #|   ?params: Array[SigParam],
+    #|   ?params: Array[SigParam]?,
     #|   ?return_type: (String | Type),
     #|   ?is_abstract: bool,
     #|   ?is_override: bool,
     #|   ?is_overridable: bool,
     #|   ?is_final: bool,
-    #|   ?type_params: Array[String],
+    #|   ?type_params: Array[String]?,
     #|   ?checked: Symbol?) ?{ (Sig node) -> void } -> void
     def add_sig(
       params: [],
@@ -529,7 +578,7 @@ module RBI
         checked: checked,
         &block
       )
-      @sigs << sig
+      sigs << sig
     end
 
     #: -> String
@@ -553,8 +602,8 @@ module RBI
     #: String
     attr_reader :name
 
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) -> void
-    def initialize(name, loc: nil, comments: [])
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) -> void
+    def initialize(name, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
       @name = name
     end
@@ -567,8 +616,8 @@ module RBI
   end
 
   class ReqParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (ReqParam node) -> void } -> void
-    def initialize(name, loc: nil, comments: [], &block)
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (ReqParam node) -> void } -> void
+    def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
     end
@@ -583,8 +632,8 @@ module RBI
     #: String
     attr_reader :value
 
-    #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]) ?{ (OptParam node) -> void } -> void
-    def initialize(name, value, loc: nil, comments: [], &block)
+    #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (OptParam node) -> void } -> void
+    def initialize(name, value, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       @value = value
       block&.call(self)
@@ -597,8 +646,8 @@ module RBI
   end
 
   class RestParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (RestParam node) -> void } -> void
-    def initialize(name, loc: nil, comments: [], &block)
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (RestParam node) -> void } -> void
+    def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
     end
@@ -616,8 +665,8 @@ module RBI
   end
 
   class KwParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (KwParam node) -> void } -> void
-    def initialize(name, loc: nil, comments: [], &block)
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwParam node) -> void } -> void
+    def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
     end
@@ -638,8 +687,8 @@ module RBI
     #: String
     attr_reader :value
 
-    #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]) ?{ (KwOptParam node) -> void } -> void
-    def initialize(name, value, loc: nil, comments: [], &block)
+    #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwOptParam node) -> void } -> void
+    def initialize(name, value, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       @value = value
       block&.call(self)
@@ -658,8 +707,8 @@ module RBI
   end
 
   class KwRestParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (KwRestParam node) -> void } -> void
-    def initialize(name, loc: nil, comments: [], &block)
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwRestParam node) -> void } -> void
+    def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
     end
@@ -677,8 +726,8 @@ module RBI
   end
 
   class BlockParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (BlockParam node) -> void } -> void
-    def initialize(name, loc: nil, comments: [], &block)
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (BlockParam node) -> void } -> void
+    def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
     end
@@ -702,16 +751,16 @@ module RBI
     #: Array[String]
     attr_reader :names
 
-    #: (String name, Array[String] names, ?loc: Loc?, ?comments: Array[Comment]) -> void
-    def initialize(name, names, loc: nil, comments: [])
+    #: (String name, Array[String] names, ?loc: Loc?, ?comments: Array[Comment]?) -> void
+    def initialize(name, names, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
       @names = [name, *names] #: Array[String]
     end
   end
 
   class Include < Mixin
-    #: (String name, *String names, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Include node) -> void } -> void
-    def initialize(name, *names, loc: nil, comments: [], &block)
+    #: (String name, *String names, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (Include node) -> void } -> void
+    def initialize(name, *names, loc: nil, comments: nil, &block)
       super(name, names, loc: loc, comments: comments)
       block&.call(self)
     end
@@ -724,8 +773,8 @@ module RBI
   end
 
   class Extend < Mixin
-    #: (String name, *String names, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Extend node) -> void } -> void
-    def initialize(name, *names, loc: nil, comments: [], &block)
+    #: (String name, *String names, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (Extend node) -> void } -> void
+    def initialize(name, *names, loc: nil, comments: nil, &block)
       super(name, names, loc: loc, comments: comments)
       block&.call(self)
     end
@@ -744,8 +793,8 @@ module RBI
     #: Symbol
     attr_reader :visibility
 
-    #: (Symbol visibility, ?loc: Loc?, ?comments: Array[Comment]) -> void
-    def initialize(visibility, loc: nil, comments: [])
+    #: (Symbol visibility, ?loc: Loc?, ?comments: Array[Comment]?) -> void
+    def initialize(visibility, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
       @visibility = visibility
     end
@@ -774,24 +823,27 @@ module RBI
   end
 
   class Public < Visibility
-    #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (Public node) -> void } -> void
-    def initialize(loc: nil, comments: [], &block)
+    #: (?loc: Loc?, ?comments: Array[Comment]?) ?{ (Public node) -> void } -> void
+    def initialize(loc: nil, comments: nil, &block)
       super(:public, loc: loc, comments: comments)
       block&.call(self)
     end
+
+    # Shared default instance to avoid allocating a new Public on every Method/Attr creation.
+    DEFAULT = new.freeze #: Public
   end
 
   class Protected < Visibility
-    #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (Protected node) -> void } -> void
-    def initialize(loc: nil, comments: [], &block)
+    #: (?loc: Loc?, ?comments: Array[Comment]?) ?{ (Protected node) -> void } -> void
+    def initialize(loc: nil, comments: nil, &block)
       super(:protected, loc: loc, comments: comments)
       block&.call(self)
     end
   end
 
   class Private < Visibility
-    #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (Private node) -> void } -> void
-    def initialize(loc: nil, comments: [], &block)
+    #: (?loc: Loc?, ?comments: Array[Comment]?) ?{ (Private node) -> void } -> void
+    def initialize(loc: nil, comments: nil, &block)
       super(:private, loc: loc, comments: comments)
       block&.call(self)
     end
@@ -806,8 +858,8 @@ module RBI
     #: Array[Arg]
     attr_reader :args
 
-    #: (String method, ?Array[Arg] args, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Send node) -> void } -> void
-    def initialize(method, args = [], loc: nil, comments: [], &block)
+    #: (String method, ?Array[Arg] args, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (Send node) -> void } -> void
+    def initialize(method, args = [], loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
       @method = method
       @args = args
@@ -875,8 +927,10 @@ module RBI
   # Sorbet's sigs
 
   class Sig < NodeWithComments
-    #: Array[SigParam]
-    attr_reader :params
+    #: -> Array[SigParam]
+    def params
+      @params ||= []
+    end
 
     #: (Type | String)
     attr_accessor :return_type
@@ -902,14 +956,21 @@ module RBI
     #: bool
     attr_accessor :without_runtime
 
-    #: Array[String]
-    attr_reader :type_params
+    #: -> Array[String]
+    def type_params
+      @type_params ||= []
+    end
+
+    #: -> bool
+    def type_params?
+      !@type_params.nil? && !@type_params.empty?
+    end
 
     #: Symbol?
     attr_accessor :checked
 
     #: (
-    #|   ?params: Array[SigParam],
+    #|   ?params: Array[SigParam]?,
     #|   ?return_type: (Type | String),
     #|   ?is_abstract: bool,
     #|   ?is_override: bool,
@@ -918,13 +979,13 @@ module RBI
     #|   ?allow_incompatible_override: bool,
     #|   ?allow_incompatible_override_visibility: bool,
     #|   ?without_runtime: bool,
-    #|   ?type_params: Array[String],
+    #|   ?type_params: Array[String]?,
     #|   ?checked: Symbol?,
     #|   ?loc: Loc?,
-    #|   ?comments: Array[Comment]
+    #|   ?comments: Array[Comment]?
     #| ) ?{ (Sig node) -> void } -> void
     def initialize(
-      params: [],
+      params: nil,
       return_type: "void",
       is_abstract: false,
       is_override: false,
@@ -933,14 +994,14 @@ module RBI
       allow_incompatible_override: false,
       allow_incompatible_override_visibility: false,
       without_runtime: false,
-      type_params: [],
+      type_params: nil,
       checked: nil,
       loc: nil,
-      comments: [],
+      comments: nil,
       &block
     )
       super(loc: loc, comments: comments)
-      @params = params
+      @params = params #: Array[SigParam]?
       @return_type = return_type
       @is_abstract = is_abstract
       @is_override = is_override
@@ -949,19 +1010,19 @@ module RBI
       @allow_incompatible_override = allow_incompatible_override
       @allow_incompatible_override_visibility = allow_incompatible_override_visibility
       @without_runtime = without_runtime
-      @type_params = type_params
+      @type_params = type_params #: Array[String]?
       @checked = checked
       block&.call(self)
     end
 
     #: (SigParam param) -> void
     def <<(param)
-      @params << param
+      params << param
     end
 
     #: (String name, (Type | String) type) -> void
     def add_param(name, type)
-      @params << SigParam.new(name, type)
+      params << SigParam.new(name, type)
     end
 
     #: (Object other) -> bool
@@ -981,8 +1042,8 @@ module RBI
     #: (Type | String)
     attr_reader :type
 
-    #: (String name, (Type | String) type, ?loc: Loc?, ?comments: Array[Comment]) ?{ (SigParam node) -> void } -> void
-    def initialize(name, type, loc: nil, comments: [], &block)
+    #: (String name, (Type | String) type, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (SigParam node) -> void } -> void
+    def initialize(name, type, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
       @name = name
       @type = type
@@ -998,8 +1059,8 @@ module RBI
   # Sorbet's T::Struct
 
   class TStruct < Class
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (TStruct klass) -> void } -> void
-    def initialize(name, loc: nil, comments: [], &block)
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (TStruct klass) -> void } -> void
+    def initialize(name, loc: nil, comments: nil, &block)
       super(name, superclass_name: "::T::Struct", loc: loc, comments: comments) {}
       block&.call(self)
     end
@@ -1016,8 +1077,8 @@ module RBI
     #: String?
     attr_accessor :default
 
-    #: (String name, (Type | String) type, ?default: String?, ?loc: Loc?, ?comments: Array[Comment]) -> void
-    def initialize(name, type, default: nil, loc: nil, comments: [])
+    #: (String name, (Type | String) type, ?default: String?, ?loc: Loc?, ?comments: Array[Comment]?) -> void
+    def initialize(name, type, default: nil, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
       @name = name
       @type = type
@@ -1035,9 +1096,9 @@ module RBI
     #|   (Type | String) type,
     #|   ?default: String?,
     #|   ?loc: Loc?,
-    #|   ?comments: Array[Comment]
+    #|   ?comments: Array[Comment]?
     #| ) ?{ (TStructConst node) -> void } -> void
-    def initialize(name, type, default: nil, loc: nil, comments: [], &block)
+    def initialize(name, type, default: nil, loc: nil, comments: nil, &block)
       super(name, type, default: default, loc: loc, comments: comments)
       block&.call(self)
     end
@@ -1062,9 +1123,9 @@ module RBI
     #|   (Type | String) type,
     #|   ?default: String?,
     #|   ?loc: Loc?,
-    #|   ?comments: Array[Comment]
+    #|   ?comments: Array[Comment]?
     #| ) ?{ (TStructProp node) -> void } -> void
-    def initialize(name, type, default: nil, loc: nil, comments: [], &block)
+    def initialize(name, type, default: nil, loc: nil, comments: nil, &block)
       super(name, type, default: default, loc: loc, comments: comments)
       block&.call(self)
     end
@@ -1086,16 +1147,16 @@ module RBI
   # Sorbet's T::Enum
 
   class TEnum < Class
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (TEnum klass) -> void } -> void
-    def initialize(name, loc: nil, comments: [], &block)
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (TEnum klass) -> void } -> void
+    def initialize(name, loc: nil, comments: nil, &block)
       super(name, superclass_name: "::T::Enum", loc: loc, comments: comments) {}
       block&.call(self)
     end
   end
 
   class TEnumBlock < Scope
-    #: (?loc: Loc?, ?comments: Array[Comment]) ?{ (TEnumBlock node) -> void } -> void
-    def initialize(loc: nil, comments: [], &block)
+    #: (?loc: Loc?, ?comments: Array[Comment]?) ?{ (TEnumBlock node) -> void } -> void
+    def initialize(loc: nil, comments: nil, &block)
       super {}
       block&.call(self)
     end
@@ -1117,8 +1178,8 @@ module RBI
     #: String
     attr_reader :name
 
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (TEnumValue node) -> void } -> void
-    def initialize(name, loc: nil, comments: [], &block)
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (TEnumValue node) -> void } -> void
+    def initialize(name, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
       @name = name
       block&.call(self)
@@ -1142,8 +1203,8 @@ module RBI
     #: String
     attr_reader :name
 
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) ?{ (Helper node) -> void } -> void
-    def initialize(name, loc: nil, comments: [], &block)
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (Helper node) -> void } -> void
+    def initialize(name, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
       @name = name
       block&.call(self)
@@ -1160,8 +1221,8 @@ module RBI
     #: String
     attr_reader :name, :value
 
-    #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]) ?{ (TypeMember node) -> void } -> void
-    def initialize(name, value, loc: nil, comments: [], &block)
+    #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (TypeMember node) -> void } -> void
+    def initialize(name, value, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
       @name = name
       @value = value
@@ -1187,9 +1248,9 @@ module RBI
     #|   String name,
     #|   *String names,
     #|   ?loc: Loc?,
-    #|   ?comments: Array[Comment]
+    #|   ?comments: Array[Comment]?
     #| ) ?{ (MixesInClassMethods node) -> void } -> void
-    def initialize(name, *names, loc: nil, comments: [], &block)
+    def initialize(name, *names, loc: nil, comments: nil, &block)
       super(name, names, loc: loc, comments: comments)
       block&.call(self)
     end
@@ -1205,8 +1266,8 @@ module RBI
     #: String
     attr_reader :name
 
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]) -> void
-    def initialize(name, loc: nil, comments: [])
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) -> void
+    def initialize(name, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
       @name = name
     end
