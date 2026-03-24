@@ -46,6 +46,18 @@ module RBI
       RBI
     end
 
+    def test_translate_method_sig_with_anonymous_block_param
+      tree = rewrite(<<~RBI)
+        #: () { () -> untyped } -> untyped
+        def foo(&); end
+      RBI
+
+      assert_equal(<<~RBI, tree)
+        sig { params(block: ::T.proc.returns(::T.untyped)).returns(::T.untyped) }
+        def foo(&); end
+      RBI
+    end
+
     def test_translate_attr_sigs
       tree = rewrite(<<~RBI)
         #: Integer

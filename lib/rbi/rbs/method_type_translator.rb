@@ -43,7 +43,7 @@ module RBI
         block_param = @method.params.grep(RBI::BlockParam).first
         raise Error, "No block param found" unless block_param
 
-        block_name = block_param.name
+        block_name = block_param.name.empty? ? "block" : block_param.name
         block_type = translate_type(type.type) #: as RBI::Type::Proc
 
         bind = type.self_type
