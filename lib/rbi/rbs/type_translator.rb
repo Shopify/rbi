@@ -68,8 +68,9 @@ module RBI
           when ::RBS::Types::Literal
             # Sorbet doesn't support literal types, so map to their base type
             case type.literal
-            when true, false
-              Type.boolean
+            when nil then Type.simple("NilClass")
+            when true then Type.simple("TrueClass")
+            when false then Type.simple("FalseClass")
             else
               Type.simple(type.literal.class.to_s)
             end

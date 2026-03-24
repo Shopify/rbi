@@ -109,8 +109,8 @@ module RBI
       def test_translate_literal
         assert_equal(Type.simple("Integer"), translate("1"))
         assert_equal(Type.simple("String"), translate("\"foo\""))
-        assert_equal(Type.boolean, translate("true"))
-        assert_equal(Type.boolean, translate("false"))
+        assert_equal(Type.simple("TrueClass"), translate("true"))
+        assert_equal(Type.simple("FalseClass"), translate("false"))
         assert_equal(Type.simple("Symbol"), translate(":foo"))
       end
 
