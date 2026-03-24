@@ -407,7 +407,7 @@ module RBI
     #: (BlockParam node) -> void
     def visit_block_param(node)
       print("&")
-      print(node.name)
+      print(node.name) unless node.name.empty?
     end
 
     # @override

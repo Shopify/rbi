@@ -751,7 +751,7 @@ module RBI
             )
           when Prism::BlockParameterNode
             BlockParam.new(
-              param.name&.to_s || "&block",
+              param.name&.to_s || "",
               loc: node_loc(param),
               comments: node_comments(param),
             )
