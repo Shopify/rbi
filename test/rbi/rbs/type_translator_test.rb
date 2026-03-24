@@ -91,11 +91,7 @@ module RBI
         assert_equal(Type.class_of(Type.simple("Foo")), translate("singleton(Foo)"))
         assert_equal(Type.class_of(Type.simple("Foo::Bar")), translate("singleton(Foo::Bar)"))
         assert_equal(Type.class_of(Type.simple("::Foo::Bar")), translate("singleton(::Foo::Bar)"))
-
-        e = assert_raises(::RBS::ParsingError) do
-          translate("singleton(Foo)[Bar]")
-        end
-        assert_equal("a.rbs:1:14...1:15: Syntax error: expected a token `pEOF`, token=`[` (pLBRACKET)", e.message)
+        assert_equal(Type.class_of(Type.simple("Foo"), Type.simple("Bar")), translate("singleton(Foo)[Bar]"))
       end
 
       def test_translate_interface

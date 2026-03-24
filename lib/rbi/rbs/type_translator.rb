@@ -54,7 +54,8 @@ module RBI
           when ::RBS::Types::Bases::Void
             Type.void
           when ::RBS::Types::ClassSingleton
-            Type.class_of(Type.simple(type.name.to_s))
+            type_parameter = type.args.first ? translate(type.args.first) : nil
+            Type.class_of(Type.simple(type.name.to_s), type_parameter)
           when ::RBS::Types::ClassInstance
             translate_class_instance(type)
           when ::RBS::Types::Function
