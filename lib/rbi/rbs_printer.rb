@@ -1106,6 +1106,11 @@ module RBI
       @string << "singleton("
       visit(type.type)
       @string << ")"
+      if (type_parameter = type.type_parameter)
+        @string << "["
+        visit(type_parameter)
+        @string << "]"
+      end
     end
 
     #: (Type::All type) -> void

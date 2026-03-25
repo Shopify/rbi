@@ -686,6 +686,9 @@ module RBI
 
         sig { returns(T::Class[T.untyped]) }
         def e; end
+
+        sig { returns(T.class_of(Foo)[Bar]) }
+        def f; end
       RBI
 
       assert_equal(<<~RBI, rbi.rbs_string)
@@ -698,6 +701,8 @@ module RBI
         def d: -> Class[top]
 
         def e: -> Class[untyped]
+
+        def f: -> singleton(Foo)[Bar]
       RBI
     end
 
