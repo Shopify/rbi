@@ -1182,5 +1182,156 @@ module RBI
         end
       RBI
     end
+
+    # When methods are structurally identical (same param types, count, and order) but differ only
+    # in parameter names, they should be treated as compatible when at most one side has all
+    # anonymous params (names starting with `_`). In that case, we use the non-anonymous names.
+
+    def test_merge_methods_with_anonymous_params
+      tree1 = parse_rbi(<<~RBI)
+        class Foo
+          def m1(a); end
+          def m2(_a); end
+          def m3(a, b); end
+          def m4(_a, _b = nil, *_c, _d:, _e: nil, **_f, &_g); end
+        end
+      RBI
+
+      tree2 = parse_rbi(<<~RBI)
+        class Foo
+          def m1(_a); end
+          def m2(a); end
+          def m3(_a, _b); end
+          def m4(a, b = nil, *c, d:, e: nil, **f, &g); end
+        end
+      RBI
+
+      # Non-anonymous names are always preferred, regardless of which side they come from.
+      # The keep argument has no effect since the methods are compatible.
+      [Rewriters::Merge::Keep::NONE, Rewriters::Merge::Keep::LEFT, Rewriters::Merge::Keep::RIGHT].each do |keep|
+        res = tree1.merge(tree2, keep: keep)
+
+        assert_equal(<<~RBI, res.string)
+          class Foo
+            def m1(a); end
+            def m2(a); end
+            def m3(a, b); end
+            def m4(a, b = nil, *c, d:, e: nil, **f, &g); end
+          end
+        RBI
+        assert_empty(res.conflicts)
+      end
+    end
+
+    def test_merge_methods_with_anonymous_params_and_sigs
+      tree1 = parse_rbi(<<~RBI)
+        class Foo
+          sig { params(_a: Integer, _b: String).void }
+          def m1(_a, _b); end
+
+          sig { params(a: Integer).returns(String) }
+          def m2(a); end
+
+          def m3(_a); end
+
+          sig do
+            params(
+              _a: Integer,
+              _b: String,
+              _c: Float,
+              _d: Symbol,
+              _e: T::Boolean,
+              _f: T::Hash[String, Integer],
+              _g: T.proc.void
+            ).void
+          end
+          def m4(_a, _b = nil, *_c, _d:, _e: nil, **_f, &_g); end
+        end
+      RBI
+
+      tree2 = parse_rbi(<<~RBI)
+        class Foo
+          sig { params(a: Integer, b: String).void }
+          def m1(a, b); end
+
+          sig { params(_a: Integer).returns(String) }
+          def m2(_a); end
+
+          sig { params(a: Integer).void }
+          def m3(a); end
+
+          sig do
+            params(
+              a: Integer,
+              b: String,
+              c: Float,
+              d: Symbol,
+              e: T::Boolean,
+              f: T::Hash[String, Integer],
+              g: T.proc.void
+            ).void
+          end
+          def m4(a, b = nil, *c, d:, e: nil, **f, &g); end
+        end
+      RBI
+
+      res = tree1.merge(tree2)
+
+      assert_equal(<<~RBI, res.string)
+        class Foo
+          sig { params(a: Integer, b: String).void }
+          def m1(a, b); end
+
+          sig { params(a: Integer).returns(String) }
+          def m2(a); end
+
+          sig { params(a: Integer).void }
+          def m3(a); end
+
+          sig { params(a: Integer, b: String, c: Float, d: Symbol, e: T::Boolean, f: T::Hash[String, Integer], g: T.proc.void).void }
+          def m4(a, b = nil, *c, d:, e: nil, **f, &g); end
+        end
+      RBI
+      assert_empty(res.conflicts)
+    end
+
+    def test_merge_methods_with_anonymous_params_creates_conflicts
+      tree1 = parse_rbi(<<~RBI)
+        class Foo
+          def m1(_a, b, _c); end
+
+          sig { params(a: Integer).void }
+          def m2(a); end
+        end
+      RBI
+
+      tree2 = parse_rbi(<<~RBI)
+        class Foo
+          def m1(a, _b, c); end
+
+          sig { params(_a: String).void }
+          def m2(_a); end
+        end
+      RBI
+
+      res = tree1.merge(tree2)
+
+      assert_equal(<<~RBI, res.string)
+        class Foo
+          <<<<<<< left
+          def m1(_a, b, _c); end
+
+          sig { params(a: Integer).void }
+          def m2(a); end
+          =======
+          def m1(a, _b, c); end
+
+          sig { params(_a: String).void }
+          def m2(_a); end
+          >>>>>>> right
+        end
+      RBI
+      refute_empty(res.conflicts)
+    end
   end
 end
