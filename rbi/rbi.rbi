@@ -921,6 +921,12 @@ class RBI::Param < ::RBI::NodeWithComments
   sig { params(name: ::String, loc: T.nilable(::RBI::Loc), comments: T.nilable(T::Array[::RBI::Comment])).void }
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
+  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { returns(T::Boolean) }
+  def anonymous?; end
+
   sig { returns(::String) }
   def name; end
 
@@ -2222,6 +2228,9 @@ class RBI::SigParam < ::RBI::NodeWithComments
 
   sig { params(other: ::Object).returns(T::Boolean) }
   def ==(other); end
+
+  sig { returns(T::Boolean) }
+  def anonymous?; end
 
   sig { returns(::String) }
   def name; end
