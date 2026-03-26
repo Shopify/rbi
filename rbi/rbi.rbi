@@ -738,6 +738,11 @@ class RBI::Method < ::RBI::NodeWithComments
   def visibility; end
 
   def visibility=(_arg0); end
+
+  private
+
+  sig { params(other: ::RBI::Method).returns(T::Boolean) }
+  def at_most_one_side_anonymous?(other); end
 end
 
 class RBI::MixesInClassMethods < ::RBI::Mixin
