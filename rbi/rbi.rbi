@@ -195,9 +195,6 @@ class RBI::BlockParam < ::RBI::Param
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
-
   sig { override.returns(::String) }
   def to_s; end
 end
@@ -542,9 +539,6 @@ class RBI::KwOptParam < ::RBI::Param
   end
   def initialize(name, value, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
-
   sig { override.returns(::String) }
   def to_s; end
 
@@ -563,9 +557,6 @@ class RBI::KwParam < ::RBI::Param
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
-
   sig { override.returns(::String) }
   def to_s; end
 end
@@ -580,9 +571,6 @@ class RBI::KwRestParam < ::RBI::Param
     ).void
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
-
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
 
   sig { override.returns(::String) }
   def to_s; end
@@ -738,6 +726,11 @@ class RBI::Method < ::RBI::NodeWithComments
   def visibility; end
 
   def visibility=(_arg0); end
+
+  private
+
+  sig { params(other: ::RBI::Method).returns(T::Boolean) }
+  def at_most_one_side_anonymous?(other); end
 end
 
 class RBI::MixesInClassMethods < ::RBI::Mixin
@@ -908,9 +901,6 @@ class RBI::OptParam < ::RBI::Param
   end
   def initialize(name, value, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
-
   sig { returns(::String) }
   def value; end
 end
@@ -920,6 +910,12 @@ class RBI::Param < ::RBI::NodeWithComments
 
   sig { params(name: ::String, loc: T.nilable(::RBI::Loc), comments: T.nilable(T::Array[::RBI::Comment])).void }
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
+
+  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { returns(T::Boolean) }
+  def anonymous?; end
 
   sig { returns(::String) }
   def name; end
@@ -1714,9 +1710,6 @@ class RBI::ReqParam < ::RBI::Param
     ).void
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
-
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
 end
 
 class RBI::RequiresAncestor < ::RBI::NodeWithComments
@@ -1745,9 +1738,6 @@ class RBI::RestParam < ::RBI::Param
     ).void
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
-
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
 
   sig { override.returns(::String) }
   def to_s; end
@@ -2222,6 +2212,9 @@ class RBI::SigParam < ::RBI::NodeWithComments
 
   sig { params(other: ::Object).returns(T::Boolean) }
   def ==(other); end
+
+  sig { returns(T::Boolean) }
+  def anonymous?; end
 
   sig { returns(::String) }
   def name; end

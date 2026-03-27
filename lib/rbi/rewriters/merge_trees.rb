@@ -464,11 +464,11 @@ module RBI
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
-      return false unless other.is_a?(Method)
-      return false unless name == other.name
-      return false unless params == other.params
-
-      sigs.empty? || other.sigs.empty? || sigs == other.sigs
+      other.is_a?(Method) &&
+        name == other.name &&
+        params == other.params &&
+        at_most_one_side_anonymous?(other) &&
+        (sigs.empty? || other.sigs.empty? || sigs == other.sigs)
     end
 
     # @override
@@ -477,9 +477,26 @@ module RBI
       return unless other.is_a?(Method)
 
       super
+
+      # If self is the all-anonymous side (since compatible_with? ensures
+      # at most one side is), adopt other's non-anonymous param names and sigs.
+      if params.all?(&:anonymous?)
+        @params = other.params.dup
+        @sigs = other.sigs.dup unless other.sigs.empty?
+      end
+
       other.sigs.each do |sig|
         sigs << sig unless sigs.include?(sig)
       end
+    end
+
+    private
+
+    #: (Method other) -> bool
+    def at_most_one_side_anonymous?(other)
+      (params.all?(&:anonymous?) && other.params.none?(&:anonymous?)) ||
+        (params.none?(&:anonymous?) && other.params.all?(&:anonymous?)) ||
+        (params.none?(&:anonymous?) && other.params.none?(&:anonymous?))
     end
   end
 

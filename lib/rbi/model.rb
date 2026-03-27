@@ -606,12 +606,24 @@ module RBI
     def initialize(name, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
       @name = name
+      @anonymous = name.start_with?("_") #: bool
     end
 
     # @override
     #: -> String
     def to_s
       name
+    end
+
+    #: -> bool
+    def anonymous?
+      @anonymous
+    end
+
+    #: (Object? other) -> bool
+    def ==(other)
+      self.class === other &&
+        (name == other.name || anonymous? || other.anonymous?)
     end
   end
 
@@ -620,11 +632,6 @@ module RBI
     def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
-    end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      ReqParam === other && name == other.name
     end
   end
 
@@ -637,11 +644,6 @@ module RBI
       super(name, loc: loc, comments: comments)
       @value = value
       block&.call(self)
-    end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      OptParam === other && name == other.name
     end
   end
 
@@ -657,11 +659,6 @@ module RBI
     def to_s
       "*#{name}"
     end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      RestParam === other && name == other.name
-    end
   end
 
   class KwParam < Param
@@ -675,11 +672,6 @@ module RBI
     #: -> String
     def to_s
       "#{name}:"
-    end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      KwParam === other && name == other.name
     end
   end
 
@@ -699,11 +691,6 @@ module RBI
     def to_s
       "#{name}:"
     end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      KwOptParam === other && name == other.name
-    end
   end
 
   class KwRestParam < Param
@@ -718,11 +705,6 @@ module RBI
     def to_s
       "**#{name}:"
     end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      KwRestParam === other && name == other.name
-    end
   end
 
   class BlockParam < Param
@@ -736,11 +718,6 @@ module RBI
     #: -> String
     def to_s
       "&#{name}"
-    end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      BlockParam === other && name == other.name
     end
   end
 
@@ -1046,13 +1023,21 @@ module RBI
     def initialize(name, type, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
       @name = name
+      @anonymous = name.start_with?("_") #: bool
       @type = type
       block&.call(self)
     end
 
+    #: -> bool
+    def anonymous?
+      @anonymous
+    end
+
     #: (Object other) -> bool
     def ==(other)
-      other.is_a?(SigParam) && name == other.name && type.to_s == other.type.to_s
+      other.is_a?(SigParam) &&
+        (name == other.name || anonymous? || other.anonymous?) &&
+        type.to_s == other.type.to_s
     end
   end
 
