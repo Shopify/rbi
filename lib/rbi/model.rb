@@ -622,7 +622,7 @@ module RBI
 
     #: (Object? other) -> bool
     def ==(other)
-      Param === other &&
+      self.class === other &&
         (name == other.name || anonymous? || other.anonymous?)
     end
   end
@@ -632,11 +632,6 @@ module RBI
     def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
-    end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      ReqParam === other && super
     end
   end
 
@@ -649,11 +644,6 @@ module RBI
       super(name, loc: loc, comments: comments)
       @value = value
       block&.call(self)
-    end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      OptParam === other && super
     end
   end
 
@@ -669,11 +659,6 @@ module RBI
     def to_s
       "*#{name}"
     end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      RestParam === other && super
-    end
   end
 
   class KwParam < Param
@@ -687,11 +672,6 @@ module RBI
     #: -> String
     def to_s
       "#{name}:"
-    end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      KwParam === other && super
     end
   end
 
@@ -711,11 +691,6 @@ module RBI
     def to_s
       "#{name}:"
     end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      KwOptParam === other && super
-    end
   end
 
   class KwRestParam < Param
@@ -730,11 +705,6 @@ module RBI
     def to_s
       "**#{name}:"
     end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      KwRestParam === other && super
-    end
   end
 
   class BlockParam < Param
@@ -748,11 +718,6 @@ module RBI
     #: -> String
     def to_s
       "&#{name}"
-    end
-
-    #: (Object? other) -> bool
-    def ==(other)
-      BlockParam === other && super
     end
   end
 

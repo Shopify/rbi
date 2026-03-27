@@ -195,9 +195,6 @@ class RBI::BlockParam < ::RBI::Param
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
-
   sig { override.returns(::String) }
   def to_s; end
 end
@@ -542,9 +539,6 @@ class RBI::KwOptParam < ::RBI::Param
   end
   def initialize(name, value, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
-
   sig { override.returns(::String) }
   def to_s; end
 
@@ -563,9 +557,6 @@ class RBI::KwParam < ::RBI::Param
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
-
   sig { override.returns(::String) }
   def to_s; end
 end
@@ -580,9 +571,6 @@ class RBI::KwRestParam < ::RBI::Param
     ).void
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
-
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
 
   sig { override.returns(::String) }
   def to_s; end
@@ -912,9 +900,6 @@ class RBI::OptParam < ::RBI::Param
     ).void
   end
   def initialize(name, value, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
-
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
 
   sig { returns(::String) }
   def value; end
@@ -1725,9 +1710,6 @@ class RBI::ReqParam < ::RBI::Param
     ).void
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
-
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
 end
 
 class RBI::RequiresAncestor < ::RBI::NodeWithComments
@@ -1756,9 +1738,6 @@ class RBI::RestParam < ::RBI::Param
     ).void
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
-
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
 
   sig { override.returns(::String) }
   def to_s; end
