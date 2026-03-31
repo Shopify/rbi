@@ -156,6 +156,22 @@ module RBI
       RBI
     end
 
+    def test_print_methods_with_symbol_parameter_names
+      # Method#parameters returns names as Symbols; verify Param coerces to String
+      method = Method.new("foo")
+      method << ReqParam.new(:a)
+      method << OptParam.new(:b, "42")
+      method << RestParam.new(:c)
+      method << KwParam.new(:d)
+      method << KwOptParam.new(:e, "'bar'")
+      method << KwRestParam.new(:f)
+      method << BlockParam.new(:g)
+
+      assert_equal(<<~RBI, method.string)
+        def foo(a, b = 42, *c, d:, e: 'bar', **f, &g); end
+      RBI
+    end
+
     def test_print_attributes_with_signatures
       sig1 = Sig.new
 

@@ -602,11 +602,11 @@ module RBI
     #: String
     attr_reader :name
 
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) -> void
+    #: (String | Symbol name, ?loc: Loc?, ?comments: Array[Comment]?) -> void
     def initialize(name, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
-      @name = name
-      @anonymous = name.start_with?("_") #: bool
+      @name = name.to_s #: String
+      @anonymous = @name.start_with?("_") #: bool
     end
 
     # @override
@@ -628,7 +628,7 @@ module RBI
   end
 
   class ReqParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (ReqParam node) -> void } -> void
+    #: (String | Symbol name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (ReqParam node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
@@ -639,7 +639,12 @@ module RBI
     #: String
     attr_reader :value
 
-    #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (OptParam node) -> void } -> void
+    #: (
+    #|   String | Symbol name,
+    #|   String value,
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]?
+    #| ) ?{ (OptParam node) -> void } -> void
     def initialize(name, value, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       @value = value
@@ -648,7 +653,7 @@ module RBI
   end
 
   class RestParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (RestParam node) -> void } -> void
+    #: (String | Symbol name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (RestParam node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
@@ -662,7 +667,7 @@ module RBI
   end
 
   class KwParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwParam node) -> void } -> void
+    #: (String | Symbol name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwParam node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
@@ -679,7 +684,12 @@ module RBI
     #: String
     attr_reader :value
 
-    #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwOptParam node) -> void } -> void
+    #: (
+    #|   String | Symbol name,
+    #|   String value,
+    #|   ?loc: Loc?,
+    #|   ?comments: Array[Comment]?
+    #| ) ?{ (KwOptParam node) -> void } -> void
     def initialize(name, value, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       @value = value
@@ -694,7 +704,7 @@ module RBI
   end
 
   class KwRestParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwRestParam node) -> void } -> void
+    #: (String | Symbol name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwRestParam node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
@@ -708,7 +718,7 @@ module RBI
   end
 
   class BlockParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (BlockParam node) -> void } -> void
+    #: (String | Symbol name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (BlockParam node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
       super(name, loc: loc, comments: comments)
       block&.call(self)
