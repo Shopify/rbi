@@ -27,5 +27,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency("prism", "~> 1.0")
   spec.add_dependency("rbs", ">= 4.0.1")
 
-  spec.required_ruby_version = ">= 3.1"
+  spec.required_ruby_version = ">= 3.2"
 end
