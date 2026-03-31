@@ -187,7 +187,7 @@ end
 class RBI::BlockParam < ::RBI::Param
   sig do
     params(
-      name: ::String,
+      name: T.any(::String, ::Symbol),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::BlockParam).void)
@@ -530,7 +530,7 @@ end
 class RBI::KwOptParam < ::RBI::Param
   sig do
     params(
-      name: ::String,
+      name: T.any(::String, ::Symbol),
       value: ::String,
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
@@ -549,7 +549,7 @@ end
 class RBI::KwParam < ::RBI::Param
   sig do
     params(
-      name: ::String,
+      name: T.any(::String, ::Symbol),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::KwParam).void)
@@ -564,7 +564,7 @@ end
 class RBI::KwRestParam < ::RBI::Param
   sig do
     params(
-      name: ::String,
+      name: T.any(::String, ::Symbol),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::KwRestParam).void)
@@ -892,7 +892,7 @@ end
 class RBI::OptParam < ::RBI::Param
   sig do
     params(
-      name: ::String,
+      name: T.any(::String, ::Symbol),
       value: ::String,
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
@@ -908,7 +908,13 @@ end
 class RBI::Param < ::RBI::NodeWithComments
   abstract!
 
-  sig { params(name: ::String, loc: T.nilable(::RBI::Loc), comments: T.nilable(T::Array[::RBI::Comment])).void }
+  sig do
+    params(
+      name: T.any(::String, ::Symbol),
+      loc: T.nilable(::RBI::Loc),
+      comments: T.nilable(T::Array[::RBI::Comment])
+    ).void
+  end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
   sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
@@ -1703,7 +1709,7 @@ class RBI::ReplaceNodeError < ::RBI::Error; end
 class RBI::ReqParam < ::RBI::Param
   sig do
     params(
-      name: ::String,
+      name: T.any(::String, ::Symbol),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::ReqParam).void)
@@ -1731,7 +1737,7 @@ end
 class RBI::RestParam < ::RBI::Param
   sig do
     params(
-      name: ::String,
+      name: T.any(::String, ::Symbol),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::RestParam).void)
