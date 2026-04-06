@@ -4,4 +4,7 @@
 --suppress-error-code=7019
 --enable-experimental-requires-ancestor
 --enable-experimental-rbs-comments
+--suppress-payload-superclass-redefinition-for=RDoc::Markup::HardBreak
+--suppress-payload-superclass-redefinition-for=RDoc::Markup::BlankLine
+--suppress-payload-superclass-redefinition-for=RDoc::Markup::Heading
 --parser=prism
