@@ -66,7 +66,7 @@ module RBI
     def test_print_structs
       rbi = Tree.new do |tree|
         tree << Struct.new("Foo", members: [:foo, :bar])
-        tree << Struct.new("Bar", members: [:bar], keyword_init: true) do |struct1|
+        tree << Struct.new("Bar", members: [:bar], keyword_init: true) do |struct1| # rubocop:disable Style/RedundantStructKeywordInit
           struct1 << Method.new("bar_method")
         end
         tree << Struct.new("Baz", members: [:baz], keyword_init: false) do |struct2|

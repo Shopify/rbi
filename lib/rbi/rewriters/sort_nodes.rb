@@ -18,7 +18,7 @@ module RBI
 
         # Fast path: if no Visibility nodes are present (common after group_nodes!/nest_non_public_members!),
         # skip the chunk and sort directly.
-        has_visibility = nodes.any? { |n| n.is_a?(Visibility) }
+        has_visibility = nodes.any?(Visibility)
 
         if has_visibility
           # The child nodes contain private/protected markers. Divide into chunks

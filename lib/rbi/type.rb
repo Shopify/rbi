@@ -498,7 +498,7 @@ module RBI
         return type.simplify unless type.is_a?(Any)
 
         types = type.types.map(&:simplify)
-        return Untyped.new if types.any? { |type| type.is_a?(Untyped) }
+        return Untyped.new if types.any?(Untyped)
 
         has_true_class = types.any? { |type| type.is_a?(Simple) && type.name == "TrueClass" }
         has_false_class = types.any? { |type| type.is_a?(Simple) && type.name == "FalseClass" }
