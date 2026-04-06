@@ -6,7 +6,7 @@ source "https://rubygems.org"
 gemspec
 
 group(:development, :test) do
-  gem("byebug")
+  gem("debug")
   gem("minitest")
   gem("minitest-reporters")
   gem("rake", "~> 13.3")

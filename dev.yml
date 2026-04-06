@@ -5,6 +5,8 @@ type: ruby
 up:
   - ruby
   - bundler
+  - packages:
+      - libyaml
 
 commands:
   console:
