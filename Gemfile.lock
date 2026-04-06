@@ -13,12 +13,15 @@ GEM
     benchmark (0.5.0)
     builder (3.3.0)
     byebug (12.0.0)
+    drb (2.2.3)
     erubi (1.13.1)
     json (2.15.2.1)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     logger (1.7.0)
-    minitest (5.26.1)
+    minitest (6.0.3)
+      drb (~> 2.0)
+      prism (~> 1.5)
     minitest-reporters (1.7.1)
       ansi
       builder
