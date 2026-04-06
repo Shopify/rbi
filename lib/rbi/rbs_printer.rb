@@ -380,7 +380,7 @@ module RBI
         end
       else
         if node.params.any?
-          params = node.params.reject { |param| param.is_a?(BlockParam) }
+          params = node.params.grep_v(BlockParam)
           block = node.params.find { |param| param.is_a?(BlockParam) }
 
           print("(")
