@@ -91,7 +91,7 @@ GEM
     tsort (0.2.0)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
-    unicode-emoji (4.1.0)
+    unicode-emoji (4.2.0)
     yard (0.9.37)
     yard-sorbet (0.9.0)
       sorbet-runtime
@@ -101,6 +101,7 @@ PLATFORMS
   arm64-darwin-21
   arm64-darwin-22
   arm64-darwin-23
+  arm64-darwin-24
   x86_64-linux
 
 DEPENDENCIES
@@ -117,4 +118,4 @@ DEPENDENCIES
   tapioca (>= 0.17.9)
 
 BUNDLED WITH
-   2.4.22
+   4.0.9
