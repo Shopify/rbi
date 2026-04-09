@@ -1333,5 +1333,30 @@ module RBI
       RBI
       refute_empty(res.conflicts)
     end
+
+    def test_merge_methods_without_sig_adopts_params_and_sig_from_other
+      tree1 = parse_rbi(<<~RBI)
+        class Foo
+          def expand=(value); end
+        end
+      RBI
+
+      tree2 = parse_rbi(<<~RBI)
+        class Foo
+          sig { params(_a_different_name: T.nilable(T::Array[String])).returns(T.nilable(T::Array[String])) }
+          def expand=(_a_different_name); end
+        end
+      RBI
+
+      res = tree1.merge(tree2)
+
+      assert_equal(<<~RBI, res.string)
+        class Foo
+          sig { params(_a_different_name: T.nilable(T::Array[String])).returns(T.nilable(T::Array[String])) }
+          def expand=(_a_different_name); end
+        end
+      RBI
+      assert_empty(res.conflicts)
+    end
   end
 end

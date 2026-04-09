@@ -479,10 +479,12 @@ module RBI
       super
 
       # If self is the all-anonymous side (since compatible_with? ensures
-      # at most one side is), adopt other's non-anonymous param names and sigs.
-      if params.all?(&:anonymous?)
+      # at most one side is), or if self has no sigs but other does, adopt
+      # other's non-anonymous param names and sigs.
+      if params.all?(&:anonymous?) || (sigs.empty? && !other.sigs.empty?)
         @params = other.params.dup
         @sigs = other.sigs.dup unless other.sigs.empty?
+        return
       end
 
       other.sigs.each do |sig|
