@@ -207,7 +207,7 @@ module RBI
         Type.simple("String"),
         Type.simple("FalseClass"),
       )
-      assert_equal("::T.any(String, T::Boolean)", type.to_rbi)
+      assert_equal("::T.any(String, ::T::Boolean)", type.to_rbi)
     end
 
     def test_build_type_any_of_trueclass_and_falseclass_and_nilclass
@@ -217,7 +217,7 @@ module RBI
         Type.simple("FalseClass"),
       )
       assert_predicate(type, :nilable?)
-      assert_equal("::T.nilable(T::Boolean)", type.to_rbi)
+      assert_equal("::T.nilable(::T::Boolean)", type.to_rbi)
     end
 
     def test_build_type_any_of_trueclass_and_falseclass_with_nilable
@@ -226,7 +226,7 @@ module RBI
         Type.nilable(Type.simple("FalseClass")),
       )
       assert_predicate(type, :nilable?)
-      assert_equal("::T.nilable(T::Boolean)", type.to_rbi)
+      assert_equal("::T.nilable(::T::Boolean)", type.to_rbi)
     end
 
     def test_build_type_tuple
@@ -423,14 +423,14 @@ module RBI
       t_class_type = Type.t_class(Type.simple("String"))
       type = Type.type_alias("TClassType", t_class_type)
       refute_predicate(type, :nilable?)
-      assert_equal("TClassType = ::T.type_alias { T::Class[String] }", type.to_rbi)
+      assert_equal("TClassType = ::T.type_alias { ::T::Class[String] }", type.to_rbi)
     end
 
     def test_build_type_alias_with_boolean_type
       boolean_type = Type.boolean
       type = Type.type_alias("BooleanType", boolean_type)
       refute_predicate(type, :nilable?)
-      assert_equal("BooleanType = ::T.type_alias { T::Boolean }", type.to_rbi)
+      assert_equal("BooleanType = ::T.type_alias { ::T::Boolean }", type.to_rbi)
     end
 
     def test_build_type_alias_with_literal_types
@@ -457,12 +457,12 @@ module RBI
 
     def test_buid_type_t_class
       type = Type.t_class(Type.simple("String"))
-      assert_equal("T::Class[String]", type.to_rbi)
+      assert_equal("::T::Class[String]", type.to_rbi)
     end
 
     def test_buid_type_t_module
       type = Type.t_module(Type.simple("String"))
-      assert_equal("T::Module[String]", type.to_rbi)
+      assert_equal("::T::Module[String]", type.to_rbi)
     end
 
     def test_build_type_self_type
