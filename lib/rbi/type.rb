@@ -112,7 +112,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T::Boolean"
+        "::T::Boolean"
       end
 
       # @override
@@ -258,7 +258,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T::Class[#{@type}]"
+        "::T::Class[#{@type}]"
       end
 
       # @override
@@ -294,7 +294,7 @@ module RBI
       # @override
       #: -> String
       def to_rbi
-        "T::Module[#{@type}]"
+        "::T::Module[#{@type}]"
       end
 
       # @override
