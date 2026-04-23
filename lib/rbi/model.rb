@@ -196,12 +196,12 @@ module RBI
 
   class Module < Scope
     #: String
-    attr_accessor :name
+    attr_reader :name
 
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (Module node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments) {}
-      @name = name
+      @name = name.to_s #: String
       block&.call(self)
     end
 
@@ -216,7 +216,7 @@ module RBI
 
   class Class < Scope
     #: String
-    attr_accessor :name
+    attr_reader :name
 
     #: String?
     attr_accessor :superclass_name
@@ -229,7 +229,7 @@ module RBI
     #| ) ?{ (Class node) -> void } -> void
     def initialize(name, superclass_name: nil, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments) {}
-      @name = name
+      @name = name.to_s #: String
       @superclass_name = superclass_name
       block&.call(self)
     end
@@ -259,7 +259,7 @@ module RBI
 
   class Struct < Scope
     #: String
-    attr_accessor :name
+    attr_reader :name
 
     #: Array[Symbol]
     attr_accessor :members
@@ -276,7 +276,7 @@ module RBI
     #| ) ?{ (Struct struct) -> void } -> void
     def initialize(name, members: [], keyword_init: false, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments) {}
-      @name = name
+      @name = name.to_s #: String
       @members = members
       @keyword_init = keyword_init
       block&.call(self)
@@ -300,7 +300,7 @@ module RBI
     #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (Const node) -> void } -> void
     def initialize(name, value, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
-      @name = name
+      @name = name.to_s #: String
       @value = value
       block&.call(self)
     end
@@ -453,7 +453,7 @@ module RBI
 
   class Method < NodeWithComments
     #: String
-    attr_accessor :name
+    attr_reader :name
 
     #: -> Array[Param]
     def params
@@ -499,7 +499,7 @@ module RBI
       &block
     )
       super(loc: loc, comments: comments)
-      @name = name
+      @name = name.to_s #: String
       @params = params #: Array[Param]?
       @is_singleton = is_singleton
       @visibility = visibility
@@ -605,7 +605,7 @@ module RBI
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) -> void
     def initialize(name, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
-      @name = name
+      @name = name.to_s #: String
       @anonymous = name.start_with?("_") #: bool
     end
 
@@ -731,7 +731,7 @@ module RBI
     #: (String name, Array[String] names, ?loc: Loc?, ?comments: Array[Comment]?) -> void
     def initialize(name, names, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
-      @names = [name, *names] #: Array[String]
+      @names = [name, *names].map(&:to_s) #: Array[String]
     end
   end
 
@@ -1022,7 +1022,7 @@ module RBI
     #: (String name, (Type | String) type, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (SigParam node) -> void } -> void
     def initialize(name, type, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
-      @name = name
+      @name = name.to_s #: String
       @anonymous = name.start_with?("_") #: bool
       @type = type
       block&.call(self)
@@ -1054,7 +1054,7 @@ module RBI
   # @abstract
   class TStructField < NodeWithComments
     #: String
-    attr_accessor :name
+    attr_reader :name
 
     #: (Type | String)
     attr_accessor :type
@@ -1065,7 +1065,7 @@ module RBI
     #: (String name, (Type | String) type, ?default: String?, ?loc: Loc?, ?comments: Array[Comment]?) -> void
     def initialize(name, type, default: nil, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
-      @name = name
+      @name = name.to_s #: String
       @type = type
       @default = default
     end
@@ -1166,7 +1166,7 @@ module RBI
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (TEnumValue node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
-      @name = name
+      @name = name.to_s #: String
       block&.call(self)
     end
 
@@ -1191,7 +1191,7 @@ module RBI
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (Helper node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
-      @name = name
+      @name = name.to_s #: String
       block&.call(self)
     end
 
@@ -1209,7 +1209,7 @@ module RBI
     #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (TypeMember node) -> void } -> void
     def initialize(name, value, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
-      @name = name
+      @name = name.to_s #: String
       @value = value
       block&.call(self)
     end
@@ -1254,7 +1254,7 @@ module RBI
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) -> void
     def initialize(name, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
-      @name = name
+      @name = name.to_s #: String
     end
 
     # @override

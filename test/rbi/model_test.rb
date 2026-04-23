@@ -476,5 +476,27 @@ module RBI
         end
       RBI
     end
+
+    def test_model_coerces_symbol_names_to_strings
+      sym = :sym_name #: as untyped
+
+      assert_equal("sym_name", Module.new(sym).name)
+      assert_equal("sym_name", Class.new(sym).name)
+      assert_equal("sym_name", Struct.new(sym).name)
+      assert_equal("sym_name", Const.new(sym, "42").name)
+      assert_equal("sym_name", Method.new(sym).name)
+      assert_equal("sym_name", Helper.new(sym).name)
+      assert_equal("sym_name", TypeMember.new(sym, "X").name)
+      assert_equal("sym_name", RequiresAncestor.new(sym).name)
+      assert_equal("sym_name", TEnumValue.new(sym).name)
+      assert_equal("sym_name", TStructConst.new(sym, "T").name)
+      assert_equal("sym_name", TStructProp.new(sym, "T").name)
+
+      sym_a = :a #: as untyped
+      sym_b = :b #: as untyped
+      assert_equal(["a", "b"], Include.new(sym_a, sym_b).names)
+      assert_equal(["a", "b"], Extend.new(sym_a, sym_b).names)
+      assert_equal(["a", "b"], MixesInClassMethods.new(sym_a, sym_b).names)
+    end
   end
 end

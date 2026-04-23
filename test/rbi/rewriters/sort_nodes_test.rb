@@ -327,6 +327,26 @@ module RBI
       RBI
     end
 
+    def test_sort_handles_symbol_names
+      # Regression test for #593: DSL compilers sometimes pass Symbols to
+      # constructors declared as String. Node constructors now coerce to
+      # String, so sort sees uniform String keys and orders correctly.
+      sym = :mmm_method #: as untyped
+
+      tree = Tree.new
+      tree << Method.new("zzz")
+      tree << Method.new(sym)
+      tree << Method.new("aaa")
+
+      tree.sort_nodes!
+
+      assert_equal(<<~RBI, tree.string)
+        def aaa; end
+        def mmm_method; end
+        def zzz; end
+      RBI
+    end
+
     def test_sort_doesnt_change_privacy
       tree = parse_rbi(<<~RBI)
         public
