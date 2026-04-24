@@ -5,6 +5,8 @@
 # Please instead update this file by running `bin/tapioca gem minitest-reporters`.
 
 
+# delegate to default reporter
+#
 # pkg:gem/minitest-reporters#lib/minitest/reporters.rb:3
 module Minitest
   class << self
@@ -19,14 +21,12 @@ end
 class Minitest::ExtensibleBacktraceFilter
   # Creates a new backtrace filter.
   #
-  # @return [ExtensibleBacktraceFilter] a new instance of ExtensibleBacktraceFilter
-  #
   # pkg:gem/minitest-reporters#lib/minitest/extensible_backtrace_filter.rb:21
   def initialize; end
 
   # Adds a filter.
   #
-  # @param regex [Regex] the filter
+  # @param [Regex] regex the filter
   #
   # pkg:gem/minitest-reporters#lib/minitest/extensible_backtrace_filter.rb:28
   def add_filter(regex); end
@@ -40,16 +40,16 @@ class Minitest::ExtensibleBacktraceFilter
   # been unfiltered. If that in turn does not contain any lines, it returns
   # the original backtrace.
   #
-  # @note This logic is based off of Minitest's #filter_backtrace.
-  # @param backtrace [Array] the backtrace to filter
+  # @param [Array] backtrace the backtrace to filter
   # @return [Array] the filtered backtrace
+  # @note This logic is based off of Minitest's #filter_backtrace.
   #
   # pkg:gem/minitest-reporters#lib/minitest/extensible_backtrace_filter.rb:52
   def filter(backtrace); end
 
   # Determines if the string would be filtered.
   #
-  # @param str [String]
+  # @param [String] str
   # @return [Boolean]
   #
   # pkg:gem/minitest-reporters#lib/minitest/extensible_backtrace_filter.rb:36
@@ -112,15 +112,9 @@ module Minitest::Reporters
     # pkg:gem/minitest-reporters#lib/minitest/reporters.rb:42
     def register_minitest_plugin!; end
 
-    # Returns the value of attribute reporters.
-    #
     # pkg:gem/minitest-reporters#lib/minitest/reporters.rb:24
     def reporters; end
 
-    # Sets the attribute reporters
-    #
-    # @param value the value to set the attribute reporters to.
-    #
     # pkg:gem/minitest-reporters#lib/minitest/reporters.rb:24
     def reporters=(_arg0); end
 
@@ -143,14 +137,33 @@ module Minitest::Reporters::ANSI; end
 
 # pkg:gem/minitest-reporters#lib/minitest/reporters/ansi.rb:4
 module Minitest::Reporters::ANSI::Code
-  include ::ANSI::Constants
-  include ::ANSI::Code
-  extend ::ANSI::Constants
-  extend ::ANSI::Code
+  extend ::Minitest::Reporters::ANSI::Code
+
+  # pkg:gem/minitest-reporters#lib/minitest/reporters/ansi.rb:17
+  def black(s = T.unsafe(nil)); end
+
+  # pkg:gem/minitest-reporters#lib/minitest/reporters/ansi.rb:22
+  def blue(s = T.unsafe(nil)); end
+
+  # pkg:gem/minitest-reporters#lib/minitest/reporters/ansi.rb:22
+  def cyan(s = T.unsafe(nil)); end
+
+  # pkg:gem/minitest-reporters#lib/minitest/reporters/ansi.rb:22
+  def green(s = T.unsafe(nil)); end
+
+  # pkg:gem/minitest-reporters#lib/minitest/reporters/ansi.rb:22
+  def magenta(s = T.unsafe(nil)); end
+
+  # pkg:gem/minitest-reporters#lib/minitest/reporters/ansi.rb:22
+  def red(s = T.unsafe(nil)); end
+
+  # pkg:gem/minitest-reporters#lib/minitest/reporters/ansi.rb:22
+  def white(s = T.unsafe(nil)); end
+
+  # pkg:gem/minitest-reporters#lib/minitest/reporters/ansi.rb:22
+  def yellow(s = T.unsafe(nil)); end
 
   class << self
-    # @return [Boolean]
-    #
     # pkg:gem/minitest-reporters#lib/minitest/reporters/ansi.rb:5
     def color?; end
   end
@@ -158,8 +171,6 @@ end
 
 # pkg:gem/minitest-reporters#lib/minitest/reporters/base_reporter.rb:25
 class Minitest::Reporters::BaseReporter < ::Minitest::StatisticsReporter
-  # @return [BaseReporter] a new instance of BaseReporter
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/base_reporter.rb:28
   def initialize(options = T.unsafe(nil)); end
 
@@ -182,15 +193,9 @@ class Minitest::Reporters::BaseReporter < ::Minitest::StatisticsReporter
   # pkg:gem/minitest-reporters#lib/minitest/reporters/base_reporter.rb:57
   def report; end
 
-  # Returns the value of attribute tests.
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/base_reporter.rb:26
   def tests; end
 
-  # Sets the attribute tests
-  #
-  # @param value the value to set the attribute tests to.
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/base_reporter.rb:26
   def tests=(_arg0); end
 
@@ -230,15 +235,18 @@ class Minitest::Reporters::BaseReporter < ::Minitest::StatisticsReporter
   def total_time; end
 end
 
+# A reporter identical to the standard Minitest reporter except with more
+# colors.
+#
+# Based upon Ryan Davis of Seattle.rb's Minitest (MIT License).
+#
+# @see https://github.com/seattlerb/minitest Minitest
+#
 # pkg:gem/minitest-reporters#lib/minitest/reporters/default_reporter.rb:10
 class Minitest::Reporters::DefaultReporter < ::Minitest::Reporters::BaseReporter
-  include ::ANSI::Constants
-  include ::ANSI::Code
   include ::Minitest::Reporters::ANSI::Code
   include ::Minitest::RelativePosition
 
-  # @return [DefaultReporter] a new instance of DefaultReporter
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/default_reporter.rb:14
   def initialize(options = T.unsafe(nil)); end
 
@@ -286,8 +294,6 @@ class Minitest::Reporters::DefaultReporter < ::Minitest::Reporters::BaseReporter
 
   private
 
-  # @return [Boolean]
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/default_reporter.rb:167
   def color?; end
 
@@ -327,16 +333,12 @@ end
 
 # pkg:gem/minitest-reporters#lib/minitest/minitest_reporter_plugin.rb:3
 class Minitest::Reporters::DelegateReporter < ::Minitest::AbstractReporter
-  # @return [DelegateReporter] a new instance of DelegateReporter
-  #
   # pkg:gem/minitest-reporters#lib/minitest/minitest_reporter_plugin.rb:4
   def initialize(reporters, options = T.unsafe(nil)); end
 
   # pkg:gem/minitest-reporters#lib/minitest/minitest_reporter_plugin.rb:10
   def io; end
 
-  # @return [Boolean]
-  #
   # pkg:gem/minitest-reporters#lib/minitest/minitest_reporter_plugin.rb:35
   def passed?; end
 
@@ -392,8 +394,6 @@ class Minitest::Reporters::HtmlReporter < ::Minitest::Reporters::BaseReporter
   # :mode - Useful for debugging, :terse suppresses errors and is the default, :verbose lets errors bubble up
   # :output_filename - the report's filename, defaults to 'index.html'
   #
-  # @return [HtmlReporter] a new instance of HtmlReporter
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/html_reporter.rb:60
   def initialize(args = T.unsafe(nil)); end
 
@@ -417,7 +417,6 @@ class Minitest::Reporters::HtmlReporter < ::Minitest::Reporters::BaseReporter
   # pkg:gem/minitest-reporters#lib/minitest/reporters/html_reporter.rb:30
   def percent_passes; end
 
-  # The percentage of tests that were skipped
   # Keeping old method name with typo for backwards compatibility in custom templates (for now)
   #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/html_reporter.rb:40
@@ -481,8 +480,6 @@ class Minitest::Reporters::HtmlReporter < ::Minitest::Reporters::BaseReporter
   # pkg:gem/minitest-reporters#lib/minitest/reporters/html_reporter.rb:175
   def summarize_suite(suite, tests); end
 
-  # @return [Boolean]
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/html_reporter.rb:170
   def test_fail_or_error?(test); end
 
@@ -499,8 +496,6 @@ end
 #
 # pkg:gem/minitest-reporters#lib/minitest/reporters/junit_reporter.rb:16
 class Minitest::Reporters::JUnitReporter < ::Minitest::Reporters::BaseReporter
-  # @return [JUnitReporter] a new instance of JUnitReporter
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/junit_reporter.rb:21
   def initialize(reports_dir = T.unsafe(nil), empty = T.unsafe(nil), options = T.unsafe(nil)); end
 
@@ -510,8 +505,6 @@ class Minitest::Reporters::JUnitReporter < ::Minitest::Reporters::BaseReporter
   # pkg:gem/minitest-reporters#lib/minitest/reporters/junit_reporter.rb:35
   def report; end
 
-  # Returns the value of attribute reports_path.
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/junit_reporter.rb:19
   def reports_path; end
 
@@ -564,21 +557,22 @@ Minitest::Reporters::JUnitReporter::DEFAULT_REPORTS_DIR = T.let(T.unsafe(nil), S
 #
 # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:24
 class Minitest::Reporters::MeanTimeReporter < ::Minitest::Reporters::DefaultReporter
-  # @option order
-  # @option previous_runs_filename
-  # @option report_filename
-  # @option show_all_runs
-  # @option show_count
-  # @option show_progress
-  # @option sort_column
   # @param options [Hash]
-  # @param order [Hash] a customizable set of options
-  # @param previous_runs_filename [Hash] a customizable set of options
-  # @param report_filename [Hash] a customizable set of options
-  # @param show_all_runs [Hash] a customizable set of options
-  # @param show_count [Hash] a customizable set of options
-  # @param show_progress [Hash] a customizable set of options
-  # @param sort_column [Hash] a customizable set of options
+  # @option previous_runs_filename [String] Contains the times for each test
+  #   by description. Defaults to '/tmp/minitest_reporters_previous_run'.
+  # @option report_filename [String] Contains the parsed results for the
+  #   last test run. Defaults to '/tmp/minitest_reporters_report'.
+  # @option show_count [Fixnum] The number of tests to show in the report
+  #   summary at the end of the test run. Default is 15.
+  # @option show_progress [Boolean] If true it prints pass/skip/fail marks.
+  #   Default is true.
+  # @option show_all_runs [Boolean] If true it shows all recorded suit results.
+  #   Default is true.
+  # @option sort_column [Symbol] One of :avg (default), :min, :max, :last.
+  #   Determines the column by which the report summary is sorted.
+  # @option order [Symbol] One of :desc (default), or :asc. By default the
+  #   report summary is listed slowest to fastest (:desc). :asc will order
+  #   the report summary as fastest to slowest.
   # @return [Minitest::Reporters::MeanTimeReporter]
   #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:54
@@ -620,15 +614,9 @@ class Minitest::Reporters::MeanTimeReporter < ::Minitest::Reporters::DefaultRepo
 
   protected
 
-  # Returns the value of attribute all_suite_times.
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:108
   def all_suite_times; end
 
-  # Sets the attribute all_suite_times
-  #
-  # @param value the value to set the attribute all_suite_times to.
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:108
   def all_suite_times=(_arg0); end
 
@@ -716,7 +704,8 @@ class Minitest::Reporters::MeanTimeReporter < ::Minitest::Reporters::DefaultRepo
   # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:189
   def options; end
 
-  # @raise [Minitest::Reporters::MeanTimeReporter::InvalidOrder] When the given :order option is invalid.
+  # @raise [Minitest::Reporters::MeanTimeReporter::InvalidOrder]
+  #   When the given :order option is invalid.
   # @return [Symbol] The :order option, or by default; :desc.
   #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:358
@@ -728,7 +717,7 @@ class Minitest::Reporters::MeanTimeReporter < ::Minitest::Reporters::DefaultRepo
   # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:160
   def order_sorted_body; end
 
-  # @return [Hash<String => Array<Float>]] Hash<String => Array<Float>]
+  # @return [Hash<String => Array<Float>]
   #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:200
   def previous_run; end
@@ -748,9 +737,9 @@ class Minitest::Reporters::MeanTimeReporter < ::Minitest::Reporters::DefaultRepo
   # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:215
   def previously_ran?; end
 
-  # @param max [Float] The maximum run time.
-  # @param min [Float] The minimum run time.
   # @param run [Float] The last run time.
+  # @param min [Float] The minimum run time.
+  # @param max [Float] The maximum run time.
   # @return [Symbol] One of :faster, :slower or :inconclusive.
   #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:335
@@ -807,7 +796,8 @@ class Minitest::Reporters::MeanTimeReporter < ::Minitest::Reporters::DefaultRepo
   # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:195
   def show_count; end
 
-  # @raise [Minitest::Reporters::MeanTimeReporter::InvalidSortColumn] When the given :sort_column option is invalid.
+  # @raise [Minitest::Reporters::MeanTimeReporter::InvalidSortColumn]
+  #   When the given :sort_column option is invalid.
   # @return [Symbol] The :sort_column option, or by default; :avg.
   #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:374
@@ -840,15 +830,19 @@ class Minitest::Reporters::MeanTimeReporter::InvalidOrder < ::StandardError; end
 # pkg:gem/minitest-reporters#lib/minitest/reporters/mean_time_reporter.rb:26
 class Minitest::Reporters::MeanTimeReporter::InvalidSortColumn < ::StandardError; end
 
+# Fuubar-like reporter with a progress bar.
+#
+# Based upon Jeff Kreefmeijer's Fuubar (MIT License) and paydro's
+# monkey-patch.
+#
+# @see https://github.com/jeffkreeftmeijer/fuubar Fuubar
+# @see https://gist.github.com/356945 paydro's monkey-patch
+#
 # pkg:gem/minitest-reporters#lib/minitest/reporters/progress_reporter.rb:12
 class Minitest::Reporters::ProgressReporter < ::Minitest::Reporters::BaseReporter
   include ::Minitest::RelativePosition
-  include ::ANSI::Constants
-  include ::ANSI::Code
   include ::Minitest::Reporters::ANSI::Code
 
-  # @return [ProgressReporter] a new instance of ProgressReporter
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/progress_reporter.rb:18
   def initialize(options = T.unsafe(nil)); end
 
@@ -912,19 +906,24 @@ class Minitest::Reporters::RubyMineReporter < ::Minitest::Reporters::DefaultRepo
   def initialize(options = T.unsafe(nil)); end
 end
 
+# Turn-like reporter that reads like a spec.
+#
+# Based upon TwP's turn (MIT License) and paydro's monkey-patch.
+#
+# @see https://github.com/TwP/turn turn
+# @see https://gist.github.com/356945 paydro's monkey-patch
+#
 # pkg:gem/minitest-reporters#lib/minitest/reporters/spec_reporter.rb:9
 class Minitest::Reporters::SpecReporter < ::Minitest::Reporters::BaseReporter
-  include ::ANSI::Constants
-  include ::ANSI::Code
   include ::Minitest::Reporters::ANSI::Code
   include ::Minitest::RelativePosition
 
   # The constructor takes an `options` hash
-  #
-  # @option options
-  # @option options
   # @param options [Hash]
-  # @return [SpecReporter] a new instance of SpecReporter
+  # @option options print_failure_summary [Boolean] whether to print the errors at the bottom of the
+  #   report.
+  # @option options suppress_inline_failure_output [Boolean] whether to suppress the printing of errors
+  #   inline with the test results as they occur.
   #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/spec_reporter.rb:20
   def initialize(options = T.unsafe(nil)); end
@@ -958,24 +957,18 @@ end
 
 # pkg:gem/minitest-reporters#lib/minitest/reporters/base_reporter.rb:3
 class Minitest::Reporters::Suite
-  # @return [Suite] a new instance of Suite
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/base_reporter.rb:5
   def initialize(name); end
 
   # pkg:gem/minitest-reporters#lib/minitest/reporters/base_reporter.rb:9
   def ==(other); end
 
-  # @return [Boolean]
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/base_reporter.rb:13
   def eql?(other); end
 
   # pkg:gem/minitest-reporters#lib/minitest/reporters/base_reporter.rb:17
   def hash; end
 
-  # Returns the value of attribute name.
-  #
   # pkg:gem/minitest-reporters#lib/minitest/reporters/base_reporter.rb:4
   def name; end
 

@@ -113,21 +113,15 @@ ANSI::CHART = T.let(T.unsafe(nil), Hash)
 #
 # pkg:gem/ansi#lib/ansi/chain.rb:7
 class ANSI::Chain
-  # @return [Chain] a new instance of Chain
-  #
   # pkg:gem/ansi#lib/ansi/chain.rb:10
   def initialize(string); end
 
-  # Returns the value of attribute codes.
-  #
   # pkg:gem/ansi#lib/ansi/chain.rb:19
   def codes; end
 
   # pkg:gem/ansi#lib/ansi/chain.rb:22
   def method_missing(s, *a, &b); end
 
-  # Returns the value of attribute string.
-  #
   # pkg:gem/ansi#lib/ansi/chain.rb:16
   def string; end
 
@@ -168,15 +162,16 @@ module ANSI::Code
   #
   # @example
   #   ansi("Valentine", :red, :on_white)
+  #
   # @example
   #   ansi(:red, :on_white){ "Valentine" }
-  # @return [String] String wrapped ANSI code.
+  #
+  # @return [String]
+  #   String wrapped ANSI code.
   #
   # pkg:gem/ansi#lib/ansi/code.rb:176
   def ansi(*codes); end
 
-  # Move cursor left a specified number of spaces.
-  #
   # pkg:gem/ansi#lib/ansi/code.rb:152
   def back(spaces = T.unsafe(nil)); end
 
@@ -232,22 +227,17 @@ module ANSI::Code
   # Also resolves :random and :on_random.
   #
   # @param codes [Array<Symbol,Integer]
-  # Symbols or integers to convert to ANSI code.] odes [Array<Symbol,Integer]
   #   Symbols or integers to convert to ANSI code.
+  #
   # @return [String] ANSI code
   #
   # pkg:gem/ansi#lib/ansi/code.rb:241
   def code(*codes); end
 
-  # Apply ANSI codes to a first argument or block value.
   # Alternate term for #ansi.
   #
-  # @deprecated May change in future definition.
-  # @example
-  #   ansi("Valentine", :red, :on_white)
-  # @example
-  #   ansi(:red, :on_white){ "Valentine" }
-  # @return [String] String wrapped ANSI code.
+  # @deprecated
+  #   May change in future definition.
   #
   # pkg:gem/ansi#lib/ansi/code.rb:226
   def color(*codes); end
@@ -287,8 +277,6 @@ module ANSI::Code
   # pkg:gem/ansi#lib/ansi/code.rb:144
   def down(spaces = T.unsafe(nil)); end
 
-  # Move cursor right a specified number of spaces.
-  #
   # pkg:gem/ansi#lib/ansi/code.rb:158
   def forward(spaces = T.unsafe(nil)); end
 
@@ -318,8 +306,11 @@ module ANSI::Code
 
   # Creates an xterm-256 color code from a CSS-style color string.
   #
-  # @param background [Boolean] Use `true` for background color, otherwise foreground color.
-  # @param string [String] Hex string in CSS style, .e.g. `#5FA0C2`.
+  # @param string [String]
+  #   Hex string in CSS style, .e.g. `#5FA0C2`.
+  #
+  # @param background [Boolean]
+  #   Use `true` for background color, otherwise foreground color.
   #
   # pkg:gem/ansi#lib/ansi/code.rb:325
   def hex_code(string, background = T.unsafe(nil)); end
@@ -365,7 +356,9 @@ module ANSI::Code
 
   # Provides a random primary ANSI color.
   #
-  # @param background [Boolean] Use `true` for background color, otherwise foreground color.
+  # @param background [Boolean]
+  #   Use `true` for background color, otherwise foreground color.
+  #
   # @return [Integer] ANSI color number
   #
   # pkg:gem/ansi#lib/ansi/code.rb:274
@@ -400,7 +393,8 @@ module ANSI::Code
   # each from 0 to 255, or the RGB value can be a single CSS-style
   # hex string.
   #
-  # @param background [Boolean] Use `true` for background color, otherwise foreground color.
+  # @param background [Boolean]
+  #   Use `true` for background color, otherwise foreground color.
   #
   # pkg:gem/ansi#lib/ansi/code.rb:286
   def rgb(*args); end
@@ -408,14 +402,13 @@ module ANSI::Code
   # Given red, green and blue values between 0 and 255, this method
   # returns the closest XTerm 256 color value.
   #
-  # @raise [ArgumentError]
-  #
   # pkg:gem/ansi#lib/ansi/code.rb:335
   def rgb_256(r, g, b); end
 
   # Creates an xterm-256 color from rgb value.
   #
-  # @param background [Boolean] Use `true` for background color, otherwise foreground color.
+  # @param background [Boolean]
+  #   Use `true` for background color, otherwise foreground color.
   #
   # pkg:gem/ansi#lib/ansi/code.rb:313
   def rgb_code(red, green, blue, background = T.unsafe(nil)); end
@@ -425,43 +418,37 @@ module ANSI::Code
   # pkg:gem/ansi#lib/ansi/code.rb:155
   def right(spaces = T.unsafe(nil)); end
 
-  # Apply ANSI codes to a first argument or block value.
   # Alias for #ansi method.
   #
-  # @deprecated Here for backward compatibility.
-  # @example
-  #   ansi("Valentine", :red, :on_white)
-  # @example
-  #   ansi(:red, :on_white){ "Valentine" }
-  # @return [String] String wrapped ANSI code.
+  # @deprecated
+  #   Here for backward compatibility.
   #
   # pkg:gem/ansi#lib/ansi/code.rb:214
   def style(*codes); end
 
   # Remove ANSI codes from string or block value.
   #
-  # @param string [String] String from which to remove ANSI codes.
-  # @return [String] String wrapped ANSI code.
+  # @param [String] string
+  #   String from which to remove ANSI codes.
+  #
+  # @return [String]
+  #   String wrapped ANSI code.
   #
   # pkg:gem/ansi#lib/ansi/code.rb:201
   def unansi(string = T.unsafe(nil)); end
 
-  # Remove ANSI codes from string or block value.
   # Alias for unansi.
   #
-  # @deprecated May change in future definition.
-  # @param string [String] String from which to remove ANSI codes.
-  # @return [String] String wrapped ANSI code.
+  # @deprecated
+  #   May change in future definition.
   #
   # pkg:gem/ansi#lib/ansi/code.rb:232
   def uncolor(string = T.unsafe(nil)); end
 
-  # Remove ANSI codes from string or block value.
   # Alias for #unansi method.
   #
-  # @deprecated Here for backwards compatibility.
-  # @param string [String] String from which to remove ANSI codes.
-  # @return [String] String wrapped ANSI code.
+  # @deprecated
+  #   Here for backwards compatibility.
   #
   # pkg:gem/ansi#lib/ansi/code.rb:220
   def unstyle(string = T.unsafe(nil)); end
@@ -546,14 +533,22 @@ ANSI::Code::PATTERN = T.let(T.unsafe(nil), Regexp)
 class ANSI::Columns
   # Create a column-based layout.
   #
-  # The +format+ block MUST return ANSI codes.
+  # @param [String,Array] list
+  #   Multiline String or Array of strings to columnize.
   #
-  # @option options
-  # @option options
-  # @option options
-  # @param list [String, Array] Multiline String or Array of strings to columnize.
-  # @param options [Hash] Options to customize columnization.
-  # @return [Columns] a new instance of Columns
+  # @param [Hash] options
+  #   Options to customize columnization.
+  #
+  # @option options [Fixnum] :columns
+  #   Number of columns.
+  #
+  # @option options [Symbol] :align
+  #   Column alignment, either :left, :right or :center.
+  #
+  # @option options [String,Fixnum] :padding
+  #   String or number or spaces to append to each column.
+  #
+  # The +format+ block MUST return ANSI codes.
   #
   # pkg:gem/ansi#lib/ansi/columns.rb:26
   def initialize(list, options = T.unsafe(nil), &format); end
@@ -565,8 +560,9 @@ class ANSI::Columns
 
   # Set alignment ensuring value is a symbol.
   #
-  # @param symbol [#to_sym] Either `:right`, `:left` or `:center`.
-  # @raise [ArgumentError]
+  # @param [#to_sym] symbol
+  #   Either `:right`, `:left` or `:center`.
+  #
   # @return [Symbol] The given symbol.
   #
   # pkg:gem/ansi#lib/ansi/columns.rb:90
@@ -917,10 +913,14 @@ class ANSI::Diff
   # their `#inspect` methods are used to convert them to strings
   # for comparison.
   #
-  # @param object1 [Object] First object to compare.
-  # @param object2 [Object] Second object to compare.
-  # @param options [Hash] Options for contoller the way difference is shown. (Not yet used.)
-  # @return [Diff] a new instance of Diff
+  # @param [Object] object1
+  #   First object to compare.
+  #
+  # @param [Object] object2
+  #   Second object to compare.
+  #
+  # @param [Hash] options
+  #   Options for contoller the way difference is shown. (Not yet used.)
   #
   # pkg:gem/ansi#lib/ansi/diff.rb:33
   def initialize(object1, object2, options = T.unsafe(nil)); end
@@ -938,7 +938,9 @@ class ANSI::Diff
   # Returns both first and second difference strings separated by a
   # the given `separator`. The default is `$/`, the record separator.
   #
-  # @param separator [String] The string to use as the separtor between the difference strings.
+  # @param [String] separator
+  #   The string to use as the separtor between the difference strings.
+  #
   # @return [String] Joined difference strings.
   #
   # pkg:gem/ansi#lib/ansi/diff.rb:67
@@ -954,8 +956,9 @@ class ANSI::Diff
   # Returns both first and second difference strings separated by a
   # new line character.
   #
-  # @return [String] Joined difference strings.
   # @todo Should we use `$/` record separator instead?
+  #
+  # @return [String] Joined difference strings.
   #
   # pkg:gem/ansi#lib/ansi/diff.rb:56
   def to_s; end
@@ -971,8 +974,12 @@ class ANSI::Diff
   # Take two plain strings and produce colorized
   # versions of each highlighting their differences.
   #
-  # @param x [String] First string to compare.
-  # @param y [String] Second string to compare.
+  # @param [String] x
+  #   First string to compare.
+  #
+  # @param [String] y
+  #   Second string to compare.
+  #
   # @return [Array<String>] The two difference strings.
   #
   # pkg:gem/ansi#lib/ansi/diff.rb:120
@@ -988,8 +995,12 @@ class ANSI::Diff
   # Take two plain strings and produce colorized
   # versions of each highlighting their differences.
   #
-  # @param string1 [String] First string to compare.
-  # @param string2 [String] Second string to compare.
+  # @param [String] string1
+  #   First string to compare.
+  #
+  # @param [String] string2
+  #   Second string to compare.
+  #
   # @return [Array<String>] The two difference strings.
   #
   # pkg:gem/ansi#lib/ansi/diff.rb:90
@@ -1046,8 +1057,6 @@ class ANSI::Logger < ::Logger
   # pkg:gem/ansi#lib/ansi/logger.rb:50
   def ansicolor=(on); end
 
-  # @return [Boolean]
-  #
   # pkg:gem/ansi#lib/ansi/logger.rb:45
   def ansicolor?; end
 
@@ -1087,28 +1096,18 @@ class ANSI::Logger < ::Logger
 
   private
 
-  # :yield:
-  #
   # pkg:gem/ansi#lib/ansi/logger.rb:134
   def debug_with_color; end
 
-  # :yield:
-  #
   # pkg:gem/ansi#lib/ansi/logger.rb:128
   def error_with_color; end
 
-  # :yield:
-  #
   # pkg:gem/ansi#lib/ansi/logger.rb:140
   def fatal_with_color; end
 
-  # :yield:
-  #
   # pkg:gem/ansi#lib/ansi/logger.rb:116
   def info_with_color; end
 
-  # :yield:
-  #
   # pkg:gem/ansi#lib/ansi/logger.rb:122
   def warn_with_color; end
 end
@@ -1398,8 +1397,6 @@ end
 #
 # pkg:gem/ansi#lib/ansi/progressbar.rb:20
 class ANSI::ProgressBar
-  # @return [ProgressBar] a new instance of ProgressBar
-  #
   # pkg:gem/ansi#lib/ansi/progressbar.rb:22
   def initialize(title, total, out = T.unsafe(nil)); end
 
@@ -1428,22 +1425,14 @@ class ANSI::ProgressBar
   # pkg:gem/ansi#lib/ansi/progressbar.rb:45
   def format(format, *arguments); end
 
-  # Sets the attribute format
-  #
-  # @param value the value to set the attribute format to.
+  # Set format and format arguments.
   #
   # pkg:gem/ansi#lib/ansi/progressbar.rb:45
   def format=(_arg0); end
 
-  # Returns the value of attribute format_arguments.
-  #
   # pkg:gem/ansi#lib/ansi/progressbar.rb:46
   def format_arguments; end
 
-  # Sets the attribute format_arguments
-  #
-  # @param value the value to set the attribute format_arguments to.
-  #
   # pkg:gem/ansi#lib/ansi/progressbar.rb:46
   def format_arguments=(_arg0); end
 
@@ -1473,15 +1462,9 @@ class ANSI::ProgressBar
   # pkg:gem/ansi#lib/ansi/progressbar.rb:74
   def style(options); end
 
-  # Returns the value of attribute styles.
-  #
   # pkg:gem/ansi#lib/ansi/progressbar.rb:47
   def styles; end
 
-  # Sets the attribute styles
-  #
-  # @param value the value to set the attribute styles to.
-  #
   # pkg:gem/ansi#lib/ansi/progressbar.rb:47
   def styles=(_arg0); end
 
@@ -1575,10 +1558,6 @@ ANSI::SPECIAL_CHART = T.let(T.unsafe(nil), Hash)
 class ANSI::String
   # New Ansi::String
   #
-  # @return [String] a new instance of String
-  # @yield [_self]
-  # @yieldparam _self [ANSI::String] the object that the method was called on
-  #
   # pkg:gem/ansi#lib/ansi/string.rb:33
   def initialize(text = T.unsafe(nil), marks = T.unsafe(nil)); end
 
@@ -1587,8 +1566,6 @@ class ANSI::String
   # pkg:gem/ansi#lib/ansi/string.rb:73
   def +(other); end
 
-  # slice
-  #
   # pkg:gem/ansi#lib/ansi/string.rb:132
   def [](*args); end
 
@@ -1656,8 +1633,6 @@ class ANSI::String
   # pkg:gem/ansi#lib/ansi/string.rb:226
   def magenta!; end
 
-  # Returns the value of attribute marks.
-  #
   # pkg:gem/ansi#lib/ansi/string.rb:30
   def marks; end
 
@@ -1691,8 +1666,6 @@ class ANSI::String
   # pkg:gem/ansi#lib/ansi/string.rb:139
   def sub!(pattern, replacement = T.unsafe(nil), &block); end
 
-  # Returns the value of attribute text.
-  #
   # pkg:gem/ansi#lib/ansi/string.rb:29
   def text; end
 
@@ -1702,8 +1675,6 @@ class ANSI::String
   # pkg:gem/ansi#lib/ansi/string.rb:41
   def to_s; end
 
-  # Convert Ansi::String object to normal String.
-  # This converts the intental markup codes to ANSI codes.
   # ANSI::String is a type of String.
   #
   # pkg:gem/ansi#lib/ansi/string.rb:59
@@ -1763,32 +1734,18 @@ class ANSI::Table
   #
   # TODO: Support for table headers and footers.
   #
-  # @return [Table] a new instance of Table
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:27
   def initialize(table, options = T.unsafe(nil), &format); end
 
-  # Returns the value of attribute align.
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:49
   def align; end
 
-  # Sets the attribute align
-  #
-  # @param value the value to set the attribute align to.
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:49
   def align=(_arg0); end
 
-  # Returns the value of attribute border.
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:55
   def border; end
 
-  # Sets the attribute border
-  #
-  # @param value the value to set the attribute border to.
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:55
   def border=(_arg0); end
 
@@ -1802,44 +1759,24 @@ class ANSI::Table
   # pkg:gem/ansi#lib/ansi/table.rb:43
   def fit=(_arg0); end
 
-  # Returns the value of attribute format.
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:52
   def format; end
 
-  # Sets the attribute format
-  #
-  # @param value the value to set the attribute format to.
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:52
   def format=(_arg0); end
 
-  # Returns the value of attribute padding.
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:46
   def padding; end
 
-  # Sets the attribute padding
-  #
-  # @param value the value to set the attribute padding to.
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:46
   def padding=(_arg0); end
 
-  # Returns the value of attribute table.
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:40
   def table; end
 
-  # Sets the attribute table
-  #
-  # @param value the value to set the attribute table to.
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:40
   def table=(_arg0); end
 
-  # (fit=false)
-  #
   # pkg:gem/ansi#lib/ansi/table.rb:58
   def to_s; end
 
@@ -1879,11 +1816,35 @@ class ANSI::Table
   def max_columns(fit = T.unsafe(nil)); end
 end
 
+# = Terminal
+#
+# This library is based of HighLine's SystemExtensions
+# by James Edward Gray II.
+#
+# Copyright 2006 Gray Productions
+#
+# Distributed under the tems of the
+# {Ruby software license}[http://www.ruby-lang.org/en/LICENSE.txt].
+#
 # pkg:gem/ansi#lib/ansi/terminal.rb:13
 module ANSI::Terminal
   private
 
+  # Unix savvy getc().  (First choice.)
+  #
+  # *WARNING*:  This method requires the "termios" library!
+  #
+  #
   # Windows savvy getc().
+  #
+  #
+  #
+  # Curses savvy getc().
+  #
+  #
+  # Unix savvy getc().  (second choice)
+  #
+  # *WARNING*:  This method requires the external "stty" program!
   #
   # pkg:gem/ansi#lib/ansi/terminal/stty.rb:16
   def get_character(input = T.unsafe(nil)); end
@@ -1907,7 +1868,9 @@ module ANSI::Terminal
   # pkg:gem/ansi#lib/ansi/terminal.rb:37
   def terminal_height; end
 
+  # A Unix savvy method to fetch the console columns, and rows.
   # A Windows savvy method to fetch the console columns, and rows.
+  # A Unix savvy method to fetch the console columns, and rows.
   #
   # pkg:gem/ansi#lib/ansi/terminal/stty.rb:46
   def terminal_size; end
@@ -1918,7 +1881,21 @@ module ANSI::Terminal
   def terminal_width; end
 
   class << self
+    # Unix savvy getc().  (First choice.)
+    #
+    # *WARNING*:  This method requires the "termios" library!
+    #
+    #
     # Windows savvy getc().
+    #
+    #
+    #
+    # Curses savvy getc().
+    #
+    #
+    # Unix savvy getc().  (second choice)
+    #
+    # *WARNING*:  This method requires the external "stty" program!
     #
     # pkg:gem/ansi#lib/ansi/terminal/stty.rb:16
     def get_character(input = T.unsafe(nil)); end
@@ -1942,7 +1919,9 @@ module ANSI::Terminal
     # pkg:gem/ansi#lib/ansi/terminal.rb:37
     def terminal_height; end
 
+    # A Unix savvy method to fetch the console columns, and rows.
     # A Windows savvy method to fetch the console columns, and rows.
+    # A Unix savvy method to fetch the console columns, and rows.
     #
     # pkg:gem/ansi#lib/ansi/terminal/stty.rb:46
     def terminal_size; end
@@ -1965,8 +1944,6 @@ class Logger::LogDevice
   # pkg:gem/ansi#lib/ansi/logger.rb:36
   def ansicolor=(_arg0); end
 
-  # @return [Boolean]
-  #
   # pkg:gem/ansi#lib/ansi/logger.rb:38
   def ansicolor?; end
 end
@@ -1977,6 +1954,8 @@ class Object < ::BasicObject
 
   private
 
+  # Kernel method
+  #
   # pkg:gem/ansi#lib/ansi.rb:19
   def ansi(string, *codes); end
 end
