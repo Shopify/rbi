@@ -327,6 +327,23 @@ module RBI
       RBI
     end
 
+    def test_sort_handles_symbol_names
+      sym = :mmm_method #: as untyped
+
+      tree = Tree.new
+      tree << Method.new("zzz")
+      tree << Method.new(sym)
+      tree << Method.new("aaa")
+
+      tree.sort_nodes!
+
+      assert_equal(<<~RBI, tree.string)
+        def aaa; end
+        def mmm_method; end
+        def zzz; end
+      RBI
+    end
+
     def test_sort_doesnt_change_privacy
       tree = parse_rbi(<<~RBI)
         public
@@ -351,6 +368,52 @@ module RBI
         public
         def aa; end
       RBI
+    end
+
+    def test_all_rewriters_tolerate_symbol_named_nodes
+      sym = :sym_name #: as untyped
+
+      build_tree = -> do
+        tree = Tree.new
+        tree << Method.new(sym)
+        tree << Method.new("a_method")
+        tree << Method.new("with_params") do |m|
+          m << ReqParam.new(sym)
+          m << ReqParam.new("a_param")
+        end
+        tree << Module.new(sym) { |mod| mod << Method.new(sym) }
+        tree << Module.new("A_Module")
+        tree << Class.new(sym)
+        tree << Class.new("A_Class")
+        tree << Const.new(sym, "42")
+        tree << Const.new("A_Const", "42")
+        tree << Helper.new(sym)
+        tree << Helper.new("a_helper")
+        tree << RequiresAncestor.new(sym)
+        tree << RequiresAncestor.new("A_Req")
+        tree << Struct.new(sym)
+        tree << Struct.new("A_Struct")
+        tree
+      end
+
+      # rubocop:disable Sorbet/ConstantsFromStrings
+      rewriter_classes = Rewriters.constants.filter_map do |c|
+        const = Rewriters.const_get(c)
+        next unless const.is_a?(::Class) && const < Visitor
+        # Skip rewriters needing constructor args (Annotate, Deannotate, FilterVersions, Merge).
+        next if const.instance_method(:initialize).parameters.any? { |type, _| type == :req || type == :keyreq }
+
+        const
+      end
+      # rubocop:enable Sorbet/ConstantsFromStrings
+
+      refute_empty(rewriter_classes, "expected to discover at least one no-arg rewriter")
+
+      rewriter_classes.each do |klass|
+        tree = build_tree.call
+        klass.new.visit(tree)
+        refute_empty(tree.string, "#{klass} produced empty output after visiting a tree with Symbol-named nodes")
+      end
     end
   end
 end
