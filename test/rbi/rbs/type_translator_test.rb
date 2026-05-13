@@ -142,6 +142,17 @@ module RBI
         assert_equal(Type.shape(foo: Type.simple("String")), translate("{foo: String}"))
       end
 
+      def test_translate_record_with_optional_fields
+        assert_equal(
+          Type.shape(
+            a: Type.simple("Integer"),
+            b: Type.nilable(Type.simple("String")),
+            c: Type.nilable(Type.simple("Float")),
+          ),
+          translate("{ a: Integer, ?b: String, ?c: Float? }"),
+        )
+      end
+
       def test_translate_tuple
         assert_equal(Type.tuple([Type.simple("Foo"), Type.simple("Bar")]), translate("[Foo, Bar]"))
       end

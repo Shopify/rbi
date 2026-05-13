@@ -82,7 +82,10 @@ module RBI
             proc.bind(translate(type.self_type)) if type.self_type
             proc
           when ::RBS::Types::Record
-            Type.shape(type.fields.map { |name, type| [name, translate(type)] }.to_h)
+            Type.shape(type.all_fields.to_h do |name, (value, required)|
+              translated = translate(value)
+              [name, required ? translated : Type.nilable(translated)]
+            end)
           when ::RBS::Types::Tuple
             Type.tuple(type.types.map { |t| translate(t) })
           when ::RBS::Types::Union
