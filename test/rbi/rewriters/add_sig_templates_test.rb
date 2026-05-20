@@ -28,7 +28,7 @@ module RBI
         def foo; end
 
         # TODO: fill in signature with appropriate type information
-        sig { returns(T.untyped) }
+        sig { returns(::T.untyped) }
         def bar; end
       RBI
     end
@@ -43,13 +43,13 @@ module RBI
       tree.add_sig_templates!(with_todo_comment: false)
 
       assert_equal(<<~RBI, tree.string)
-        sig { returns(T.untyped) }
+        sig { returns(::T.untyped) }
         attr_reader :a1
 
-        sig { params(a2: T.untyped).returns(T.untyped) }
+        sig { params(a2: ::T.untyped).returns(::T.untyped) }
         attr_writer :a2
 
-        sig { returns(T.untyped) }
+        sig { returns(::T.untyped) }
         attr_accessor :a3
       RBI
     end
@@ -65,15 +65,15 @@ module RBI
 
       assert_equal(<<~RBI, tree.string)
         # TODO: fill in signature with appropriate type information
-        sig { returns(T.untyped) }
+        sig { returns(::T.untyped) }
         attr_reader :a1
 
         # TODO: fill in signature with appropriate type information
-        sig { params(a2: T.untyped).returns(T.untyped) }
+        sig { params(a2: ::T.untyped).returns(::T.untyped) }
         attr_writer :a2
 
         # TODO: fill in signature with appropriate type information
-        sig { returns(T.untyped) }
+        sig { returns(::T.untyped) }
         attr_accessor :a3
       RBI
     end
@@ -88,13 +88,13 @@ module RBI
       tree.add_sig_templates!(with_todo_comment: false)
 
       assert_equal(<<~RBI, tree.string)
-        sig { returns(T.untyped) }
+        sig { returns(::T.untyped) }
         def m1; end
 
-        sig { params(x: T.untyped).returns(T.untyped) }
+        sig { params(x: ::T.untyped).returns(::T.untyped) }
         def m2(x); end
 
-        sig { params(x: T.untyped, y: T.untyped, z: T.untyped).returns(T.untyped) }
+        sig { params(x: ::T.untyped, y: ::T.untyped, z: ::T.untyped).returns(::T.untyped) }
         def self.m3(x, y = 42, **z); end
       RBI
     end
@@ -110,15 +110,15 @@ module RBI
 
       assert_equal(<<~RBI, tree.string)
         # TODO: fill in signature with appropriate type information
-        sig { returns(T.untyped) }
+        sig { returns(::T.untyped) }
         def m1; end
 
         # TODO: fill in signature with appropriate type information
-        sig { params(x: T.untyped).returns(T.untyped) }
+        sig { params(x: ::T.untyped).returns(::T.untyped) }
         def m2(x); end
 
         # TODO: fill in signature with appropriate type information
-        sig { params(x: T.untyped, y: T.untyped, z: T.untyped).returns(T.untyped) }
+        sig { params(x: ::T.untyped, y: ::T.untyped, z: ::T.untyped).returns(::T.untyped) }
         def self.m3(x, y = 42, **z); end
       RBI
     end
