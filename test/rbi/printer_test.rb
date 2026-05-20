@@ -188,7 +188,7 @@ module RBI
         sig { params(a: A, b: T.nilable(B), b: T.proc.void).returns(R) }
         sig { abstract.override.overridable.void }
         sig { type_parameters(:U, :V).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)) }
-        T::Sig::WithoutRuntime.sig { returns(R) }
+        ::T::Sig::WithoutRuntime.sig { returns(R) }
         attr_accessor :foo, :bar
       RBI
     end
@@ -898,7 +898,7 @@ module RBI
                 c: T.untyped
               ).void
           end
-          T::Sig::WithoutRuntime.sig do
+          ::T::Sig::WithoutRuntime.sig do
             params(
               a: Integer,
               b: String,

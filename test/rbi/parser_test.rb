@@ -232,7 +232,7 @@ module RBI
         sig { type_parameters(:U).params(step: Integer, _blk: T.proc.returns(T.type_parameter(:U))).returns(T.type_parameter(:U)) }
         sig { type_parameters(:A, :B).params(a: T::Array[T.type_parameter(:A)], fa: T.proc.params(item: T.type_parameter(:A)).returns(T.untyped), b: T::Array[T.type_parameter(:B)], fb: T.proc.params(item: T.type_parameter(:B)).returns(T.untyped)).returns(T::Array[[T.type_parameter(:A), T.type_parameter(:B)]]) }
         sig { returns({ item_id: String, tax_code: String, name: String, rate: BigDecimal, rate_type: String, amount: BigDecimal, subdivision: String, jurisdiction: String, exempt: T::Boolean, reasons: T::Array[String] }) }
-        T::Sig::WithoutRuntime.sig { returns(String) }
+        ::T::Sig::WithoutRuntime.sig { returns(String) }
         def foo; end
       RBI
     end
