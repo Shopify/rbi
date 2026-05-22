@@ -748,7 +748,7 @@ module RBI
     #: (Sig node) -> void
     def print_sig_as_line(node)
       printt
-      print("T::Sig::WithoutRuntime.") if node.without_runtime
+      print("::T::Sig::WithoutRuntime.") if node.without_runtime
       print("sig")
       print("(:final)") if node.is_final
       print(" { ")
@@ -781,7 +781,7 @@ module RBI
       has_modifiers = !modifiers.empty?
 
       printt
-      print("T::Sig::WithoutRuntime.") if node.without_runtime
+      print("::T::Sig::WithoutRuntime.") if node.without_runtime
       print("sig")
       print("(:final)") if node.is_final
       printn(" do")

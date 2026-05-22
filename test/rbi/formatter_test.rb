@@ -24,7 +24,7 @@ module RBI
       assert_equal(<<~RBI, out)
         module Foo
           # TODO: fill in signature with appropriate type information
-          sig { params(a: T.untyped, b: T.untyped).returns(T.untyped) }
+          sig { params(a: ::T.untyped, b: ::T.untyped).returns(::T.untyped) }
           def foo(a, b); end
         end
       RBI

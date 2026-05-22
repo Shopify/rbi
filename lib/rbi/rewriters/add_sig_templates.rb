@@ -31,11 +31,11 @@ module RBI
         return if attr.names.size > 1
 
         params = []
-        params << SigParam.new(attr.names.first.to_s, "T.untyped") if attr.is_a?(AttrWriter)
+        params << SigParam.new(attr.names.first.to_s, "::T.untyped") if attr.is_a?(AttrWriter)
 
         attr.sigs << Sig.new(
           params: params,
-          return_type: "T.untyped",
+          return_type: "::T.untyped",
         )
         add_todo_comment(attr)
       end
@@ -45,8 +45,8 @@ module RBI
         return unless method.sigs.empty?
 
         method.sigs << Sig.new(
-          params: method.params.map { |param| SigParam.new(param.name, "T.untyped") },
-          return_type: "T.untyped",
+          params: method.params.map { |param| SigParam.new(param.name, "::T.untyped") },
+          return_type: "::T.untyped",
         )
         add_todo_comment(method)
       end
