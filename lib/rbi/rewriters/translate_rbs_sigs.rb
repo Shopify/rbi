@@ -7,6 +7,12 @@ module RBI
     class TranslateRBSSigs < Visitor
       class Error < RBI::Error; end
 
+      #: -> void
+      def initialize
+        super
+        @type_translator = RBS::TypeTranslator.new #: RBS::TypeTranslator
+      end
+
       # @override
       #: (Node? node) -> void
       def visit(node)
@@ -68,10 +74,10 @@ module RBI
           end
 
           name = node.names.first #: as !nil
-          sig.params << SigParam.new(name.to_s, RBS::TypeTranslator.translate(attr_type))
+          sig.params << SigParam.new(name.to_s, @type_translator.translate(attr_type))
         end
 
-        sig.return_type = RBS::TypeTranslator.translate(attr_type)
+        sig.return_type = @type_translator.translate(attr_type)
         sig
       end
     end

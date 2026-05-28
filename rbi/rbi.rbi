@@ -1403,6 +1403,27 @@ end
 class RBI::RBS::MethodTypeTranslator::Error < ::RBI::Error; end
 
 class RBI::RBS::TypeTranslator
+  sig do
+    params(
+      type: T.any(::RBS::Types::Alias, ::RBS::Types::Bases::Any, ::RBS::Types::Bases::Bool, ::RBS::Types::Bases::Bottom, ::RBS::Types::Bases::Class, ::RBS::Types::Bases::Instance, ::RBS::Types::Bases::Nil, ::RBS::Types::Bases::Self, ::RBS::Types::Bases::Top, ::RBS::Types::Bases::Void, ::RBS::Types::ClassInstance, ::RBS::Types::ClassSingleton, ::RBS::Types::Function, ::RBS::Types::Interface, ::RBS::Types::Intersection, ::RBS::Types::Literal, ::RBS::Types::Optional, ::RBS::Types::Proc, ::RBS::Types::Record, ::RBS::Types::Tuple, ::RBS::Types::Union, ::RBS::Types::UntypedFunction, ::RBS::Types::Variable)
+    ).returns(::RBI::Type)
+  end
+  def translate(type); end
+
+  private
+
+  sig { params(type: ::RBS::Types::ClassInstance).returns(::RBI::Type) }
+  def translate_class_instance(type); end
+
+  sig { params(type: ::RBS::Types::Function).returns(::RBI::Type) }
+  def translate_function(type); end
+
+  sig { params(type_name: ::String).returns(::String) }
+  def translate_t_generic_type(type_name); end
+
+  sig { params(type: ::RBS::Types::Alias).returns(::RBI::Type) }
+  def translate_type_alias(type); end
+
   class << self
     sig do
       params(
@@ -1410,22 +1431,10 @@ class RBI::RBS::TypeTranslator
       ).returns(::RBI::Type)
     end
     def translate(type); end
-
-    private
-
-    sig { params(type: ::RBS::Types::ClassInstance).returns(::RBI::Type) }
-    def translate_class_instance(type); end
-
-    sig { params(type: ::RBS::Types::Function).returns(::RBI::Type) }
-    def translate_function(type); end
-
-    sig { params(type_name: ::String).returns(::String) }
-    def translate_t_generic_type(type_name); end
-
-    sig { params(type: ::RBS::Types::Alias).returns(::RBI::Type) }
-    def translate_type_alias(type); end
   end
 end
+
+RBI::RBS::TypeTranslator::RbsType = T.type_alias { T.any(::RBS::Types::Alias, ::RBS::Types::Bases::Any, ::RBS::Types::Bases::Bool, ::RBS::Types::Bases::Bottom, ::RBS::Types::Bases::Class, ::RBS::Types::Bases::Instance, ::RBS::Types::Bases::Nil, ::RBS::Types::Bases::Self, ::RBS::Types::Bases::Top, ::RBS::Types::Bases::Void, ::RBS::Types::ClassInstance, ::RBS::Types::ClassSingleton, ::RBS::Types::Function, ::RBS::Types::Interface, ::RBS::Types::Intersection, ::RBS::Types::Literal, ::RBS::Types::Optional, ::RBS::Types::Proc, ::RBS::Types::Record, ::RBS::Types::Tuple, ::RBS::Types::Union, ::RBS::Types::UntypedFunction, ::RBS::Types::Variable) }
 
 class RBI::RBSComment < ::RBI::Comment
   sig { params(other: ::Object).returns(T::Boolean) }
@@ -2013,6 +2022,9 @@ class RBI::Rewriters::SortNodes < ::RBI::Visitor
 end
 
 class RBI::Rewriters::TranslateRBSSigs < ::RBI::Visitor
+  sig { void }
+  def initialize; end
+
   sig { override.params(node: T.nilable(::RBI::Node)).void }
   def visit(node); end
 
