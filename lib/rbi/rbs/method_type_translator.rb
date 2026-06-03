@@ -22,6 +22,7 @@ module RBI
       def initialize(method)
         @method = method
         @result = Sig.new #: Sig
+        @type_translator = TypeTranslator.new #: TypeTranslator
       end
 
       #: (::RBS::MethodType) -> void
@@ -113,7 +114,7 @@ module RBI
 
       #: (untyped) -> Type
       def translate_type(type)
-        TypeTranslator.translate(type)
+        @type_translator.translate(type)
       end
     end
   end
