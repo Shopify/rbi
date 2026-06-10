@@ -93,7 +93,8 @@ module RBI
         raise ParseError.new(message, location)
       end
 
-      visitor = TreeBuilder.new(source, comments: result.comments, file: file)
+      comments_by_line = result.comments.to_h { |c| [c.location.start_line, c] }
+      visitor = TreeBuilder.new(source, comments_by_line: comments_by_line, file: file)
       visitor.visit(result.value)
       visitor.tree
     rescue ParseError => e
@@ -112,13 +113,13 @@ module RBI
     end
 
     class Visitor < Prism::Visitor
-      #: (String source, file: String, ?comments_by_line: Hash[Integer, Prism::Comment]?) -> void
-      def initialize(source, file:, comments_by_line: nil)
+      #: (String source, file: String, ?comments_by_line: Hash[Integer, Prism::Comment]) -> void
+      def initialize(source, file:, comments_by_line: {})
         super()
 
         @source = source
         @file = file
-        @comments_by_line = comments_by_line || {} #: Hash[Integer, Prism::Comment]
+        @comments_by_line = comments_by_line
       end
 
       private
@@ -176,17 +177,22 @@ module RBI
         !!(node.is_a?(Prism::ConstantPathNode) && node_string(node) =~ /(::)?T::Sig::WithoutRuntime/)
       end
 
-      #: (Prism::Node node) -> Array[Comment]
-      def node_comments(node)
+      #: (Prism::Node node, ?min_line: Integer?) -> Array[Comment]
+      def node_comments(node, min_line: nil)
         comments = []
-
-        start_line = node.location.start_line
-        start_line -= 1 unless @comments_by_line.key?(start_line)
-
+        node_start_line = node.location.start_line
         rbs_continuation = [] #: Array[Prism::Comment]
 
-        start_line.downto(1) do |line|
+        node_start_line.downto(min_line || 1) do |line|
           comment = @comments_by_line[line]
+          # Include trailing comments on the node line, but don't attach a comment from the enclosing call:
+          # `parent( # parent comment`
+          # `  foo: Integer # foo comment`
+          if line == node_start_line
+            next unless comment && inline_comment_for_node?(node, comment)
+          elsif line == min_line
+            break
+          end
           break unless comment
 
           text = comment.location.slice
@@ -238,6 +244,16 @@ module RBI
         comments
       end
 
+      #: (Prism::Node node, Prism::Comment comment) -> bool
+      def inline_comment_for_node?(node, comment)
+        return false unless node.location.start_line == comment.location.start_line
+
+        between = @source[node.location.end_offset...comment.location.start_offset] || ""
+        between.each_char.all? do |char|
+          char == "," || char.match?(/\s/)
+        end
+      end
+
       #: (Prism::Comment node) -> Comment
       def parse_comment(node)
         text = node.location.slice.sub(/^# ?/, "").rstrip
@@ -253,13 +269,14 @@ module RBI
       #: Prism::Node?
       attr_reader :last_node
 
-      #: (String source, comments: Array[Prism::Comment], file: String) -> void
-      def initialize(source, comments:, file:)
-        super(
-          source,
-          comments_by_line: comments.to_h { |c| [c.location.start_line, c] },
-          file: file,
-        )
+      #: (String source, file: String, ?comments: Array[Prism::Comment]?,
+      #| ?comments_by_line: Hash[Integer, Prism::Comment]) -> void
+      def initialize(source, file:, comments: nil, comments_by_line: {})
+        if comments
+          comments_by_line = comments.to_h { |comment| [comment.location.start_line, comment] }
+        end
+
+        super(source, file: file, comments_by_line: comments_by_line)
 
         @tree = Tree.new #: Tree
 
@@ -787,7 +804,7 @@ module RBI
 
       #: (Prism::CallNode node) -> Sig
       def parse_sig(node)
-        builder = SigBuilder.new(@source, file: @file)
+        builder = SigBuilder.new(@source, comments_by_line: @comments_by_line, file: @file)
         builder.current.loc = node_loc(node)
         builder.visit_call_node(node)
         builder.current.comments = node_comments(node)
@@ -940,11 +957,16 @@ module RBI
       #: Sig
       attr_reader :current
 
-      #: (String content, file: String) -> void
-      def initialize(content, file:)
+      # Bounds sig param comment lookup to comments inside the current `params(...)` call.
+      #: Integer?
+      attr_reader :params_start_line
+
+      #: (String content, comments_by_line: Hash[Integer, Prism::Comment], file: String) -> void
+      def initialize(content, comments_by_line:, file:)
         super
 
         @current = Sig.new #: Sig
+        @params_start_line = nil #: Integer?
       end
 
       # @override
@@ -978,7 +1000,9 @@ module RBI
         when "overridable"
           @current.is_overridable = true
         when "params"
+          @params_start_line = node.location.start_line
           visit(node.arguments)
+          @params_start_line = nil
         when "returns"
           return_type = sig_type_argument(node)
           @current.return_type = return_type if return_type
@@ -1003,6 +1027,8 @@ module RBI
         @current.params << SigParam.new(
           sig_param_name(node.key),
           node_string!(node.value),
+          loc: node_loc(node),
+          comments: node_comments(node, min_line: params_start_line),
         )
       end
 
