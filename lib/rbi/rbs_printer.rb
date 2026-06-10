@@ -371,9 +371,17 @@ module RBI
       print("self.") if node.is_singleton
       print(node.name)
       sigs = node.sigs
-      print(": ")
+      print(":")
       if sigs.any?
         first, *rest = sigs
+        if method_sig_starts_on_next_line?(
+          node,
+          first, #: as !nil
+        )
+          printn
+        else
+          print(" ")
+        end
         print_method_sig(
           node,
           first, #: as !nil
@@ -383,11 +391,19 @@ module RBI
           rest.each do |sig|
             printn
             printt
-            print("#{" " * spaces}| ")
+            print("#{" " * spaces}|")
+            if method_sig_starts_on_next_line?(node, sig)
+              printn
+              print_method_sig(node, sig)
+              next
+            end
+
+            print(" ")
             print_method_sig(node, sig)
           end
         end
       else
+        print(" ")
         if node.params.any?
           params = node.params.grep_v(BlockParam)
           block = node.params.find { |param| param.is_a?(BlockParam) }
@@ -416,7 +432,7 @@ module RBI
 
       max_line_length = @max_line_length
       if @force_multiline_signatures ||
-          sig_params_have_comments?(node, sig) ||
+          sig_params_have_printable_comments?(node, sig) ||
           (max_line_length && new_out.string.size > max_line_length)
         print_method_sig_content(node, sig, multiline: true)
       else
@@ -426,15 +442,10 @@ module RBI
 
     #: (RBI::Method node, Sig sig, multiline: bool) -> void
     def print_method_sig_content(node, sig, multiline:)
-      unless sig.type_params.empty?
-        print("[#{sig.type_params.join(", ")}] ")
-      end
-
-      no_kw_params, method_params = node.params.partition { |param| param.is_a?(NoKwParam) }
+      no_kw_params = node.params.grep(NoKwParam)
       raise Error, "Multiple no-keywords parameters found" if no_kw_params.size > 1
-      raise Error, "Arity mismatch between method and signature" if sig.params.size != method_params.size
 
-      params = sig.params.zip(method_params) #: Array[[SigParam?, Param?]]
+      params = sig_method_param_pairs(node, sig) #: Array[[SigParam?, Param]]
       block_params, params = params.partition do |_sig_param, method_param|
         method_param.is_a?(BlockParam)
       end
@@ -443,10 +454,22 @@ module RBI
 
       no_kw_param = no_kw_params.first
       params << [nil, no_kw_param] if no_kw_param
+      sig_block_param = block_params.first&.first
+      sig_block_param_has_comments = multiline &&
+        sig_block_param&.comments? &&
+        print_sig_block_param?(sig_block_param)
+
+      unless sig.type_params.empty?
+        if sig_block_param_has_comments && params.empty?
+          printn("[#{sig.type_params.join(", ")}]")
+        else
+          print("[#{sig.type_params.join(", ")}] ")
+        end
+      end
 
       unless params.empty?
         if multiline
-          printl("(")
+          printn("(")
           indent
         else
           print("(")
@@ -464,7 +487,7 @@ module RBI
           else
             print_sig_param(
               sig_param, #: as !nil
-              method_param, #: as !nil
+              method_param,
             )
           end
           if multiline
@@ -475,13 +498,17 @@ module RBI
 
         if multiline
           dedent
-          printt(") ")
+          if sig_block_param_has_comments
+            printl(")")
+          else
+            printt(") ")
+          end
         else
           print(") ")
         end
       end
 
-      print_method_sig_block(block_params.first&.first)
+      print_method_sig_block(sig_block_param, multiline: multiline)
 
       type = parse_type(sig.return_type)
       print("-> #{type.rbs_string}")
@@ -490,8 +517,8 @@ module RBI
       print(" # #{loc}") if loc && print_locs
     end
 
-    #: (SigParam? sig_param) -> void
-    def print_method_sig_block(sig_param)
+    #: (SigParam? sig_param, multiline: bool) -> void
+    def print_method_sig_block(sig_param, multiline:)
       return unless sig_param
 
       block_type = sig_param.type
@@ -515,11 +542,20 @@ module RBI
         type_string = "(?) -> untyped"
       end
 
+      has_comments = multiline && sig_param.comments?
+      if has_comments
+        indent
+        print_sig_param_comments(sig_param)
+        printt
+      end
+
       if block_is_nilable
         print("?{ #{type_string} } ")
       else
         print("{ #{type_string} } ")
       end
+
+      dedent if has_comments
     end
 
     #: (Sig node) -> void
@@ -891,16 +927,77 @@ module RBI
       end
     end
 
-    #: (Method node, Sig sig) -> bool
-    def sig_params_have_comments?(node, sig)
-      sig_params = sig.params
+    #: (RBI::Method node, Sig sig) -> bool
+    def sig_params_have_printable_comments?(node, sig)
+      sig_method_param_pairs(node, sig).any? do |sig_param, method_param|
+        next false unless sig_param.comments?
 
-      block_param = node.params.find { |param| param.is_a?(BlockParam) }
-      if block_param
-        sig_params = sig_params.reject { |param| param.name == block_param.name }
+        !method_param.is_a?(BlockParam) || print_sig_block_param?(sig_param)
+      end
+    end
+
+    #: (RBI::Method node, Sig sig) -> Array[[SigParam, Param]]
+    def sig_method_param_pairs(node, sig)
+      method_params = node.params.grep_v(NoKwParam)
+      return sig.params.zip(method_params) if sig.params.size == method_params.size
+
+      unless node.sigs.size > 1
+        raise Error, "Arity mismatch between method and signature"
       end
 
-      sig_params.any?(&:comments?)
+      unmatched_method_params = method_params.dup
+      sig.params.map do |sig_param|
+        index = unmatched_method_params.index do |method_param|
+          sig_param_matches_method_param?(sig_param, method_param)
+        end
+        raise Error, "Arity mismatch between method and signature" unless index
+
+        method_param = unmatched_method_params.delete_at(index)
+        raise Error, "Arity mismatch between method and signature" unless method_param
+
+        [sig_param, method_param]
+      end
+    end
+
+    #: (SigParam sig_param, Param method_param) -> bool
+    def sig_param_matches_method_param?(sig_param, method_param)
+      return sig_param.name == method_param.name unless method_param.anonymous?
+
+      case method_param
+      when RestParam
+        sig_param.name == "*"
+      when KwRestParam
+        sig_param.name == "**"
+      when BlockParam
+        sig_param.name == "&"
+      else
+        false
+      end
+    end
+
+    #: (SigParam param) -> bool
+    def print_sig_block_param?(param)
+      block_type = param.type
+      block_type = Type.parse_string(block_type) if block_type.is_a?(String)
+      block_type = block_type.type if block_type.is_a?(Type::Nilable)
+
+      !block_type.is_a?(Type::Simple) || block_type.name != "NilClass"
+    end
+
+    #: (RBI::Method node, Sig sig) -> bool
+    def method_sig_starts_on_next_line?(node, sig)
+      return false unless sig.type_params.empty?
+      return false if node.params.any? { |param| param.is_a?(NoKwParam) }
+
+      pairs = sig_method_param_pairs(node, sig)
+      block_pair = pairs.find { |_sig_param, method_param| method_param.is_a?(BlockParam) }
+      return false unless block_pair
+
+      sig_block_param = block_pair.first
+      return false unless sig_block_param.comments?
+      return false unless print_sig_block_param?(sig_block_param)
+
+      pairs.none? { |_sig_param, method_param| !method_param.is_a?(BlockParam) }
     end
 
     #: (SigParam param) -> void
