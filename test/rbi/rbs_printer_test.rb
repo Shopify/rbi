@@ -560,6 +560,84 @@ module RBI
       RBI
     end
 
+    def test_print_breaks_signatures_with_sig_param_comments
+      rbi_def = Method.new("foo") do |node|
+        node.params << ReqParam.new("a")
+        node.params << ReqParam.new("b")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.params << SigParam.new("a", "Integer", comments: [Comment.new("First param")])
+        sig.params << SigParam.new("b", "String")
+        sig.return_type = "void"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal(<<~RBI.strip, out.string)
+        (
+          # First param
+          Integer a,
+          String b
+        ) -> void
+      RBI
+    end
+
+    def test_print_breaks_signatures_with_multiple_sig_param_comments
+      rbi_def = Method.new("foo") do |node|
+        node.params << ReqParam.new("a")
+        node.params << ReqParam.new("b")
+        node.params << KwParam.new("c")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.params << SigParam.new("a", "Integer", comments: [Comment.new("First param")])
+        sig.params << SigParam.new("b", "String", comments: [Comment.new("Second param")])
+        sig.params << SigParam.new("c", "Symbol", comments: [Comment.new("Keyword param")])
+        sig.return_type = "void"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal(<<~RBI.strip, out.string)
+        (
+          # First param
+          Integer a,
+          # Second param
+          String b,
+          # Keyword param
+          c: Symbol
+        ) -> void
+      RBI
+    end
+
+    def test_print_breaks_signatures_with_mixed_sig_param_comments
+      rbi = parse_rbi(<<~RBI)
+        sig do
+          params(
+            a: Integer,
+            # Commented param
+            b: String,
+            c: Symbol
+          ).void
+        end
+        def foo(a, b, c:); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: (
+          Integer a,
+          # Commented param
+          String b,
+          c: Symbol
+        ) -> void
+      RBI
+    end
+
     def test_print_simplified_types
       rbi = parse_rbi(<<~RBI)
         sig { returns(T.any(String, String, NilClass, T.nilable(T.nilable(Integer)), TrueClass, FalseClass)) }

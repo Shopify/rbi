@@ -318,6 +318,33 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
+    def test_parse_sig_param_comments
+      rbi = <<~RBI
+        sig do
+          params(
+            # `a` comment
+            a: Integer,
+            # `b` comment 1
+            # `b` comment 2
+            b: String
+          ).void
+        end
+        def foo(a, b); end
+      RBI
+
+      out = Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string)
+        sig do
+          params(
+            a: Integer, # `a` comment
+            b: String # `b` comment 1
+                      # `b` comment 2
+          ).void
+        end
+        def foo(a, b); end
+      RBI
+    end
+
     def test_parse_methods_with_visibility
       rbi = <<~RBI
         private def m1; end

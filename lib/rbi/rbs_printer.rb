@@ -406,7 +406,7 @@ module RBI
       @out = old_out
 
       max_line_length = @max_line_length
-      if max_line_length.nil? || new_out.string.size <= max_line_length
+      if !sig_params_have_comments?(node, sig) && (max_line_length.nil? || new_out.string.size <= max_line_length)
         print(new_out.string)
       else
         print_method_sig_multiline(node, sig)
@@ -495,6 +495,7 @@ module RBI
         printl("(")
         indent
         sig_params.each_with_index do |param, index|
+          print_sig_param_comments(param)
           printt
           print_sig_param(node, param)
           print(",") if index < sig_params.size - 1
@@ -897,6 +898,23 @@ module RBI
       else
         raise Error, "Unexpected param type: #{orig_param.class} for param #{param.name}"
       end
+    end
+
+    #: (Method node, Sig sig) -> bool
+    def sig_params_have_comments?(node, sig)
+      sig_params = sig.params
+
+      block_param = node.params.find { |param| param.is_a?(BlockParam) }
+      if block_param
+        sig_params = sig_params.reject { |param| param.name == block_param.name }
+      end
+
+      sig_params.any?(&:comments?)
+    end
+
+    #: (SigParam param) -> void
+    def print_sig_param_comments(param)
+      visit_all(param.comments)
     end
 
     #: (Param node, last: bool) -> void
