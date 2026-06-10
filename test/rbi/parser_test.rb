@@ -318,6 +318,104 @@ module RBI
       assert_equal(rbi, out.string)
     end
 
+    def test_parse_sig_param_comments
+      rbi = <<~RBI
+        sig do
+          params(
+            # `a` comment
+            a: Integer,
+            # `b` comment 1
+            # `b` comment 2
+            b: String
+          ).void
+        end
+        def foo(a, b); end
+      RBI
+
+      out = Parser.parse_string(rbi)
+      assert_equal(<<~RBI, out.string)
+        sig do
+          params(
+            a: Integer, # `a` comment
+            b: String # `b` comment 1
+                      # `b` comment 2
+          ).void
+        end
+        def foo(a, b); end
+      RBI
+    end
+
+    def test_parse_sig_param_comments_do_not_escape_params_call
+      rbi = <<~RBI
+        sig do
+          # sig comment
+          params( # parent comment
+            # `foo` comment
+            foo: Integer
+          ).void
+        end
+        def foo(foo); end
+      RBI
+
+      tree = parse_rbi(rbi)
+      method = tree.nodes.first #: as Method
+      sig = method.sigs.first #: as Sig
+      param = sig.params.first #: as SigParam
+
+      assert_equal(["`foo` comment"], param.comments.map(&:text))
+    end
+
+    def test_parse_trailing_sig_param_comments_do_not_escape_params_call
+      rbi = <<~RBI
+        sig do
+          params( # parent comment
+            foo: Integer # `foo` comment
+          ).void
+        end
+        def foo(foo); end
+      RBI
+
+      tree = parse_rbi(rbi)
+      method = tree.nodes.first #: as Method
+      sig = method.sigs.first #: as Sig
+      param = sig.params.first #: as SigParam
+
+      assert_equal(["`foo` comment"], param.comments.map(&:text))
+    end
+
+    def test_parse_same_line_sig_param_comments
+      rbi = <<~RBI
+        sig do
+          params(foo: Integer, # `foo` comment
+            bar: String
+          ).void
+        end
+        def foo(foo, bar); end
+      RBI
+
+      tree = parse_rbi(rbi)
+      method = tree.nodes.first #: as Method
+      sig = method.sigs.first #: as Sig
+      param = sig.params.first #: as SigParam
+
+      assert_equal(["`foo` comment"], param.comments.map(&:text))
+    end
+
+    def test_parse_sig_param_comments_ignore_sig_line_trailing_comment
+      rbi = <<~RBI
+        sig { params(a: Integer).void } # sig comment
+        def foo(a); end
+      RBI
+
+      tree = parse_rbi(rbi)
+      method = tree.nodes.first #: as Method
+      sig = method.sigs.first #: as Sig
+      param = sig.params.first #: as SigParam
+
+      assert_empty(param.comments)
+      assert_equal(["sig comment"], method.comments.map(&:text))
+    end
+
     def test_parse_methods_with_visibility
       rbi = <<~RBI
         private def m1; end
