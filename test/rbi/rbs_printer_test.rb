@@ -638,6 +638,140 @@ module RBI
       RBI
     end
 
+    def test_prints_multiline_signature_with_block_sig_param_comments
+      rbi_def = Method.new("foo") do |node|
+        node.params << BlockParam.new("block")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.params << SigParam.new("block", "T.proc.void", comments: [Comment.new("Block param")])
+        sig.return_type = "void"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal("  # Block param\n  { -> void } -> void", out.string)
+    end
+
+    def test_prints_multiline_signature_with_param_and_block_sig_param_comments
+      rbi_def = Method.new("foo") do |node|
+        node.params << ReqParam.new("a")
+        node.params << BlockParam.new("block")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.params << SigParam.new("a", "Integer", comments: [Comment.new("Positional param")])
+        sig.params << SigParam.new("block", "T.proc.void", comments: [Comment.new("Block param")])
+        sig.return_type = "void"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal(
+        "(\n  # Positional param\n  Integer a\n)\n  # Block param\n  { -> void } -> void",
+        out.string,
+      )
+    end
+
+    def test_prints_multiline_signature_with_type_params_and_block_sig_param_comments
+      rbi_def = Method.new("foo") do |node|
+        node.params << BlockParam.new("block")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.type_params << "U"
+        sig.params << SigParam.new(
+          "block",
+          "T.proc.returns(T.type_parameter(:U))",
+          comments: [Comment.new("Block param")],
+        )
+        sig.return_type = "T.type_parameter(:U)"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal("[U]\n  # Block param\n  { -> U } -> U", out.string)
+    end
+
+    def test_prints_signature_with_nil_block_sig_param_comments
+      rbi_def = Method.new("foo") do |node|
+        node.params << BlockParam.new("block")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.params << SigParam.new("block", "NilClass", comments: [Comment.new("Block param")])
+        sig.return_type = "void"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal("-> void", out.string)
+    end
+
+    def test_prints_multiline_overload_with_block_sig_param_comments
+      rbi = parse_rbi(<<~RBI)
+        sig { void }
+        sig do
+          params(
+            # Block param
+            block: T.proc.void
+          ).void
+        end
+        def foo(&block); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: -> void
+               |
+          # Block param
+          { -> void } -> void
+      RBI
+    end
+
+    def test_prints_signature_with_nil_block_sig_param_comments_after_positional_params
+      rbi = parse_rbi(<<~RBI)
+        sig do
+          params(
+            a: Integer,
+            # Block param
+            block: NilClass
+          ).void
+        end
+        def foo(a, &block); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: (Integer a) -> void
+      RBI
+    end
+
+    def test_prints_overload_with_nil_block_sig_param_comments
+      rbi = parse_rbi(<<~RBI)
+        sig { void }
+        sig do
+          params(
+            a: Integer,
+            # Block param
+            block: NilClass
+          ).void
+        end
+        def foo(a, &block); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: -> void
+               | (Integer a) -> void
+      RBI
+    end
+
     def test_print_simplified_types
       rbi = parse_rbi(<<~RBI)
         sig { returns(T.any(String, String, NilClass, T.nilable(T.nilable(Integer)), TrueClass, FalseClass)) }
