@@ -973,14 +973,17 @@ class RBI::Parser::HeredocLocationVisitor < ::Prism::Visitor
 end
 
 class RBI::Parser::SigBuilder < ::RBI::Parser::Visitor
-  sig { params(content: ::String, file: ::String).void }
-  def initialize(content, file:); end
+  sig { params(content: ::String, comments_by_line: T::Hash[::Integer, ::Prism::Comment], file: ::String).void }
+  def initialize(content, comments_by_line:, file:); end
 
   sig { params(node: ::Prism::CallNode, value: ::String).returns(T::Boolean) }
   def allow_incompatible_override?(node, value); end
 
   sig { returns(::RBI::Sig) }
   def current; end
+
+  sig { returns(T.nilable(::Integer)) }
+  def params_start_line; end
 
   sig { override.params(node: ::Prism::AssocNode).void }
   def visit_assoc_node(node); end
@@ -990,8 +993,15 @@ class RBI::Parser::SigBuilder < ::RBI::Parser::Visitor
 end
 
 class RBI::Parser::TreeBuilder < ::RBI::Parser::Visitor
-  sig { params(source: ::String, comments: T::Array[::Prism::Comment], file: ::String).void }
-  def initialize(source, comments:, file:); end
+  sig do
+    params(
+      source: ::String,
+      file: ::String,
+      comments: T.nilable(T::Array[::Prism::Comment]),
+      comments_by_line: T::Hash[::Integer, ::Prism::Comment]
+    ).void
+  end
+  def initialize(source, file:, comments: T.unsafe(nil), comments_by_line: T.unsafe(nil)); end
 
   sig { returns(T.nilable(::Prism::Node)) }
   def last_node; end
@@ -1043,12 +1053,6 @@ class RBI::Parser::TreeBuilder < ::RBI::Parser::Visitor
   sig { params(sigs: T::Array[::RBI::Sig]).returns(T::Array[::RBI::Comment]) }
   def detach_comments_from_sigs(sigs); end
 
-  sig { params(node: ::Prism::Node).returns(T::Array[::RBI::Comment]) }
-  def node_comments(node); end
-
-  sig { params(node: ::Prism::Comment).returns(::RBI::Comment) }
-  def parse_comment(node); end
-
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Array[::RBI::Param]) }
   def parse_params(node); end
 
@@ -1085,13 +1089,22 @@ class RBI::Parser::TreeBuilder < ::RBI::Parser::Visitor
 end
 
 class RBI::Parser::Visitor < ::Prism::Visitor
-  sig { params(source: ::String, file: ::String).void }
-  def initialize(source, file:); end
+  sig { params(source: ::String, file: ::String, comments_by_line: T::Hash[::Integer, ::Prism::Comment]).void }
+  def initialize(source, file:, comments_by_line: T.unsafe(nil)); end
 
   private
 
   sig { params(node: ::Prism::Node).returns(::Prism::Location) }
   def adjust_prism_location_for_heredoc(node); end
+
+  sig { params(node: ::Prism::Node, min_line: T.nilable(::Integer)).returns([::Integer, ::Integer]) }
+  def comment_lookup_range(node, min_line: T.unsafe(nil)); end
+
+  sig { params(node: ::Prism::Node, comment: ::Prism::Comment).returns(T::Boolean) }
+  def inline_comment_for_node?(node, comment); end
+
+  sig { params(node: ::Prism::Node, min_line: T.nilable(::Integer)).returns(T::Array[::RBI::Comment]) }
+  def node_comments(node, min_line: T.unsafe(nil)); end
 
   sig { params(node: ::Prism::Node).returns(::RBI::Loc) }
   def node_loc(node); end
@@ -1101,6 +1114,9 @@ class RBI::Parser::Visitor < ::Prism::Visitor
 
   sig { params(node: ::Prism::Node).returns(::String) }
   def node_string!(node); end
+
+  sig { params(node: ::Prism::Comment).returns(::RBI::Comment) }
+  def parse_comment(node); end
 
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
   def self?(node); end
@@ -1675,6 +1691,9 @@ class RBI::RBSPrinter < ::RBI::Visitor
 
   private
 
+  sig { params(node: ::RBI::Method, sig: ::RBI::Sig).returns(T::Boolean) }
+  def method_sig_starts_on_next_line?(node, sig); end
+
   sig { params(node: ::RBI::Node).returns(T::Boolean) }
   def oneline?(node); end
 
@@ -1693,11 +1712,20 @@ class RBI::RBSPrinter < ::RBI::Visitor
   sig { params(node: ::RBI::Param, last: T::Boolean).void }
   def print_param_comment_leading_space(node, last:); end
 
+  sig { params(param: ::RBI::SigParam).returns(T::Boolean) }
+  def print_sig_block_param?(param); end
+
   sig { params(node: ::RBI::Method, param: ::RBI::SigParam).void }
   def print_sig_param(node, param); end
 
   sig { params(node: ::RBI::SigParam, last: T::Boolean).void }
   def print_sig_param_comment_leading_space(node, last:); end
+
+  sig { params(param: ::RBI::SigParam).void }
+  def print_sig_param_comments(param); end
+
+  sig { params(node: ::RBI::Method, sig: ::RBI::Sig).returns(T::Boolean) }
+  def sig_params_have_printable_comments?(node, sig); end
 end
 
 class RBI::RBSPrinter::Error < ::RBI::Error; end
