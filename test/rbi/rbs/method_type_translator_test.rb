@@ -200,7 +200,12 @@ module RBI
       #: (String, Method) -> RBI::Sig
       def translate(rbs_string, method)
         node = ::RBS::Parser.parse_method_type(rbs_string, require_eof: true)
-        RBS::MethodTypeTranslator.translate(method, node)
+
+        options = MethodTypeTranslator::Options.new
+
+        translator = RBS::MethodTypeTranslator.new(method, options:)
+        translator.visit(node)
+        translator.result
       end
     end
   end

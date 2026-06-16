@@ -15,14 +15,32 @@ module RBI
         end
       end
 
+      class Options
+        #: bool
+        attr_reader :erase_generic_types
+
+        #: (?erase_generic_types: bool) -> void
+        def initialize(erase_generic_types: false)
+          @erase_generic_types = erase_generic_types
+        end
+
+        @default = new.freeze #: Options
+        class << self
+          #: Options
+          attr_reader :default
+        end
+      end
+
       #: Sig
       attr_reader :result
 
-      #: (Method) -> void
-      def initialize(method)
+      #: (Method, ?options: Options) -> void
+      def initialize(method, options: Options.default)
         @method = method
+        @options = options
+
         @result = Sig.new #: Sig
-        @type_translator = TypeTranslator.new #: TypeTranslator
+        @type_translator = TypeTranslator.new(options: @options) #: TypeTranslator
       end
 
       #: (::RBS::MethodType) -> void

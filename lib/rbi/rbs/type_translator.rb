@@ -35,6 +35,13 @@ module RBI
         end
       end
 
+      Options = MethodTypeTranslator::Options
+
+      #: (?options: Options) -> void
+      def initialize(options: Options.default)
+        @options = options
+      end
+
       #: (rbs_type) -> Type
       def translate(type)
         case type
