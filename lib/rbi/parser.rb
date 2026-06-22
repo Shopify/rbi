@@ -709,7 +709,7 @@ module RBI
           *node.block,
         ].flatten
 
-        node_params.map do |param|
+        node_params.flat_map do |param|
           case param
           when Prism::RequiredParameterNode
             ReqParam.new(
@@ -755,6 +755,13 @@ module RBI
               loc: node_loc(param),
               comments: node_comments(param),
             )
+          when Prism::ForwardingParameterNode
+            loc = node_loc(param)
+            [
+              RestParam.new("args", loc: loc, comments: []),
+              KwRestParam.new("kwargs", loc: loc, comments: []),
+              BlockParam.new("block", loc: loc, comments: node_comments(param)),
+            ]
           else
             raise ParseError.new("Unexpected parameter node `#{param.class}`", node_loc(param))
           end
