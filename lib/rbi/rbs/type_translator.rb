@@ -67,7 +67,8 @@ module RBI
         when ::RBS::Types::Bases::Void
           Type.void
         when ::RBS::Types::ClassSingleton
-          type_parameter = type.args.first ? translate(type.args.first) : nil
+          type_arg = type.args.first
+          type_parameter = translate(type_arg) if type_arg && !@options.erase_generic_types?
           Type.class_of(Type.simple(type.name.to_s), type_parameter)
         when ::RBS::Types::ClassInstance
           translate_class_instance(type)
@@ -107,7 +108,11 @@ module RBI
         when ::RBS::Types::UntypedFunction
           Type.proc.params(arg0: Type.untyped).returns(Type.untyped)
         when ::RBS::Types::Variable
-          Type.type_parameter(type.name)
+          if @options.erase_generic_types?
+            Type.anything
+          else
+            Type.type_parameter(type.name)
+          end
         else
           type #: absurd
         end
@@ -129,10 +134,14 @@ module RBI
 
       #: (::RBS::Types::ClassInstance) -> Type
       def translate_class_instance(type)
-        return Type.simple(type.name.to_s) if type.args.empty?
+        type_name = type.name.to_s
+        return Type.simple(type_name) if type.args.empty?
 
-        type_name = translate_t_generic_type(type.name.to_s)
-        Type.generic(type_name, *type.args.map { |arg| translate(arg) })
+        if @options.erase_generic_types?
+          Type.simple(erase_t_generic_type(type_name))
+        else
+          Type.generic(translate_t_generic_type(type_name), *type.args.map { |arg| translate(arg) })
+        end
       end
 
       #: (::RBS::Types::Function) -> Type
@@ -182,32 +191,35 @@ module RBI
         proc
       end
 
+      RUNTIME_GENERIC_TYPES = [
+        "Array",
+        "Class",
+        "Enumerable",
+        "Enumerator",
+        "Enumerator::Chain",
+        "Enumerator::Lazy",
+        "Hash",
+        "Module",
+        "Set",
+        "Range",
+      ].freeze #: Array[String]
+
+      GENERIC_TYPE_TO_SORBET_GENERIC_TYPE = RUNTIME_GENERIC_TYPES.flat_map do |type|
+        [[type, "::T::#{type}"], ["::#{type}", "::T::#{type}"]]
+      end.to_h.freeze #: Hash[String, String]
+
+      SORBET_GENERIC_TYPE_TO_GENERIC_TYPE = RUNTIME_GENERIC_TYPES.flat_map do |type|
+        [["T::#{type}", "::#{type}"], ["::T::#{type}", "::#{type}"]]
+      end.to_h.freeze #: Hash[String, String]
+
       #: (String type_name) -> String
       def translate_t_generic_type(type_name)
-        case type_name.delete_prefix("::")
-        when "Array"
-          "::T::Array"
-        when "Class"
-          "::T::Class"
-        when "Enumerable"
-          "::T::Enumerable"
-        when "Enumerator"
-          "::T::Enumerator"
-        when "Enumerator::Chain"
-          "::T::Enumerator::Chain"
-        when "Enumerator::Lazy"
-          "::T::Enumerator::Lazy"
-        when "Hash"
-          "::T::Hash"
-        when "Module"
-          "::T::Module"
-        when "Set"
-          "::T::Set"
-        when "Range"
-          "::T::Range"
-        else
-          type_name
-        end
+        GENERIC_TYPE_TO_SORBET_GENERIC_TYPE.fetch(type_name, type_name)
+      end
+
+      #: (String type_name) -> String
+      def erase_t_generic_type(type_name)
+        SORBET_GENERIC_TYPE_TO_GENERIC_TYPE.fetch(type_name, type_name)
       end
     end
   end
