@@ -362,9 +362,17 @@ module RBI
       print("self.") if node.is_singleton
       print(node.name)
       sigs = node.sigs
-      print(": ")
+      print(":")
       if sigs.any?
         first, *rest = sigs
+        if method_sig_starts_on_next_line?(
+          node,
+          first, #: as !nil
+        )
+          printn
+        else
+          print(" ")
+        end
         print_method_sig(
           node,
           first, #: as !nil
@@ -374,11 +382,19 @@ module RBI
           rest.each do |sig|
             printn
             printt
-            print("#{" " * spaces}| ")
+            print("#{" " * spaces}|")
+            if method_sig_starts_on_next_line?(node, sig)
+              printn
+              print_method_sig(node, sig)
+              next
+            end
+
+            print(" ")
             print_method_sig(node, sig)
           end
         end
       else
+        print(" ")
         if node.params.any?
           params = node.params.grep_v(BlockParam)
           block = node.params.find { |param| param.is_a?(BlockParam) }
@@ -406,7 +422,8 @@ module RBI
       @out = old_out
 
       max_line_length = @max_line_length
-      if max_line_length.nil? || new_out.string.size <= max_line_length
+      if !sig_params_have_printable_comments?(node, sig) &&
+          (max_line_length.nil? || new_out.string.size <= max_line_length)
         print(new_out.string)
       else
         print_method_sig_multiline(node, sig)
@@ -477,10 +494,6 @@ module RBI
 
     #: (RBI::Method node, Sig sig) -> void
     def print_method_sig_multiline(node, sig)
-      unless sig.type_params.empty?
-        print("[#{sig.type_params.join(", ")}] ")
-      end
-
       block_param = node.params.find { |param| param.is_a?(BlockParam) }
       sig_block_param = sig.params.find { |param| param.name == block_param&.name }
 
@@ -490,18 +503,33 @@ module RBI
           param.name == block_param.name
         end
       end
+      print_sig_block_param = sig_block_param && print_sig_block_param?(sig_block_param)
+      sig_block_param_has_comments = sig_block_param&.comments? && print_sig_block_param
+
+      unless sig.type_params.empty?
+        if sig_block_param_has_comments && sig_params.empty?
+          printl("[#{sig.type_params.join(", ")}]")
+        else
+          print("[#{sig.type_params.join(", ")}] ")
+        end
+      end
 
       unless sig_params.empty?
         printl("(")
         indent
         sig_params.each_with_index do |param, index|
+          print_sig_param_comments(param)
           printt
           print_sig_param(node, param)
           print(",") if index < sig_params.size - 1
           printn
         end
         dedent
-        printt(") ")
+        if sig_block_param_has_comments
+          printl(")")
+        else
+          printt(") ")
+        end
       end
       if sig_block_param
         block_type = sig_block_param.type
@@ -525,13 +553,21 @@ module RBI
           skip = true if block_type.name == "NilClass"
         end
 
-        if skip
-          # no-op, we skip the block definition
-        elsif block_is_nilable
-          print("?{ #{type_string} } ")
-        else
-          print("{ #{type_string} } ")
+        unless skip
+          if sig_block_param_has_comments
+            indent
+            print_sig_param_comments(sig_block_param)
+            printt
+          end
+
+          if block_is_nilable
+            print("?{ #{type_string} } ")
+          else
+            print("{ #{type_string} } ")
+          end
         end
+
+        dedent if sig_block_param_has_comments
       end
 
       type = parse_type(sig.return_type)
@@ -897,6 +933,49 @@ module RBI
       else
         raise Error, "Unexpected param type: #{orig_param.class} for param #{param.name}"
       end
+    end
+
+    #: (Method node, Sig sig) -> bool
+    def sig_params_have_comments?(node, sig)
+      sig.params.any?(&:comments?)
+    end
+
+    #: (RBI::Method node, Sig sig) -> bool
+    def sig_params_have_printable_comments?(node, sig)
+      block_param = node.params.find { |param| param.is_a?(BlockParam) }
+      sig.params.any? do |param|
+        next false unless param.comments?
+
+        param.name != block_param&.name || print_sig_block_param?(param)
+      end
+    end
+
+    #: (SigParam param) -> bool
+    def print_sig_block_param?(param)
+      block_type = param.type
+      block_type = Type.parse_string(block_type) if block_type.is_a?(String)
+      block_type = block_type.type if block_type.is_a?(Type::Nilable)
+
+      !block_type.is_a?(Type::Simple) || block_type.name != "NilClass"
+    end
+
+    #: (RBI::Method node, Sig sig) -> bool
+    def method_sig_starts_on_next_line?(node, sig)
+      return false unless sig_params_have_printable_comments?(node, sig)
+
+      block_param = node.params.find { |param| param.is_a?(BlockParam) }
+      sig_block_param = sig.params.find { |param| param.name == block_param&.name }
+      sig_params = sig.params.reject { |param| param.name == block_param&.name }
+
+      sig_block_param_has_comments = sig_block_param&.comments?
+      return false if sig_block_param_has_comments && sig_block_param && !print_sig_block_param?(sig_block_param)
+
+      sig.type_params.empty? && sig_params.empty?
+    end
+
+    #: (SigParam param) -> void
+    def print_sig_param_comments(param)
+      visit_all(param.comments)
     end
 
     #: (Param node, last: bool) -> void
