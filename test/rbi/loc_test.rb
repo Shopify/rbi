@@ -79,5 +79,25 @@ module RBI
       loc = Loc.new(file: TEST_FILE_PATH, begin_line: -10, end_line: 100)
       assert_equal(TEST_FILE_CONTENT, loc.source)
     end
+
+    def test_loc_multiline
+      loc = Loc.new
+      refute(loc.multiline?)
+
+      loc = Loc.new(file: "foo.rb")
+      refute(loc.multiline?)
+
+      loc = Loc.new(file: "foo.rb", begin_line: 1)
+      refute(loc.multiline?)
+
+      loc = Loc.new(file: "foo.rb", end_line: 1)
+      refute(loc.multiline?)
+
+      loc = Loc.new(file: "foo.rb", begin_line: 1, end_line: 1)
+      refute(loc.multiline?)
+
+      loc = Loc.new(file: "foo.rb", begin_line: 1, end_line: 2)
+      assert(loc.multiline?)
+    end
   end
 end

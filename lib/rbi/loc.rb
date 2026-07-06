@@ -48,6 +48,13 @@ module RBI
       )
     end
 
+    #: -> bool
+    def multiline?
+      begin_line = self.begin_line
+      end_line = self.end_line
+      !!(begin_line && end_line && end_line > begin_line)
+    end
+
     #: -> String
     def to_s
       if end_line && end_column
