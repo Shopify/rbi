@@ -93,7 +93,8 @@ module RBI
         raise ParseError.new(message, location)
       end
 
-      visitor = TreeBuilder.new(source, comments: result.comments, file: file)
+      comments_by_line = result.comments.to_h { |c| [c.location.start_line, c] }
+      visitor = TreeBuilder.new(source, comments_by_line: comments_by_line, file: file)
       visitor.visit(result.value)
       visitor.tree
     rescue ParseError => e
@@ -112,12 +113,13 @@ module RBI
     end
 
     class Visitor < Prism::Visitor
-      #: (String source, file: String) -> void
-      def initialize(source, file:)
+      #: (String source, file: String, ?comments_by_line: Hash[Integer, Prism::Comment]) -> void
+      def initialize(source, file:, comments_by_line: {})
         super()
 
         @source = source
         @file = file
+        @comments_by_line = comments_by_line
       end
 
       private
@@ -159,6 +161,104 @@ module RBI
       def t_sig_without_runtime?(node)
         !!(node.is_a?(Prism::ConstantPathNode) && node_string(node) =~ /(::)?T::Sig::WithoutRuntime/)
       end
+
+      #: (Prism::Node node, ?min_line: Integer?) -> Array[Comment]
+      def node_comments(node, min_line: nil)
+        comments = []
+
+        start_line, end_line = comment_lookup_range(node, min_line: min_line)
+
+        rbs_continuation = [] #: Array[Prism::Comment]
+
+        start_line.downto(end_line) do |line|
+          comment = @comments_by_line[line]
+          break unless comment
+
+          text = comment.location.slice
+
+          # If we find a RBS comment continuation `#|`, we store it until we find the start with `#:`
+          if text.start_with?("#|")
+            rbs_continuation << comment
+            @comments_by_line.delete(line)
+            next
+          end
+
+          loc = Loc.from_prism(@file, comment.location)
+
+          # If we find the start of a RBS comment, we create a new RBSComment
+          # Note that we ignore RDoc directives such as `:nodoc:`
+          # See https://ruby.github.io/rdoc/RDoc/MarkupReference.html#class-RDoc::MarkupReference-label-Directives
+          if text.start_with?("#:") && !(text =~ /^#:[a-z_]+:/)
+            text = text.sub(/^#: ?/, "").rstrip
+
+            # If we found continuation comments, we merge them in reverse order (since we go from bottom to top)
+            rbs_continuation.reverse_each do |rbs_comment|
+              continuation_text = rbs_comment.location.slice.sub(/^#\| ?/, "").strip
+              continuation_loc = Loc.from_prism(@file, rbs_comment.location)
+              loc = loc.join(continuation_loc)
+              text = "#{text}#{continuation_text}"
+            end
+
+            rbs_continuation.clear
+            comments.unshift(RBSComment.new(text, loc: loc))
+          else
+            # If we have unused continuation comments, we should inject them back to not lose them
+            rbs_continuation.each do |rbs_comment|
+              comments.unshift(parse_comment(rbs_comment))
+            end
+
+            rbs_continuation.clear
+            comments.unshift(parse_comment(comment))
+          end
+
+          @comments_by_line.delete(line)
+        end
+
+        # If we have unused continuation comments, we should inject them back to not lose them
+        rbs_continuation.each do |rbs_comment|
+          comments.unshift(parse_comment(rbs_comment))
+        end
+        rbs_continuation.clear
+
+        comments
+      end
+
+      #: (Prism::Node node, ?min_line: Integer?) -> [Integer, Integer]
+      def comment_lookup_range(node, min_line: nil)
+        node_start_line = node.location.start_line
+        start_line = node_start_line
+        comment = @comments_by_line[start_line]
+        # Start comment lookup from line above the node if there are no trailing comments.
+        start_line -= 1 unless comment && inline_comment_for_node?(node, comment)
+
+        end_line = min_line || 1
+        # End comment lookup at the line after `min_line` if `min_line` solely
+        # belongs to the surrounding node.
+        # The parent comment should not attach to the `foo` node.
+        # Example:
+        # `parent( # parent comment`
+        # `  foo: Integer # foo comment`
+        end_line += 1 if min_line && min_line < node_start_line
+
+        [start_line, end_line]
+      end
+
+      #: (Prism::Node node, Prism::Comment comment) -> bool
+      def inline_comment_for_node?(node, comment)
+        return false unless node.location.start_line == comment.location.start_line
+
+        between = @source[node.location.end_offset...comment.location.start_offset] || ""
+        between.each_char.all? do |char|
+          char == "," || char.match?(/\s/)
+        end
+      end
+
+      #: (Prism::Comment node) -> Comment
+      def parse_comment(node)
+        text = node.location.slice.sub(/^# ?/, "").rstrip
+        loc = Loc.from_prism(@file, node.location)
+        Comment.new(text, loc: loc)
+      end
     end
 
     class TreeBuilder < Visitor
@@ -168,11 +268,15 @@ module RBI
       #: Prism::Node?
       attr_reader :last_node
 
-      #: (String source, comments: Array[Prism::Comment], file: String) -> void
-      def initialize(source, comments:, file:)
-        super(source, file: file)
+      #: (String source, file: String, ?comments: Array[Prism::Comment]?,
+      #| ?comments_by_line: Hash[Integer, Prism::Comment]) -> void
+      def initialize(source, file:, comments: nil, comments_by_line: {})
+        if comments
+          comments_by_line = comments.to_h { |comment| [comment.location.start_line, comment] }
+        end
 
-        @comments_by_line = comments.to_h { |c| [c.location.start_line, c] } #: Hash[Integer, Prism::Comment]
+        super(source, file: file, comments_by_line: comments_by_line)
+
         @tree = Tree.new #: Tree
 
         @scopes_stack = [@tree] #: Array[Tree]
@@ -600,75 +704,6 @@ module RBI
         comments
       end
 
-      #: (Prism::Node node) -> Array[Comment]
-      def node_comments(node)
-        comments = []
-
-        start_line = node.location.start_line
-        start_line -= 1 unless @comments_by_line.key?(start_line)
-
-        rbs_continuation = [] #: Array[Prism::Comment]
-
-        start_line.downto(1) do |line|
-          comment = @comments_by_line[line]
-          break unless comment
-
-          text = comment.location.slice
-
-          # If we find a RBS comment continuation `#|`, we store it until we find the start with `#:`
-          if text.start_with?("#|")
-            rbs_continuation << comment
-            @comments_by_line.delete(line)
-            next
-          end
-
-          loc = Loc.from_prism(@file, comment.location)
-
-          # If we find the start of a RBS comment, we create a new RBSComment
-          # Note that we ignore RDoc directives such as `:nodoc:`
-          # See https://ruby.github.io/rdoc/RDoc/MarkupReference.html#class-RDoc::MarkupReference-label-Directives
-          if text.start_with?("#:") && !(text =~ /^#:[a-z_]+:/)
-            text = text.sub(/^#: ?/, "").rstrip
-
-            # If we found continuation comments, we merge them in reverse order (since we go from bottom to top)
-            rbs_continuation.reverse_each do |rbs_comment|
-              continuation_text = rbs_comment.location.slice.sub(/^#\| ?/, "").strip
-              continuation_loc = Loc.from_prism(@file, rbs_comment.location)
-              loc = loc.join(continuation_loc)
-              text = "#{text}#{continuation_text}"
-            end
-
-            rbs_continuation.clear
-            comments.unshift(RBSComment.new(text, loc: loc))
-          else
-            # If we have unused continuation comments, we should inject them back to not lose them
-            rbs_continuation.each do |rbs_comment|
-              comments.unshift(parse_comment(rbs_comment))
-            end
-
-            rbs_continuation.clear
-            comments.unshift(parse_comment(comment))
-          end
-
-          @comments_by_line.delete(line)
-        end
-
-        # If we have unused continuation comments, we should inject them back to not lose them
-        rbs_continuation.each do |rbs_comment|
-          comments.unshift(parse_comment(rbs_comment))
-        end
-        rbs_continuation.clear
-
-        comments
-      end
-
-      #: (Prism::Comment node) -> Comment
-      def parse_comment(node)
-        text = node.location.slice.sub(/^# ?/, "").rstrip
-        loc = Loc.from_prism(@file, node.location)
-        Comment.new(text, loc: loc)
-      end
-
       #: (Prism::Node? node) -> Array[Arg]
       def parse_send_args(node)
         args = [] #: Array[Arg]
@@ -763,7 +798,7 @@ module RBI
 
       #: (Prism::CallNode node) -> Sig
       def parse_sig(node)
-        builder = SigBuilder.new(@source, file: @file)
+        builder = SigBuilder.new(@source, comments_by_line: @comments_by_line, file: @file)
         builder.current.loc = node_loc(node)
         builder.visit_call_node(node)
         builder.current.comments = node_comments(node)
@@ -916,11 +951,16 @@ module RBI
       #: Sig
       attr_reader :current
 
-      #: (String content, file: String) -> void
-      def initialize(content, file:)
+      # Bounds sig param comment lookup to comments inside the current `params(...)` call.
+      #: Integer?
+      attr_reader :params_start_line
+
+      #: (String content, comments_by_line: Hash[Integer, Prism::Comment], file: String) -> void
+      def initialize(content, comments_by_line:, file:)
         super
 
         @current = Sig.new #: Sig
+        @params_start_line = nil #: Integer?
       end
 
       # @override
@@ -951,7 +991,9 @@ module RBI
         when "overridable"
           @current.is_overridable = true
         when "params"
+          @params_start_line = node.location.start_line
           visit(node.arguments)
+          @params_start_line = nil
         when "returns"
           args = node.arguments
           if args.is_a?(Prism::ArgumentsNode)
@@ -979,6 +1021,8 @@ module RBI
         @current.params << SigParam.new(
           node_string!(node.key).delete_suffix(":"),
           node_string!(node.value),
+          loc: node_loc(node),
+          comments: node_comments(node, min_line: params_start_line),
         )
       end
 
