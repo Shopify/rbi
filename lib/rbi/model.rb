@@ -599,14 +599,36 @@ module RBI
 
   # @abstract
   class Param < NodeWithComments
+    #: (?loc: Loc?, ?comments: Array[Comment]?) -> void
+    def initialize(loc: nil, comments: nil)
+      super(loc: loc, comments: comments)
+    end
+
+    #: -> String?
+    def name
+      case self
+      when ReqParam, OptParam, KwParam, KwOptParam, RestParam, KwRestParam, BlockParam
+        name
+      end
+    end
+
+    # @abstract
+    #: -> bool
+    def anonymous?
+      raise NotImplementedError, "Abstract method called"
+    end
+  end
+
+  class ReqParam < Param
+    # @override
     #: String
     attr_reader :name
 
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) -> void
-    def initialize(name, loc: nil, comments: nil)
+    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (ReqParam node) -> void } -> void
+    def initialize(name, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
       @name = name.to_s #: String
-      @anonymous = name.start_with?("_") #: bool
+      block&.call(self)
     end
 
     # @override
@@ -615,42 +637,61 @@ module RBI
       name
     end
 
+    # @override
     #: -> bool
     def anonymous?
-      @anonymous
+      false
     end
 
     #: (Object? other) -> bool
     def ==(other)
-      self.class === other &&
-        (name == other.name || anonymous? || other.anonymous?)
-    end
-  end
-
-  class ReqParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (ReqParam node) -> void } -> void
-    def initialize(name, loc: nil, comments: nil, &block)
-      super(name, loc: loc, comments: comments)
-      block&.call(self)
+      ReqParam === other && (name == other.name)
     end
   end
 
   class OptParam < Param
+    # @override
+    #: String
+    attr_reader :name
+
     #: String
     attr_reader :value
 
     #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (OptParam node) -> void } -> void
     def initialize(name, value, loc: nil, comments: nil, &block)
-      super(name, loc: loc, comments: comments)
+      super(loc: loc, comments: comments)
+      @name = name.to_s #: String
       @value = value
       block&.call(self)
+    end
+
+    # @override
+    #: -> String
+    def to_s
+      "#{name} = #{value}"
+    end
+
+    # @override
+    #: -> bool
+    def anonymous?
+      false
+    end
+
+    #: (Object? other) -> bool
+    def ==(other)
+      OptParam === other && (name == other.name)
     end
   end
 
   class RestParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (RestParam node) -> void } -> void
+    # @override
+    #: String?
+    attr_reader :name
+
+    #: (String? name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (RestParam node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
-      super(name, loc: loc, comments: comments)
+      super(loc: loc, comments: comments)
+      @name = name&.to_s #: String?
       block&.call(self)
     end
 
@@ -659,12 +700,28 @@ module RBI
     def to_s
       "*#{name}"
     end
+
+    # @override
+    #: -> bool
+    def anonymous?
+      name.nil?
+    end
+
+    #: (Object? other) -> bool
+    def ==(other)
+      RestParam === other && (name == other.name || anonymous? || other.anonymous?)
+    end
   end
 
   class KwParam < Param
+    # @override
+    #: String
+    attr_reader :name
+
     #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwParam node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
-      super(name, loc: loc, comments: comments)
+      super(loc: loc, comments: comments)
+      @name = name.to_s #: String
       block&.call(self)
     end
 
@@ -673,15 +730,31 @@ module RBI
     def to_s
       "#{name}:"
     end
+
+    # @override
+    #: -> bool
+    def anonymous?
+      false
+    end
+
+    #: (Object? other) -> bool
+    def ==(other)
+      KwParam === other && (name == other.name)
+    end
   end
 
   class KwOptParam < Param
+    # @override
+    #: String
+    attr_reader :name
+
     #: String
     attr_reader :value
 
     #: (String name, String value, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwOptParam node) -> void } -> void
     def initialize(name, value, loc: nil, comments: nil, &block)
-      super(name, loc: loc, comments: comments)
+      super(loc: loc, comments: comments)
+      @name = name.to_s #: String
       @value = value
       block&.call(self)
     end
@@ -689,28 +762,60 @@ module RBI
     # @override
     #: -> String
     def to_s
-      "#{name}:"
+      "#{name}: #{value}"
+    end
+
+    # @override
+    #: -> bool
+    def anonymous?
+      false
+    end
+
+    #: (Object? other) -> bool
+    def ==(other)
+      KwOptParam === other && (name == other.name)
     end
   end
 
   class KwRestParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwRestParam node) -> void } -> void
+    # @override
+    #: String?
+    attr_reader :name
+
+    #: (String? name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (KwRestParam node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
-      super(name, loc: loc, comments: comments)
+      super(loc: loc, comments: comments)
+      @name = name&.to_s #: String?
       block&.call(self)
     end
 
     # @override
     #: -> String
     def to_s
-      "**#{name}:"
+      "**#{name}"
+    end
+
+    # @override
+    #: -> bool
+    def anonymous?
+      name.nil?
+    end
+
+    #: (Object? other) -> bool
+    def ==(other)
+      KwRestParam === other && (name == other.name || anonymous? || other.anonymous?)
     end
   end
 
   class BlockParam < Param
-    #: (String name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (BlockParam node) -> void } -> void
+    # @override
+    #: String?
+    attr_reader :name
+
+    #: (String? name, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (BlockParam node) -> void } -> void
     def initialize(name, loc: nil, comments: nil, &block)
-      super(name, loc: loc, comments: comments)
+      super(loc: loc, comments: comments)
+      @name = name
       block&.call(self)
     end
 
@@ -718,6 +823,17 @@ module RBI
     #: -> String
     def to_s
       "&#{name}"
+    end
+
+    # @override
+    #: -> bool
+    def anonymous?
+      name.nil?
+    end
+
+    #: (Object? other) -> bool
+    def ==(other)
+      BlockParam === other && (name == other.name || anonymous? || other.anonymous?)
     end
   end
 
@@ -1023,9 +1139,15 @@ module RBI
     def initialize(name, type, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
       @name = name.to_s #: String
-      @anonymous = name.start_with?("_") #: bool
+      @anonymous = name == "*" || name == "**" || name == "&" #: bool
       @type = type
       block&.call(self)
+    end
+
+    # @override
+    #: -> String
+    def to_s
+      name
     end
 
     #: -> bool

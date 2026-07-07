@@ -363,51 +363,43 @@ module RBI
     # @override
     #: (ReqParam node) -> void
     def visit_req_param(node)
-      print(node.name)
+      self.print(node.to_s)
     end
 
     # @override
     #: (OptParam node) -> void
     def visit_opt_param(node)
-      print(node.name)
-      print(" = ")
-      print(node.value)
+      self.print(node.to_s)
     end
 
     # @override
     #: (RestParam node) -> void
     def visit_rest_param(node)
-      print("*")
-      print(node.name)
+      self.print(node.to_s)
     end
 
     # @override
     #: (KwParam node) -> void
     def visit_kw_param(node)
-      print(node.name)
-      print(":")
+      self.print(node.to_s)
     end
 
     # @override
     #: (KwOptParam node) -> void
     def visit_kw_opt_param(node)
-      print(node.name)
-      print(": ")
-      print(node.value)
+      self.print(node.to_s)
     end
 
     # @override
     #: (KwRestParam node) -> void
     def visit_kw_rest_param(node)
-      print("**")
-      print(node.name)
+      self.print(node.to_s)
     end
 
     # @override
     #: (BlockParam node) -> void
     def visit_block_param(node)
-      print("&")
-      print(node.name) unless node.name.empty?
+      self.print(node.to_s)
     end
 
     # @override
@@ -522,7 +514,7 @@ module RBI
     # @override
     #: (SigParam node) -> void
     def visit_sig_param(node)
-      print(node.name)
+      print(node.anonymous? ? node.name.inspect : node.name)
       print(": ")
       self.print(node.type.to_s)
     end
@@ -694,25 +686,15 @@ module RBI
     def print_param_comment_leading_space(node, last:)
       printn
       printt
-      print(" " * (node.name.size + 1))
+      print(" " * (node.to_s.size + 1))
       print(" ") unless last
-      case node
-      when OptParam
-        print(" " * (node.value.size + 3))
-      when RestParam, KwParam, BlockParam
-        print(" ")
-      when KwRestParam
-        print("  ")
-      when KwOptParam
-        print(" " * (node.value.size + 2))
-      end
     end
 
     #: (SigParam node, last: bool) -> void
     def print_sig_param_comment_leading_space(node, last:)
       printn
       printt
-      print(" " * (node.name.size + node.type.to_s.size + 3))
+      print(" " * (node.to_s.size + node.type.to_s.size + 3))
       print(" ") unless last
     end
 

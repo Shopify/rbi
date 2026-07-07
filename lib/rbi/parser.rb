@@ -726,7 +726,7 @@ module RBI
             )
           when Prism::RestParameterNode
             RestParam.new(
-              param.name&.to_s || "*args",
+              param.name&.to_s,
               loc: node_loc(param),
               comments: node_comments(param),
             )
@@ -745,13 +745,13 @@ module RBI
             )
           when Prism::KeywordRestParameterNode
             KwRestParam.new(
-              param.name&.to_s || "**kwargs",
+              param.name&.to_s,
               loc: node_loc(param),
               comments: node_comments(param),
             )
           when Prism::BlockParameterNode
             BlockParam.new(
-              param.name&.to_s || "",
+              param.name&.to_s,
               loc: node_loc(param),
               comments: node_comments(param),
             )
@@ -977,9 +977,19 @@ module RBI
       #: (Prism::AssocNode node) -> void
       def visit_assoc_node(node)
         @current.params << SigParam.new(
-          node_string!(node.key).delete_suffix(":"),
+          sig_param_name(node.key),
           node_string!(node.value),
         )
+      end
+
+      #: (Prism::Node node) -> String
+      def sig_param_name(node)
+        case node
+        when Prism::SymbolNode
+          node.value.to_s
+        else
+          node_string!(node).delete_suffix(":")
+        end
       end
 
       #: (Prism::CallNode node, String value) -> bool
