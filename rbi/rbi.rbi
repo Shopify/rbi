@@ -187,13 +187,22 @@ end
 class RBI::BlockParam < ::RBI::Param
   sig do
     params(
-      name: ::String,
+      name: T.nilable(::String),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::BlockParam).void)
     ).void
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
+
+  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { override.returns(T::Boolean) }
+  def anonymous?; end
+
+  sig { override.returns(T.nilable(::String)) }
+  def name; end
 
   sig { override.returns(::String) }
   def to_s; end
@@ -537,6 +546,15 @@ class RBI::KwOptParam < ::RBI::Param
   end
   def initialize(name, value, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
+  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { override.returns(T::Boolean) }
+  def anonymous?; end
+
+  sig { override.returns(::String) }
+  def name; end
+
   sig { override.returns(::String) }
   def to_s; end
 
@@ -555,6 +573,15 @@ class RBI::KwParam < ::RBI::Param
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
+  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { override.returns(T::Boolean) }
+  def anonymous?; end
+
+  sig { override.returns(::String) }
+  def name; end
+
   sig { override.returns(::String) }
   def to_s; end
 end
@@ -562,13 +589,22 @@ end
 class RBI::KwRestParam < ::RBI::Param
   sig do
     params(
-      name: ::String,
+      name: T.nilable(::String),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::KwRestParam).void)
     ).void
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
+
+  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { override.returns(T::Boolean) }
+  def anonymous?; end
+
+  sig { override.returns(T.nilable(::String)) }
+  def name; end
 
   sig { override.returns(::String) }
   def to_s; end
@@ -729,7 +765,13 @@ class RBI::Method < ::RBI::NodeWithComments
   private
 
   sig { params(other: ::RBI::Method).returns(T::Boolean) }
-  def at_most_one_side_anonymous?(other); end
+  def compatible_params?(other); end
+
+  sig { params(preferred: T::Array[::RBI::Param], fallback: T::Array[::RBI::Param]).returns(T::Array[::RBI::Param]) }
+  def merge_params(preferred, fallback); end
+
+  sig { params(sigs: T::Array[::RBI::Sig], params: T::Array[::RBI::Param]).void }
+  def rename_sigs_params(sigs, params); end
 end
 
 class RBI::MixesInClassMethods < ::RBI::Mixin
@@ -898,6 +940,18 @@ class RBI::OptParam < ::RBI::Param
   end
   def initialize(name, value, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
+  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { override.returns(T::Boolean) }
+  def anonymous?; end
+
+  sig { override.returns(::String) }
+  def name; end
+
+  sig { override.returns(::String) }
+  def to_s; end
+
   sig { returns(::String) }
   def value; end
 end
@@ -905,20 +959,17 @@ end
 class RBI::Param < ::RBI::NodeWithComments
   abstract!
 
-  sig { params(name: ::String, loc: T.nilable(::RBI::Loc), comments: T.nilable(T::Array[::RBI::Comment])).void }
-  def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil)); end
+  sig { params(loc: T.nilable(::RBI::Loc), comments: T.nilable(T::Array[::RBI::Comment])).void }
+  def initialize(loc: T.unsafe(nil), comments: T.unsafe(nil)); end
 
-  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
-  def ==(other); end
-
-  sig { returns(T::Boolean) }
+  sig { abstract.returns(T::Boolean) }
   def anonymous?; end
 
-  sig { returns(::String) }
-  def name; end
+  sig { override.params(other: T.nilable(::RBI::Node)).returns(T::Boolean) }
+  def compatible_with?(other); end
 
-  sig { override.returns(::String) }
-  def to_s; end
+  sig { returns(T.nilable(::String)) }
+  def name; end
 end
 
 class RBI::ParseError < ::RBI::Error
@@ -984,6 +1035,9 @@ class RBI::Parser::SigBuilder < ::RBI::Parser::Visitor
 
   sig { returns(::RBI::Sig) }
   def current; end
+
+  sig { params(node: ::Prism::Node).returns(::String) }
+  def sig_param_name(node); end
 
   sig { override.params(node: ::Prism::AssocNode).void }
   def visit_assoc_node(node); end
@@ -1400,6 +1454,9 @@ class RBI::RBS::MethodTypeTranslator
 
   private
 
+  sig { params(param: ::RBI::Param).returns(T.nilable(::String)) }
+  def anonymous_param_name(param); end
+
   sig { params(param: ::RBS::Types::Function::Param, index: ::Integer).returns(::RBI::SigParam) }
   def translate_function_param(param, index); end
 
@@ -1740,6 +1797,18 @@ class RBI::ReqParam < ::RBI::Param
     ).void
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
+
+  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { override.returns(T::Boolean) }
+  def anonymous?; end
+
+  sig { override.returns(::String) }
+  def name; end
+
+  sig { override.returns(::String) }
+  def to_s; end
 end
 
 class RBI::RequiresAncestor < ::RBI::NodeWithComments
@@ -1761,13 +1830,22 @@ end
 class RBI::RestParam < ::RBI::Param
   sig do
     params(
-      name: ::String,
+      name: T.nilable(::String),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::RestParam).void)
     ).void
   end
   def initialize(name, loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
+
+  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { override.returns(T::Boolean) }
+  def anonymous?; end
+
+  sig { override.returns(T.nilable(::String)) }
+  def name; end
 
   sig { override.returns(::String) }
   def to_s; end
@@ -2251,6 +2329,9 @@ class RBI::SigParam < ::RBI::NodeWithComments
 
   sig { returns(::String) }
   def name; end
+
+  sig { override.returns(::String) }
+  def to_s; end
 
   sig { returns(T.any(::RBI::Type, ::String)) }
   def type; end
