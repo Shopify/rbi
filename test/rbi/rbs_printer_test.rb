@@ -337,6 +337,16 @@ module RBI
       ::RBS::Parser.parse_signature(rbs)
     end
 
+    def test_print_methods_with_forwarding_parameter
+      rbi = parse_rbi(<<~RBI)
+        def foo(a, ...); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: (untyped a, ...) -> untyped
+      RBI
+    end
+
     def test_print_methods_with_vararg_followed_by_positional_arg
       rbi = parse_rbi(<<~RBI)
         sig { params(a: Integer, b: String).void }

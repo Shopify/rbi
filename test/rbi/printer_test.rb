@@ -156,6 +156,16 @@ module RBI
       RBI
     end
 
+    def test_print_methods_with_forwarding_parameter
+      method = Method.new("foo")
+      method << ReqParam.new("a")
+      method << ForwardingParam.new
+
+      assert_equal(<<~RBI, method.string)
+        def foo(a, ...); end
+      RBI
+    end
+
     def test_print_attributes_with_signatures
       sig1 = Sig.new
 
