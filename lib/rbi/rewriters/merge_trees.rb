@@ -467,6 +467,9 @@ module RBI
       return false unless other.is_a?(Method)
       return false unless name == other.name
       return false unless params.size == other.params.size
+      if (params_have_forwarding?(params) || params_have_forwarding?(other.params)) && params != other.params
+        return false
+      end
 
       if sigs.empty? && other.sigs.empty?
         compatible_params?(other)
@@ -485,8 +488,9 @@ module RBI
       super
 
       if sigs.empty? && !other.sigs.empty?
-        @params = other.params.dup
+        @params = other.params.map(&:dup)
         @sigs = other.sigs.dup
+        rename_sigs_params(@sigs, @params)
         return
       end
 
@@ -503,8 +507,10 @@ module RBI
     #: (Method other) -> bool
     def compatible_params?(other)
       return true if params == other.params
+      return false unless params.size == other.params.size
 
       params.zip(other.params).all? do |p1, p2|
+        p2 = p2 #: as !nil
         p1.compatible_with?(p2)
       end
     end
@@ -512,20 +518,26 @@ module RBI
     #: (Array[Param] preferred, Array[Param] fallback) -> Array[Param]
     def merge_params(preferred, fallback)
       preferred.zip(fallback).map do |p1, p2|
+        p2 = p2 #: as !nil
         if p1.anonymous?
-          p2.dup #: as !nil
+          p2.dup
         else
           p1.dup
         end
       end
     end
 
+    #: (Array[Param] params) -> bool
+    def params_have_forwarding?(params)
+      params.any?(ForwardingParam)
+    end
+
     #: (Array[Sig] sigs, Array[Param] params) -> void
     def rename_sigs_params(sigs, params)
       sigs.each do |sig|
-        sig_params = sig.params.zip(params).map do |sig_param, param|
-          param = param #: as !nil
-          name = if sig_param.anonymous? && !param.anonymous?
+        sig_params = sig.params.each_with_index.map do |sig_param, index|
+          param = params[index]
+          name = if param && sig_param.anonymous? && !param.anonymous?
             param.name #: as !nil
           else
             sig_param.name

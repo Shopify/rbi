@@ -44,6 +44,9 @@ module RBI
       def add_method_sig(method)
         return unless method.sigs.empty?
 
+        # Sorbet doesn't support signatures on methods using argument forwarding.
+        return if method.params.any?(RBI::ForwardingParam)
+
         method.sigs << Sig.new(
           params: method.params.filter_map do |param|
             case param
