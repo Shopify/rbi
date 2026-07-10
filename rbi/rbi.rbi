@@ -600,6 +600,9 @@ class RBI::Loc
   sig { params(other: ::RBI::Loc).returns(::RBI::Loc) }
   def join(other); end
 
+  sig { returns(T::Boolean) }
+  def multiline?; end
+
   sig { returns(T.nilable(::String)) }
   def source; end
 
@@ -1463,10 +1466,11 @@ class RBI::RBSPrinter < ::RBI::Visitor
       indent: ::Integer,
       print_locs: T::Boolean,
       positional_names: T::Boolean,
-      max_line_length: T.nilable(::Integer)
+      max_line_length: T.nilable(::Integer),
+      force_multiline_signatures: T::Boolean
     ).void
   end
-  def initialize(out: T.unsafe(nil), indent: T.unsafe(nil), print_locs: T.unsafe(nil), positional_names: T.unsafe(nil), max_line_length: T.unsafe(nil)); end
+  def initialize(out: T.unsafe(nil), indent: T.unsafe(nil), print_locs: T.unsafe(nil), positional_names: T.unsafe(nil), max_line_length: T.unsafe(nil), force_multiline_signatures: T.unsafe(nil)); end
 
   sig { returns(::Integer) }
   def current_indent; end

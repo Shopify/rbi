@@ -560,6 +560,41 @@ module RBI
       RBI
     end
 
+    def test_print_force_multiline_signatures
+      rbi_def = Method.new("foo") do |node|
+        node.params << ReqParam.new("a")
+        node.params << ReqParam.new("b")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.params << SigParam.new("a", "A")
+        sig.params << SigParam.new("b", "B")
+        sig.return_type = "R"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out, force_multiline_signatures: true)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal(<<~RBI.strip, out.string)
+        (
+          A a,
+          B b
+        ) -> R
+      RBI
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out, force_multiline_signatures: true, max_line_length: 1000)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal(<<~RBI.strip, out.string)
+        (
+          A a,
+          B b
+        ) -> R
+      RBI
+    end
+
     def test_print_simplified_types
       rbi = parse_rbi(<<~RBI)
         sig { returns(T.any(String, String, NilClass, T.nilable(T.nilable(Integer)), TrueClass, FalseClass)) }

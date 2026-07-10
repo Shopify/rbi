@@ -25,9 +25,17 @@ module RBI
     #|   ?indent: Integer,
     #|   ?print_locs: bool,
     #|   ?positional_names: bool,
-    #|   ?max_line_length: Integer?
+    #|   ?max_line_length: Integer?,
+    #|   ?force_multiline_signatures: bool
     #| ) -> void
-    def initialize(out: $stdout, indent: 0, print_locs: false, positional_names: true, max_line_length: nil)
+    def initialize(
+      out: $stdout,
+      indent: 0,
+      print_locs: false,
+      positional_names: true,
+      max_line_length: nil,
+      force_multiline_signatures: false
+    )
       super()
       @out = out
       @current_indent = indent
@@ -36,6 +44,7 @@ module RBI
       @previous_node = nil #: Node?
       @positional_names = positional_names #: bool
       @max_line_length = max_line_length #: Integer?
+      @force_multiline_signatures = force_multiline_signatures #: bool
     end
 
     # Printing
@@ -406,10 +415,10 @@ module RBI
       @out = old_out
 
       max_line_length = @max_line_length
-      if max_line_length.nil? || new_out.string.size <= max_line_length
-        print(new_out.string)
-      else
+      if @force_multiline_signatures || (max_line_length && new_out.string.size > max_line_length)
         print_method_sig_multiline(node, sig)
+      else
+        print(new_out.string)
       end
     end
 
