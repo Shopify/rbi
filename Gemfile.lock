@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rbi (0.3.14)
+    rbi (0.3.15)
       prism (~> 1.0)
       rbs (>= 4.0.1)
 
