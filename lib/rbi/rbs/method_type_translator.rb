@@ -45,8 +45,10 @@ module RBI
 
       #: (::RBS::MethodType) -> void
       def visit(type)
-        type.type_params.each do |param|
-          result.type_params << param.name
+        unless @options.erase_generic_types
+          type.type_params.each do |param|
+            result.type_params << param.name
+          end
         end
 
         visit_function_type(type.type)

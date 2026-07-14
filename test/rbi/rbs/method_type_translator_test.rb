@@ -195,13 +195,47 @@ module RBI
         assert_equal(Type.class_of(Type.simple("Foo"), Type.simple("Bar")), sig.return_type)
       end
 
+      def test_erase_generic_types_replaces_method_type_parameters
+        sig = translate(
+          "[T, U] (Array[T], T?, T | Integer, [T, Integer], singleton(Foo)[T]) { (T) -> U } -> U?",
+          Method.new("foo", params: [
+            ReqParam.new("array"),
+            ReqParam.new("value"),
+            ReqParam.new("fallback"),
+            ReqParam.new("pair"),
+            ReqParam.new("klass"),
+            BlockParam.new("block"),
+          ]),
+          erase_generic_types: true,
+        )
+
+        assert_empty(sig.type_params)
+        assert_equal(
+          [
+            SigParam.new("array", Type.simple("Array")),
+            SigParam.new("value", Type.nilable(Type.anything)),
+            SigParam.new("fallback", Type.any(Type.anything, Type.simple("Integer"))),
+            SigParam.new("pair", Type.tuple([Type.anything, Type.simple("Integer")])),
+            SigParam.new("klass", Type.class_of(Type.simple("Foo"))),
+            SigParam.new(
+              "block",
+              Type.proc
+                .params(arg0: Type.anything)
+                .returns(Type.anything),
+            ),
+          ],
+          sig.params,
+        )
+        assert_equal(Type.nilable(Type.anything), sig.return_type)
+      end
+
       private
 
-      #: (String, Method) -> RBI::Sig
-      def translate(rbs_string, method)
+      #: (String, Method, ?erase_generic_types: bool) -> RBI::Sig
+      def translate(rbs_string, method, erase_generic_types: false)
         node = ::RBS::Parser.parse_method_type(rbs_string, require_eof: true)
 
-        options = MethodTypeTranslator::Options.new
+        options = MethodTypeTranslator::Options.new(erase_generic_types:)
 
         translator = RBS::MethodTypeTranslator.new(method, options:)
         translator.visit(node)
