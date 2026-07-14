@@ -173,7 +173,8 @@ module RBI
       #: (String) -> RBI::Type
       def translate(rbs_string)
         node = ::RBS::Parser.parse_type(rbs_string, require_eof: true)
-        RBS::TypeTranslator.new.translate(node)
+        options = MethodTypeTranslator::Options.new
+        RBS::TypeTranslator.new(options:).translate(node)
       end
     end
   end
