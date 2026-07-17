@@ -122,5 +122,19 @@ module RBI
         def self.m3(x, y = 42, **z); end
       RBI
     end
+
+    def test_does_not_add_empty_sigs_to_forwarding_parameters
+      tree = parse_rbi(<<~RBI)
+        def m1(...); end
+        def m2(a, ...); end
+      RBI
+
+      tree.add_sig_templates!(with_todo_comment: true)
+
+      assert_equal(<<~RBI, tree.string)
+        def m1(...); end
+        def m2(a, ...); end
+      RBI
+    end
   end
 end

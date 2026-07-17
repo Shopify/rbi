@@ -464,6 +464,14 @@ module RBI
       RBI
     end
 
+    def test_model_allows_forwarding_params_with_sigs
+      method = Method.new("foo", params: [ForwardingParam.new])
+
+      assert_equal(<<~RBI, method.string)
+        def foo(...); end
+      RBI
+    end
+
     def test_t_struct_with_types
       node = TStruct.new("MyStruct")
       node << TStructConst.new("foo", Type.simple("Foo"))

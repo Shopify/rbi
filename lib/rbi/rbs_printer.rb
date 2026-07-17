@@ -624,6 +624,12 @@ module RBI
     end
 
     # @override
+    #: (ForwardingParam node) -> void
+    def visit_forwarding_param(node)
+      print("...")
+    end
+
+    # @override
     #: (Include node) -> void
     def visit_include(node)
       visit_mixin(node)
