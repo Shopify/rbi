@@ -428,26 +428,29 @@ module RBI
         print("[#{sig.type_params.join(", ")}] ")
       end
 
-      block_param = node.params.find { |param| param.is_a?(BlockParam) }
-      sig_block_param = sig.params.find { |param| param.name == block_param&.name }
+      raise Error, "Arity mismatch between method and signature" if sig.params.size != node.params.size
 
-      sig_params = sig.params.dup
-      if block_param
-        sig_params.reject! do |param|
-          param.name == block_param.name
-        end
+      block_params, params = sig.params.zip(node.params).partition do |_sig_param, method_param|
+        method_param.is_a?(BlockParam)
       end
 
-      unless sig_params.empty?
+      raise Error, "Multiple block parameters found" if block_params.size > 1
+
+      block_param = block_params.first if block_params.any?
+
+      unless params.empty?
         print("(")
-        sig_params.each_with_index do |param, index|
+        params.each_with_index do |(sig_param, method_param), index|
           print(", ") if index > 0
-          print_sig_param(node, param)
+          print_sig_param(
+            sig_param,
+            method_param, #: as !nil
+          )
         end
         print(") ")
       end
-      if sig_block_param
-        block_type = sig_block_param.type
+      if (sig_param = block_param&.first)
+        block_type = sig_param.type
         block_type = Type.parse_string(block_type) if block_type.is_a?(String)
 
         block_is_nilable = false
@@ -490,30 +493,33 @@ module RBI
         print("[#{sig.type_params.join(", ")}] ")
       end
 
-      block_param = node.params.find { |param| param.is_a?(BlockParam) }
-      sig_block_param = sig.params.find { |param| param.name == block_param&.name }
+      raise Error, "Arity mismatch between method and signature" if sig.params.size != node.params.size
 
-      sig_params = sig.params.dup
-      if block_param
-        sig_params.reject! do |param|
-          param.name == block_param.name
-        end
+      block_params, params = sig.params.zip(node.params).partition do |_sig_param, method_param|
+        method_param.is_a?(BlockParam)
       end
 
-      unless sig_params.empty?
+      raise Error, "Multiple block parameters found" if block_params.size > 1
+
+      block_param = block_params.first if block_params.any?
+
+      unless params.empty?
         printl("(")
         indent
-        sig_params.each_with_index do |param, index|
+        params.each_with_index do |(sig_param, method_param), index|
           printt
-          print_sig_param(node, param)
-          print(",") if index < sig_params.size - 1
+          print_sig_param(
+            sig_param,
+            method_param, #: as !nil
+          )
+          print(",") if index < params.size - 1
           printn
         end
         dedent
         printt(") ")
       end
-      if sig_block_param
-        block_type = sig_block_param.type
+      if (block_param = block_param&.first)
+        block_type = block_param.type
         block_type = Type.parse_string(block_type) if block_type.is_a?(String)
 
         block_is_nilable = false
@@ -591,11 +597,8 @@ module RBI
     # @override
     #: (RestParam node) -> void
     def visit_rest_param(node)
-      if @positional_names
-        print("*untyped #{node.name}")
-      else
-        print("*untyped")
-      end
+      print("*untyped")
+      print(" #{node.name}") if @positional_names && !node.anonymous?
     end
 
     # @override
@@ -614,7 +617,7 @@ module RBI
     #: (KwRestParam node) -> void
     def visit_kw_rest_param(node)
       print("**untyped")
-      print(" #{node.name}") if node.name
+      print(" #{node.name}") if @positional_names && !node.anonymous?
     end
 
     # @override
@@ -873,39 +876,46 @@ module RBI
       printl("# #{loc}") if loc && print_locs
     end
 
-    #: (Method node, SigParam param) -> void
-    def print_sig_param(node, param)
-      type = parse_type(param.type).rbs_string
+    #: (SigParam sig_param, Param method_param) -> void
+    def print_sig_param(sig_param, method_param)
+      if !method_param.anonymous? && sig_param.name != method_param.name
+        raise Error,
+          "Mismatched parameter names: #{sig_param.name} vs #{method_param.name}"
+      end
 
-      orig_param = node.params.find { |p| p.name == param.name }
+      type = parse_type(sig_param.type).rbs_string
 
-      case orig_param
+      case method_param
       when ReqParam
         if @positional_names
-          print("#{type} #{param.name}")
+          print("#{type} #{sig_param.name}")
         else
           print(type)
         end
       when OptParam
         if @positional_names
-          print("?#{type} #{param.name}")
+          print("?#{type} #{sig_param.name}")
         else
           print("?#{type}")
         end
       when RestParam
-        if @positional_names
-          print("*#{type} #{param.name}")
-        else
+        if method_param.anonymous? || !@positional_names
           print("*#{type}")
+        else
+          print("*#{type} #{sig_param.name}")
         end
       when KwParam
-        print("#{param.name}: #{type}")
+        print("#{sig_param.name}: #{type}")
       when KwOptParam
-        print("?#{param.name}: #{type}")
+        print("?#{sig_param.name}: #{type}")
       when KwRestParam
-        print("**#{type} #{param.name}")
+        if method_param.anonymous?
+          print("**#{type}")
+        else
+          print("**#{type} #{sig_param.name}")
+        end
       else
-        raise Error, "Unexpected param type: #{orig_param.class} for param #{param.name}"
+        raise Error, "Unexpected param type: #{method_param.class} for param #{sig_param.name}"
       end
     end
 
