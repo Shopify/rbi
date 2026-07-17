@@ -111,6 +111,35 @@ module RBI
         )
       end
 
+      def test_translate_anonymous_params
+        sig = translate(
+          "(A a, *B, **C) { (D) -> E } -> void",
+          Method.new("foo", params: [
+            ReqParam.new("a"),
+            RestParam.new(nil),
+            KwRestParam.new(nil),
+            BlockParam.new(nil),
+          ]),
+        )
+
+        assert_equal(["a", "*", "**", "&"], sig.params.map(&:name))
+        assert_equal([false, true, true, true], sig.params.map(&:anonymous?))
+        assert_equal(
+          [
+            SigParam.new("a", Type.simple("A")),
+            SigParam.new("*", Type.simple("B")),
+            SigParam.new("**", Type.simple("C")),
+            SigParam.new(
+              "&",
+              Type.proc
+                .params(arg0: Type.simple("D"))
+                .returns(Type.simple("E")),
+            ),
+          ],
+          sig.params,
+        )
+      end
+
       def test_translate_block_param
         sig = translate(
           "() { (Integer) [self: Foo] -> String } -> void",

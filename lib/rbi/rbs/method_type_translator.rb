@@ -123,13 +123,25 @@ module RBI
         param_name = param.name&.to_s
 
         unless param_name
-          method_param_name = @method.params[index]
-          raise Error, "No method param name found for parameter ##{index}" unless method_param_name
+          method_param = @method.params[index]
+          raise Error, "No method param name found for parameter ##{index}" unless method_param
 
-          param_name = method_param_name.name
+          param_name = method_param.name || anonymous_param_name(method_param)
         end
 
         SigParam.new(param_name, param_type)
+      end
+
+      #: (Param) -> String?
+      def anonymous_param_name(param)
+        case param
+        when RestParam
+          "*"
+        when KwRestParam
+          "**"
+        when BlockParam
+          "&"
+        end
       end
 
       #: (untyped) -> Type
