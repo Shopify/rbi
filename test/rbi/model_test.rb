@@ -374,7 +374,7 @@ module RBI
       m3 << KwOptParam.new("e", "42")
       m3 << KwRestParam.new("f")
       m3 << BlockParam.new("g")
-      assert_equal("#m3(a, b, *c, d:, e:, **f:, &g)", m3.to_s)
+      assert_equal("#m3(a, b = 42, *c, d:, e: 42, **f, &g)", m3.to_s)
 
       a1 = AttrReader.new(:m1)
       assert_equal(".attr_reader(:m1)", a1.to_s)

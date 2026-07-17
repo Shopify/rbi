@@ -45,7 +45,21 @@ module RBI
         return unless method.sigs.empty?
 
         method.sigs << Sig.new(
-          params: method.params.map { |param| SigParam.new(param.name, "::T.untyped") },
+          params: method.params.map do |param|
+            case param
+            when RBI::RestParam
+              SigParam.new(param.name || "*", "::T.untyped")
+            when RBI::KwRestParam
+              SigParam.new(param.name || "**", "::T.untyped")
+            when RBI::BlockParam
+              SigParam.new(param.name || "&", "::T.untyped")
+            else
+              SigParam.new(
+                param.name, #: as !nil
+                "::T.untyped",
+              )
+            end
+          end,
           return_type: "::T.untyped",
         )
         add_todo_comment(method)

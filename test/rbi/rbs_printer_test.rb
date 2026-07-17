@@ -316,8 +316,25 @@ module RBI
 
       # Actual method parameters are ignored, RBS translation relies on the RBI signature
       assert_equal(<<~RBI, rbi.rbs_string)
-        def foo: (untyped a, ?untyped b, *untyped c, d: untyped, ?e: untyped, **f: untyped) { (*untyped) -> untyped } -> untyped
+        def foo: (untyped a, ?untyped b, *untyped c, d: untyped, ?e: untyped, **untyped f) { (*untyped) -> untyped } -> untyped
       RBI
+    end
+
+    def test_print_methods_with_anonymous_keyword_rest_parameter
+      rbi = parse_rbi(<<~RBI)
+        class Foo
+          def foo(**); end
+        end
+      RBI
+
+      rbs = rbi.rbs_string
+
+      assert_equal(<<~RBS, rbs)
+        class Foo
+          def foo: (**untyped) -> untyped
+        end
+      RBS
+      ::RBS::Parser.parse_signature(rbs)
     end
 
     def test_print_methods_with_vararg_followed_by_positional_arg
@@ -1135,7 +1152,7 @@ module RBI
       # Comments are ignored when applied to RBS parameters
       assert_equal(<<~RBI, rbi.rbs_string)
         # comment
-        def foo: (untyped a, ?untyped b, *untyped c, d: untyped, ?e: untyped, **f: untyped) { (*untyped) -> untyped } -> untyped
+        def foo: (untyped a, ?untyped b, *untyped c, d: untyped, ?e: untyped, **untyped f) { (*untyped) -> untyped } -> untyped
       RBI
     end
 

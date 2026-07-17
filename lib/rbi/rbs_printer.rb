@@ -613,7 +613,8 @@ module RBI
     # @override
     #: (KwRestParam node) -> void
     def visit_kw_rest_param(node)
-      print("**#{node.name}: untyped")
+      print("**untyped")
+      print(" #{node.name}") if node.name
     end
 
     # @override
@@ -912,25 +913,15 @@ module RBI
     def print_param_comment_leading_space(node, last:)
       printn
       printt
-      print(" " * (node.name.size + 1))
+      print(" " * (node.to_s.size + 1))
       print(" ") unless last
-      case node
-      when OptParam
-        print(" " * (node.value.size + 3))
-      when RestParam, KwParam, BlockParam
-        print(" ")
-      when KwRestParam
-        print("  ")
-      when KwOptParam
-        print(" " * (node.value.size + 2))
-      end
     end
 
     #: (SigParam node, last: bool) -> void
     def print_sig_param_comment_leading_space(node, last:)
       printn
       printt
-      print(" " * (node.name.size + node.type.to_s.size + 3))
+      print(" " * (node.to_s.size + node.type.to_s.size + 3))
       print(" ") unless last
     end
 

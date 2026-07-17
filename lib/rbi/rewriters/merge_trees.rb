@@ -464,11 +464,17 @@ module RBI
     # @override
     #: (Node other) -> bool
     def compatible_with?(other)
-      other.is_a?(Method) &&
-        name == other.name &&
-        params == other.params &&
-        at_most_one_side_anonymous?(other) &&
-        (sigs.empty? || other.sigs.empty? || sigs == other.sigs)
+      return false unless other.is_a?(Method)
+      return false unless name == other.name
+      return false unless params.size == other.params.size
+
+      if sigs.empty? && other.sigs.empty?
+        compatible_params?(other)
+      elsif sigs.empty? || other.sigs.empty?
+        true
+      else
+        compatible_params?(other) && sigs == other.sigs
+      end
     end
 
     # @override
@@ -478,14 +484,14 @@ module RBI
 
       super
 
-      # If self is the all-anonymous side (since compatible_with? ensures
-      # at most one side is), or if self has no sigs but other does, adopt
-      # other's non-anonymous param names and sigs.
-      if params.all?(&:anonymous?) || (sigs.empty? && !other.sigs.empty?)
+      if sigs.empty? && !other.sigs.empty?
         @params = other.params.dup
-        @sigs = other.sigs.dup unless other.sigs.empty?
+        @sigs = other.sigs.dup
         return
       end
+
+      @params = merge_params(params, other.params)
+      rename_sigs_params(sigs, @params)
 
       other.sigs.each do |sig|
         sigs << sig unless sigs.include?(sig)
@@ -495,10 +501,47 @@ module RBI
     private
 
     #: (Method other) -> bool
-    def at_most_one_side_anonymous?(other)
-      (params.all?(&:anonymous?) && other.params.none?(&:anonymous?)) ||
-        (params.none?(&:anonymous?) && other.params.all?(&:anonymous?)) ||
-        (params.none?(&:anonymous?) && other.params.none?(&:anonymous?))
+    def compatible_params?(other)
+      return true if params == other.params
+
+      params.zip(other.params).all? do |p1, p2|
+        p1.compatible_with?(p2)
+      end
+    end
+
+    #: (Array[Param] preferred, Array[Param] fallback) -> Array[Param]
+    def merge_params(preferred, fallback)
+      preferred.zip(fallback).map do |p1, p2|
+        if p1.anonymous?
+          p2.dup #: as !nil
+        else
+          p1.dup
+        end
+      end
+    end
+
+    #: (Array[Sig] sigs, Array[Param] params) -> void
+    def rename_sigs_params(sigs, params)
+      sigs.each do |sig|
+        sig_params = sig.params.zip(params).map do |sig_param, param|
+          param = param #: as !nil
+          name = if sig_param.anonymous? && !param.anonymous?
+            param.name #: as !nil
+          else
+            sig_param.name
+          end
+          SigParam.new(name, sig_param.type)
+        end
+        sig.params.replace(sig_params)
+      end
+    end
+  end
+
+  class Param
+    # @override
+    #: (Node? other) -> bool
+    def compatible_with?(other)
+      self.class === other && (anonymous? || other.anonymous? || name == other.name)
     end
   end
 

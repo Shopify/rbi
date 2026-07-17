@@ -53,7 +53,7 @@ module RBI
       RBI
 
       assert_equal(<<~RBI, tree)
-        sig { params(block: ::T.proc.returns(::T.untyped)).returns(::T.untyped) }
+        sig { params("&": ::T.proc.returns(::T.untyped)).returns(::T.untyped) }
         def foo(&); end
       RBI
     end
