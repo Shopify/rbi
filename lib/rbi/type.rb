@@ -720,7 +720,14 @@ module RBI
         if @types.empty?
           "{}"
         else
-          "{ " + @types.map { |name, type| "#{name}: #{type.to_rbi}" }.join(", ") + " }"
+          "{ " + @types.map do |name, type|
+            case name
+            when Symbol
+              "#{name}: #{type.to_rbi}"
+            when String
+              "#{name.inspect} => #{type.to_rbi}"
+            end
+          end.join(", ") + " }"
         end
       end
 
