@@ -1777,8 +1777,8 @@ class RBI::RBSPrinter < ::RBI::Visitor
   sig { params(node: ::RBI::Param, last: T::Boolean).void }
   def print_param_comment_leading_space(node, last:); end
 
-  sig { params(node: ::RBI::Method, param: ::RBI::SigParam).void }
-  def print_sig_param(node, param); end
+  sig { params(sig_param: ::RBI::SigParam, method_param: ::RBI::Param).void }
+  def print_sig_param(sig_param, method_param); end
 
   sig { params(node: ::RBI::SigParam, last: T::Boolean).void }
   def print_sig_param_comment_leading_space(node, last:); end
