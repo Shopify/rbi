@@ -259,7 +259,7 @@ module RBI
         :qux => Type.simple("String"),
       )
       refute_predicate(type, :nilable?)
-      assert_equal("{ foo: String, bar: String, baz: String, qux: String }", type.to_rbi)
+      assert_equal("{ foo: String, bar: String, \"baz\" => String, qux: String }", type.to_rbi)
 
       type = Type.shape(
         "\"foo\"": Type.simple("String"),
@@ -267,7 +267,16 @@ module RBI
         :"\"baz\"" => Type.simple("String"),
       )
       refute_predicate(type, :nilable?)
-      assert_equal("{ \"foo\": String, \"bar\": String, \"baz\": String }", type.to_rbi)
+      assert_equal("{ \"foo\": String, \"\\\"bar\\\"\" => String, \"baz\": String }", type.to_rbi)
+    end
+
+    def test_build_type_shape_preserves_string_keys
+      type = Type.shape(
+        foo: Type.simple("Integer"),
+        "foo" => Type.simple("String"),
+      )
+      assert_equal("{ foo: Integer, \"foo\" => String }", type.to_rbi)
+      assert_equal(type, Type.parse_string(type.to_rbi))
     end
 
     def test_build_type_void_proc
