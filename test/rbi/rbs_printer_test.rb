@@ -320,10 +320,13 @@ module RBI
       RBI
     end
 
-    def test_print_methods_with_anonymous_keyword_rest_parameter
+    def test_print_methods_with_anonymous_parameters
       rbi = parse_rbi(<<~RBI)
         class Foo
-          def foo(**); end
+          def foo(*, **, &); end
+
+          sig { params("*": A, "**": B, "&": T.proc.void).returns(R) }
+          def bar(*, **, &); end
         end
       RBI
 
@@ -331,7 +334,9 @@ module RBI
 
       assert_equal(<<~RBS, rbs)
         class Foo
-          def foo: (**untyped) -> untyped
+          def foo: (*untyped, **untyped) { (*untyped) -> untyped } -> untyped
+
+          def bar: (*A, **B) { -> void } -> R
         end
       RBS
       ::RBS::Parser.parse_signature(rbs)
@@ -395,14 +400,18 @@ module RBI
       RBI
     end
 
-    def test_print_methods_with_signatures_without_positional_names
+    def test_print_methods_without_positional_names
       rbi = parse_rbi(<<~RBI)
         sig { params(a: A, b: B, c: C, d: D, e: E, f: F, g: T.proc.void).returns(R) }
         def foo(a, b = 10, *c, d:, e: 'bar', **f, &g); end
+
+        def bar(**f); end
       RBI
 
       assert_equal(<<~RBI, rbi.rbs_string(positional_names: false))
         def foo: (A, ?B, *C, d: D, ?e: E, **F f) { -> void } -> R
+
+        def bar: (**untyped f) -> untyped
       RBI
     end
 
