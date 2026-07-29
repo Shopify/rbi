@@ -96,7 +96,7 @@ module RBI
     #|   Loc? loc,
     #|   Array[Comment] comments
     #| ) -> Method
-    def create_setter_method(name, sig, attribute_type, visibility, loc, comments) # rubocop:disable Metrics/ParameterLists
+    def create_setter_method(name, sig, attribute_type, visibility, loc, comments)
       sig = if sig # Modify the original sig to correct the name, and remove the return type
         params = attribute_type ? [SigParam.new(name, attribute_type)] : []
 
