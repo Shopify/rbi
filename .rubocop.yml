@@ -16,6 +16,9 @@ AllCops:
 Layout/LeadingCommentSpace:
   AllowRBSInlineAnnotation: true
 
+Lint/SelfAssignment:
+  AllowRBSInlineAnnotation: true
+
 Layout/LineLength:
   Enabled: true
   Max: 120
