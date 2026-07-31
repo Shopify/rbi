@@ -698,6 +698,9 @@ class RBI::Method < ::RBI::NodeWithComments
   sig { params(name: ::String).void }
   def add_kw_rest_param(name); end
 
+  sig { void }
+  def add_no_kw_param; end
+
   sig { params(name: ::String, default_value: ::String).void }
   def add_opt_param(name, default_value); end
 
@@ -837,6 +840,26 @@ class RBI::Module < ::RBI::Scope
 
   sig { returns(::String) }
   def name; end
+end
+
+class RBI::NoKwParam < ::RBI::Param
+  sig do
+    params(
+      loc: T.nilable(::RBI::Loc),
+      comments: T.nilable(T::Array[::RBI::Comment]),
+      block: T.nilable(T.proc.params(node: ::RBI::NoKwParam).void)
+    ).void
+  end
+  def initialize(loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
+
+  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { override.returns(T::Boolean) }
+  def anonymous?; end
+
+  sig { override.returns(::String) }
+  def to_s; end
 end
 
 class RBI::Node
@@ -1316,6 +1339,9 @@ class RBI::Printer < ::RBI::Visitor
   sig { override.params(node: ::RBI::Module).void }
   def visit_module(node); end
 
+  sig { override.params(node: ::RBI::NoKwParam).void }
+  def visit_no_kw_param(node); end
+
   sig { override.params(node: ::RBI::OptParam).void }
   def visit_opt_param(node); end
 
@@ -1678,6 +1704,9 @@ class RBI::RBSPrinter < ::RBI::Visitor
 
   sig { override.params(node: ::RBI::Module).void }
   def visit_module(node); end
+
+  sig { override.params(node: ::RBI::NoKwParam).void }
+  def visit_no_kw_param(node); end
 
   sig { override.params(node: ::RBI::OptParam).void }
   def visit_opt_param(node); end
@@ -3457,6 +3486,9 @@ class RBI::Visitor
 
   sig { params(node: ::RBI::Module).void }
   def visit_module(node); end
+
+  sig { params(node: ::RBI::NoKwParam).void }
+  def visit_no_kw_param(node); end
 
   sig { params(node: ::RBI::OptParam).void }
   def visit_opt_param(node); end
