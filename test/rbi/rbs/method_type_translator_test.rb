@@ -241,7 +241,7 @@ module RBI
         assert_empty(sig.type_params)
         assert_equal(
           [
-            SigParam.new("array", Type.simple("Array")),
+            SigParam.new("array", Type.simple("::Array")),
             SigParam.new("value", Type.nilable(Type.anything)),
             SigParam.new("fallback", Type.any(Type.anything, Type.simple("Integer"))),
             SigParam.new("pair", Type.tuple([Type.anything, Type.simple("Integer")])),

@@ -102,18 +102,19 @@ module RBI
       def test_erase_generic_types_removes_generic_types
         simple_foo = Type.simple("Foo")
         class_foo = Type.class_of(simple_foo)
-        simple_array = Type.simple("Array")
         root_array = Type.simple("::Array")
 
         assert_equal(simple_foo, translate("Foo[Bar]", erase_generic_types: true))
         assert_equal(simple_foo, translate("Foo[Bar, ::Baz]", erase_generic_types: true))
         assert_equal(class_foo, translate("singleton(Foo)", erase_generic_types: true))
         assert_equal(class_foo, translate("singleton(Foo)[Bar]", erase_generic_types: true))
-        assert_equal(simple_array, translate("Array[Foo]", erase_generic_types: true))
+        assert_equal(root_array, translate("Array[Foo]", erase_generic_types: true))
         assert_equal(root_array, translate("T::Array[Foo]", erase_generic_types: true))
         assert_equal(root_array, translate("::T::Array[Foo]", erase_generic_types: true))
         assert_equal(root_array, translate("::Array[Bar]", erase_generic_types: true))
         assert_equal(Type.simple("::Hash"), translate("::Hash[Foo, Bar]", erase_generic_types: true))
+        assert_equal(Type.simple("::Enumerator::Chain"),
+          translate("Enumerator::Chain[Foo]", erase_generic_types: true))
         assert_equal(Type.simple("::Foo"), translate("::Foo[Bar]", erase_generic_types: true))
         assert_equal(Type.simple("::Types::Foo"), translate("::Types::Foo[Bar]", erase_generic_types: true))
       end

@@ -136,10 +136,12 @@ module RBI
         type_name = type.name.to_s
         return Type.simple(type_name) if type.args.empty?
 
+        translated_type_name = translate_t_generic_type(type_name)
+
         if @options.erase_generic_types
-          Type.simple(erase_t_generic_type(type_name))
+          Type.simple(erase_t_generic_type(translated_type_name))
         else
-          Type.generic(translate_t_generic_type(type_name), *type.args.map { |arg| translate(arg) })
+          Type.generic(translated_type_name, *type.args.map { |arg| translate(arg) })
         end
       end
 
