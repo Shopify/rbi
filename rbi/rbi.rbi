@@ -1589,11 +1589,11 @@ class RBI::RBSPrinter < ::RBI::Visitor
   sig { params(node: ::RBI::Method, sig: ::RBI::Sig).void }
   def print_method_sig(node, sig); end
 
-  sig { params(node: ::RBI::Method, sig: ::RBI::Sig).void }
-  def print_method_sig_inline(node, sig); end
+  sig { params(sig_param: T.nilable(::RBI::SigParam)).void }
+  def print_method_sig_block(sig_param); end
 
-  sig { params(node: ::RBI::Method, sig: ::RBI::Sig).void }
-  def print_method_sig_multiline(node, sig); end
+  sig { params(node: ::RBI::Method, sig: ::RBI::Sig, multiline: T::Boolean).void }
+  def print_method_sig_content(node, sig, multiline:); end
 
   sig { params(string: ::String).void }
   def printl(string); end
