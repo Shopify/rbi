@@ -428,13 +428,19 @@ module RBI
         print("[#{sig.type_params.join(", ")}] ")
       end
 
-      raise Error, "Arity mismatch between method and signature" if sig.params.size != node.params.size
+      no_kw_params, method_params = node.params.partition { |param| param.is_a?(NoKwParam) }
+      raise Error, "Multiple no-keywords parameters found" if no_kw_params.size > 1
+      raise Error, "Arity mismatch between method and signature" if sig.params.size != method_params.size
 
-      block_params, params = sig.params.zip(node.params).partition do |_sig_param, method_param|
+      params = sig.params.zip(method_params) #: Array[[SigParam?, Param?]]
+      block_params, params = params.partition do |_sig_param, method_param|
         method_param.is_a?(BlockParam)
       end
 
       raise Error, "Multiple block parameters found" if block_params.size > 1
+
+      no_kw_param = no_kw_params.first
+      params << [nil, no_kw_param] if no_kw_param
 
       unless params.empty?
         if multiline
@@ -450,10 +456,14 @@ module RBI
           elsif index > 0
             print(", ")
           end
-          print_sig_param(
-            sig_param,
-            method_param, #: as !nil
-          )
+          if method_param.is_a?(NoKwParam)
+            visit(method_param)
+          else
+            print_sig_param(
+              sig_param, #: as !nil
+              method_param, #: as !nil
+            )
+          end
           if multiline
             print(",") if index < params.size - 1
             printn
@@ -571,6 +581,12 @@ module RBI
     def visit_kw_rest_param(node)
       print("**untyped")
       print(" #{node.name}") unless node.anonymous?
+    end
+
+    # @override
+    #: (NoKwParam node) -> void
+    def visit_no_kw_param(node)
+      print("**nil")
     end
 
     # @override

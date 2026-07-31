@@ -111,6 +111,23 @@ module RBI
         )
       end
 
+      def test_translate_no_keywords_param
+        sig = translate(
+          "(A a, **nil) -> Integer",
+          Method.new("foo", params: [
+            ReqParam.new("a"),
+            NoKwParam.new,
+          ]),
+        )
+
+        assert_equal(
+          [
+            SigParam.new("a", Type.simple("A")),
+          ],
+          sig.params,
+        )
+      end
+
       def test_translate_anonymous_params
         sig = translate(
           "(A a, *B, **C) { (D) -> E } -> void",
