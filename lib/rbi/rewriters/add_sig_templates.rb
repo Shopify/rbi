@@ -45,12 +45,14 @@ module RBI
         return unless method.sigs.empty?
 
         method.sigs << Sig.new(
-          params: method.params.map do |param|
+          params: method.params.filter_map do |param|
             case param
             when RBI::RestParam
               SigParam.new(param.name || "*", "::T.untyped")
             when RBI::KwRestParam
               SigParam.new(param.name || "**", "::T.untyped")
+            when RBI::NoKwParam
+              next
             when RBI::BlockParam
               SigParam.new(param.name || "&", "::T.untyped")
             else
