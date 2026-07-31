@@ -63,6 +63,8 @@ module RBI
         visit_kw_opt_param(node)
       when KwRestParam
         visit_kw_rest_param(node)
+      when NoKwParam
+        visit_no_kw_param(node)
       when BlockParam
         visit_block_param(node)
       when Include
@@ -172,6 +174,9 @@ module RBI
 
     #: (KwRestParam node) -> void
     def visit_kw_rest_param(node); end
+
+    #: (NoKwParam node) -> void
+    def visit_no_kw_param(node); end
 
     #: (BlockParam node) -> void
     def visit_block_param(node); end

@@ -397,6 +397,12 @@ module RBI
     end
 
     # @override
+    #: (NoKwParam node) -> void
+    def visit_no_kw_param(node)
+      self.print(node.to_s)
+    end
+
+    # @override
     #: (BlockParam node) -> void
     def visit_block_param(node)
       self.print(node.to_s)
