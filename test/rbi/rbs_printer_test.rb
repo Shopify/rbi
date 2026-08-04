@@ -278,6 +278,47 @@ module RBI
       RBI
     end
 
+    def test_print_signature_with_braceless_shape_return_type
+      rbi = parse_rbi(<<~RBI)
+        sig { returns("foo" => Integer) }
+        def single; end
+
+        sig { returns(:foo => Integer) }
+        def symbol; end
+
+        sig { returns("foo" => Integer, "bar" => String) }
+        def multiple; end
+      RBI
+
+      assert_equal(<<~RBS, rbi.rbs_string)
+        def single: -> {"foo" => Integer}
+
+        def symbol: -> {foo: Integer}
+
+        def multiple: -> {"foo" => Integer, "bar" => String}
+      RBS
+    end
+
+    def test_reject_signature_with_keyword_return_argument
+      keyword = parse_rbi(<<~RBI)
+        sig { returns(foo: Integer) }
+        def keyword; end
+      RBI
+
+      mixed = parse_rbi(<<~RBI)
+        sig { returns("foo" => Integer, bar: String) }
+        def mixed; end
+      RBI
+
+      assert_raises(RBI::RBSPrinter::Error) do
+        keyword.rbs_string
+      end
+
+      assert_raises(RBI::RBSPrinter::Error) do
+        mixed.rbs_string
+      end
+    end
+
     def test_print_methods_without_signature
       rbi = parse_rbi(<<~RBI)
         def foo; end

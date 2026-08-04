@@ -956,7 +956,11 @@ module RBI
           args = node.arguments
           if args.is_a?(Prism::ArgumentsNode)
             first = args.arguments.first
-            @current.return_type = node_string!(first) if first
+            if first
+              return_type = node_string!(first)
+              return_type = "{#{return_type}}" if braceless_shape?(first)
+              @current.return_type = return_type
+            end
           end
         when "type_parameters"
           args = node.arguments
@@ -980,6 +984,15 @@ module RBI
           sig_param_name(node.key),
           node_string!(node.value),
         )
+      end
+
+      #: (Prism::Node node) -> bool
+      def braceless_shape?(node)
+        return false unless node.is_a?(Prism::KeywordHashNode)
+
+        node.elements.all? do |element|
+          element.is_a?(Prism::AssocNode) && element.operator_loc
+        end
       end
 
       #: (Prism::Node node) -> String
