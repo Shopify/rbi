@@ -156,6 +156,15 @@ module RBI
       RBI
     end
 
+    def test_print_method_with_no_keyword_parameter
+      method = Method.new("foo")
+      method << NoKwParam.new
+
+      assert_equal(<<~RBI, method.string)
+        def foo(**nil); end
+      RBI
+    end
+
     def test_print_attributes_with_signatures
       sig1 = Sig.new
 

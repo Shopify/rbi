@@ -542,6 +542,11 @@ module RBI
       params << KwRestParam.new(name)
     end
 
+    #: -> void
+    def add_no_kw_param
+      params << NoKwParam.new
+    end
+
     #: (String name) -> void
     def add_block_param(name)
       params << BlockParam.new(name)
@@ -804,6 +809,31 @@ module RBI
     #: (Object? other) -> bool
     def ==(other)
       KwRestParam === other && (name == other.name || anonymous? || other.anonymous?)
+    end
+  end
+
+  class NoKwParam < Param
+    #: (?loc: Loc?, ?comments: Array[Comment]?) ?{ (NoKwParam node) -> void } -> void
+    def initialize(loc: nil, comments: nil, &block)
+      super(loc: loc, comments: comments)
+      block&.call(self)
+    end
+
+    # @override
+    #: -> String
+    def to_s
+      "**nil"
+    end
+
+    # @override
+    #: -> bool
+    def anonymous?
+      false
+    end
+
+    #: (Object? other) -> bool
+    def ==(other)
+      NoKwParam === other
     end
   end
 

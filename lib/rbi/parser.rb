@@ -743,6 +743,11 @@ module RBI
               loc: node_loc(param),
               comments: node_comments(param),
             )
+          when Prism::NoKeywordsParameterNode
+            NoKwParam.new(
+              loc: node_loc(param),
+              comments: node_comments(param),
+            )
           when Prism::KeywordRestParameterNode
             KwRestParam.new(
               param.name&.to_s,

@@ -179,10 +179,15 @@ module RBI
         def m1; end
         def self.m2; end
         def m3(a, b = 42, *c, d:, e: "bar", **f, &g); end
+        def m4(**nil); end
       RBI
 
       tree = parse_rbi(rbi)
       assert_equal(rbi, tree.string)
+
+      method = tree.nodes.last #: as Method
+      assert_instance_of(Method, method)
+      assert_instance_of(NoKwParam, method.params.last)
     end
 
     def test_parse_methods_with_vararg_followed_by_positional_arg

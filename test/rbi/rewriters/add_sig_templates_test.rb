@@ -83,6 +83,7 @@ module RBI
         def m1; end
         def m2(x); end
         def self.m3(x, y = 42, **z); end
+        def m4(x, **nil); end
       RBI
 
       tree.add_sig_templates!(with_todo_comment: false)
@@ -96,6 +97,9 @@ module RBI
 
         sig { params(x: ::T.untyped, y: ::T.untyped, z: ::T.untyped).returns(::T.untyped) }
         def self.m3(x, y = 42, **z); end
+
+        sig { params(x: ::T.untyped).returns(::T.untyped) }
+        def m4(x, **nil); end
       RBI
     end
 

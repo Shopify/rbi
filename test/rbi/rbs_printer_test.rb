@@ -365,6 +365,16 @@ module RBI
       end
     end
 
+    def test_print_method_with_multiple_no_keyword_params_raises_error
+      method = Method.new("foo", params: [NoKwParam.new, NoKwParam.new])
+      method.sigs << Sig.new
+
+      error = assert_raises(RBI::RBSPrinter::Error) do
+        method.rbs_string
+      end
+      assert_equal("Multiple no-keywords parameters found", error.message)
+    end
+
     def test_print_methods_with_signature
       rbi = parse_rbi(<<~RBI)
         sig { params(a: A, b: B, c: C, d: D, e: E, f: F, block: T.proc.void).returns(R) }
@@ -406,12 +416,22 @@ module RBI
         def foo(a, b = 10, *c, d:, e: 'bar', **f, &g); end
 
         def bar(**f); end
+
+        sig { params(x: String).void }
+        def baz(x, **nil); end
+
+        def qux(**nil); end
       RBI
+
 
       assert_equal(<<~RBI, rbi.rbs_string(positional_names: false))
         def foo: (A, ?B, *C, d: D, ?e: E, **F f) { -> void } -> R
 
         def bar: (**untyped f) -> untyped
+
+        def baz: (String, **nil) -> void
+
+        def qux: (**nil) -> untyped
       RBI
     end
 

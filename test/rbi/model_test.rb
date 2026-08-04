@@ -376,6 +376,11 @@ module RBI
       m3 << BlockParam.new("g")
       assert_equal("#m3(a, b = 42, *c, d:, e: 42, **f, &g)", m3.to_s)
 
+      m4 = Method.new("m4")
+      m4 << NoKwParam.new
+      assert_equal("#m4(**nil)", m4.to_s)
+      refute_predicate(m4.params.first, :anonymous?)
+
       a1 = AttrReader.new(:m1)
       assert_equal(".attr_reader(:m1)", a1.to_s)
 

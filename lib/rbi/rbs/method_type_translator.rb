@@ -110,7 +110,7 @@ module RBI
         end
 
         rest_keyword = type.rest_keywords
-        if rest_keyword
+        if rest_keyword && !rest_keyword.type.is_a?(::RBS::Types::Bases::Nil)
           result.params << translate_function_param(rest_keyword, index)
         end
 
