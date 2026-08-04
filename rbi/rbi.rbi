@@ -1057,9 +1057,6 @@ class RBI::Parser::SigBuilder < ::RBI::Parser::Visitor
   sig { params(node: ::Prism::CallNode, value: ::String).returns(T::Boolean) }
   def allow_incompatible_override?(node, value); end
 
-  sig { params(node: ::Prism::Node).returns(T::Boolean) }
-  def braceless_shape?(node); end
-
   sig { returns(::RBI::Sig) }
   def current; end
 
@@ -1180,6 +1177,9 @@ class RBI::Parser::Visitor < ::Prism::Visitor
   sig { params(node: ::Prism::Node).returns(::Prism::Location) }
   def adjust_prism_location_for_heredoc(node); end
 
+  sig { params(node: ::Prism::Node).returns(T::Boolean) }
+  def braceless_shape?(node); end
+
   sig { params(node: ::Prism::Node).returns(::RBI::Loc) }
   def node_loc(node); end
 
@@ -1194,6 +1194,9 @@ class RBI::Parser::Visitor < ::Prism::Visitor
 
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
   def t_sig_without_runtime?(node); end
+
+  sig { params(node: ::Prism::Node).returns(::String) }
+  def type_string(node); end
 end
 
 class RBI::Printer < ::RBI::Visitor

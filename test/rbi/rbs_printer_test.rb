@@ -1001,6 +1001,36 @@ module RBI
       RBI
     end
 
+    def test_print_t_structs_with_braceless_shape_types
+      rbi = parse_rbi(<<~RBI)
+        class Shapes < T::Struct
+          const :config, "foo" => Integer
+          prop :options, :bar => String
+        end
+      RBI
+
+      assert_equal(<<~RBS, rbi.rbs_string)
+        class Shapes
+          attr_reader config: {"foo" => Integer}
+          attr_accessor options: {bar: String}
+
+          def initialize: (config: {"foo" => Integer}, options: {bar: String}) -> void
+        end
+      RBS
+    end
+
+    def test_reject_t_struct_fields_with_keyword_type_syntax
+      rbi = parse_rbi(<<~RBI)
+        class Invalid < T::Struct
+          prop :options, foo: Integer
+        end
+      RBI
+
+      assert_raises(RBI::RBSPrinter::Error) do
+        rbi.rbs_string
+      end
+    end
+
     def test_print_t_enums
       rbi = parse_rbi(<<~RBI)
         class Foo < T::Enum

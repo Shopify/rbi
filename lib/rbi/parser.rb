@@ -139,6 +139,21 @@ module RBI
         node_string(node) #: as !nil
       end
 
+      #: (Prism::Node node) -> String
+      def type_string(node)
+        type = node_string!(node)
+        braceless_shape?(node) ? "{#{type}}" : type
+      end
+
+      #: (Prism::Node node) -> bool
+      def braceless_shape?(node)
+        return false unless node.is_a?(Prism::KeywordHashNode)
+
+        node.elements.all? do |element|
+          element.is_a?(Prism::AssocNode) && element.operator_loc
+        end
+      end
+
       #: (Prism::Node node) -> Prism::Location
       def adjust_prism_location_for_heredoc(node)
         visitor = HeredocLocationVisitor.new(
@@ -833,7 +848,7 @@ module RBI
         return unless type_arg
 
         name = node_string!(name_arg).delete_prefix(":")
-        type = node_string!(type_arg)
+        type = type_string(type_arg)
         loc = node_loc(send)
         comments = node_comments(send)
         default_value = nil #: String?
@@ -995,17 +1010,7 @@ module RBI
         type_node = args.arguments.first
         return unless type_node
 
-        type = node_string!(type_node)
-        braceless_shape?(type_node) ? "{#{type}}" : type
-      end
-
-      #: (Prism::Node node) -> bool
-      def braceless_shape?(node)
-        return false unless node.is_a?(Prism::KeywordHashNode)
-
-        node.elements.all? do |element|
-          element.is_a?(Prism::AssocNode) && element.operator_loc
-        end
+        type_string(type_node)
       end
 
       #: (Prism::Node node) -> String
