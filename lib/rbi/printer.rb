@@ -835,7 +835,7 @@ module RBI
 
     #: (Sig node) -> Array[String]
     def sig_modifiers(node)
-      return EMPTY_MODIFIERS unless node.is_abstract || node.is_override || node.is_overridable ||
+      return EMPTY_MODIFIERS unless node.is_abstract || node.is_override || node.is_overridable || node.bind_type ||
         node.type_params? || node.checked
 
       modifiers = [] #: Array[String]
@@ -852,6 +852,7 @@ module RBI
       end
 
       modifiers << "overridable" if node.is_overridable
+      modifiers << "bind(#{node.bind_type})" if node.bind_type
       if node.type_params?
         modifiers << "type_parameters(#{node.type_params.map { |type| ":#{type}" }.join(", ")})"
       end

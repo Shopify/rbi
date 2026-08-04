@@ -606,6 +606,28 @@ module RBI
       RBI
     end
 
+    def test_print_method_sig_ignores_bind
+      rbi = parse_rbi(<<~RBI)
+        sig { bind(Foo).returns(String) }
+        def simple; end
+
+        sig { bind("foo" => Integer).void }
+        def shape; end
+
+        sig { bind({foo: Integer}).void }
+        def symbol_shape; end
+      RBI
+
+      # There is no equivalent for `bind` at the top level in RBS, so we just ignore it
+      assert_equal(<<~RBS, rbi.rbs_string)
+        def simple: -> String
+
+        def shape: -> void
+
+        def symbol_shape: -> void
+      RBS
+    end
+
     def test_print_breaks_long_signatures
       rbi_def = Method.new("foo") do |node|
         node.params << ReqParam.new("a")
