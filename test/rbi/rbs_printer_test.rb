@@ -748,7 +748,7 @@ module RBI
         sig { returns(T::Class[T.untyped]) }
         def e; end
 
-        sig { returns(T.class_of(Foo)[Bar]) }
+        sig { returns(T.class_of(Foo)[Foo, Bar]) }
         def f; end
       RBI
 
@@ -763,7 +763,7 @@ module RBI
 
         def e: -> Class[untyped]
 
-        def f: -> singleton(Foo)[Bar]
+        def f: -> singleton(Foo)[Foo, Bar]
       RBI
     end
 
