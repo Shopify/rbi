@@ -411,19 +411,19 @@ module RBI
       new_out = StringIO.new
 
       @out = new_out
-      print_method_sig_inline(node, sig)
+      print_method_sig_content(node, sig, multiline: false)
       @out = old_out
 
       max_line_length = @max_line_length
       if @force_multiline_signatures || (max_line_length && new_out.string.size > max_line_length)
-        print_method_sig_multiline(node, sig)
+        print_method_sig_content(node, sig, multiline: true)
       else
         print(new_out.string)
       end
     end
 
-    #: (RBI::Method node, Sig sig) -> void
-    def print_method_sig_inline(node, sig)
+    #: (RBI::Method node, Sig sig, multiline: bool) -> void
+    def print_method_sig_content(node, sig, multiline:)
       unless sig.type_params.empty?
         print("[#{sig.type_params.join(", ")}] ")
       end
@@ -436,49 +436,39 @@ module RBI
 
       raise Error, "Multiple block parameters found" if block_params.size > 1
 
-      block_param = block_params.first if block_params.any?
-
       unless params.empty?
-        print("(")
+        if multiline
+          printl("(")
+          indent
+        else
+          print("(")
+        end
+
         params.each_with_index do |(sig_param, method_param), index|
-          print(", ") if index > 0
+          if multiline
+            printt
+          elsif index > 0
+            print(", ")
+          end
           print_sig_param(
             sig_param,
             method_param, #: as !nil
           )
-        end
-        print(") ")
-      end
-      if (sig_param = block_param&.first)
-        block_type = sig_param.type
-        block_type = Type.parse_string(block_type) if block_type.is_a?(String)
-
-        block_is_nilable = false
-        if block_type.is_a?(Type::Nilable)
-          block_is_nilable = true
-          block_type = block_type.type
+          if multiline
+            print(",") if index < params.size - 1
+            printn
+          end
         end
 
-        type_string = parse_type(block_type).rbs_string.delete_prefix("^")
-
-        skip = false
-        case block_type
-        when Type::Untyped
-          type_string = "(?) -> untyped"
-          block_is_nilable = true
-        when Type::Simple
-          type_string = "(?) -> untyped"
-          skip = true if block_type.name == "NilClass"
-        end
-
-        if skip
-          # no-op, we skip the block definition
-        elsif block_is_nilable
-          print("?{ #{type_string} } ")
+        if multiline
+          dedent
+          printt(") ")
         else
-          print("{ #{type_string} } ")
+          print(") ")
         end
       end
+
+      print_method_sig_block(block_params.first&.first)
 
       type = parse_type(sig.return_type)
       print("-> #{type.rbs_string}")
@@ -487,73 +477,36 @@ module RBI
       print(" # #{loc}") if loc && print_locs
     end
 
-    #: (RBI::Method node, Sig sig) -> void
-    def print_method_sig_multiline(node, sig)
-      unless sig.type_params.empty?
-        print("[#{sig.type_params.join(", ")}] ")
+    #: (SigParam? sig_param) -> void
+    def print_method_sig_block(sig_param)
+      return unless sig_param
+
+      block_type = sig_param.type
+      block_type = Type.parse_string(block_type) if block_type.is_a?(String)
+
+      block_is_nilable = false
+      if block_type.is_a?(Type::Nilable)
+        block_is_nilable = true
+        block_type = block_type.type
       end
 
-      raise Error, "Arity mismatch between method and signature" if sig.params.size != node.params.size
+      type_string = parse_type(block_type).rbs_string.delete_prefix("^")
 
-      block_params, params = sig.params.zip(node.params).partition do |_sig_param, method_param|
-        method_param.is_a?(BlockParam)
+      case block_type
+      when Type::Untyped
+        type_string = "(?) -> untyped"
+        block_is_nilable = true
+      when Type::Simple
+        return if block_type.name == "NilClass"
+
+        type_string = "(?) -> untyped"
       end
 
-      raise Error, "Multiple block parameters found" if block_params.size > 1
-
-      block_param = block_params.first if block_params.any?
-
-      unless params.empty?
-        printl("(")
-        indent
-        params.each_with_index do |(sig_param, method_param), index|
-          printt
-          print_sig_param(
-            sig_param,
-            method_param, #: as !nil
-          )
-          print(",") if index < params.size - 1
-          printn
-        end
-        dedent
-        printt(") ")
+      if block_is_nilable
+        print("?{ #{type_string} } ")
+      else
+        print("{ #{type_string} } ")
       end
-      if (block_param = block_param&.first)
-        block_type = block_param.type
-        block_type = Type.parse_string(block_type) if block_type.is_a?(String)
-
-        block_is_nilable = false
-        if block_type.is_a?(Type::Nilable)
-          block_is_nilable = true
-          block_type = block_type.type
-        end
-
-        type_string = parse_type(block_type).rbs_string.delete_prefix("^")
-
-        skip = false
-        case block_type
-        when Type::Untyped
-          type_string = "(?) -> untyped"
-          block_is_nilable = true
-        when Type::Simple
-          type_string = "(?) -> untyped"
-          skip = true if block_type.name == "NilClass"
-        end
-
-        if skip
-          # no-op, we skip the block definition
-        elsif block_is_nilable
-          print("?{ #{type_string} } ")
-        else
-          print("{ #{type_string} } ")
-        end
-      end
-
-      type = parse_type(sig.return_type)
-      print("-> #{type.rbs_string}")
-
-      loc = sig.loc
-      print(" # #{loc}") if loc && print_locs
     end
 
     #: (Sig node) -> void
