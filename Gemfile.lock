@@ -3,7 +3,7 @@ PATH
   specs:
     rbi (0.4.2)
       prism (~> 1.0)
-      rbs (>= 4.0.1)
+      rbs (>= 4.1.2)
 
 GEM
   remote: https://rubygems.org/
