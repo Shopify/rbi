@@ -66,9 +66,12 @@ module RBI
         when ::RBS::Types::Bases::Void
           Type.void
         when ::RBS::Types::ClassSingleton
-          type_arg = type.args.first
-          type_parameter = translate(type_arg) if type_arg && !@options.erase_generic_types
-          Type.class_of(Type.simple(type.name.to_s), type_parameter)
+          type_parameters = if @options.erase_generic_types
+            []
+          else
+            type.args.map { |type_arg| translate(type_arg) }
+          end
+          Type.class_of(Type.simple(type.name.to_s), *type_parameters)
         when ::RBS::Types::ClassInstance
           translate_class_instance(type)
         when ::RBS::Types::Function
