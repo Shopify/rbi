@@ -1056,6 +1056,9 @@ class RBI::Parser::SigBuilder < ::RBI::Parser::Visitor
   sig { params(node: ::Prism::CallNode, value: ::String).returns(T::Boolean) }
   def allow_incompatible_override?(node, value); end
 
+  sig { params(node: ::Prism::Node).returns(T::Boolean) }
+  def braceless_shape?(node); end
+
   sig { returns(::RBI::Sig) }
   def current; end
 

@@ -242,6 +242,50 @@ module RBI
       RBI
     end
 
+    def test_parse_sigs_with_braceless_shape_return_type
+      rbi = <<~RBI
+        sig { returns("foo" => Integer) }
+        def single; end
+
+        sig { returns(:foo => Integer) }
+        def symbol; end
+
+        sig { returns("foo" => Integer, :bar => String) }
+        def mixed_keys; end
+
+        sig { returns("foo" => Integer, "bar" => String) }
+        def multiple; end
+      RBI
+
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
+        sig { returns({"foo" => Integer}) }
+        def single; end
+
+        sig { returns({:foo => Integer}) }
+        def symbol; end
+
+        sig { returns({"foo" => Integer, :bar => String}) }
+        def mixed_keys; end
+
+        sig { returns({"foo" => Integer, "bar" => String}) }
+        def multiple; end
+      RBI
+    end
+
+    def test_parse_sig_preserves_invalid_keyword_return_argument_syntax
+      rbi = <<~RBI
+        sig { returns(foo: Integer) }
+        def keyword; end
+
+        sig { returns("foo" => Integer, bar: String) }
+        def mixed; end
+      RBI
+
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
+    end
+
     def test_parse_ignore_sig_not_on_self
       rbi = <<~RBI
         sig { void }
