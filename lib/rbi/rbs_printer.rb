@@ -1069,9 +1069,12 @@ module RBI
       @string << "singleton("
       visit(type.type)
       @string << ")"
-      if (type_parameter = type.type_parameter)
+      unless type.type_parameters.empty?
         @string << "["
-        visit(type_parameter)
+        type.type_parameters.each_with_index do |type_parameter, index|
+          visit(type_parameter)
+          @string << ", " if index < type.type_parameters.size - 1
+        end
         @string << "]"
       end
     end

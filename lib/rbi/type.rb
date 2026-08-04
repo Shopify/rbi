@@ -315,29 +315,29 @@ module RBI
       #: Simple
       attr_reader :type
 
-      #: Type?
-      attr_reader :type_parameter
+      #: Array[Type]
+      attr_reader :type_parameters
 
-      #: (Simple type, ?Type? type_parameter) -> void
-      def initialize(type, type_parameter = nil)
+      #: (Simple type, *Type type_parameters) -> void
+      def initialize(type, *type_parameters)
         super()
         @type = type
-        @type_parameter = type_parameter
+        @type_parameters = type_parameters #: Array[Type]
       end
 
       # @override
       #: (BasicObject other) -> bool
       def ==(other)
-        ClassOf === other && @type == other.type && @type_parameter == other.type_parameter
+        ClassOf === other && @type == other.type && @type_parameters == other.type_parameters
       end
 
       # @override
       #: -> String
       def to_rbi
-        if @type_parameter
-          "::T.class_of(#{@type.to_rbi})[#{@type_parameter.to_rbi}]"
-        else
+        if @type_parameters.empty?
           "::T.class_of(#{@type.to_rbi})"
+        else
+          "::T.class_of(#{@type.to_rbi})[#{@type_parameters.map(&:to_rbi).join(", ")}]"
         end
       end
 
@@ -913,9 +913,9 @@ module RBI
       end
 
       # Builds a type that represents the singleton class of another type like `T.class_of(Foo)`.
-      #: (Simple type, ?Type? type_parameter) -> ClassOf
-      def class_of(type, type_parameter = nil)
-        ClassOf.new(type, type_parameter)
+      #: (Simple type, *(Type | Array[Type]) type_parameters) -> ClassOf
+      def class_of(type, *type_parameters)
+        ClassOf.new(type, *type_parameters.flatten)
       end
 
       # Builds a type that represents a nilable of another type like `T.nilable(String)`.

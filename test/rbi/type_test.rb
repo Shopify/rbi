@@ -460,8 +460,11 @@ module RBI
     end
 
     def test_build_type_class_of_generic
-      type = Type.class_of(Type.simple("String"), Type.simple("Integer"))
-      assert_equal("::T.class_of(String)[Integer]", type.to_rbi)
+      type = Type.class_of(Type.simple("String"), Type.simple("String"), Type.simple("Integer"))
+      assert_equal("::T.class_of(String)[String, Integer]", type.to_rbi)
+
+      type = Type.class_of(Type.simple("String"), [Type.simple("String"), Type.simple("Integer")])
+      assert_equal("::T.class_of(String)[String, Integer]", type.to_rbi)
     end
 
     def test_buid_type_t_class
