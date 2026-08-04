@@ -242,6 +242,44 @@ module RBI
       RBI
     end
 
+    def test_parse_sigs_with_bind
+      rbi = <<~RBI
+        sig { bind(Foo).void }
+        def simple; end
+
+        sig { override.bind(T.class_of(Foo)).params(value: String).returns(Symbol) }
+        def chained(value); end
+      RBI
+
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
+    end
+
+    def test_parse_sigs_with_braceless_shape_bind_type
+      rbi = <<~RBI
+        sig { bind("foo" => Integer).void }
+        def string_key; end
+
+        sig { bind(:foo => Integer).void }
+        def symbol_key; end
+
+        sig { bind("foo" => Integer, :bar => String).void }
+        def mixed_keys; end
+      RBI
+
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
+        sig { bind({"foo" => Integer}).void }
+        def string_key; end
+
+        sig { bind({:foo => Integer}).void }
+        def symbol_key; end
+
+        sig { bind({"foo" => Integer, :bar => String}).void }
+        def mixed_keys; end
+      RBI
+    end
+
     def test_parse_sigs_with_braceless_shape_return_type
       rbi = <<~RBI
         sig { returns("foo" => Integer) }
