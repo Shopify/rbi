@@ -2671,8 +2671,8 @@ class RBI::Type
     sig { returns(::RBI::Type::Boolean) }
     def boolean; end
 
-    sig { params(type: ::RBI::Type::Simple, type_parameter: T.nilable(::RBI::Type)).returns(::RBI::Type::ClassOf) }
-    def class_of(type, type_parameter = T.unsafe(nil)); end
+    sig { params(type: ::RBI::Type::Simple, type_parameters: ::RBI::Type).returns(::RBI::Type::ClassOf) }
+    def class_of(type, *type_parameters); end
 
     sig { params(name: ::String, params: T.any(::RBI::Type, T::Array[::RBI::Type])).returns(::RBI::Type::Generic) }
     def generic(name, *params); end
@@ -2865,8 +2865,8 @@ class RBI::Type::Class < ::RBI::Type
 end
 
 class RBI::Type::ClassOf < ::RBI::Type
-  sig { params(type: ::RBI::Type::Simple, type_parameter: T.nilable(::RBI::Type)).void }
-  def initialize(type, type_parameter = T.unsafe(nil)); end
+  sig { params(type: ::RBI::Type::Simple, type_parameters: ::RBI::Type).void }
+  def initialize(type, *type_parameters); end
 
   sig { override.params(other: ::BasicObject).returns(T::Boolean) }
   def ==(other); end
@@ -2883,8 +2883,8 @@ class RBI::Type::ClassOf < ::RBI::Type
   sig { returns(::RBI::Type::Simple) }
   def type; end
 
-  sig { returns(T.nilable(::RBI::Type)) }
-  def type_parameter; end
+  sig { returns(T::Array[::RBI::Type]) }
+  def type_parameters; end
 end
 
 class RBI::Type::Composite < ::RBI::Type
