@@ -547,6 +547,11 @@ module RBI
       params << BlockParam.new(name)
     end
 
+    #: -> void
+    def add_forwarding_param
+      params << ForwardingParam.new
+    end
+
     #: (
     #|   ?params: Array[SigParam]?,
     #|   ?return_type: (String | Type),
@@ -607,7 +612,7 @@ module RBI
     #: -> String?
     def name
       case self
-      when ReqParam, OptParam, KwParam, KwOptParam, RestParam, KwRestParam, BlockParam
+      when ReqParam, OptParam, KwParam, KwOptParam, RestParam, KwRestParam, BlockParam, ForwardingParam
         name
       end
     end
@@ -834,6 +839,38 @@ module RBI
     #: (Object? other) -> bool
     def ==(other)
       BlockParam === other && (name == other.name || anonymous? || other.anonymous?)
+    end
+  end
+
+  # The `...` in `def m(...)`
+  class ForwardingParam < Param
+    # @override
+    #: -> nil
+    def name
+      nil
+    end
+
+    #: (?loc: Loc?, ?comments: Array[Comment]?) ?{ (ForwardingParam node) -> void } -> void
+    def initialize(loc: nil, comments: nil, &block)
+      super(loc: loc, comments: comments)
+      block&.call(self)
+    end
+
+    # @override
+    #: -> String
+    def to_s
+      "..."
+    end
+
+    # @override
+    #: -> bool
+    def anonymous?
+      false
+    end
+
+    #: (Object? other) -> bool
+    def ==(other)
+      ForwardingParam === other
     end
   end
 

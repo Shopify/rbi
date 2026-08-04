@@ -405,6 +405,29 @@ class RBI::Formatter
   def print_file(file); end
 end
 
+class RBI::ForwardingParam < ::RBI::Param
+  sig do
+    params(
+      loc: T.nilable(::RBI::Loc),
+      comments: T.nilable(T::Array[::RBI::Comment]),
+      block: T.nilable(T.proc.params(node: ::RBI::ForwardingParam).void)
+    ).void
+  end
+  def initialize(loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
+
+  sig { params(other: T.nilable(::Object)).returns(T::Boolean) }
+  def ==(other); end
+
+  sig { override.returns(T::Boolean) }
+  def anonymous?; end
+
+  sig { override.returns(::NilClass) }
+  def name; end
+
+  sig { override.returns(::String) }
+  def to_s; end
+end
+
 class RBI::Group < ::RBI::Tree
   sig { params(kind: ::RBI::Group::Kind).void }
   def initialize(kind); end
@@ -689,6 +712,9 @@ class RBI::Method < ::RBI::NodeWithComments
   sig { params(name: ::String).void }
   def add_block_param(name); end
 
+  sig { void }
+  def add_forwarding_param; end
+
   sig { params(name: ::String, default_value: ::String).void }
   def add_kw_opt_param(name, default_value); end
 
@@ -769,6 +795,9 @@ class RBI::Method < ::RBI::NodeWithComments
 
   sig { params(preferred: T::Array[::RBI::Param], fallback: T::Array[::RBI::Param]).returns(T::Array[::RBI::Param]) }
   def merge_params(preferred, fallback); end
+
+  sig { params(params: T::Array[::RBI::Param]).returns(T::Boolean) }
+  def params_have_forwarding?(params); end
 
   sig { params(sigs: T::Array[::RBI::Sig], params: T::Array[::RBI::Param]).void }
   def rename_sigs_params(sigs, params); end
@@ -1283,6 +1312,9 @@ class RBI::Printer < ::RBI::Visitor
   sig { override.params(node: ::RBI::Extend).void }
   def visit_extend(node); end
 
+  sig { override.params(node: ::RBI::ForwardingParam).void }
+  def visit_forwarding_param(node); end
+
   sig { override.params(node: ::RBI::Group).void }
   def visit_group(node); end
 
@@ -1645,6 +1677,9 @@ class RBI::RBSPrinter < ::RBI::Visitor
 
   sig { override.params(file: ::RBI::File).void }
   def visit_file(file); end
+
+  sig { override.params(node: ::RBI::ForwardingParam).void }
+  def visit_forwarding_param(node); end
 
   sig { override.params(node: ::RBI::Group).void }
   def visit_group(node); end
@@ -3427,6 +3462,9 @@ class RBI::Visitor
 
   sig { params(node: ::RBI::Extend).void }
   def visit_extend(node); end
+
+  sig { params(node: ::RBI::ForwardingParam).void }
+  def visit_forwarding_param(node); end
 
   sig { params(node: ::RBI::Group).void }
   def visit_group(node); end

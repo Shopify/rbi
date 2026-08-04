@@ -755,6 +755,11 @@ module RBI
               loc: node_loc(param),
               comments: node_comments(param),
             )
+          when Prism::ForwardingParameterNode
+            ForwardingParam.new(
+              loc: node_loc(param),
+              comments: node_comments(param),
+            )
           else
             raise ParseError.new("Unexpected parameter node `#{param.class}`", node_loc(param))
           end
