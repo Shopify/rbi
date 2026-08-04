@@ -2671,7 +2671,12 @@ class RBI::Type
     sig { returns(::RBI::Type::Boolean) }
     def boolean; end
 
-    sig { params(type: ::RBI::Type::Simple, type_parameters: ::RBI::Type).returns(::RBI::Type::ClassOf) }
+    sig do
+      params(
+        type: ::RBI::Type::Simple,
+        type_parameters: T.any(::RBI::Type, T::Array[::RBI::Type])
+      ).returns(::RBI::Type::ClassOf)
+    end
     def class_of(type, *type_parameters); end
 
     sig { params(name: ::String, params: T.any(::RBI::Type, T::Array[::RBI::Type])).returns(::RBI::Type::Generic) }

@@ -913,9 +913,9 @@ module RBI
       end
 
       # Builds a type that represents the singleton class of another type like `T.class_of(Foo)`.
-      #: (Simple type, *Type type_parameters) -> ClassOf
+      #: (Simple type, *(Type | Array[Type]) type_parameters) -> ClassOf
       def class_of(type, *type_parameters)
-        ClassOf.new(type, *type_parameters)
+        ClassOf.new(type, *type_parameters.flatten)
       end
 
       # Builds a type that represents a nilable of another type like `T.nilable(String)`.
