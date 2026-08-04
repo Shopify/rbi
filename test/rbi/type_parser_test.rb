@@ -167,6 +167,12 @@ module RBI
       type = Type.parse_string("T.class_of(Foo)[Bar]")
       assert_equal(Type.class_of(Type.simple("Foo"), Type.simple("Bar")), type)
 
+      type = Type.parse_string("T.class_of(Foo)[Bar, Baz]")
+      assert_equal(
+        Type.class_of(Type.simple("Foo"), Type.simple("Bar"), Type.simple("Baz")),
+        type,
+      )
+
       e = assert_raises(RBI::Type::Error) do
         Type.parse_string("T.class_of(T.nilable(Foo))")
       end
@@ -175,7 +181,7 @@ module RBI
       e = assert_raises(RBI::Type::Error) do
         Type.parse_string("T.class_of(Foo)[]")
       end
-      assert_equal("Expected exactly 1 argument, got 0", e.message)
+      assert_equal("Expected at least 1 argument, got 0", e.message)
     end
 
     def test_parse_all

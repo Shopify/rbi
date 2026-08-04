@@ -130,7 +130,7 @@ module RBI
               return Type::Generic.new(recv.slice, *args.map { |arg| parse_node(arg) })
             end
           when Prism::CallNode
-            # `T.class_of(Foo)[Bar]`
+            # `T.class_of(Foo)[Foo]` or `T.class_of(Foo)[Foo, Bar]`
             if t_class_of?(recv)
               type_args = check_arguments_exactly!(recv, 1)
               type = parse_node(
@@ -138,11 +138,9 @@ module RBI
               )
               raise Error, "Expected a simple type, got `#{type}`" unless type.is_a?(Type::Simple)
 
-              type_param_args = check_arguments_exactly!(node, 1)
-              type_param = parse_node(
-                type_param_args.first, #: as !nil
-              )
-              return Type::ClassOf.new(type, type_param)
+              type_parameter_args = check_arguments_at_least!(node, 1)
+              type_parameters = type_parameter_args.map { |arg| parse_node(arg) }
+              return Type::ClassOf.new(type, *type_parameters)
             end
           end
 
