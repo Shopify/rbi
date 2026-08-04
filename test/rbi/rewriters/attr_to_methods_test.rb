@@ -291,6 +291,23 @@ module RBI
       RBI
     end
 
+    def test_replacing_attr_accessor_copies_bind
+      tree = parse_rbi(<<~RBI)
+        sig { bind(Foo).returns(Integer) }
+        attr_accessor :value
+      RBI
+
+      tree.replace_attributes_with_methods!
+
+      assert_equal(<<~RBI, tree.string)
+        sig { bind(Foo).returns(Integer) }
+        def value; end
+
+        sig { bind(Foo).params(value: Integer).void }
+        def value=(value); end
+      RBI
+    end
+
     def test_raise_on_multiple_sigs
       tree = parse_rbi(<<~RBI)
         sig { returns(Integer) }
