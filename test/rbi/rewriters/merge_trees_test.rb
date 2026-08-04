@@ -1288,7 +1288,7 @@ module RBI
           sig { params(a: Integer).void }
           def m3(*a); end
 
-          sig { params(a: Integer, b: String, c: Float, d: Symbol, e: T::Boolean, f: T::Hash[String, Integer], g: T.proc.void).void }
+          sig { params(a: Integer, b: String, c: Float, d: Symbol, e: ::T::Boolean, f: T::Hash[String, Integer], g: ::T.proc.void).void }
           def m4(a, b = nil, *c, d:, e: nil, **f, &g); end
         end
       RBI
