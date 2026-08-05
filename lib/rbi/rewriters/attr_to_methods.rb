@@ -103,6 +103,7 @@ module RBI
         Sig.new(
           params: params,
           return_type: "void",
+          bind_type: sig.bind_type,
           is_abstract: sig.is_abstract,
           is_override: sig.is_override,
           is_overridable: sig.is_overridable,

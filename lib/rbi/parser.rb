@@ -139,6 +139,21 @@ module RBI
         node_string(node) #: as !nil
       end
 
+      #: (Prism::Node node) -> String
+      def type_string(node)
+        type = node_string!(node)
+        braceless_shape?(node) ? "{#{type}}" : type
+      end
+
+      #: (Prism::Node node) -> bool
+      def braceless_shape?(node)
+        return false unless node.is_a?(Prism::KeywordHashNode)
+
+        node.elements.all? do |element|
+          element.is_a?(Prism::AssocNode) && element.operator_loc
+        end
+      end
+
       #: (Prism::Node node) -> Prism::Location
       def adjust_prism_location_for_heredoc(node)
         visitor = HeredocLocationVisitor.new(
@@ -833,7 +848,7 @@ module RBI
         return unless type_arg
 
         name = node_string!(name_arg).delete_prefix(":")
-        type = node_string!(type_arg)
+        type = type_string(type_arg)
         loc = node_loc(send)
         comments = node_comments(send)
         default_value = nil #: String?
@@ -941,6 +956,9 @@ module RBI
               @current.is_final = node_string(arg) == ":final"
             end
           end
+        when "bind"
+          bind_type = sig_type_argument(node)
+          @current.bind_type = bind_type if bind_type
         when "abstract"
           @current.is_abstract = true
         when "checked"
@@ -958,15 +976,8 @@ module RBI
         when "params"
           visit(node.arguments)
         when "returns"
-          args = node.arguments
-          if args.is_a?(Prism::ArgumentsNode)
-            first = args.arguments.first
-            if first
-              return_type = node_string!(first)
-              return_type = "{#{return_type}}" if braceless_shape?(first)
-              @current.return_type = return_type
-            end
-          end
+          return_type = sig_type_argument(node)
+          @current.return_type = return_type if return_type
         when "type_parameters"
           args = node.arguments
           if args.is_a?(Prism::ArgumentsNode)
@@ -991,13 +1002,15 @@ module RBI
         )
       end
 
-      #: (Prism::Node node) -> bool
-      def braceless_shape?(node)
-        return false unless node.is_a?(Prism::KeywordHashNode)
+      #: (Prism::CallNode node) -> String?
+      def sig_type_argument(node)
+        args = node.arguments
+        return unless args.is_a?(Prism::ArgumentsNode)
 
-        node.elements.all? do |element|
-          element.is_a?(Prism::AssocNode) && element.operator_loc
-        end
+        type_node = args.arguments.first
+        return unless type_node
+
+        type_string(type_node)
       end
 
       #: (Prism::Node node) -> String

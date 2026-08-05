@@ -228,7 +228,7 @@ module RBI
             sig.return_type = "void"
           end
 
-          node.add_sig(type_params: ["T", "U"]) do |sig|
+          node.add_sig(bind_type: "Parent", type_params: ["T", "U"]) do |sig|
             sig.is_abstract = true
             sig.is_override = true
             sig.is_overridable = true
@@ -248,7 +248,7 @@ module RBI
       assert_equal(<<~RBI, rbi.string)
         sig { params(p1: T.untyped, p2: String).returns(T.untyped) }
         sig { params(p3: T.untyped).void }
-        sig(:final) { abstract.override.overridable.type_parameters(:T, :U).checked(:never).params(p4: T.untyped).void }
+        sig(:final) { abstract.override.overridable.bind(Parent).type_parameters(:T, :U).checked(:never).params(p4: T.untyped).void }
         sig { params(p5: T.untyped).void }
         def foo(p1, p2 = 'value', *p3, p4:, p5: 'value', **p6, &p7); end
       RBI

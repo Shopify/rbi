@@ -919,6 +919,18 @@ module RBI
       RBI
     end
 
+    def test_print_sig_with_bind
+      sig = Sig.new(bind_type: "Foo")
+
+      assert_equal("sig { bind(Foo).void }\n", sig.string)
+      assert_equal(<<~RBI, sig.string(max_line_length: 1))
+        sig do
+          bind(Foo)
+            .void
+        end
+      RBI
+    end
+
     def test_print_sig_over_max_line_length_with_all_modifiers
       sig = Sig.new
 

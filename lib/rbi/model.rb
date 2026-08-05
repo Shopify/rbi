@@ -555,6 +555,7 @@ module RBI
     #: (
     #|   ?params: Array[SigParam]?,
     #|   ?return_type: (String | Type),
+    #|   ?bind_type: (String | Type)?,
     #|   ?is_abstract: bool,
     #|   ?is_override: bool,
     #|   ?is_overridable: bool,
@@ -564,6 +565,7 @@ module RBI
     def add_sig(
       params: [],
       return_type: "void",
+      bind_type: nil,
       is_abstract: false,
       is_override: false,
       is_overridable: false,
@@ -575,6 +577,7 @@ module RBI
       sig = Sig.new(
         params: params,
         return_type: return_type,
+        bind_type: bind_type,
         is_abstract: is_abstract,
         is_override: is_override,
         is_overridable: is_overridable,
@@ -1058,6 +1061,9 @@ module RBI
     #: (Type | String)
     attr_accessor :return_type
 
+    #: (Type | String)?
+    attr_accessor :bind_type
+
     #: bool
     attr_accessor :is_abstract
 
@@ -1095,6 +1101,7 @@ module RBI
     #: (
     #|   ?params: Array[SigParam]?,
     #|   ?return_type: (Type | String),
+    #|   ?bind_type: (Type | String)?,
     #|   ?is_abstract: bool,
     #|   ?is_override: bool,
     #|   ?is_overridable: bool,
@@ -1110,6 +1117,7 @@ module RBI
     def initialize(
       params: nil,
       return_type: "void",
+      bind_type: nil,
       is_abstract: false,
       is_override: false,
       is_overridable: false,
@@ -1126,6 +1134,7 @@ module RBI
       super(loc: loc, comments: comments)
       @params = params #: Array[SigParam]?
       @return_type = return_type
+      @bind_type = bind_type
       @is_abstract = is_abstract
       @is_override = is_override
       @is_overridable = is_overridable
@@ -1152,7 +1161,8 @@ module RBI
     def ==(other)
       return false unless other.is_a?(Sig)
 
-      params == other.params && return_type.to_s == other.return_type.to_s && is_abstract == other.is_abstract &&
+      params == other.params && return_type.to_s == other.return_type.to_s &&
+        bind_type&.to_s == other.bind_type&.to_s && is_abstract == other.is_abstract &&
         is_override == other.is_override && is_overridable == other.is_overridable && is_final == other.is_final &&
         without_runtime == other.without_runtime && type_params == other.type_params && checked == other.checked
     end

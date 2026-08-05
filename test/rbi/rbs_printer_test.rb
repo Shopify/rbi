@@ -606,6 +606,28 @@ module RBI
       RBI
     end
 
+    def test_print_method_sig_ignores_bind
+      rbi = parse_rbi(<<~RBI)
+        sig { bind(Foo).returns(String) }
+        def simple; end
+
+        sig { bind("foo" => Integer).void }
+        def shape; end
+
+        sig { bind({foo: Integer}).void }
+        def symbol_shape; end
+      RBI
+
+      # There is no equivalent for `bind` at the top level in RBS, so we just ignore it
+      assert_equal(<<~RBS, rbi.rbs_string)
+        def simple: -> String
+
+        def shape: -> void
+
+        def symbol_shape: -> void
+      RBS
+    end
+
     def test_print_breaks_long_signatures
       rbi_def = Method.new("foo") do |node|
         node.params << ReqParam.new("a")
@@ -977,6 +999,36 @@ module RBI
           def foo: -> untyped
         end
       RBI
+    end
+
+    def test_print_t_structs_with_braceless_shape_types
+      rbi = parse_rbi(<<~RBI)
+        class Shapes < T::Struct
+          const :config, "foo" => Integer
+          prop :options, :bar => String
+        end
+      RBI
+
+      assert_equal(<<~RBS, rbi.rbs_string)
+        class Shapes
+          attr_reader config: {"foo" => Integer}
+          attr_accessor options: {bar: String}
+
+          def initialize: (config: {"foo" => Integer}, options: {bar: String}) -> void
+        end
+      RBS
+    end
+
+    def test_reject_t_struct_fields_with_keyword_type_syntax
+      rbi = parse_rbi(<<~RBI)
+        class Invalid < T::Struct
+          prop :options, foo: Integer
+        end
+      RBI
+
+      assert_raises(RBI::RBSPrinter::Error) do
+        rbi.rbs_string
+      end
     end
 
     def test_print_t_enums

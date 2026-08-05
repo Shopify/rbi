@@ -714,6 +714,7 @@ class RBI::Method < ::RBI::NodeWithComments
     params(
       params: T.nilable(T::Array[::RBI::SigParam]),
       return_type: T.any(::RBI::Type, ::String),
+      bind_type: T.nilable(T.any(::RBI::Type, ::String)),
       is_abstract: T::Boolean,
       is_override: T::Boolean,
       is_overridable: T::Boolean,
@@ -723,7 +724,7 @@ class RBI::Method < ::RBI::NodeWithComments
       block: T.nilable(T.proc.params(node: ::RBI::Sig).void)
     ).void
   end
-  def add_sig(params: T.unsafe(nil), return_type: T.unsafe(nil), is_abstract: T.unsafe(nil), is_override: T.unsafe(nil), is_overridable: T.unsafe(nil), is_final: T.unsafe(nil), type_params: T.unsafe(nil), checked: T.unsafe(nil), &block); end
+  def add_sig(params: T.unsafe(nil), return_type: T.unsafe(nil), bind_type: T.unsafe(nil), is_abstract: T.unsafe(nil), is_override: T.unsafe(nil), is_overridable: T.unsafe(nil), is_final: T.unsafe(nil), type_params: T.unsafe(nil), checked: T.unsafe(nil), &block); end
 
   sig { override.params(other: ::RBI::Node).returns(T::Boolean) }
   def compatible_with?(other); end
@@ -1056,14 +1057,14 @@ class RBI::Parser::SigBuilder < ::RBI::Parser::Visitor
   sig { params(node: ::Prism::CallNode, value: ::String).returns(T::Boolean) }
   def allow_incompatible_override?(node, value); end
 
-  sig { params(node: ::Prism::Node).returns(T::Boolean) }
-  def braceless_shape?(node); end
-
   sig { returns(::RBI::Sig) }
   def current; end
 
   sig { params(node: ::Prism::Node).returns(::String) }
   def sig_param_name(node); end
+
+  sig { params(node: ::Prism::CallNode).returns(T.nilable(::String)) }
+  def sig_type_argument(node); end
 
   sig { override.params(node: ::Prism::AssocNode).void }
   def visit_assoc_node(node); end
@@ -1176,6 +1177,9 @@ class RBI::Parser::Visitor < ::Prism::Visitor
   sig { params(node: ::Prism::Node).returns(::Prism::Location) }
   def adjust_prism_location_for_heredoc(node); end
 
+  sig { params(node: ::Prism::Node).returns(T::Boolean) }
+  def braceless_shape?(node); end
+
   sig { params(node: ::Prism::Node).returns(::RBI::Loc) }
   def node_loc(node); end
 
@@ -1190,6 +1194,9 @@ class RBI::Parser::Visitor < ::Prism::Visitor
 
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
   def t_sig_without_runtime?(node); end
+
+  sig { params(node: ::Prism::Node).returns(::String) }
+  def type_string(node); end
 end
 
 class RBI::Printer < ::RBI::Visitor
@@ -2261,6 +2268,7 @@ class RBI::Sig < ::RBI::NodeWithComments
     params(
       params: T.nilable(T::Array[::RBI::SigParam]),
       return_type: T.any(::RBI::Type, ::String),
+      bind_type: T.nilable(T.any(::RBI::Type, ::String)),
       is_abstract: T::Boolean,
       is_override: T::Boolean,
       is_overridable: T::Boolean,
@@ -2275,7 +2283,7 @@ class RBI::Sig < ::RBI::NodeWithComments
       block: T.nilable(T.proc.params(node: ::RBI::Sig).void)
     ).void
   end
-  def initialize(params: T.unsafe(nil), return_type: T.unsafe(nil), is_abstract: T.unsafe(nil), is_override: T.unsafe(nil), is_overridable: T.unsafe(nil), is_final: T.unsafe(nil), allow_incompatible_override: T.unsafe(nil), allow_incompatible_override_visibility: T.unsafe(nil), without_runtime: T.unsafe(nil), type_params: T.unsafe(nil), checked: T.unsafe(nil), loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
+  def initialize(params: T.unsafe(nil), return_type: T.unsafe(nil), bind_type: T.unsafe(nil), is_abstract: T.unsafe(nil), is_override: T.unsafe(nil), is_overridable: T.unsafe(nil), is_final: T.unsafe(nil), allow_incompatible_override: T.unsafe(nil), allow_incompatible_override_visibility: T.unsafe(nil), without_runtime: T.unsafe(nil), type_params: T.unsafe(nil), checked: T.unsafe(nil), loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 
   sig { params(param: ::RBI::SigParam).void }
   def <<(param); end
@@ -2295,6 +2303,11 @@ class RBI::Sig < ::RBI::NodeWithComments
   def allow_incompatible_override_visibility; end
 
   def allow_incompatible_override_visibility=(_arg0); end
+
+  sig { returns(T.nilable(T.any(::RBI::Type, ::String))) }
+  def bind_type; end
+
+  def bind_type=(_arg0); end
 
   sig { returns(T.nilable(::Symbol)) }
   def checked; end
