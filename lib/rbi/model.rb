@@ -542,11 +542,6 @@ module RBI
       params << KwRestParam.new(name)
     end
 
-    #: -> void
-    def add_no_kw_param
-      params << NoKwParam.new
-    end
-
     #: (String name) -> void
     def add_block_param(name)
       params << BlockParam.new(name)
