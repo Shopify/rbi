@@ -160,7 +160,7 @@ require "rbi"
 
 file = RBI::File.new do |f|
   f << RBI::Class.new("User") do |klass|
-    klass << RBI::Method.new("name", sigs: [RBI::Sig.new(return_type: "String")])
+    klass << RBI::Method.new("name", sigs: [RBI::Sig.new(return_type: RBI::Type.simple("String"))])
   end
 end
 

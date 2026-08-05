@@ -1022,6 +1022,7 @@ module RBI
 
         type_string(type_node)
       end
+
       #: (Prism::Node node) -> String
       def sig_param_name(node)
         case node

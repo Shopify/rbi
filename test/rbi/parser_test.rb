@@ -530,15 +530,15 @@ module RBI
       tree = parse_rbi(rbi)
       assert_equal(<<~RBI, tree.string)
         class Shapes < T::Struct
-          const :string_key, {"foo" => Integer}
-          const :symbol_key, {:foo => Integer}
-          prop :mixed_keys, {"foo" => Integer, :bar => String}
-          prop :multiple, {"foo" => Integer, "bar" => String}
+          const :string_key, { "foo" => Integer }
+          const :symbol_key, { foo: Integer }
+          prop :mixed_keys, { "foo" => Integer, bar: String }
+          prop :multiple, { "foo" => Integer, "bar" => String }
         end
       RBI
     end
 
-    def test_parse_t_struct_fields_preserves_keyword_type_syntax
+    def test_parse_t_struct_fields_rejects_keyword_type_syntax
       rbi = <<~RBI
         class Invalid < T::Struct
           const :keyword, foo: Integer
@@ -546,8 +546,9 @@ module RBI
         end
       RBI
 
-      tree = parse_rbi(rbi)
-      assert_equal(rbi, tree.string)
+      assert_raises(ParseError) do
+        parse_rbi(rbi)
+      end
     end
 
     def test_parse_t_enums

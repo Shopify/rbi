@@ -1015,18 +1015,6 @@ module RBI
       RBS
     end
 
-    def test_reject_t_struct_fields_with_keyword_type_syntax
-      rbi = parse_rbi(<<~RBI)
-        class Invalid < T::Struct
-          prop :options, foo: Integer
-        end
-      RBI
-
-      assert_raises(RBI::RBSPrinter::Error) do
-        rbi.rbs_string
-      end
-    end
-
     def test_print_t_enums
       rbi = parse_rbi(<<~RBI)
         class Foo < T::Enum
