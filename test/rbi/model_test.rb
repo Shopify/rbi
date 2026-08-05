@@ -254,6 +254,18 @@ module RBI
       RBI
     end
 
+    def test_model_add_no_kw_param
+      rbi = Tree.new do |tree|
+        tree << Method.new("foo") do |method|
+          method.add_no_kw_param
+        end
+      end
+
+      assert_equal(<<~RBI, rbi.string)
+        def foo(**nil); end
+      RBI
+    end
+
     def test_model_fully_qualified_names
       mod = Module.new("Foo")
       assert_equal("::Foo", mod.fully_qualified_name)
