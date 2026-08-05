@@ -168,22 +168,22 @@ module RBI
     def test_print_attributes_with_signatures
       sig1 = Sig.new
 
-      sig2 = Sig.new(return_type: "R")
-      sig2 << SigParam.new("a", "A")
-      sig2 << SigParam.new("b", "T.nilable(B)")
-      sig2 << SigParam.new("b", "T.proc.void")
+      sig2 = Sig.new(return_type: Type.simple("R"))
+      sig2 << SigParam.new("a", Type.simple("A"))
+      sig2 << SigParam.new("b", Type.nilable(Type.simple("B")))
+      sig2 << SigParam.new("b", Type.proc.void)
 
       sig3 = Sig.new(is_abstract: true)
       sig3.is_override = true
       sig3.is_overridable = true
 
-      sig4 = Sig.new(return_type: "T.type_parameter(:V)")
+      sig4 = Sig.new(return_type: Type.type_parameter(:V))
       sig4.type_params << "U"
       sig4.type_params << "V"
-      sig4 << SigParam.new("a", "T.type_parameter(:U)")
+      sig4 << SigParam.new("a", Type.type_parameter(:U))
 
       sig5 = Sig.new(without_runtime: true)
-      sig5.return_type = "R"
+      sig5.return_type = Type.simple("R")
 
       attr = AttrAccessor.new(:foo, :bar)
       attr.sigs << sig1
@@ -194,9 +194,9 @@ module RBI
 
       assert_equal(<<~RBI, attr.string)
         sig { void }
-        sig { params(a: A, b: T.nilable(B), b: T.proc.void).returns(R) }
+        sig { params(a: A, b: ::T.nilable(B), b: ::T.proc.void).returns(R) }
         sig { abstract.override.overridable.void }
-        sig { type_parameters(:U, :V).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)) }
+        sig { type_parameters(:U, :V).params(a: ::T.type_parameter(:U)).returns(::T.type_parameter(:V)) }
         ::T::Sig::WithoutRuntime.sig { returns(R) }
         attr_accessor :foo, :bar
       RBI
@@ -205,28 +205,28 @@ module RBI
     def test_print_methods_with_signatures
       sig1 = Sig.new
 
-      sig2 = Sig.new(return_type: "R")
-      sig2 << SigParam.new("a", "A")
-      sig2 << SigParam.new("b", "T.nilable(B)")
-      sig2 << SigParam.new("b", "T.proc.void")
+      sig2 = Sig.new(return_type: Type.simple("R"))
+      sig2 << SigParam.new("a", Type.simple("A"))
+      sig2 << SigParam.new("b", Type.nilable(Type.simple("B")))
+      sig2 << SigParam.new("b", Type.proc.void)
 
       sig3 = Sig.new(is_abstract: true)
       sig3.is_override = true
       sig3.is_overridable = true
       sig3.checked = :never
 
-      sig4 = Sig.new(return_type: "T.nilable(String)")
+      sig4 = Sig.new(return_type: Type.nilable(Type.simple("String")))
       sig4.is_override = true
       sig4.allow_incompatible_override = true
 
-      sig5 = Sig.new(return_type: "T.nilable(String)")
+      sig5 = Sig.new(return_type: Type.nilable(Type.simple("String")))
       sig5.is_override = true
       sig5.allow_incompatible_override_visibility = true
 
-      sig6 = Sig.new(return_type: "T.type_parameter(:V)")
+      sig6 = Sig.new(return_type: Type.type_parameter(:V))
       sig6.type_params << "U"
       sig6.type_params << "V"
-      sig6 << SigParam.new("a", "T.type_parameter(:U)")
+      sig6 << SigParam.new("a", Type.type_parameter(:U))
 
       method = Method.new("foo")
       method.sigs << sig1
@@ -237,11 +237,11 @@ module RBI
       method.sigs << sig6
       assert_equal(<<~RBI, method.string)
         sig { void }
-        sig { params(a: A, b: T.nilable(B), b: T.proc.void).returns(R) }
+        sig { params(a: A, b: ::T.nilable(B), b: ::T.proc.void).returns(R) }
         sig { abstract.override.overridable.checked(:never).void }
-        sig { override(allow_incompatible: true).returns(T.nilable(String)) }
-        sig { override(allow_incompatible: :visibility).returns(T.nilable(String)) }
-        sig { type_parameters(:U, :V).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)) }
+        sig { override(allow_incompatible: true).returns(::T.nilable(String)) }
+        sig { override(allow_incompatible: :visibility).returns(::T.nilable(String)) }
+        sig { type_parameters(:U, :V).params(a: ::T.type_parameter(:U)).returns(::T.type_parameter(:V)) }
         def foo; end
       RBI
     end
@@ -300,10 +300,10 @@ module RBI
 
     def test_print_t_structs
       struct = TStruct.new("Foo")
-      struct << TStructConst.new("a", "A")
-      struct << TStructConst.new("b", "B", default: "B.new")
-      struct << TStructProp.new("c", "C")
-      struct << TStructProp.new("d", "D", default: "D.new")
+      struct << TStructConst.new("a", Type.simple("A"))
+      struct << TStructConst.new("b", Type.simple("B"), default: "B.new")
+      struct << TStructProp.new("c", Type.simple("C"))
+      struct << TStructProp.new("d", Type.simple("D"), default: "D.new")
       struct << Method.new("foo")
 
       assert_equal(<<~RBI, struct.string)
@@ -432,8 +432,8 @@ module RBI
       rbi << Send.new("foo", comments: comments_single)
 
       struct = TStruct.new("Foo", comments: comments_single)
-      struct << TStructConst.new("a", "A", comments: comments_multi)
-      struct << TStructProp.new("c", "C", comments: comments_single)
+      struct << TStructConst.new("a", Type.simple("A"), comments: comments_multi)
+      struct << TStructProp.new("c", Type.simple("C"), comments: comments_single)
       rbi << struct
 
       enum = TEnum.new("Foo", comments: comments_multi)
@@ -539,9 +539,9 @@ module RBI
         method << BlockParam.new("g", comments: comments)
 
         sig = Sig.new
-        sig << SigParam.new("a", "Integer", comments: comments)
-        sig << SigParam.new("b", "String", comments: comments)
-        sig << SigParam.new("c", "T.untyped", comments: comments)
+        sig << SigParam.new("a", Type.simple("Integer"), comments: comments)
+        sig << SigParam.new("b", Type.simple("String"), comments: comments)
+        sig << SigParam.new("c", Type.untyped, comments: comments)
         method.sigs << sig
       end
 
@@ -572,9 +572,9 @@ module RBI
             b: String, # This is a
                        # multiline
                        #   comment
-            c: T.untyped # This is a
-                         # multiline
-                         #   comment
+            c: ::T.untyped # This is a
+                           # multiline
+                           #   comment
           ).void
         end
         def foo(
@@ -642,10 +642,10 @@ module RBI
       rbi << method
 
       sig1 = Sig.new
-      sig2 = Sig.new(return_type: "R")
-      sig2 << SigParam.new("a", "A")
-      sig2 << SigParam.new("b", "T.nilable(B)")
-      sig2 << SigParam.new("b", "T.proc.void")
+      sig2 = Sig.new(return_type: Type.simple("R"))
+      sig2 << SigParam.new("a", Type.simple("A"))
+      sig2 << SigParam.new("b", Type.nilable(Type.simple("B")))
+      sig2 << SigParam.new("b", Type.proc.void)
 
       method = Method.new("bar", comments: comments_multi)
       method.sigs << sig1
@@ -664,7 +664,7 @@ module RBI
         # This is a
         # Multiline Comment
         sig { void }
-        sig { params(a: A, b: T.nilable(B), b: T.proc.void).returns(R) }
+        sig { params(a: A, b: ::T.nilable(B), b: ::T.proc.void).returns(R) }
         def bar; end
       RBI
     end
@@ -779,16 +779,16 @@ module RBI
       comments = [Comment.new("comment")]
 
       sig = Sig.new
-      sig << SigParam.new("a", "Integer", comments: comments)
-      sig << SigParam.new("b", "String", comments: comments)
-      sig << SigParam.new("c", "T.untyped", comments: comments)
+      sig << SigParam.new("a", Type.simple("Integer"), comments: comments)
+      sig << SigParam.new("b", Type.simple("String"), comments: comments)
+      sig << SigParam.new("c", Type.untyped, comments: comments)
 
       assert_equal(<<~RBI, sig.string)
         sig do
           params(
             a: Integer, # comment
             b: String, # comment
-            c: T.untyped # comment
+            c: ::T.untyped # comment
           ).void
         end
       RBI
@@ -801,9 +801,9 @@ module RBI
       ]
 
       sig = Sig.new
-      sig << SigParam.new("a", "Integer", comments: comments)
-      sig << SigParam.new("b", "String", comments: comments)
-      sig << SigParam.new("c", "T.untyped", comments: comments)
+      sig << SigParam.new("a", Type.simple("Integer"), comments: comments)
+      sig << SigParam.new("b", Type.simple("String"), comments: comments)
+      sig << SigParam.new("c", Type.untyped, comments: comments)
 
       assert_equal(<<~RBI, sig.string)
         sig do
@@ -812,8 +812,8 @@ module RBI
                         # comment 2
             b: String, # comment 1
                        # comment 2
-            c: T.untyped # comment 1
-                         # comment 2
+            c: ::T.untyped # comment 1
+                           # comment 2
           ).void
         end
       RBI
@@ -825,12 +825,18 @@ module RBI
         Comment.new("comment 2"),
       ]
 
-      sig = Sig.new(is_abstract: true, is_override: true, is_overridable: true, checked: :always, return_type: "A")
+      sig = Sig.new(
+        is_abstract: true,
+        is_override: true,
+        is_overridable: true,
+        checked: :always,
+        return_type: Type.simple("A"),
+      )
       sig.type_params << "TP1"
       sig.type_params << "TP2"
-      sig << SigParam.new("a", "Integer", comments: comments)
-      sig << SigParam.new("b", "String", comments: comments)
-      sig << SigParam.new("c", "T.untyped", comments: comments)
+      sig << SigParam.new("a", Type.simple("Integer"), comments: comments)
+      sig << SigParam.new("b", Type.simple("String"), comments: comments)
+      sig << SigParam.new("c", Type.untyped, comments: comments)
 
       assert_equal(<<~RBI, sig.string)
         sig do
@@ -844,8 +850,8 @@ module RBI
                           # comment 2
               b: String, # comment 1
                          # comment 2
-              c: T.untyped # comment 1
-                           # comment 2
+              c: ::T.untyped # comment 1
+                             # comment 2
             ).returns(A)
         end
       RBI
@@ -855,9 +861,9 @@ module RBI
       rbi = Tree.new do |tree|
         tree << Class.new("Foo") do |cls|
           cls << Sig.new(is_abstract: true, is_overridable: true) do |sig|
-            sig << SigParam.new("a", "Integer")
-            sig << SigParam.new("b", "String")
-            sig << SigParam.new("c", "T.untyped")
+            sig << SigParam.new("a", Type.simple("Integer"))
+            sig << SigParam.new("b", Type.simple("String"))
+            sig << SigParam.new("c", Type.untyped)
           end
           cls << Method.new("foo") do |method|
             method << ReqParam.new("a")
@@ -869,7 +875,15 @@ module RBI
 
       assert_equal(<<~RBI, rbi.string(max_line_length: 80))
         class Foo
-          sig { abstract.overridable.params(a: Integer, b: String, c: T.untyped).void }
+          sig do
+            abstract
+              .overridable
+              .params(
+                a: Integer,
+                b: String,
+                c: ::T.untyped
+              ).void
+          end
           def foo(a, b, c); end
         end
       RBI
@@ -879,14 +893,14 @@ module RBI
       rbi = File.new do |file|
         file << Class.new("Foo") do |cls|
           cls << Sig.new(is_abstract: true, is_overridable: true) do |sig|
-            sig << SigParam.new("a", "Integer")
-            sig << SigParam.new("b", "Integer")
-            sig << SigParam.new("c", "T.untyped")
+            sig << SigParam.new("a", Type.simple("Integer"))
+            sig << SigParam.new("b", Type.simple("Integer"))
+            sig << SigParam.new("c", Type.untyped)
           end
           cls << Sig.new(without_runtime: true) do |sig|
-            sig << SigParam.new("a", "Integer")
-            sig << SigParam.new("b", "String")
-            sig << SigParam.new("c", "T.untyped")
+            sig << SigParam.new("a", Type.simple("Integer"))
+            sig << SigParam.new("b", Type.simple("String"))
+            sig << SigParam.new("c", Type.untyped)
           end
           cls << Method.new("foo") do |method|
             method << ReqParam.new("a")
@@ -904,14 +918,14 @@ module RBI
               .params(
                 a: Integer,
                 b: Integer,
-                c: T.untyped
+                c: ::T.untyped
               ).void
           end
           ::T::Sig::WithoutRuntime.sig do
             params(
               a: Integer,
               b: String,
-              c: T.untyped
+              c: ::T.untyped
             ).void
           end
           def foo(a, b, c); end
@@ -969,7 +983,7 @@ module RBI
       RBI
 
       sig = Sig.new
-      sig << SigParam.new("a", "Integer")
+      sig << SigParam.new("a", Type.simple("Integer"))
 
       assert_equal(<<~RBI, sig.string(max_line_length: 1))
         sig do
@@ -980,7 +994,7 @@ module RBI
       RBI
 
       sig = Sig.new(is_overridable: true)
-      sig << SigParam.new("a", "Integer")
+      sig << SigParam.new("a", Type.simple("Integer"))
 
       assert_equal(<<~RBI, sig.string(max_line_length: 1))
         sig do
@@ -992,7 +1006,7 @@ module RBI
       RBI
 
       sig = Sig.new(checked: :never)
-      sig << SigParam.new("a", "Integer")
+      sig << SigParam.new("a", Type.simple("Integer"))
 
       assert_equal(<<~RBI, sig.string(max_line_length: 1))
         sig do
@@ -1142,8 +1156,8 @@ module RBI
       rbi << Send.new("foo", loc: loc)
       rbi << MixesInClassMethods.new("MICM", loc: loc)
       rbi << Helper.new("abstract", loc: loc)
-      rbi << TStructConst.new("SC", "Type", loc: loc)
-      rbi << TStructProp.new("SP", "Type", loc: loc)
+      rbi << TStructConst.new("SC", Type.simple("Type"), loc: loc)
+      rbi << TStructProp.new("SP", Type.simple("Type"), loc: loc)
       rbi << Method.new("m1", loc: loc)
 
       assert_equal(<<~RBI, rbi.string(print_locs: true))
@@ -1200,7 +1214,7 @@ module RBI
     end
 
     def test_print_sigs_with_final
-      sig = Sig.new(is_final: true, return_type: "Integer")
+      sig = Sig.new(is_final: true, return_type: Type.simple("Integer"))
 
       assert_equal(<<~RBI, sig.string)
         sig(:final) { returns(Integer) }

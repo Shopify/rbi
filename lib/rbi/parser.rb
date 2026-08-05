@@ -145,6 +145,13 @@ module RBI
         braceless_shape?(node) ? "{#{type}}" : type
       end
 
+      #: (Prism::Node node) -> Type
+      def parse_node_as_type(node)
+        Type.parse_string(type_string(node))
+      rescue Type::Error => e
+        raise ParseError.new(e.message, node_loc(node))
+      end
+
       #: (Prism::Node node) -> bool
       def braceless_shape?(node)
         return false unless node.is_a?(Prism::KeywordHashNode)
@@ -848,7 +855,7 @@ module RBI
         return unless type_arg
 
         name = node_string!(name_arg).delete_prefix(":")
-        type = type_string(type_arg)
+        type = parse_node_as_type(type_arg)
         loc = node_loc(send)
         comments = node_comments(send)
         default_value = nil #: String?
@@ -940,7 +947,7 @@ module RBI
       def initialize(content, file:)
         super
 
-        @current = Sig.new #: Sig
+        @current = Sig.new(return_type: Type.void) #: Sig
       end
 
       # @override
@@ -976,8 +983,11 @@ module RBI
         when "params"
           visit(node.arguments)
         when "returns"
-          return_type = sig_type_argument(node)
-          @current.return_type = return_type if return_type
+          args = node.arguments
+          if args.is_a?(Prism::ArgumentsNode)
+            first = args.arguments.first
+            @current.return_type = parse_node_as_type(first) if first
+          end
         when "type_parameters"
           args = node.arguments
           if args.is_a?(Prism::ArgumentsNode)
@@ -986,7 +996,7 @@ module RBI
             end
           end
         when "void"
-          @current.return_type = "void"
+          @current.return_type = Type.void
         end
 
         visit(node.receiver)
@@ -998,7 +1008,7 @@ module RBI
       def visit_assoc_node(node)
         @current.params << SigParam.new(
           sig_param_name(node.key),
-          node_string!(node.value),
+          parse_node_as_type(node.value),
         )
       end
 

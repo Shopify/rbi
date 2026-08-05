@@ -554,7 +554,7 @@ module RBI
 
     #: (
     #|   ?params: Array[SigParam]?,
-    #|   ?return_type: (String | Type),
+    #|   ?return_type: Type,
     #|   ?bind_type: (String | Type)?,
     #|   ?is_abstract: bool,
     #|   ?is_override: bool,
@@ -564,7 +564,7 @@ module RBI
     #|   ?checked: Symbol?) ?{ (Sig node) -> void } -> void
     def add_sig(
       params: [],
-      return_type: "void",
+      return_type: Type.void,
       bind_type: nil,
       is_abstract: false,
       is_override: false,
@@ -1058,7 +1058,7 @@ module RBI
       @params ||= []
     end
 
-    #: (Type | String)
+    #: Type
     attr_accessor :return_type
 
     #: (Type | String)?
@@ -1100,7 +1100,7 @@ module RBI
 
     #: (
     #|   ?params: Array[SigParam]?,
-    #|   ?return_type: (Type | String),
+    #|   ?return_type: Type,
     #|   ?bind_type: (Type | String)?,
     #|   ?is_abstract: bool,
     #|   ?is_override: bool,
@@ -1116,7 +1116,7 @@ module RBI
     #| ) ?{ (Sig node) -> void } -> void
     def initialize(
       params: nil,
-      return_type: "void",
+      return_type: Type.void,
       bind_type: nil,
       is_abstract: false,
       is_override: false,
@@ -1152,7 +1152,7 @@ module RBI
       params << param
     end
 
-    #: (String name, (Type | String) type) -> void
+    #: (String name, Type type) -> void
     def add_param(name, type)
       params << SigParam.new(name, type)
     end
@@ -1172,10 +1172,10 @@ module RBI
     #: String
     attr_reader :name
 
-    #: (Type | String)
+    #: Type
     attr_reader :type
 
-    #: (String name, (Type | String) type, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (SigParam node) -> void } -> void
+    #: (String name, Type type, ?loc: Loc?, ?comments: Array[Comment]?) ?{ (SigParam node) -> void } -> void
     def initialize(name, type, loc: nil, comments: nil, &block)
       super(loc: loc, comments: comments)
       @name = name.to_s #: String
@@ -1218,13 +1218,13 @@ module RBI
     #: String
     attr_reader :name
 
-    #: (Type | String)
+    #: Type
     attr_accessor :type
 
     #: String?
     attr_accessor :default
 
-    #: (String name, (Type | String) type, ?default: String?, ?loc: Loc?, ?comments: Array[Comment]?) -> void
+    #: (String name, Type type, ?default: String?, ?loc: Loc?, ?comments: Array[Comment]?) -> void
     def initialize(name, type, default: nil, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
       @name = name.to_s #: String
@@ -1240,7 +1240,7 @@ module RBI
   class TStructConst < TStructField
     #: (
     #|   String name,
-    #|   (Type | String) type,
+    #|   Type type,
     #|   ?default: String?,
     #|   ?loc: Loc?,
     #|   ?comments: Array[Comment]?
@@ -1267,7 +1267,7 @@ module RBI
   class TStructProp < TStructField
     #: (
     #|   String name,
-    #|   (Type | String) type,
+    #|   Type type,
     #|   ?default: String?,
     #|   ?loc: Loc?,
     #|   ?comments: Array[Comment]?

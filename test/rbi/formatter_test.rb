@@ -80,7 +80,7 @@ module RBI
     def test_format_max_line_length
       rbi = <<~RBI
         module Foo
-          sig { params(a: T.untyped, b: T.untyped).returns(T.untyped) }
+          sig { params(a: ::T.untyped, b: ::T.untyped).returns(::T.untyped) }
           def foo(a, b); end
         end
       RBI
@@ -96,9 +96,9 @@ module RBI
         module Foo
           sig do
             params(
-              a: T.untyped,
-              b: T.untyped
-            ).returns(T.untyped)
+              a: ::T.untyped,
+              b: ::T.untyped
+            ).returns(::T.untyped)
           end
           def foo(a, b); end
         end

@@ -171,7 +171,17 @@ module RBI
       RBI
 
       tree = parse_rbi(rbi)
-      assert_equal(rbi, tree.string)
+      assert_equal(<<~RBI, tree.string)
+        attr_reader :a
+        attr_writer :a, :b
+        attr_accessor :a, :b, :c
+
+        sig { returns(String) }
+        attr_reader :a
+
+        sig { returns(::T.nilable(String)) }
+        attr_accessor :a, :b, :c
+      RBI
     end
 
     def test_parse_methods
@@ -221,22 +231,31 @@ module RBI
       RBI
 
       tree = parse_rbi(rbi)
+      method = tree.nodes.first #: as Method
+      method.sigs.each do |sig|
+        assert_kind_of(Type, sig.return_type)
+        sig.params.each { |param| assert_kind_of(Type, param.type) }
+      end
+      assert_equal(Type.simple("String"), method.sigs[2]&.return_type)
+      assert_equal(Type.untyped, method.sigs[5]&.params&.first&.type)
+      assert_equal(Type.void, method.sigs[6]&.return_type)
+
       assert_equal(<<~RBI, tree.string)
         sig { void }
         sig(:final) { void }
         sig { returns(String) }
         sig { void }
         sig { void }
-        sig { params(a: T.untyped, b: T::Array[String]).returns(T::Hash[String, Integer]) }
+        sig { params(a: ::T.untyped, b: T::Array[String]).returns(T::Hash[String, Integer]) }
         sig { abstract.params(a: Integer).void }
         sig { checked(:never).returns(T::Array[String]) }
         sig { override.params(printer: Spoom::LSP::SymbolPrinter).void }
-        sig { override(allow_incompatible: true).returns(T.nilable(String)) }
-        sig { override(allow_incompatible: :visibility).returns(T.nilable(String)) }
-        sig { params(requested_generators: T::Array[String]).returns(T.proc.params(klass: Class).returns(T::Boolean)) }
-        sig { type_parameters(:U).params(step: Integer, _blk: T.proc.returns(T.type_parameter(:U))).returns(T.type_parameter(:U)) }
-        sig { type_parameters(:A, :B).params(a: T::Array[T.type_parameter(:A)], fa: T.proc.params(item: T.type_parameter(:A)).returns(T.untyped), b: T::Array[T.type_parameter(:B)], fb: T.proc.params(item: T.type_parameter(:B)).returns(T.untyped)).returns(T::Array[[T.type_parameter(:A), T.type_parameter(:B)]]) }
-        sig { returns({ item_id: String, tax_code: String, name: String, rate: BigDecimal, rate_type: String, amount: BigDecimal, subdivision: String, jurisdiction: String, exempt: T::Boolean, reasons: T::Array[String] }) }
+        sig { override(allow_incompatible: true).returns(::T.nilable(String)) }
+        sig { override(allow_incompatible: :visibility).returns(::T.nilable(String)) }
+        sig { params(requested_generators: T::Array[String]).returns(::T.proc.params(klass: Class).returns(::T::Boolean)) }
+        sig { type_parameters(:U).params(step: Integer, _blk: ::T.proc.returns(::T.type_parameter(:U))).returns(::T.type_parameter(:U)) }
+        sig { type_parameters(:A, :B).params(a: T::Array[::T.type_parameter(:A)], fa: ::T.proc.params(item: ::T.type_parameter(:A)).returns(::T.untyped), b: T::Array[::T.type_parameter(:B)], fb: ::T.proc.params(item: ::T.type_parameter(:B)).returns(::T.untyped)).returns(T::Array[[::T.type_parameter(:A), ::T.type_parameter(:B)]]) }
+        sig { returns({ item_id: String, tax_code: String, name: String, rate: BigDecimal, rate_type: String, amount: BigDecimal, subdivision: String, jurisdiction: String, exempt: ::T::Boolean, reasons: T::Array[String] }) }
         ::T::Sig::WithoutRuntime.sig { returns(String) }
         def foo; end
       RBI
@@ -297,31 +316,34 @@ module RBI
 
       tree = parse_rbi(rbi)
       assert_equal(<<~RBI, tree.string)
-        sig { returns({"foo" => Integer}) }
+        sig { returns({ "foo" => Integer }) }
         def single; end
 
-        sig { returns({:foo => Integer}) }
+        sig { returns({ foo: Integer }) }
         def symbol; end
 
-        sig { returns({"foo" => Integer, :bar => String}) }
+        sig { returns({ "foo" => Integer, bar: String }) }
         def mixed_keys; end
 
-        sig { returns({"foo" => Integer, "bar" => String}) }
+        sig { returns({ "foo" => Integer, "bar" => String }) }
         def multiple; end
       RBI
     end
 
-    def test_parse_sig_preserves_invalid_keyword_return_argument_syntax
-      rbi = <<~RBI
-        sig { returns(foo: Integer) }
-        def keyword; end
+    def test_parse_sig_rejects_keyword_return_argument_syntax
+      assert_raises(ParseError) do
+        parse_rbi(<<~RBI)
+          sig { returns(foo: Integer) }
+          def keyword; end
+        RBI
+      end
 
-        sig { returns("foo" => Integer, bar: String) }
-        def mixed; end
-      RBI
-
-      tree = parse_rbi(rbi)
-      assert_equal(rbi, tree.string)
+      assert_raises(ParseError) do
+        parse_rbi(<<~RBI)
+          sig { returns("foo" => Integer, bar: String) }
+          def mixed; end
+        RBI
+      end
     end
 
     def test_parse_ignore_sig_not_on_self
@@ -477,6 +499,12 @@ module RBI
 
       # Make sure the T::Struct is not parsed as a normal class
       assert_equal(TStruct, tree.nodes.first.class)
+      struct = tree.nodes.first #: as TStruct
+      fields = struct.nodes.grep(TStructField)
+      assert_equal(
+        [Type.simple("A"), Type.simple("B"), Type.simple("C"), Type.simple("D")],
+        fields.map(&:type),
+      )
 
       assert_equal(<<~RBI, tree.string)
         class Foo < T::Struct
@@ -502,15 +530,15 @@ module RBI
       tree = parse_rbi(rbi)
       assert_equal(<<~RBI, tree.string)
         class Shapes < T::Struct
-          const :string_key, {"foo" => Integer}
-          const :symbol_key, {:foo => Integer}
-          prop :mixed_keys, {"foo" => Integer, :bar => String}
-          prop :multiple, {"foo" => Integer, "bar" => String}
+          const :string_key, { "foo" => Integer }
+          const :symbol_key, { foo: Integer }
+          prop :mixed_keys, { "foo" => Integer, bar: String }
+          prop :multiple, { "foo" => Integer, "bar" => String }
         end
       RBI
     end
 
-    def test_parse_t_struct_fields_preserves_keyword_type_syntax
+    def test_parse_t_struct_fields_rejects_keyword_type_syntax
       rbi = <<~RBI
         class Invalid < T::Struct
           const :keyword, foo: Integer
@@ -518,8 +546,9 @@ module RBI
         end
       RBI
 
-      tree = parse_rbi(rbi)
-      assert_equal(rbi, tree.string)
+      assert_raises(ParseError) do
+        parse_rbi(rbi)
+      end
     end
 
     def test_parse_t_enums
@@ -837,7 +866,7 @@ module RBI
         attr_reader :a
 
         # -:8:0-8:34
-        sig { returns(T.nilable(String)) }
+        sig { returns(::T.nilable(String)) }
         # -:9:0-9:24
         attr_accessor :a, :b, :c
       RBI
@@ -868,11 +897,11 @@ module RBI
         # -:5:0-5:12
         sig { void }
         # -:6:0-6:64
-        sig { params(a: A, b: T.nilable(B), b: T.proc.void).returns(R) }
+        sig { params(a: A, b: ::T.nilable(B), b: ::T.proc.void).returns(R) }
         # -:7:0-7:42
         sig { abstract.override.overridable.void }
         # -:8:0-8:109
-        sig { type_parameters(:U, :V).checked(:never).params(a: T.type_parameter(:U)).returns(T.type_parameter(:V)) }
+        sig { type_parameters(:U, :V).checked(:never).params(a: ::T.type_parameter(:U)).returns(::T.type_parameter(:V)) }
         # -:9:0-9:11
         def m4; end
       RBI
