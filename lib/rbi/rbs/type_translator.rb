@@ -206,11 +206,11 @@ module RBI
       ].freeze #: Array[String]
 
       GENERIC_TYPE_TO_SORBET_GENERIC_TYPE = RUNTIME_GENERIC_TYPES.flat_map do |type|
-        [[type, "::T::#{type}"], ["::#{type}", "::T::#{type}"]]
+        [[type, "::T::#{type}"], ["T::#{type}", "::T::#{type}"], ["::#{type}", "::T::#{type}"]]
       end.to_h.freeze #: Hash[String, String]
 
       SORBET_GENERIC_TYPE_TO_GENERIC_TYPE = RUNTIME_GENERIC_TYPES.flat_map do |type|
-        [["T::#{type}", "::#{type}"], ["::T::#{type}", "::#{type}"]]
+        [["::T::#{type}", "::#{type}"]]
       end.to_h.freeze #: Hash[String, String]
 
       #: (String type_name) -> String

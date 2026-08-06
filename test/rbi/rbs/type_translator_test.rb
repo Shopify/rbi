@@ -85,6 +85,9 @@ module RBI
         assert_equal(Type.generic("::T::Module", Type.simple("Foo")), translate("::Module[Foo]"))
         assert_equal(Type.generic("::T::Set", Type.simple("Foo")), translate("::Set[Foo]"))
         assert_equal(Type.generic("::T::Range", Type.simple("Foo"), Type.simple("Bar")), translate("::Range[Foo, Bar]"))
+
+        assert_equal(Type.generic("::T::Array", Type.simple("Foo")), translate("T::Array[Foo]"))
+        assert_equal(Type.generic("::T::Array", Type.simple("Foo")), translate("::T::Array[Foo]"))
       end
 
       def test_translate_class_singleton
