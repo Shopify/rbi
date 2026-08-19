@@ -754,8 +754,9 @@ module RBI
         comments = [] #: Array[Comment]
 
         sigs.each do |sig|
-          comments += sig.comments.dup
-          sig.comments.clear
+          inside, outside = sig.comments.partition { |comment| loc_inside?(comment.loc, sig.loc) }
+          comments.concat(outside)
+          sig.comments.replace(inside)
         end
 
         comments
@@ -863,7 +864,7 @@ module RBI
         builder = SigBuilder.new(@source, comments_by_line: @comments_by_line, file: @file)
         builder.current.loc = node_loc(node)
         builder.visit_call_node(node)
-        builder.current.comments = node_comments(node)
+        builder.current.comments = node_comments(node) + builder.current.comments
         builder.current
       end
 
@@ -1013,11 +1014,16 @@ module RBI
       #: Sig
       attr_reader :current
 
+      # Bounds sig param comment lookup to comments inside the current `params(...)` call.
+      #: Integer?
+      attr_reader :params_start_line
+
       #: (String content, comments_by_line: Hash[Integer, Prism::Comment], file: String) -> void
       def initialize(content, comments_by_line:, file:)
         super
 
         @current = Sig.new #: Sig
+        @params_start_line = nil #: Integer?
       end
 
       # @override
@@ -1051,7 +1057,9 @@ module RBI
         when "overridable"
           @current.is_overridable = true
         when "params"
+          @params_start_line = node.location.start_line
           visit(node.arguments)
+          @params_start_line = nil
         when "returns"
           return_type = sig_type_argument(node)
           @current.return_type = return_type if return_type
@@ -1068,6 +1076,7 @@ module RBI
 
         visit(node.receiver)
         visit(node.block)
+        @current.comments.concat(comments_inside(node)) if node.message == "sig"
       end
 
       # @override
@@ -1076,6 +1085,8 @@ module RBI
         @current.params << SigParam.new(
           sig_param_name(node.key),
           node_string!(node.value),
+          loc: node_loc(node),
+          comments: node_comments(node, min_line: params_start_line),
         )
       end
 
