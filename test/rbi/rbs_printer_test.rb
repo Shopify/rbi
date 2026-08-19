@@ -704,6 +704,198 @@ module RBI
       RBI
     end
 
+    def test_print_breaks_signatures_with_sig_param_comments
+      rbi_def = Method.new("foo") do |node|
+        node.params << ReqParam.new("a")
+        node.params << ReqParam.new("b")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.params << SigParam.new(
+          "a",
+          "Integer",
+          comments: [Comment.new("First param"), Comment.new("More details")],
+        )
+        sig.params << SigParam.new("b", "String")
+        sig.return_type = "void"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal(<<~RBI.strip, out.string)
+        (
+          Integer a, # First param
+                     # More details
+          String b
+        ) -> void
+      RBI
+    end
+
+    def test_print_breaks_signatures_with_multiple_sig_param_comments
+      rbi_def = Method.new("foo") do |node|
+        node.params << ReqParam.new("a")
+        node.params << ReqParam.new("b")
+        node.params << KwParam.new("c")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.params << SigParam.new("a", "Integer", comments: [Comment.new("First param")])
+        sig.params << SigParam.new("b", "String", comments: [Comment.new("Second param")])
+        sig.params << SigParam.new("c", "Symbol", comments: [Comment.new("Keyword param")])
+        sig.return_type = "void"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal(<<~RBI.strip, out.string)
+        (
+          Integer a, # First param
+          String b, # Second param
+          c: Symbol # Keyword param
+        ) -> void
+      RBI
+    end
+
+    def test_print_breaks_signatures_with_mixed_sig_param_comments
+      rbi = parse_rbi(<<~RBI)
+        sig do
+          params(
+            a: Integer,
+            # Commented param
+            b: String,
+            c: Symbol
+          ).void
+        end
+        def foo(a, b, c:); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: (
+          Integer a,
+          String b, # Commented param
+          c: Symbol
+        ) -> void
+      RBI
+    end
+
+    def test_prints_multiline_signature_with_block_sig_param_comments
+      rbi = parse_rbi(<<~RBI)
+        sig do
+          params(
+            # Block param
+            # More details
+            block: T.proc.void
+          ).void
+        end
+        def foo(&block); end
+      RBI
+
+      assert_equal(<<~RBS, rbi.rbs_string)
+        def foo: { -> void } -> void # Block param
+          # More details
+      RBS
+    end
+
+    def test_prints_multiline_signature_with_param_and_block_sig_param_comments
+      rbi = parse_rbi(<<~RBI)
+        sig do
+          params(
+            # Positional param
+            a: Integer,
+            # Block param
+            block: T.proc.void
+          ).void
+        end
+        def foo(a, &block); end
+      RBI
+
+      assert_equal(<<~RBS, rbi.rbs_string)
+        def foo: (
+          Integer a # Positional param
+        ) { -> void } -> void # Block param
+      RBS
+    end
+
+    def test_prints_multiline_signature_with_type_params_and_block_sig_param_comments
+      rbi_def = Method.new("foo") do |node|
+        node.params << BlockParam.new("block")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.type_params << "U"
+        sig.params << SigParam.new(
+          "block",
+          "T.proc.returns(T.type_parameter(:U))",
+          comments: [Comment.new("Block param")],
+        )
+        sig.return_type = "T.type_parameter(:U)"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal(<<~RBS.strip, out.string)
+        [U] { -> U } -> U # Block param
+      RBS
+    end
+
+    def test_prints_signature_with_nil_block_sig_param_comments
+      rbi_def = Method.new("foo") do |node|
+        node.params << BlockParam.new("block")
+      end
+
+      rbi_sig = Sig.new do |sig|
+        sig.params << SigParam.new("block", "NilClass", comments: [Comment.new("Block param")])
+        sig.return_type = "void"
+      end
+
+      out = StringIO.new
+      printer = RBI::RBSPrinter.new(out: out)
+      printer.print_method_sig(rbi_def, rbi_sig)
+
+      assert_equal("-> void", out.string)
+    end
+
+    def test_prints_multiline_overload_with_block_sig_param_comments
+      rbi = parse_rbi(<<~RBI)
+        sig { void }
+        sig do
+          params(
+            # Block param
+            block: T.proc.void
+          ).void
+        end
+        def foo(&block); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: -> void
+               | { -> void } -> void # Block param
+      RBI
+    end
+
+    def test_prints_signature_with_nil_block_sig_param_comments_after_positional_params
+      rbi = parse_rbi(<<~RBI)
+        sig do
+          params(
+            a: Integer,
+            # Block param
+            block: NilClass
+          ).void
+        end
+        def foo(a, &block); end
+      RBI
+
+      assert_equal(<<~RBI, rbi.rbs_string)
+        def foo: (Integer a) -> void
+      RBI
+    end
+
     def test_print_simplified_types
       rbi = parse_rbi(<<~RBI)
         sig { returns(T.any(String, String, NilClass, T.nilable(T.nilable(Integer)), TrueClass, FalseClass)) }
