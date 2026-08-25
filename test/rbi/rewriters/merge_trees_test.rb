@@ -1223,6 +1223,97 @@ module RBI
       end
     end
 
+    def test_merge_methods_with_same_forwarding_params
+      tree1 = parse_rbi(<<~RBI)
+        class Foo
+          def m1(...); end
+        end
+      RBI
+
+      tree2 = parse_rbi(<<~RBI)
+        class Foo
+          def m1(...); end
+        end
+      RBI
+
+      res = tree1.merge(tree2)
+
+      assert_equal(<<~RBI, res.string)
+        class Foo
+          def m1(...); end
+        end
+      RBI
+      assert_empty(res.conflicts)
+    end
+
+    def test_merge_methods_with_forwarding_params_and_same_arity
+      tree1 = parse_rbi(<<~RBI)
+        class Foo
+          def foo(a, ...); end
+        end
+      RBI
+
+      tree2 = parse_rbi(<<~RBI)
+        class Foo
+          sig { params(a: Integer, rest: T.untyped).void }
+          def foo(a, *rest); end
+        end
+      RBI
+
+      res = tree1.merge(tree2)
+
+      assert_equal(<<~RBI, res.string)
+        class Foo
+          <<<<<<< left
+          def foo(a, ...); end
+          =======
+          sig { params(a: Integer, rest: T.untyped).void }
+          def foo(a, *rest); end
+          >>>>>>> right
+        end
+      RBI
+      refute_empty(res.conflicts)
+    end
+
+    def test_merge_methods_with_forwarding_params
+      tree1 = parse_rbi(<<~RBI)
+        class Foo
+          def m1(...); end
+          def m2(*args, **kwargs, &block); end
+          def m3(...); end
+        end
+      RBI
+
+      tree2 = parse_rbi(<<~RBI)
+        class Foo
+          def m1(*args, **kwargs, &block); end
+          def m2(...); end
+
+          sig { params(rest: Integer, opts: String, blk: T.proc.void).void }
+          def m3(*rest, **opts, &blk); end
+        end
+      RBI
+
+      res = tree1.merge(tree2)
+
+      assert_equal(<<~RBI, res.string)
+        class Foo
+          <<<<<<< left
+          def m1(...); end
+          def m2(*args, **kwargs, &block); end
+          def m3(...); end
+          =======
+          def m1(*args, **kwargs, &block); end
+          def m2(...); end
+
+          sig { params(rest: Integer, opts: String, blk: T.proc.void).void }
+          def m3(*rest, **opts, &blk); end
+          >>>>>>> right
+        end
+      RBI
+      refute_empty(res.conflicts)
+    end
+
     def test_merge_methods_with_anonymous_params_and_sigs
       tree1 = parse_rbi(<<~RBI)
         class Foo

@@ -67,6 +67,8 @@ module RBI
         visit_no_kw_param(node)
       when BlockParam
         visit_block_param(node)
+      when ForwardingParam
+        visit_forwarding_param(node)
       when Include
         visit_include(node)
       when Extend
@@ -180,6 +182,9 @@ module RBI
 
     #: (BlockParam node) -> void
     def visit_block_param(node); end
+
+    #: (ForwardingParam node) -> void
+    def visit_forwarding_param(node); end
 
     #: (Include node) -> void
     def visit_include(node); end
