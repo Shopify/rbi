@@ -552,11 +552,6 @@ module RBI
       params << BlockParam.new(name)
     end
 
-    #: -> void
-    def add_forwarding_param
-      params << ForwardingParam.new
-    end
-
     #: (
     #|   ?params: Array[SigParam]?,
     #|   ?return_type: (String | Type),
