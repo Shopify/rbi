@@ -6,7 +6,7 @@ module RBI
 
   class Printer < Visitor
     # Pre-computed indentation strings to avoid allocating " " * indent on every line.
-    MAX_CACHED_INDENT = 50 #: Integer
+    MAX_CACHED_INDENT = 50
     INDENT_CACHE = Array.new(MAX_CACHED_INDENT + 1) { |i| (" " * i).freeze }.freeze #: Array[String]
 
     #: bool

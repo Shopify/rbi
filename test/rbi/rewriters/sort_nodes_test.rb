@@ -396,7 +396,7 @@ module RBI
         tree
       end
 
-      # rubocop:disable Sorbet/ConstantsFromStrings
+      # rubocop:disable-next Sorbet/ConstantsFromStrings
       rewriter_classes = Rewriters.constants.filter_map do |c|
         const = Rewriters.const_get(c)
         next unless const.is_a?(::Class) && const < Visitor
@@ -405,7 +405,6 @@ module RBI
 
         const
       end
-      # rubocop:enable Sorbet/ConstantsFromStrings
 
       refute_empty(rewriter_classes, "expected to discover at least one no-arg rewriter")
 
