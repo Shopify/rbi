@@ -25,8 +25,8 @@ def build_tree(num_methods: 200)
       is_singleton: i % 15 == 0,
       visibility: vis,
       sigs: [RBI::Sig.new(
-        params: [RBI::SigParam.new("a", "String"), RBI::SigParam.new("b", "T.nilable(Integer)")],
-        return_type: "T::Boolean",
+        params: [RBI::SigParam.new("a", RBI::Type.simple("String")), RBI::SigParam.new("b", RBI::Type.nilable(RBI::Type.simple("Integer")))],
+        return_type: RBI::Type.simple("T::Boolean"),
       )],
     )
     klass << m

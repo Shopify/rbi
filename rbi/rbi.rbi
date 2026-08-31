@@ -86,7 +86,7 @@ class RBI::Attr < ::RBI::NodeWithComments
     params(
       name: ::String,
       sig: T.nilable(::RBI::Sig),
-      attribute_type: T.nilable(T.any(::RBI::Type, ::String)),
+      attribute_type: T.nilable(::RBI::Type),
       visibility: ::RBI::Visibility,
       loc: T.nilable(::RBI::Loc),
       comments: T::Array[::RBI::Comment]
@@ -94,7 +94,7 @@ class RBI::Attr < ::RBI::NodeWithComments
   end
   def create_setter_method(name, sig, attribute_type, visibility, loc, comments); end
 
-  sig(:final) { returns([T.nilable(::RBI::Sig), T.nilable(T.any(::RBI::Type, ::String))]) }
+  sig(:final) { returns([T.nilable(::RBI::Sig), T.nilable(::RBI::Type)]) }
   def parse_sig; end
 end
 
@@ -739,7 +739,7 @@ class RBI::Method < ::RBI::NodeWithComments
   sig do
     params(
       params: T.nilable(T::Array[::RBI::SigParam]),
-      return_type: T.any(::RBI::Type, ::String),
+      return_type: ::RBI::Type,
       bind_type: T.nilable(T.any(::RBI::Type, ::String)),
       is_abstract: T::Boolean,
       is_override: T::Boolean,
@@ -1217,6 +1217,9 @@ class RBI::Parser::Visitor < ::Prism::Visitor
 
   sig { params(node: ::Prism::Node).returns(::String) }
   def node_string!(node); end
+
+  sig { params(node: ::Prism::Node).returns(::RBI::Type) }
+  def parse_node_as_type(node); end
 
   sig { params(node: T.nilable(::Prism::Node)).returns(T::Boolean) }
   def self?(node); end
@@ -2302,7 +2305,7 @@ class RBI::Sig < ::RBI::NodeWithComments
   sig do
     params(
       params: T.nilable(T::Array[::RBI::SigParam]),
-      return_type: T.any(::RBI::Type, ::String),
+      return_type: ::RBI::Type,
       bind_type: T.nilable(T.any(::RBI::Type, ::String)),
       is_abstract: T::Boolean,
       is_override: T::Boolean,
@@ -2326,7 +2329,7 @@ class RBI::Sig < ::RBI::NodeWithComments
   sig { params(other: ::Object).returns(T::Boolean) }
   def ==(other); end
 
-  sig { params(name: ::String, type: T.any(::RBI::Type, ::String)).void }
+  sig { params(name: ::String, type: ::RBI::Type).void }
   def add_param(name, type); end
 
   sig { returns(T::Boolean) }
@@ -2372,7 +2375,7 @@ class RBI::Sig < ::RBI::NodeWithComments
   sig { returns(T::Array[::RBI::SigParam]) }
   def params; end
 
-  sig { returns(T.any(::RBI::Type, ::String)) }
+  sig { returns(::RBI::Type) }
   def return_type; end
 
   def return_type=(_arg0); end
@@ -2393,7 +2396,7 @@ class RBI::SigParam < ::RBI::NodeWithComments
   sig do
     params(
       name: ::String,
-      type: T.any(::RBI::Type, ::String),
+      type: ::RBI::Type,
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
       block: T.nilable(T.proc.params(node: ::RBI::SigParam).void)
@@ -2413,7 +2416,7 @@ class RBI::SigParam < ::RBI::NodeWithComments
   sig { override.returns(::String) }
   def to_s; end
 
-  sig { returns(T.any(::RBI::Type, ::String)) }
+  sig { returns(::RBI::Type) }
   def type; end
 end
 
@@ -2540,7 +2543,7 @@ class RBI::TStructConst < ::RBI::TStructField
   sig do
     params(
       name: ::String,
-      type: T.any(::RBI::Type, ::String),
+      type: ::RBI::Type,
       default: T.nilable(::String),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
@@ -2568,7 +2571,7 @@ class RBI::TStructField < ::RBI::NodeWithComments
   sig do
     params(
       name: ::String,
-      type: T.any(::RBI::Type, ::String),
+      type: ::RBI::Type,
       default: T.nilable(::String),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment])
@@ -2590,7 +2593,7 @@ class RBI::TStructField < ::RBI::NodeWithComments
   sig { returns(::String) }
   def name; end
 
-  sig { returns(T.any(::RBI::Type, ::String)) }
+  sig { returns(::RBI::Type) }
   def type; end
 
   def type=(_arg0); end
@@ -2602,7 +2605,7 @@ class RBI::TStructProp < ::RBI::TStructField
   sig do
     params(
       name: ::String,
-      type: T.any(::RBI::Type, ::String),
+      type: ::RBI::Type,
       default: T.nilable(::String),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),

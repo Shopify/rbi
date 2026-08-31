@@ -759,7 +759,7 @@ module RBI
         print(").")
       end
       return_type = node.return_type
-      if return_type == "void" || return_type.to_s == "void"
+      if return_type.to_s == "void"
         print("void")
       else
         print("returns(")
@@ -824,7 +824,7 @@ module RBI
       print(".") if has_modifiers || has_params
 
       return_type = node.return_type
-      if return_type == "void" || return_type.to_s == "void"
+      if return_type.to_s == "void"
         print("void")
       else
         print("returns(")

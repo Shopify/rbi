@@ -492,7 +492,6 @@ module RBI
       return unless sig_param
 
       block_type = sig_param.type
-      block_type = Type.parse_string(block_type) if block_type.is_a?(String)
 
       block_is_nilable = false
       if block_type.is_a?(Type::Nilable)
@@ -934,9 +933,8 @@ module RBI
 
     #: ((Type | String) type) -> Type
     def parse_type(type)
-      return type if type.is_a?(Type)
-
-      Type.parse_string(type).simplify
+      type = Type.parse_string(type) if type.is_a?(String)
+      type.simplify
     rescue Type::Error => e
       raise Error, "Failed to parse type `#{type}` (#{e.message})"
     end
