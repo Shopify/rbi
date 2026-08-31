@@ -206,7 +206,7 @@ module RBI
         "Module",
         "Set",
         "Range",
-      ].freeze #: Array[String]
+      ].freeze
 
       GENERIC_TYPE_TO_SORBET_GENERIC_TYPE = RUNTIME_GENERIC_TYPES.flat_map do |type|
         [[type, "::T::#{type}"], ["::#{type}", "::T::#{type}"]]
