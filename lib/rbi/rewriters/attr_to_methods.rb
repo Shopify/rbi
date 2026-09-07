@@ -61,7 +61,7 @@ module RBI
     private
 
     # @final
-    #: -> [Sig?, (Type | String)?]
+    #: -> [Sig?, Type?]
     def parse_sig
       raise UnexpectedMultipleSigsError, self if 1 < sigs.count
 
@@ -91,7 +91,7 @@ module RBI
     #: (
     #|   String name,
     #|   Sig? sig,
-    #|   (Type | String)? attribute_type,
+    #|   Type? attribute_type,
     #|   Visibility visibility,
     #|   Loc? loc,
     #|   Array[Comment] comments
@@ -102,7 +102,7 @@ module RBI
 
         Sig.new(
           params: params,
-          return_type: "void",
+          return_type: Type.void,
           bind_type: sig.bind_type,
           is_abstract: sig.is_abstract,
           is_override: sig.is_override,

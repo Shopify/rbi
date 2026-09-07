@@ -29,7 +29,7 @@ def build_large_tree(num_methods: 200, num_attrs: 20, num_includes: 5, num_scope
   # Add attrs
   num_attrs.times do |i|
     attr = RBI::AttrReader.new(:"attr_#{i}")
-    attr.sigs << RBI::Sig.new(return_type: "String")
+    attr.sigs << RBI::Sig.new(return_type: RBI::Type.simple("String"))
     klass << attr
   end
 
@@ -52,10 +52,10 @@ def build_large_tree(num_methods: 200, num_attrs: 20, num_includes: 5, num_scope
       sigs: [
         RBI::Sig.new(
           params: [
-            RBI::SigParam.new("arg1", "String"),
-            RBI::SigParam.new("arg2", "T.nilable(Integer)"),
+            RBI::SigParam.new("arg1", RBI::Type.simple("String")),
+            RBI::SigParam.new("arg2", RBI::Type.nilable(RBI::Type.simple("Integer"))),
           ],
-          return_type: "T::Boolean",
+          return_type: RBI::Type.simple("T::Boolean"),
         ),
       ],
     )
@@ -66,7 +66,7 @@ def build_large_tree(num_methods: 200, num_attrs: 20, num_includes: 5, num_scope
   num_scopes.times do |i|
     inner = RBI::Module.new("InnerModule#{i}")
     5.times do |j|
-      inner << RBI::Method.new("inner_method_#{j}", sigs: [RBI::Sig.new(return_type: "void")])
+      inner << RBI::Method.new("inner_method_#{j}", sigs: [RBI::Sig.new(return_type: RBI::Type.void)])
     end
     klass << inner
   end

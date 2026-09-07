@@ -255,7 +255,7 @@ module RBI
 
     def test_print_attr_sig
       rbi_attr = AttrReader.new(:foo, :bar)
-      rbi_sig = Sig.new(return_type: "String")
+      rbi_sig = Sig.new(return_type: Type.simple("String"))
 
       out = StringIO.new
       printer = RBI::RBSPrinter.new(out: out)
@@ -300,22 +300,18 @@ module RBI
     end
 
     def test_reject_signature_with_keyword_return_argument
-      keyword = parse_rbi(<<~RBI)
-        sig { returns(foo: Integer) }
-        def keyword; end
-      RBI
-
-      mixed = parse_rbi(<<~RBI)
-        sig { returns("foo" => Integer, bar: String) }
-        def mixed; end
-      RBI
-
-      assert_raises(RBI::RBSPrinter::Error) do
-        keyword.rbs_string
+      assert_raises(RBI::ParseError) do
+        parse_rbi(<<~RBI)
+          sig { returns(foo: Integer) }
+          def keyword; end
+        RBI
       end
 
-      assert_raises(RBI::RBSPrinter::Error) do
-        mixed.rbs_string
+      assert_raises(RBI::ParseError) do
+        parse_rbi(<<~RBI)
+          sig { returns("foo" => Integer, bar: String) }
+          def mixed; end
+        RBI
       end
     end
 
@@ -596,15 +592,15 @@ module RBI
       end
 
       rbi_sig = Sig.new do |sig|
-        sig.params << SigParam.new("a", "String")
-        sig.params << SigParam.new("b", "Integer")
-        sig.params << SigParam.new("c", "String")
-        sig.params << SigParam.new("e", "Numeric")
-        sig.params << SigParam.new("d", "Object")
-        sig.params << SigParam.new("f", "T.untyped")
-        sig.params << SigParam.new("g", "T.proc.void")
+        sig.params << SigParam.new("a", Type.simple("String"))
+        sig.params << SigParam.new("b", Type.simple("Integer"))
+        sig.params << SigParam.new("c", Type.simple("String"))
+        sig.params << SigParam.new("e", Type.simple("Numeric"))
+        sig.params << SigParam.new("d", Type.simple("Object"))
+        sig.params << SigParam.new("f", Type.untyped)
+        sig.params << SigParam.new("g", Type.proc.void)
 
-        sig.return_type = "R"
+        sig.return_type = Type.simple("R")
       end
 
       out = StringIO.new
@@ -652,15 +648,15 @@ module RBI
       rbi_sig = Sig.new do |sig|
         sig.type_params << "U"
 
-        sig.params << SigParam.new("a", "U")
-        sig.params << SigParam.new("b", "Integer")
-        sig.params << SigParam.new("c", "String")
-        sig.params << SigParam.new("e", "Numeric")
-        sig.params << SigParam.new("d", "Object")
-        sig.params << SigParam.new("f", "T.untyped")
-        sig.params << SigParam.new("g", "T.proc.void")
+        sig.params << SigParam.new("a", Type.simple("U"))
+        sig.params << SigParam.new("b", Type.simple("Integer"))
+        sig.params << SigParam.new("c", Type.simple("String"))
+        sig.params << SigParam.new("e", Type.simple("Numeric"))
+        sig.params << SigParam.new("d", Type.simple("Object"))
+        sig.params << SigParam.new("f", Type.untyped)
+        sig.params << SigParam.new("g", Type.proc.void)
 
-        sig.return_type = "R"
+        sig.return_type = Type.simple("R")
       end
 
       out = StringIO.new
@@ -686,9 +682,9 @@ module RBI
       end
 
       rbi_sig = Sig.new do |sig|
-        sig.params << SigParam.new("a", "A")
-        sig.params << SigParam.new("b", "B")
-        sig.return_type = "R"
+        sig.params << SigParam.new("a", Type.simple("A"))
+        sig.params << SigParam.new("b", Type.simple("B"))
+        sig.return_type = Type.simple("R")
       end
 
       out = StringIO.new
@@ -1027,18 +1023,6 @@ module RBI
           def initialize: (config: {"foo" => Integer}, options: {bar: String}) -> void
         end
       RBS
-    end
-
-    def test_reject_t_struct_fields_with_keyword_type_syntax
-      rbi = parse_rbi(<<~RBI)
-        class Invalid < T::Struct
-          prop :options, foo: Integer
-        end
-      RBI
-
-      assert_raises(RBI::RBSPrinter::Error) do
-        rbi.rbs_string
-      end
     end
 
     def test_print_t_enums

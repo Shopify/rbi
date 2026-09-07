@@ -77,7 +77,7 @@ module RBI
               param.comments << Comment.new("comment")
             end
             node.sigs << Sig.new do |sig|
-              sig << SigParam.new("x", "T.untyped") do |param|
+              sig << SigParam.new("x", Type.untyped) do |param|
                 param.comments << Comment.new("comment")
               end
             end
@@ -98,10 +98,10 @@ module RBI
             node.comments << Comment.new("comment")
           end
           tree << TStruct.new("Struct") do |node|
-            node << TStructConst.new("foo", "Foo") do |field|
+            node << TStructConst.new("foo", Type.simple("Foo")) do |field|
               field.comments << Comment.new("comment")
             end
-            node << TStructProp.new("foo", "Foo") do |field|
+            node << TStructProp.new("foo", Type.simple("Foo")) do |field|
               field.comments << Comment.new("comment")
             end
           end
@@ -148,7 +148,7 @@ module RBI
 
         sig do
           params(
-            x: T.untyped # comment
+            x: ::T.untyped # comment
           ).void
         end
         def foo(
@@ -218,14 +218,14 @@ module RBI
           node.add_block_param("p7")
 
           node.add_sig do |sig|
-            sig.add_param("p1", "T.untyped")
-            sig.add_param("p2", "String")
-            sig.return_type = "T.untyped"
+            sig.add_param("p1", Type.untyped)
+            sig.add_param("p2", Type.simple("String"))
+            sig.return_type = Type.untyped
           end
 
           node.add_sig do |sig|
-            sig.add_param("p3", "T.untyped")
-            sig.return_type = "void"
+            sig.add_param("p3", Type.untyped)
+            sig.return_type = Type.void
           end
 
           node.add_sig(bind_type: "Parent", type_params: ["T", "U"]) do |sig|
@@ -234,22 +234,22 @@ module RBI
             sig.is_overridable = true
             sig.is_final = true
             sig.checked = :never
-            sig.add_param("p4", "T.untyped")
-            sig.return_type = "void"
+            sig.add_param("p4", Type.untyped)
+            sig.return_type = Type.void
           end
 
           node.add_sig(
-            params: [RBI::SigParam.new("p5", "T.untyped")],
-            return_type: "void",
+            params: [RBI::SigParam.new("p5", Type.untyped)],
+            return_type: Type.void,
           )
         end
       end
 
       assert_equal(<<~RBI, rbi.string)
-        sig { params(p1: T.untyped, p2: String).returns(T.untyped) }
-        sig { params(p3: T.untyped).void }
-        sig(:final) { abstract.override.overridable.bind(Parent).type_parameters(:T, :U).checked(:never).params(p4: T.untyped).void }
-        sig { params(p5: T.untyped).void }
+        sig { params(p1: ::T.untyped, p2: String).returns(::T.untyped) }
+        sig { params(p3: ::T.untyped).void }
+        sig(:final) { abstract.override.overridable.bind(Parent).type_parameters(:T, :U).checked(:never).params(p4: ::T.untyped).void }
+        sig { params(p5: ::T.untyped).void }
         def foo(p1, p2 = 'value', *p3, p4:, p5: 'value', **p6, &p7); end
       RBI
     end
@@ -339,11 +339,11 @@ module RBI
       mod << struct
       assert_equal("::Foo::Struct", struct.fully_qualified_name)
 
-      sc = TStructConst.new("a", "A")
+      sc = TStructConst.new("a", Type.simple("A"))
       struct << sc
       assert_equal(["::Foo::Struct#a"], sc.fully_qualified_names)
 
-      sp = TStructProp.new("b", "B")
+      sp = TStructProp.new("b", Type.simple("B"))
       struct << sp
       assert_equal(["::Foo::Struct#b", "::Foo::Struct#b="], sp.fully_qualified_names)
 
@@ -420,11 +420,11 @@ module RBI
       mod << struct
       assert_equal("::Foo::Struct", struct.to_s)
 
-      sc = TStructConst.new("a", "A")
+      sc = TStructConst.new("a", Type.simple("A"))
       struct << sc
       assert_equal("::Foo::Struct.const(:a)", sc.to_s)
 
-      sp = TStructProp.new("b", "B")
+      sp = TStructProp.new("b", Type.simple("B"))
       struct << sp
       assert_equal("::Foo::Struct.prop(:b)", sp.to_s)
 
@@ -526,8 +526,8 @@ module RBI
       assert_equal("sym_name", TypeMember.new(sym, "X").name)
       assert_equal("sym_name", RequiresAncestor.new(sym).name)
       assert_equal("sym_name", TEnumValue.new(sym).name)
-      assert_equal("sym_name", TStructConst.new(sym, "T").name)
-      assert_equal("sym_name", TStructProp.new(sym, "T").name)
+      assert_equal("sym_name", TStructConst.new(sym, Type.simple("T")).name)
+      assert_equal("sym_name", TStructProp.new(sym, Type.simple("T")).name)
 
       sym_a = :a #: as untyped
       sym_b = :b #: as untyped
