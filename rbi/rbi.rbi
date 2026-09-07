@@ -29,7 +29,7 @@ class RBI::Attr < ::RBI::NodeWithComments
     params(
       name: ::Symbol,
       names: T::Array[::Symbol],
-      visibility: ::RBI::Visibility,
+      visibility: T.nilable(::RBI::Visibility),
       sigs: T.nilable(T::Array[::RBI::Sig]),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment])
@@ -64,7 +64,7 @@ class RBI::Attr < ::RBI::NodeWithComments
   sig { returns(T::Boolean) }
   def sigs?; end
 
-  sig { returns(::RBI::Visibility) }
+  sig { returns(T.nilable(::RBI::Visibility)) }
   def visibility; end
 
   def visibility=(_arg0); end
@@ -75,7 +75,7 @@ class RBI::Attr < ::RBI::NodeWithComments
     params(
       name: ::String,
       sig: T.nilable(::RBI::Sig),
-      visibility: ::RBI::Visibility,
+      visibility: T.nilable(::RBI::Visibility),
       loc: T.nilable(::RBI::Loc),
       comments: T::Array[::RBI::Comment]
     ).returns(::RBI::Method)
@@ -87,7 +87,7 @@ class RBI::Attr < ::RBI::NodeWithComments
       name: ::String,
       sig: T.nilable(::RBI::Sig),
       attribute_type: T.nilable(T.any(::RBI::Type, ::String)),
-      visibility: ::RBI::Visibility,
+      visibility: T.nilable(::RBI::Visibility),
       loc: T.nilable(::RBI::Loc),
       comments: T::Array[::RBI::Comment]
     ).returns(::RBI::Method)
@@ -103,7 +103,7 @@ class RBI::AttrAccessor < ::RBI::Attr
     params(
       name: ::Symbol,
       names: ::Symbol,
-      visibility: ::RBI::Visibility,
+      visibility: T.nilable(::RBI::Visibility),
       sigs: T.nilable(T::Array[::RBI::Sig]),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
@@ -130,7 +130,7 @@ class RBI::AttrReader < ::RBI::Attr
     params(
       name: ::Symbol,
       names: ::Symbol,
-      visibility: ::RBI::Visibility,
+      visibility: T.nilable(::RBI::Visibility),
       sigs: T.nilable(T::Array[::RBI::Sig]),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
@@ -157,7 +157,7 @@ class RBI::AttrWriter < ::RBI::Attr
     params(
       name: ::Symbol,
       names: ::Symbol,
-      visibility: ::RBI::Visibility,
+      visibility: T.nilable(::RBI::Visibility),
       sigs: T.nilable(T::Array[::RBI::Sig]),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
@@ -697,7 +697,7 @@ class RBI::Method < ::RBI::NodeWithComments
       name: ::String,
       params: T.nilable(T::Array[::RBI::Param]),
       is_singleton: T::Boolean,
-      visibility: ::RBI::Visibility,
+      visibility: T.nilable(::RBI::Visibility),
       sigs: T.nilable(T::Array[::RBI::Sig]),
       loc: T.nilable(::RBI::Loc),
       comments: T.nilable(T::Array[::RBI::Comment]),
@@ -787,7 +787,7 @@ class RBI::Method < ::RBI::NodeWithComments
   sig { override.returns(::String) }
   def to_s; end
 
-  sig { returns(::RBI::Visibility) }
+  sig { returns(T.nilable(::RBI::Visibility)) }
   def visibility; end
 
   def visibility=(_arg0); end
@@ -1507,7 +1507,6 @@ class RBI::Public < ::RBI::Visibility
   def initialize(loc: T.unsafe(nil), comments: T.unsafe(nil), &block); end
 end
 
-RBI::Public::DEFAULT = T.let(T.unsafe(nil), RBI::Public)
 module RBI::RBS; end
 
 class RBI::RBS::MethodTypeTranslator

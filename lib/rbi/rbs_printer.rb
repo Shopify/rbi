@@ -283,8 +283,9 @@ module RBI
         visit_all(node.comments)
         print_loc(node)
         printt
-        unless in_visibility_group || node.visibility.public? || node.visibility.protected?
-          print(node.visibility.visibility.name)
+        visibility = node.visibility
+        unless in_visibility_group || visibility.nil? || visibility.public? || visibility.protected?
+          print(visibility.visibility.name)
           print(" ")
         end
         case node
@@ -363,8 +364,9 @@ module RBI
 
       print_loc(node)
       printt
-      unless in_visibility_group || node.visibility.public?
-        print(node.visibility.visibility.name)
+      visibility = node.visibility
+      unless in_visibility_group || visibility.nil? || visibility.public?
+        print(visibility.visibility.name)
         print(" ")
       end
       print("def ")

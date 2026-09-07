@@ -15,7 +15,7 @@ def build_tree(num_methods: 200)
   klass << RBI::Extend.new("RelMethods")
   num_methods.times do |i|
     vis = case i % 10
-    when 0..6 then RBI::Public::DEFAULT
+    when 0..6 then RBI::Public.new
     when 7..8 then RBI::Private.new
     else RBI::Protected.new
     end #: RBI::Visibility

@@ -326,8 +326,8 @@ module RBI
     #: Array[Symbol]
     attr_reader :names
 
-    #: Visibility
-    attr_accessor :visibility
+    #: Visibility?
+    attr_accessor :visibility # `nil` for implicit `public` visibility
 
     #: -> Array[Sig]
     def sigs
@@ -345,12 +345,12 @@ module RBI
     #: (
     #|   Symbol name,
     #|   Array[Symbol] names,
-    #|   ?visibility: Visibility,
+    #|   ?visibility: Visibility?,
     #|   ?sigs: Array[Sig]?,
     #|   ?loc: Loc?,
     #|   ?comments: Array[Comment]?
     #| ) -> void
-    def initialize(name, names, visibility: Public::DEFAULT, sigs: nil, loc: nil, comments: nil)
+    def initialize(name, names, visibility: nil, sigs: nil, loc: nil, comments: nil)
       super(loc: loc, comments: comments)
       @names = [name, *names] #: Array[Symbol]
       @visibility = visibility
@@ -366,12 +366,12 @@ module RBI
     #: (
     #|   Symbol name,
     #|   *Symbol names,
-    #|   ?visibility: Visibility,
+    #|   ?visibility: Visibility?,
     #|   ?sigs: Array[Sig]?,
     #|   ?loc: Loc?,
     #|   ?comments: Array[Comment]?
     #| ) ?{ (AttrAccessor node) -> void } -> void
-    def initialize(name, *names, visibility: Public::DEFAULT, sigs: nil, loc: nil, comments: nil, &block)
+    def initialize(name, *names, visibility: nil, sigs: nil, loc: nil, comments: nil, &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
       block&.call(self)
     end
@@ -395,12 +395,12 @@ module RBI
     #: (
     #|   Symbol name,
     #|   *Symbol names,
-    #|   ?visibility: Visibility,
+    #|   ?visibility: Visibility?,
     #|   ?sigs: Array[Sig]?,
     #|   ?loc: Loc?,
     #|   ?comments: Array[Comment]?
     #| ) ?{ (AttrReader node) -> void } -> void
-    def initialize(name, *names, visibility: Public::DEFAULT, sigs: nil, loc: nil, comments: nil, &block)
+    def initialize(name, *names, visibility: nil, sigs: nil, loc: nil, comments: nil, &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
       block&.call(self)
     end
@@ -424,12 +424,12 @@ module RBI
     #: (
     #|   Symbol name,
     #|   *Symbol names,
-    #|   ?visibility: Visibility,
+    #|   ?visibility: Visibility?,
     #|   ?sigs: Array[Sig]?,
     #|   ?loc: Loc?,
     #|   ?comments: Array[Comment]?
     #| ) ?{ (AttrWriter node) -> void } -> void
-    def initialize(name, *names, visibility: Public::DEFAULT, sigs: nil, loc: nil, comments: nil, &block)
+    def initialize(name, *names, visibility: nil, sigs: nil, loc: nil, comments: nil, &block)
       super(name, names, loc: loc, visibility: visibility, sigs: sigs, comments: comments)
       block&.call(self)
     end
@@ -463,8 +463,8 @@ module RBI
     #: bool
     attr_accessor :is_singleton
 
-    #: Visibility
-    attr_accessor :visibility
+    #: Visibility?
+    attr_accessor :visibility # `nil` for implicit `public` visibility
 
     #: -> Array[Sig]
     def sigs
@@ -483,7 +483,7 @@ module RBI
     #|   String name,
     #|   ?params: Array[Param]?,
     #|   ?is_singleton: bool,
-    #|   ?visibility: Visibility,
+    #|   ?visibility: Visibility?,
     #|   ?sigs: Array[Sig]?,
     #|   ?loc: Loc?,
     #|   ?comments: Array[Comment]?
@@ -492,7 +492,7 @@ module RBI
       name,
       params: nil,
       is_singleton: false,
-      visibility: Public::DEFAULT,
+      visibility: nil,
       sigs: nil,
       loc: nil,
       comments: nil,
@@ -991,9 +991,6 @@ module RBI
       super(:public, loc: loc, comments: comments)
       block&.call(self)
     end
-
-    # Shared default instance to avoid allocating a new Public on every Method/Attr creation.
-    DEFAULT = new.freeze #: Public
   end
 
   class Protected < Visibility

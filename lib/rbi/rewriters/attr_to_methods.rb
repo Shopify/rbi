@@ -76,7 +76,7 @@ module RBI
       [sig, attribute_type]
     end
 
-    #: (String name, Sig? sig, Visibility visibility, Loc? loc, Array[Comment] comments) -> Method
+    #: (String name, Sig? sig, Visibility? visibility, Loc? loc, Array[Comment] comments) -> Method
     def create_getter_method(name, sig, visibility, loc, comments)
       Method.new(
         name,
@@ -92,7 +92,7 @@ module RBI
     #|   String name,
     #|   Sig? sig,
     #|   (Type | String)? attribute_type,
-    #|   Visibility visibility,
+    #|   Visibility? visibility,
     #|   Loc? loc,
     #|   Array[Comment] comments
     #| ) -> Method
