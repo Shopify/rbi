@@ -465,7 +465,7 @@ module RBI
             )
           end
           if multiline
-            print(",") if index < params.size - 1
+            print(",")
             printn
           end
         end
