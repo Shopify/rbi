@@ -67,7 +67,8 @@ class RBI::Attr < ::RBI::NodeWithComments
   sig { returns(::RBI::Visibility) }
   def visibility; end
 
-  def visibility=(_arg0); end
+  sig { params(visibility: ::RBI::Visibility).returns(::RBI::Visibility) }
+  def visibility=(visibility); end
 
   private
 
@@ -232,7 +233,8 @@ class RBI::Class < ::RBI::Scope
   sig { returns(T.nilable(::String)) }
   def superclass_name; end
 
-  def superclass_name=(_arg0); end
+  sig { params(superclass_name: T.nilable(::String)).returns(T.nilable(::String)) }
+  def superclass_name=(superclass_name); end
 end
 
 class RBI::Comment < ::RBI::Node
@@ -245,7 +247,8 @@ class RBI::Comment < ::RBI::Node
   sig { returns(::String) }
   def text; end
 
-  def text=(_arg0); end
+  sig { params(text: ::String).returns(::String) }
+  def text=(text); end
 end
 
 class RBI::ConflictTree < ::RBI::Tree
@@ -365,12 +368,14 @@ class RBI::File
   sig { returns(::RBI::Tree) }
   def root; end
 
-  def root=(_arg0); end
+  sig { params(root: ::RBI::Tree).returns(::RBI::Tree) }
+  def root=(root); end
 
   sig { returns(T.nilable(::String)) }
   def strictness; end
 
-  def strictness=(_arg0); end
+  sig { params(strictness: T.nilable(::String)).returns(T.nilable(::String)) }
+  def strictness=(strictness); end
 
   sig { params(indent: ::Integer, print_locs: T::Boolean, max_line_length: T.nilable(::Integer)).returns(::String) }
   def string(indent: T.unsafe(nil), print_locs: T.unsafe(nil), max_line_length: T.unsafe(nil)); end
@@ -399,7 +404,8 @@ class RBI::Formatter
   sig { returns(T.nilable(::Integer)) }
   def max_line_length; end
 
-  def max_line_length=(_arg0); end
+  sig { params(max_line_length: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+  def max_line_length=(max_line_length); end
 
   sig { params(file: ::RBI::File).returns(::String) }
   def print_file(file); end
@@ -764,7 +770,8 @@ class RBI::Method < ::RBI::NodeWithComments
   sig { returns(T::Boolean) }
   def is_singleton; end
 
-  def is_singleton=(_arg0); end
+  sig { params(is_singleton: T::Boolean).returns(T::Boolean) }
+  def is_singleton=(is_singleton); end
 
   sig { override.params(other: ::RBI::Node).void }
   def merge_with(other); end
@@ -790,7 +797,8 @@ class RBI::Method < ::RBI::NodeWithComments
   sig { returns(::RBI::Visibility) }
   def visibility; end
 
-  def visibility=(_arg0); end
+  sig { params(visibility: ::RBI::Visibility).returns(::RBI::Visibility) }
+  def visibility=(visibility); end
 
   private
 
@@ -907,7 +915,8 @@ class RBI::Node
   sig { returns(T.nilable(::RBI::Loc)) }
   def loc; end
 
-  def loc=(_arg0); end
+  sig { params(loc: T.nilable(::RBI::Loc)).returns(T.nilable(::RBI::Loc)) }
+  def loc=(loc); end
 
   sig { params(other: ::RBI::Node).void }
   def merge_with(other); end
@@ -921,7 +930,8 @@ class RBI::Node
   sig { returns(T.nilable(::RBI::Tree)) }
   def parent_tree; end
 
-  def parent_tree=(_arg0); end
+  sig { params(parent_tree: T.nilable(::RBI::Tree)).returns(T.nilable(::RBI::Tree)) }
+  def parent_tree=(parent_tree); end
 
   sig do
     params(
@@ -1266,7 +1276,8 @@ class RBI::Printer < ::RBI::Visitor
   sig { returns(T::Boolean) }
   def print_locs; end
 
-  def print_locs=(_arg0); end
+  sig { params(print_locs: T::Boolean).returns(T::Boolean) }
+  def print_locs=(print_locs); end
 
   sig { params(string: ::String).void }
   def printl(string); end
@@ -1638,7 +1649,8 @@ class RBI::RBSPrinter < ::RBI::Visitor
   sig { returns(T::Boolean) }
   def positional_names; end
 
-  def positional_names=(_arg0); end
+  sig { params(positional_names: T::Boolean).returns(T::Boolean) }
+  def positional_names=(positional_names); end
 
   sig { returns(T.nilable(::RBI::Node)) }
   def previous_node; end
@@ -1652,7 +1664,8 @@ class RBI::RBSPrinter < ::RBI::Visitor
   sig { returns(T::Boolean) }
   def print_locs; end
 
-  def print_locs=(_arg0); end
+  sig { params(print_locs: T::Boolean).returns(T::Boolean) }
+  def print_locs=(print_locs); end
 
   sig { params(node: ::RBI::Method, sig: ::RBI::Sig).void }
   def print_method_sig(node, sig); end
@@ -2332,42 +2345,50 @@ class RBI::Sig < ::RBI::NodeWithComments
   sig { returns(T::Boolean) }
   def allow_incompatible_override; end
 
-  def allow_incompatible_override=(_arg0); end
+  sig { params(allow_incompatible_override: T::Boolean).returns(T::Boolean) }
+  def allow_incompatible_override=(allow_incompatible_override); end
 
   sig { returns(T::Boolean) }
   def allow_incompatible_override_visibility; end
 
-  def allow_incompatible_override_visibility=(_arg0); end
+  sig { params(allow_incompatible_override_visibility: T::Boolean).returns(T::Boolean) }
+  def allow_incompatible_override_visibility=(allow_incompatible_override_visibility); end
 
   sig { returns(T.nilable(T.any(::RBI::Type, ::String))) }
   def bind_type; end
 
-  def bind_type=(_arg0); end
+  sig { params(bind_type: T.nilable(T.any(::RBI::Type, ::String))).returns(T.nilable(T.any(::RBI::Type, ::String))) }
+  def bind_type=(bind_type); end
 
   sig { returns(T.nilable(::Symbol)) }
   def checked; end
 
-  def checked=(_arg0); end
+  sig { params(checked: T.nilable(::Symbol)).returns(T.nilable(::Symbol)) }
+  def checked=(checked); end
 
   sig { returns(T::Boolean) }
   def is_abstract; end
 
-  def is_abstract=(_arg0); end
+  sig { params(is_abstract: T::Boolean).returns(T::Boolean) }
+  def is_abstract=(is_abstract); end
 
   sig { returns(T::Boolean) }
   def is_final; end
 
-  def is_final=(_arg0); end
+  sig { params(is_final: T::Boolean).returns(T::Boolean) }
+  def is_final=(is_final); end
 
   sig { returns(T::Boolean) }
   def is_overridable; end
 
-  def is_overridable=(_arg0); end
+  sig { params(is_overridable: T::Boolean).returns(T::Boolean) }
+  def is_overridable=(is_overridable); end
 
   sig { returns(T::Boolean) }
   def is_override; end
 
-  def is_override=(_arg0); end
+  sig { params(is_override: T::Boolean).returns(T::Boolean) }
+  def is_override=(is_override); end
 
   sig { returns(T::Array[::RBI::SigParam]) }
   def params; end
@@ -2375,7 +2396,8 @@ class RBI::Sig < ::RBI::NodeWithComments
   sig { returns(T.any(::RBI::Type, ::String)) }
   def return_type; end
 
-  def return_type=(_arg0); end
+  sig { params(return_type: T.any(::RBI::Type, ::String)).returns(T.any(::RBI::Type, ::String)) }
+  def return_type=(return_type); end
 
   sig { returns(T::Array[::String]) }
   def type_params; end
@@ -2386,7 +2408,8 @@ class RBI::Sig < ::RBI::NodeWithComments
   sig { returns(T::Boolean) }
   def without_runtime; end
 
-  def without_runtime=(_arg0); end
+  sig { params(without_runtime: T::Boolean).returns(T::Boolean) }
+  def without_runtime=(without_runtime); end
 end
 
 class RBI::SigParam < ::RBI::NodeWithComments
@@ -2453,12 +2476,14 @@ class RBI::Struct < ::RBI::Scope
   sig { returns(T::Boolean) }
   def keyword_init; end
 
-  def keyword_init=(_arg0); end
+  sig { params(keyword_init: T::Boolean).returns(T::Boolean) }
+  def keyword_init=(keyword_init); end
 
   sig { returns(T::Array[::Symbol]) }
   def members; end
 
-  def members=(_arg0); end
+  sig { params(members: T::Array[::Symbol]).returns(T::Array[::Symbol]) }
+  def members=(members); end
 
   sig { returns(::String) }
   def name; end
@@ -2582,7 +2607,8 @@ class RBI::TStructField < ::RBI::NodeWithComments
   sig { returns(T.nilable(::String)) }
   def default; end
 
-  def default=(_arg0); end
+  sig { params(default: T.nilable(::String)).returns(T.nilable(::String)) }
+  def default=(default); end
 
   sig { abstract.returns(T::Array[::String]) }
   def fully_qualified_names; end
@@ -2593,7 +2619,8 @@ class RBI::TStructField < ::RBI::NodeWithComments
   sig { returns(T.any(::RBI::Type, ::String)) }
   def type; end
 
-  def type=(_arg0); end
+  sig { params(type: T.any(::RBI::Type, ::String)).returns(T.any(::RBI::Type, ::String)) }
+  def type=(type); end
 end
 
 class RBI::TStructProp < ::RBI::TStructField
