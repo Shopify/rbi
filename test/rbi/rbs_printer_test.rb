@@ -674,7 +674,7 @@ module RBI
           *String c,
           e: Numeric,
           ?d: Object,
-          **untyped f
+          **untyped f,
         ) { -> void } -> R
       RBI
     end
@@ -698,7 +698,7 @@ module RBI
       assert_equal(<<~RBI.strip, out.string)
         (
           A a,
-          B b
+          B b,
         ) -> R
       RBI
 
@@ -709,7 +709,7 @@ module RBI
       assert_equal(<<~RBI.strip, out.string)
         (
           A a,
-          B b
+          B b,
         ) -> R
       RBI
     end
