@@ -552,15 +552,14 @@ module RBI
       # Collect all the remaining comments within a node
       #: (Prism::Node node) -> void
       def collect_dangling_comments(node)
-        first_line = node.location.start_line
         last_line = node.location.end_line
 
         last_node_last_line = node.child_nodes.last&.location&.end_line
+        first_line = last_node_last_line ? last_node_last_line + 1 : node.location.start_line
 
         first_line.upto(last_line) do |line|
           comment = @comments_by_line[line]
           next unless comment
-          break if last_node_last_line && line <= last_node_last_line
 
           current_scope << parse_comment(comment)
           @comments_by_line.delete(line)
