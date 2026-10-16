@@ -326,9 +326,6 @@ module RBI
       return unless other.is_a?(NodeWithComments)
       return unless other.comments?
 
-      # Index the comments by text so that a merged comment is only compared with the few existing comments sharing
-      # its text, instead of being compared with every existing comment. Scanning the whole `comments` array for each
-      # merged comment made merging quadratic in the number of comments, which attacker-controlled input could abuse.
       comments_by_text = {} #: Hash[String, Array[Comment]]
       comments.each { |comment| index_comment(comments_by_text, comment) }
 
@@ -339,7 +336,6 @@ module RBI
 
     private
 
-    # Add `comment` to `index` unless an equal comment is already indexed, returns whether it was added
     #: (Hash[String, Array[Comment]] index, Comment comment) -> bool
     def index_comment(index, comment)
       same_text = index[comment.text] ||= []
