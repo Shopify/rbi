@@ -514,6 +514,17 @@ module RBI
       RBI
     end
 
+    def test_merge_tree_comments_deduplicates_repeated_new_comments
+      tree1 = Tree.new
+      tree2 = Tree.new
+      tree2.comments << Comment.new("New comment")
+      tree2.comments << Comment.new("New comment")
+
+      res = tree1.merge(tree2)
+
+      assert_equal(["New comment"], res.comments.map(&:text))
+    end
+
     def test_merge_many_distinct_comments_does_not_compare_every_pair
       count = 2_000
       texts = (1..count).map { |i| "Comment #{i}" }
