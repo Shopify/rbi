@@ -514,6 +514,41 @@ module RBI
       RBI
     end
 
+    def test_merge_tree_comments_deduplicates_repeated_new_comments
+      tree1 = Tree.new
+      tree2 = Tree.new
+      tree2.comments << Comment.new("New comment")
+      tree2.comments << Comment.new("New comment")
+
+      res = tree1.merge(tree2)
+
+      assert_equal(["New comment"], res.comments.map(&:text))
+    end
+
+    def test_merge_many_distinct_comments_does_not_compare_every_pair
+      count = 2_000
+      texts = (1..count).map { |i| "Comment #{i}" }
+
+      tree1 = parse_rbi(texts.map { |text| "# #{text}" }.join("\n") + "\n\nclass A; end\n")
+      tree2 = parse_rbi((texts + ["Comment extra"]).map { |text| "# #{text}" }.join("\n") + "\n\nclass B; end\n")
+
+      equality_checks = 0
+      (tree1.comments + tree2.comments).each do |comment|
+        comment.define_singleton_method(:==) do |other|
+          equality_checks += 1
+          super(other)
+        end
+      end
+
+      res = tree1.merge(tree2)
+
+      assert_equal(texts + ["Comment extra"], res.comments.map(&:text))
+
+      # Each merged comment must only be compared against the existing comments sharing its text,
+      # not against the whole list, otherwise merging is quadratic in the number of comments
+      assert_operator(equality_checks, :<, 3 * count)
+    end
+
     def test_merge_create_conflict_tree_for_scopes
       tree1 = parse_rbi(<<~RBI)
         class Foo

@@ -989,6 +989,11 @@ class RBI::NodeWithComments < ::RBI::Node
 
   sig { returns(T::Array[::Gem::Requirement]) }
   def version_requirements; end
+
+  private
+
+  sig { params(index: T::Hash[::String, T::Array[::RBI::Comment]], comment: ::RBI::Comment).returns(T::Boolean) }
+  def index_comment(index, comment); end
 end
 
 class RBI::OptParam < ::RBI::Param
