@@ -1253,6 +1253,66 @@ module RBI
       assert_equal(rbi, tree.string)
     end
 
+    def test_parse_collect_dangling_comments_in_nested_scopes
+      rbi = <<~RBI
+        module A
+          module B
+            class C; end
+            # B comment
+          end
+          # A comment
+        end
+        # Orphan comment
+      RBI
+
+      tree = parse_rbi(rbi)
+      assert_equal(rbi, tree.string)
+    end
+
+    def test_parse_collect_dangling_scope_comments_after_unattached_comment
+      rbi = <<~RBI
+        module A
+          # Unattached comment
+
+          class B; end
+          # A comment
+        end
+      RBI
+
+      tree = parse_rbi(rbi)
+      assert_equal(<<~RBI, tree.string)
+        # Unattached comment
+
+        module A
+          class B; end
+          # A comment
+        end
+      RBI
+    end
+
+    def test_parse_collect_dangling_comments_does_not_rescan_nested_scopes
+      depth = 100
+      padding = 1_000
+      rbi = ("module M\n" * depth) + ("\n" * padding) + ("end\n" * depth)
+      line_count = rbi.count("\n")
+
+      result = Prism.parse(rbi)
+      builder = Parser::TreeBuilder.new(rbi, comments: result.comments, file: "-")
+
+      lookups = 0
+      comments_by_line = builder.instance_variable_get(:@comments_by_line)
+      comments_by_line.define_singleton_method(:[]) do |line|
+        lookups += 1
+        super(line)
+      end
+
+      builder.visit(result.value)
+
+      # Each source line must be inspected a bounded number of times, independently of the nesting depth.
+      # Rescanning every line of each enclosing scope on unwind would make this `depth * padding`.
+      assert_operator(lookups, :<, 2 * line_count)
+    end
+
     def test_parse_params_comments
       rbi = <<~RBI
         def bar; end
