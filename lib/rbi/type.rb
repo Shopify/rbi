@@ -1052,7 +1052,7 @@ module RBI
     #
     # @abstract
     #: -> Type
-    def normalize = raise NotImplementedError, "Abstract method called"
+    def normalize = super
 
     # Returns a simplified version of the type.
     #
@@ -1064,11 +1064,11 @@ module RBI
     #
     # @abstract
     #: -> Type
-    def simplify = raise NotImplementedError, "Abstract method called"
+    def simplify = super
 
     # @abstract
     #: (BasicObject) -> bool
-    def ==(other) = raise NotImplementedError, "Abstract method called"
+    def ==(other) = super
 
     #: (BasicObject other) -> bool
     def eql?(other)
@@ -1083,7 +1083,7 @@ module RBI
 
     # @abstract
     #: -> String
-    def to_rbi = raise NotImplementedError, "Abstract method called"
+    def to_rbi = super
 
     # @override
     #: -> String
