@@ -185,7 +185,7 @@ module RBI
   class Scope < Tree
     # @abstract
     #: -> String
-    def fully_qualified_name = raise NotImplementedError, "Abstract method called"
+    def fully_qualified_name = super
 
     # @override
     #: -> String
@@ -359,7 +359,7 @@ module RBI
 
     # @abstract
     #: -> Array[String]
-    def fully_qualified_names = raise NotImplementedError, "Abstract method called"
+    def fully_qualified_names = super
   end
 
   class AttrAccessor < Attr
@@ -628,7 +628,7 @@ module RBI
     # @abstract
     #: -> bool
     def anonymous?
-      raise NotImplementedError, "Abstract method called"
+      super
     end
   end
 
@@ -1271,7 +1271,7 @@ module RBI
 
     # @abstract
     #: -> Array[String]
-    def fully_qualified_names = raise NotImplementedError, "Abstract method called"
+    def fully_qualified_names = super
   end
 
   class TStructConst < TStructField
