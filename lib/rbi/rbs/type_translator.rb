@@ -116,7 +116,7 @@ module RBI
             Type.type_parameter(type.name)
           end
         else
-          type #: absurd
+          raise Error, "Unexpected RBS type: #{type.class}" #: absurd(type)
         end
       end
 
